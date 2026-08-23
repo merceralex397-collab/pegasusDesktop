@@ -127,8 +127,9 @@ Desktop side and platform (official docs, fetched 2026-08-23):
 ## 3. Decisions and assumptions
 
 Locked decisions binding here: L-01 (gateway in `Pegasus.Web`), L-03
-(WebView2 presence check at startup). Open decisions it touches: D-002 (trust
-step only for a self-managed certificate); D-003 is decided — the feed is a
+(WebView2 presence check at startup). Decided elsewhere and relied on here:
+D-002 (a self-managed certificate, so first install **always** includes a
+trust step — R7); D-003 is decided — the feed is a
 UNC share, so the per-channel feed path baked into the package is
 `\\<host>\<share>\<channel>\Pegasus.appinstaller` and update checks require the
 office network or VPN.
@@ -240,7 +241,7 @@ Kanmer areas: gateway work in `gateway-api` (GWY), desktop work in
 | DSK-04-10 | Role-aware shell: hide/disable commands by `StaffAccessRight`; server still enforces | feature | DSK-04-04, DSK-02-08 | Administrator-only rail items absent for non-admins; a forged call is still refused by the gateway | VM test + integration test | 2/5 | `winui-dev` · `winui-design` · — |
 | DSK-04-11 | Connectivity state: status-bar disconnected indicator, automatic recheck, saves disabled while offline (no silent queueing) | feature | DSK-04-07 | Pulling the network shows the state within one recheck interval; no command reports success without server confirmation | UI test with the gateway stopped | 7 | `winui-dev` · `winui-design` · — |
 | DSK-04-12 | `.appinstaller` 2021-schema template and local feed for the Test/UAT stack (`OnLaunch HoursBetweenUpdateChecks="0" ShowPrompt="true" UpdateBlocksActivation="true"`) | chore | DSK-02-14 | Local feed serves v1→v2 with the blocking prompt | Packaging test (09's scenario list) | 11 | `pegasus-release-packager` · `winui-packaging` · Microsoft Learn |
-| DSK-04-13 | First-run/initial-install guide for workstations (prereqs, optional trust step per D-002, open `.appinstaller`, first launch, blocked states, diagnostics location, channel switch) | chore | DSK-04-09 | Guide reproduced on a clean Windows 11 VM by someone other than the author | Proof: screenshots of each step | 7 | `pegasus-release-packager` · `winui-packaging`, `microsoft-docs` · Microsoft Learn |
+| DSK-04-13 | First-run/initial-install guide for workstations (prereqs, the required certificate-trust step from R7, opening the `.appinstaller`, first launch, blocked states, diagnostics location, channel switch) | chore | DSK-04-09 | Guide reproduced on a clean Windows 11 VM by someone other than the author | Proof: screenshots of each step | 7 | `pegasus-release-packager` · `winui-packaging`, `microsoft-docs` · Microsoft Learn |
 | DSK-04-14 | Security tests for the token path (expiry/rotation/revocation, disabled account, role bypass, version spoofing, temp-file permissions of the DPAPI store) | feature | DSK-04-05, DSK-04-07 | Every §22 security-test item for auth has a test or a recorded manual check | `dotnet test` + checklist | 9 | `pegasus-test-engineer` · `code-testing-agent`, `test-gap-analysis` · — |
 | DSK-04-15 | Phase 2 exit review and UAT script (login, blocked old version, update, disabled account) | chore | all above | Every gate row in §4 evidenced in the ticket proof | Proof doc | 5/7/11 | `pegasus-desktop-reviewer` · `winui-code-review` · Kanmer |
 

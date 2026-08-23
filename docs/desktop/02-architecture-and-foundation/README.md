@@ -288,7 +288,9 @@ area `desktop-foundation` (prefix `FND`) unless noted; horizon group
   diagnostics.
 - **Package identity churn**: `Package.appxmanifest` `Identity.Name` and
   `Publisher` must be settled before any user installs (changing them later is
-  a different app). Publisher depends on D-002; use a stable placeholder CN in
+  a different app). D-002 chose a self-managed certificate whose **subject
+  must equal this Publisher exactly**, so fix the value once here and never
+  change it; use a stable CN in
   development only.
 - **Self-contained size**: .NET + Windows App SDK self-contained MSIX is large;
   acceptable for ten users but measure and record in 09's release manifest.

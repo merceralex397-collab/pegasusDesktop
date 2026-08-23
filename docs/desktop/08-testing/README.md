@@ -167,10 +167,14 @@ Locked and open decisions this area depends on
 - **L-03** — reports render locally through WebView2; golden-file parity tests
   are therefore a desktop-side test concern (owned by 07, executed in the
   lanes defined here).
-- **D-003 is decided** (UNC share), so the Test/UAT stack rehearses the real
-  transport: packaging tests run against a file share, not an HTTP
-  substitute. **D-002 (signing) is open**, so they run with a dev
-  certificate; the production signing variant is added when D-002 closes.
+- **Both distribution decisions are settled**, so the Test/UAT stack
+  rehearses the real thing end to end: packaging tests run against a file
+  share (D-003), signed with a certificate trusted in
+  `LocalMachine\TrustedPeople` (D-002). Day-to-day runs use a development
+  certificate; the packaging suite additionally covers the two failure modes
+  the chosen route introduces — installing when the certificate is **not**
+  trusted (expect `0x800B0109`) and a certificate-renewal rollout where trust
+  is pushed before the newly signed package.
 
 Deviations from the proposal, stated explicitly:
 
@@ -292,7 +296,8 @@ Tier numbers are the `docs/engineering.md` evidence tiers. Routing is
   **self-hosted Windows runner** on the same always-on host that serves the
   D-003 UNC share (self-hosted minutes are not billed, the machine is
   already required, and it is the natural custodian of the signing
-  certificate if D-002 lands on a self-managed cert); a paid plan; or
+  certificate — D-002 chose exactly that, so the host custodies the `.pfx`);
+  a paid plan; or
   trimming Windows lanes (for example running contract and view-model tests
   on the cheapest lane that can host them). Decide before the repositories
   flip, not after — see DSK-08-19.

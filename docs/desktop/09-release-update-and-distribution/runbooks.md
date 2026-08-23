@@ -35,7 +35,8 @@ Preconditions:
 2. `main` carries the commit; the `desktop/v<ver>` tag exists on it.
 3. CI is green for that commit, including the desktop lanes and packaging
    tests.
-4. D-002 and D-003 are decided; the signing route and `<feed>` are
+4. D-002 and D-003 are decided (self-managed certificate; UNC share); the
+   signing host, certificate and `<feed>` path are
    configured.
 5. Test/UAT stack rehearsal of install → update → rollback passed for this
    package (evidence linked).
@@ -47,7 +48,10 @@ Steps:
 2. Run `scripts/Build-DesktopRelease.ps1 -Channel pilot -Version <ver>`
    (locked restore, x64 Release build, `winapp package`, manifest, SBOM,
    hashes). Record the SHA-256 of the `.msix`.
-3. Sign by the D-002 route (Artifact Signing via the client tools/`signtool`
+3. Sign with the self-managed certificate (D-002) on the signing host
+   (`winapp package --cert` / `signtool sign /fd SHA256 /f`), always with a
+   timestamp; the previous wording covered routes now withdrawn (Artifact
+   Signing via the client tools/`signtool`
    with `/dlib`, AzureSignTool against Key Vault, or `winapp sign` with the
    self-managed certificate). Always timestamp (`/tr` or `--timestamp`).
    Verify: `signtool verify /pa /v <pkg>.msix` (chain and timestamp).
@@ -159,30 +163,42 @@ audit/history for the window (area 10).
 
 ## R5 · Code-signing certificate or identity renewal
 
-Purpose: keep releases signable and installable; steps depend on D-002.
+Purpose: keep releases signable and installable. D-002 is decided, so this
+runbook has one route: the self-managed certificate. **Rehearse it once
+before go-live** — the first execution must not be the one under time
+pressure (ticket DSK-09-14).
 
-Common:
+1. Calendar the expiry in `docs/operations.md` with a 90-day warning. With a
+   ~3-year certificate this fires roughly once per parliament, which is
+   exactly why it is rehearsed rather than remembered.
+2. Issue the replacement on the signing host with the **same subject** as the
+   current certificate — the subject must equal the manifest `Publisher`
+   exactly, and changing it changes the package identity. Restrict the new
+   `.pfx` to the publisher account; keep the old one until step 6.
+3. Export the new **public** `.cer` only.
+4. **Push trust before publishing anything signed with it.** Import the new
+   `.cer` into `Cert:\LocalMachine\TrustedPeople` on every workstation
+   (scripted, elevated, or by Group Policy). Microsoft's deployment guidance
+   is explicit that certificate trust must reach devices before the app does;
+   reversing the order gives users `0x800B0109` and a failed update.
+5. Verify on one machine that is not the publisher: `certutil -verifystore
+   TrustedPeople` lists both certificates; sign a test package with the new
+   certificate and install it.
+6. Only then sign releases with the new certificate. Once every machine is
+   confirmed, remove the old `.cer` from `TrustedPeople` (a decommissioned
+   key should not keep vouching for packages).
+7. Record the change in `docs/operations.md`: thumbprint, subject, validity
+   window, rollout date, and which machines were confirmed.
 
-1. Calendar the expiry/renewal date in `docs/operations.md` with a 60-day
-   warning.
-2. Sign a test package with the renewed credential; verify chain and
-   timestamp; install on a Test/UAT machine.
+Compromise variant: treat it as an emergency renewal — issue immediately,
+push the new trust, remove the old `.cer` first rather than last, re-sign the
+current release, and raise the gateway minimum version if a maliciously
+signed package could plausibly have been installed. There is no revocation
+list in a private-trust estate; removing trust is the revocation.
 
-Per route:
-
-- Artifact Signing: renewal is automatic (daily certificates); renew the
-  identity validation when Azure requires; rotate the CI federated
-  credential/app registration secret ⚠ (Azure write, exact target).
-- Self-managed certificate: issue the new certificate, update the Publisher
-  if the subject changes (it must not — keep the subject stable), roll the
-  new trust to every workstation **before** signing a release with it,
-  keep the old certificate valid until every machine trusts the new one.
-- OV certificate: renew with the CA, import into Key Vault ⚠, update the
-  AzureSignTool reference, test-sign.
-
-Rollback: keep signing with the still-valid old credential. Does not
-prove: existing installations remain valid — they do, provided signatures
-were timestamped.
+Rollback: keep signing with the still-valid old certificate (it stays
+trusted until step 6). Does not prove: existing installations remain valid —
+they do, provided signatures were timestamped.
 
 ## R6 · Emergency block of a defective client version
 
@@ -215,9 +231,12 @@ Prerequisites checklist:
 2. Microsoft Edge WebView2 runtime present (default on Windows 11; verify in
    Settings → Apps); required for report rendering.
 3. Network access to `<feed>` and the gateway.
-4. Only if D-002 chose a self-managed certificate or Artifact Signing
-   Private Trust: install the trust (root/leaf) by the scripted step from
-   R5; verify with `certutil -verifystore`.
+4. **Install the signing certificate's trust before the app** (D-002 chose a
+   self-managed certificate, so this step is always required): import the
+   public `.cer` into `Cert:\LocalMachine\TrustedPeople` (elevated,
+   once per machine) or let Group Policy deliver it, then verify with
+   `certutil -verifystore TrustedPeople`. If the package arrives first the
+   install fails with `0x800B0109`; the fix is this step, then retry.
 5. Managed device policy: `ms-appinstaller:` remains disabled (not needed);
    App Installer auto-update must not be disabled by CSP/PowerShell
    (`Get-AppxPackageAutoUpdateSettings` after install).

@@ -45,8 +45,15 @@ scale does not apply unless a Pegasus decision adopts it.
   feed is an in-house UNC file share served over SMB (constraint C-01: the
   repositories become private on completion, so no GitHub-hosted anonymous
   feed can survive); no Azure resource hosts the feed, and update checks
-  need the office network or VPN. Open: D-002 signing route only — work
-  with a dev certificate until it is recorded.
+  need the office network or VPN. D-002 (2026-08-23) — packages are signed
+  with a **self-managed certificate** held in-house: the public `.cer` is
+  trusted per workstation in `Cert:\LocalMachine\TrustedPeople` (never
+  `Trusted Root`), the `.pfx` never leaves the signing host and is never a
+  GitHub secret, the certificate subject equals the manifest `Publisher`
+  exactly and is fixed before the first package, signatures are always
+  timestamped, and trust reaches a machine before any package signed with
+  it. **No decisions remain open**; the whole distribution path touches no
+  Azure resource.
 
 ## Dependency boundaries
 

@@ -45,7 +45,8 @@ They bind the plans until a recorded decision changes them.
 | L-04 | Specialist Codex subagents exist as `.codex/agents/*.toml`; every ticket names its subagent, skills, and MCP tools | Locked | 12 |
 | L-05 | Kanmer board is seeded by the implementing agent from the ticket tables in these plans; the open upstream board is triaged in 01 | Locked | 00, 01 |
 | D-001 | Release source of truth after Phase 2 | Decided 2026-08-23: Option A — the fork becomes the single release source for gateway and desktop at the first production gateway change (upstream merged in, then frozen); record in ADR-0100 consequences and `docs/operations.md` at execution (DSK-00-10) | 00 |
-| D-002 | Production code-signing route: Azure Artifact Signing (Public or Private Trust), self-managed certificate, or purchased OV certificate | Open, matrix recorded; blocks the first pilot feed | 09 |
+| D-002 | Production code signing | **Decided 2026-08-23: option C — a self-managed certificate**, kept in-house and trusted per workstation (`LocalMachine\TrustedPeople`). With D-003 this makes the whole distribution path free of Azure resources and recurring cost; the price is a trust rollout and a rehearsed renewal (runbooks R5, R7) | 09 |
+| D-002 · consequence | Every decision is now recorded; **no open decisions remain**. The desktop distribution path (sign in-house → copy to the UNC share → App Installer over SMB) touches no Azure resource at all | Recorded | 09, 11 |
 | D-003 | Update-feed hosting | **Decided 2026-08-23: UNC file share** on an always-on in-house Windows host, served to App Installer over SMB. Driven by constraint C-01 below; costs nothing and needs **no Azure write** | 09 |
 
 ### Constraints recorded after planning began

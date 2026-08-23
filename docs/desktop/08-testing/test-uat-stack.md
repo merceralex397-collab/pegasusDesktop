@@ -59,9 +59,11 @@ papered over. **Deviation** from proposal §21.3 recorded in
 - Developer Mode is **not** required to install a signed MSIX; it is required
   only if the machine also builds and runs unpackaged. Sideloading is on by
   default on Windows 11.
-- The dev signing certificate trusted in `LocalMachine\TrustedPeople` (or
-  Trusted Root per `winapp cert install`), until D-002 selects the production
-  signing route.
+- A development signing certificate trusted in
+  `Cert:\LocalMachine\TrustedPeople` — the same store and mechanism the
+  production certificate uses (D-002), so the stack exercises the real trust
+  path with throwaway credentials. The packaging suite also covers the
+  untrusted case (expect `0x800B0109`) and a trust-then-publish renewal.
 - `scripts/Invoke-Doctor.ps1 -Profile Offline` reports the above; extend it
   with the desktop prerequisites (ticket DSK-08-17).
 
@@ -177,7 +179,8 @@ repository tree (`AGENTS.md § New Markdown placement`).
   change is first seen on the pilot ring.
 - The local feed proves App Installer mechanics (update prompt, blocked
   activation, rollback) but not the production host's MIME/range configuration
-  or the production signing chain (D-002/D-003).
+  or the production certificate and share themselves (the mechanism is the
+  same; the credentials and host are not).
 - `DevelopmentOffline` composes `Features:LocalIntake`; production composes
   Blob intake. Intake paths through `/Upload` are therefore exercised against
   the file-system store on the stack.

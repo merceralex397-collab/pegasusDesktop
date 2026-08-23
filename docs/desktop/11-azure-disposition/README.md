@@ -87,7 +87,10 @@ client secret), App Insights, ACR; Worker → SQL, transport storage (queues,
 
 - No Azure writes are needed for Phases 0–1; the first possible writes
   arrive with Phase 2 (desktop gateway flag/settings) and the first pilot
-  feed (D-002 only; D-003 chose an in-house UNC share and needs no Azure).
+  feed — **neither any more**: D-002 chose a self-managed certificate and
+  D-003 an in-house UNC share, so desktop distribution touches no Azure
+  resource. The only remaining conversion write is the one-off
+  `Features:DesktopGateway` app setting.
 - The desktop client will never call Azure directly — every dependency is
   reached through the gateway or the feed — so the register's "used by"
   column gains at most the feed host and the signing service.
@@ -145,7 +148,7 @@ approval.
 | DSK-11-01 | Populate the Azure resource register by read-only inventory | chore | DSK-01-05 | Every resource in `platform.bicep` and in the live RG listed with owner/use, target position, and verification command; differences between Bicep and live state recorded | Azure MCP `group_resource_list` output attached; register diff reviewed | 9 | pegasus-azure-auditor · azure-resource-lookup, azure-resource-visualizer · Azure MCP (read), Kanmer |
 | DSK-11-02 | Cloud-dependency records (Appendix B) for every capability | chore | DSK-11-01 | Records for graph-intake, box-custody, dvla-dvsa-lookup, report-rendering, authentication-session, update-feed, telemetry, database, transport; each with the six cloud-justification answers | Records reviewed against §4.1 placement table | 1 | pegasus-azure-auditor · — · Kanmer |
 | DSK-11-03 | Conditional Azure writes catalogue with approval templates and rollback | chore | DSK-09-10, DSK-04-05 | Every ⚠ item in areas 04, 09, 10 mirrored here with trigger, exact target, Bicep location, approval text, rollback | Cross-check grep of `⚠` across `docs/desktop/` | 1 | pegasus-azure-auditor, pegasus-release-packager · — · Kanmer |
-| DSK-11-04 | Cost baseline and forecast | chore | DSK-11-01 | Current monthly cost by resource; projected delta for each D-002/D-003 option; budget impact | `azure-cost` skill output; Azure MCP `pricing` | 9 | pegasus-azure-auditor · azure-cost · Azure MCP (read) |
+| DSK-11-04 | Cost baseline and forecast | chore | DSK-11-01 | Current monthly cost by resource; projected delta of the conversion — now **nil for distribution** (D-002 self-managed certificate, D-003 UNC share), so the only movement is gateway compute and any telemetry decision | `azure-cost` read-only; note in `docs/operations.md` | 9 | `pegasus-azure-auditor` · `azure-cost` · Azure MCP (read) |
 | DSK-11-05 | Resource-health and advisor read of the estate | chore | DSK-11-01 | Health, advisor recommendations and compliance findings recorded; none acted on without a ticket | Azure MCP `resourcehealth`, `advisor`; `azure-compliance` (azqr) read-only | 9 | pegasus-azure-auditor · azure-compliance, azure-diagnostics · Azure MCP (read) |
 | DSK-11-06 | Feature-flag enablement write for `Features:DesktopGateway` (⚠) | chore | DSK-03-01, approval | Setting applied through Bicep + `azd provision` by the release route; operations.md refreshed in the same task | Smoke: `/api/v1/client-compatibility` answers; Razor Pages unaffected | 12 | pegasus-release-packager · pegasus-release, azure-validate (what-if) · Kanmer |
 | DSK-11-07 | Register refresh rule per release | chore | DSK-11-01 | `pegasus-release` and desktop runbooks include "refresh register and dependency records"; first refresh done | Review of skill/runbook diff | 1 | pegasus-release-packager · pegasus-release · Kanmer |
@@ -159,7 +162,7 @@ approval.
 | Azure SQL `pegasus` | Retain | Retain | Shared source of truth for concurrent users | New tables (OpenIddict client row exists; minimum-version setting table) via migrations with runtime-role grants | No (migrations are release-owned, not resource writes) |
 | Container App `pegasus-prod-web-*` (gateway + web) | Retain | Retain, simplified | Authentication, authorization, central writes, integration broker | Hosts `/api/v1` and the token flow; web UI retired from the image after cutover; Playwright base image removable after local rendering parity | ⚠ app setting `Features:DesktopGateway` (once); ⚠ image/cpu changes at cutover |
 | Functions Worker `pegasus-prod-worker-*` + FC1 plan | Retain | Retain | Must run with all desktops closed (Graph intake, queues, sweeps) | None | No |
-| Key Vault `pegasusprodkv252ow37g` | Retain | Retain | Server-held provider credentials | Unchanged unless D-002 chooses an OV certificate | ⚠ certificate import (D-002 option D only) |
+| Key Vault `pegasusprodkv252ow37g` | Retain | Retain | Server-held provider credentials | **Unchanged** — D-002 chose a self-managed certificate kept outside Azure; the vault still holds secrets only, no certificates | **None** |
 | Storage `pegtrans*` (queues, app-package) | Retain | Retain | Worker transport and deployment package | None | No |
 | Storage `pegcustody*` (transient-intake, authentication-ring, box-links) | Retain | Retain | Transient custody, Data Protection keys, Box links | None unless D-003 option A chooses a container here | ⚠ container + public access (D-003 A only) |
 | Update-feed storage (does not exist, and will not) | — | Not applicable | Mandatory package distribution | **D-003 decided 2026-08-23: an in-house UNC file share.** No Azure resource hosts the feed | **None** — the conditional feed write is withdrawn |
@@ -181,8 +184,8 @@ approval.
 | Minimum client version setting | Only if config-backed (not recommended) | same | same | same | same |
 | ~~Update-feed container with anonymous read + RBAC for publisher~~ | **Withdrawn 2026-08-23** — D-003 chose an in-house UNC share, so no Azure resource, container, public-access setting or publisher RBAC is required for distribution | — | — | — |
 | New storage account + container + RBAC | D-003 option B | new account in `rg-pegasus-prod` | new module/section in `platform.bicep` | D-003 + approval | Delete account |
-| Artifact Signing account, identity validation, certificate profile, CI federated credential/app registration, `Trusted Signing Certificate Profile Signer` role | D-002 option A or B | new resources in `rg-pegasus-prod` (or a dedicated RG) | new module | D-002 + approval | Delete resources and role |
-| Key Vault certificate import + RBAC for signer | D-002 option D | `pegasusprodkv252ow37g` | `:85` | D-002 + approval | Remove certificate and role |
+| ~~Artifact Signing account, identity validation, certificate profile, CI credential, signer role~~ | **Withdrawn 2026-08-23** — D-002 chose a self-managed certificate held in-house | — | — | — |
+| ~~Key Vault certificate import + RBAC for signer~~ | **Withdrawn 2026-08-23** — D-002 chose a self-managed certificate; the vault keeps holding secrets only | — | — | — |
 | Log Analytics daily cap change | PLAT-036 after measurement (DSK-11-09) | `pegasus-prod-logs-<suffix>` | `:46` | Approval | Restore cap |
 | Additional alert rule (blocked-client spike) | Area 10 decision | new `Microsoft.Insights` rule | after `:689` | Approval | Delete rule |
 | Container App image/cpu changes at cutover (web UI and renderer removal) | Phase 10 | `pegasus-prod-web-252ow37gij` | `:354-478` | Approval after cutover | Redeploy previous image/resources |

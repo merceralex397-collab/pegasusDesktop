@@ -1,11 +1,10 @@
 # 09 · Signing and hosting decision matrix (D-002, D-003)
 
-**D-002 (signing) is open; D-003 (feed hosting) was decided on 2026-08-23 —
-a UNC file share.** This page gives the operator the options with their
-consequences, the read-only checks an agent may run now, the ⚠ Azure writes
-each option would need (none executed without exact-target approval), and a
-recommendation. The D-003 tables are kept as the record of what was
-considered and why the choice was made. The plans in this folder are written so
+**Both decisions are settled (2026-08-23): D-002 = option C, a self-managed
+certificate; D-003 = option C, a UNC file share.** Together they mean the
+desktop distribution path uses **no Azure resource and has no recurring
+cost**. The option tables below are kept as the record of what was
+considered and why each choice was made — they are history, not a menu. The plans in this folder are written so
 that either decision can be taken without rewriting them: the
 `.appinstaller` template, validator, runbooks and CI lanes are the same; only
 the signing step and the upload target differ.
@@ -20,7 +19,68 @@ Sources (fetched 2026-08-23):
 [Installing Windows apps from a web page](https://learn.microsoft.com/windows/msix/app-installer/installing-windows10-apps-web),
 [MSIX troubleshooting guide](https://learn.microsoft.com/windows/msix/msix-troubleshooting-guide).
 
-## D-002 · Production code signing
+## D-002 · Production code signing — DECIDED 2026-08-23: option C (self-managed certificate)
+
+**Decision.** Pegasus signs its own packages with a **self-managed
+certificate** held in-house. The public certificate (`.cer`) is trusted once
+per workstation in `LocalMachine\TrustedPeople`; the private key (`.pfx`)
+never leaves the signing host. No certificate authority, no Azure resource,
+no subscription.
+
+**Why it fits here.** The estate is ten known Windows 11 machines on one
+network, the feed is the private UNC share decided in D-003, and nothing is
+distributed publicly — so the advantages the paid routes buy (a publicly
+trusted chain, SmartScreen reputation, managed renewal) have no one to serve.
+Microsoft's own guidance describes exactly this case: *"If you are deploying
+an app to employees within an enterprise, you can use an enterprise issued
+certificate to sign the app… the enterprise certificate must be deployed to
+any devices which the app will be installed on"*
+([Installing Windows apps from a web page](https://learn.microsoft.com/windows/msix/app-installer/installing-windows10-apps-web),
+fetched 2026-08-23). Recorded honestly: the same documentation set also says
+self-signed certificates *"should only be used for testing"* and prefers a
+publicly trusted method for **broad** distribution
+([Sign your MSIX package](https://learn.microsoft.com/windows/msix/package/sign-msix-package-guide));
+that recommendation targets public distribution, which Pegasus does not do.
+The trade-off accepted is operational: a trust rollout on each machine and a
+renewal that must be rehearsed rather than discovered.
+
+**Chosen shape** (implemented by DSK-09-08, which stops being a spike):
+
+- **One certificate, self-signed, no private CA.** The signing certificate is
+  imported into `Cert:\LocalMachine\TrustedPeople` on each workstation —
+  **not** into `Trusted Root Certification Authorities`, which the MSIX
+  troubleshooting guide explicitly warns against because it would let that key
+  vouch for anything the machine trusts
+  ([MSIX troubleshooting guide](https://learn.microsoft.com/windows/msix/msix-troubleshooting-guide),
+  fetched 2026-08-23). A private two-tier PKI was considered — it would make
+  leaf renewal invisible to workstations — and rejected: it requires the root
+  in `Trusted Root`, which is a far broader grant than ten machines need.
+- **Only the public `.cer` reaches a workstation.** The `.pfx` stays on the
+  signing host with an ACL limited to the publisher account. It is **not**
+  stored as a GitHub secret: with the repositories going private (constraint
+  C-01) the natural signing host is the same always-on machine that serves
+  the share and hosts the self-hosted CI runner, so the key never leaves the
+  estate.
+- **Subject must equal the manifest `Publisher` exactly** — same fields, same
+  order, same spacing and case — or signing fails with `0x8007000B`
+  (AppxPackagingOM Event ID 150). The subject is therefore fixed once, before
+  the first package is built, and never changed (area 02 uses it as the
+  stable placeholder CN).
+- **Timestamping is mandatory** (`--timestamp` / `signtool /tr`) so packages
+  already installed keep validating after the certificate expires.
+- **Validity ≈ 3 years**, long enough that renewal is rare and short enough
+  that a compromised key is not a decade-long liability; there is no
+  revocation infrastructure in a private-trust estate, so the recovery path
+  is re-issue, push the new trust, and remove the old `.cer`.
+- **Expected failure if trust is missing**: `0x800B0109`
+  (`CERT_E_UNTRUSTEDROOT`). **Ordering rule, from Microsoft's deployment
+  guidance**: *"Certificate trust must reach devices before the app is
+  installed"* — so R5 and R7 push trust first and publish second, always.
+- **Rollout mechanism**: a scripted `Import-Certificate` step per machine
+  (elevated, once), or Group Policy → Computer Configuration → Windows
+  Settings → Security Settings → Public Key Policies → **Trusted People** if
+  the estate is domain-joined. DSK-09-08 records which applies.
+- **Sideloading needs no Developer Mode**: it is on by default on Windows 11.
 
 Repository facts: no certificate, signing tool or signing step exists
 today; Key Vault `pegasusprodkv252ow37g` holds secrets only
@@ -42,7 +102,8 @@ operations run from an authorised Windows terminal.
 | Runbook deltas | R5 = rotate CI credential; sign step uses dlib/action | R5 also re-pushes the root when the chain changes | R5 = full re-trust rollout; R7 adds the trust step | R5 = CA renewal + Key Vault import |
 | Proposal fit | §17.1 "code-signing certificate protection and renewal runbook", §9.1 signed package — strongest | Strong, but adds the trust rollout of C without C's zero-Azure property | Meets §9.1 with no Azure change; weakest renewal story | Meets §9.1; minor Azure write |
 
-Recommendation (status stays **Open** until the operator decides): **A**
+Recommendation as written before the decision (kept for the record; the
+operator chose **C**): **A**
 if the organisation passes the Public Trust identity validation — it is
 Microsoft's recommended route for non-Store distribution, has no per-machine
 trust step, and its cost is negligible; the ⚠ Azure writes are small and
@@ -64,9 +125,11 @@ cost. A remains the lowest-maintenance option if the organisation passes
 identity validation. The operator has not decided; both readings are
 recorded here so the choice is made on current facts.
 
-Spikes that settle the choice: DSK-09-07 (A/B eligibility dry run, no
-resource created), DSK-09-08 (C trust rollout on two test machines),
-DSK-09-09 (D procurement and Key Vault signing dry run).
+Disposition of the spikes that would have settled the choice: DSK-09-07
+(Artifact Signing eligibility) and DSK-09-09 (OV procurement) are
+**withdrawn**; DSK-09-08 becomes the implementation ticket for the chosen
+route (issue the certificate, trust rollout on two test machines, then the
+estate).
 
 Read-only checks an agent may run now (no approval needed):
 
@@ -206,18 +269,25 @@ Approval text template for the ⚠ writes:
 
 ## How the decisions interact
 
-- D-003 is settled as the UNC share, so the remaining question is only how
-  packages are signed before they are copied there.
-- A self-managed certificate (D-002 C) on the decided share is the
-  combination with **no Azure write at all** and no recurring cost; its
-  price is the trust rollout and the renewal discipline (R5, R7).
-- Artifact Signing (D-002 A) on the decided share keeps the signing
-  lifecycle managed by Azure while the feed stays in-house; the ⚠ writes are
-  confined to the signing account and its CI credential — nothing about the
-  feed.
-- The always-on host that serves the share is also the natural home for a
-  self-hosted CI runner and, if D-002 lands on C, for the signing
-  certificate — one machine, one set of ACLs, no cloud dependency (see
-  constraint C-01 in the plan index).
+Both decisions are now made, and they compose into one shape:
+
+- **Sign in-house (D-002 C) → copy to the in-house UNC share (D-003 C) →
+  App Installer fetches over SMB.** The distribution path contains **no
+  Azure resource, no third-party service and no recurring cost**, and no
+  package is ever exposed to the internet.
+- **One machine carries it all**: the always-on host serves the share, runs
+  the self-hosted CI runner that constraint C-01 makes attractive, and
+  custodies the signing `.pfx`. That concentration is the design's main
+  operational risk — it is a single point of failure for publishing (not for
+  running: installed clients keep working) and a single high-value target.
+  Mitigations belong in R9 and the security plan: restrictive ACLs, backup
+  of the share and the certificate, and a documented rebuild path.
+- **The two burdens the paid routes would have absorbed are now ours**: the
+  per-machine trust rollout (R7) and the renewal, which must be rehearsed
+  before go-live rather than met for the first time under pressure (R5,
+  ticket DSK-09-14).
+- **What is unchanged by either decision**: the gateway minimum-version gate,
+  the `.appinstaller` template and validator, the versioning scheme, and
+  runbooks R1–R4, R6, R8, R10.
 - Whatever the choice, the gateway minimum-version gate, the `.appinstaller`
   template, the validator, and runbooks R1–R10 do not change.

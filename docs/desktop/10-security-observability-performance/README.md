@@ -113,7 +113,7 @@ Official documentation and tooling (fetched 2026-08-23):
 | ADR-0102 existing credentials with a token session; ADR-0103 gateway not DB | 00, 04 | Access token in memory, refresh token DPAPI-protected; no DB or provider secret in the package |
 | ADR-0105 MSIX/App Installer + minimum-version gate | 04, 09 | Signed package and trusted manifest are the tamper controls; tests here |
 | L-02 Test/UAT is a local stack | index, 08 | Security and performance tests that need "production-like" run on the local stack plus the production pilot ring |
-| D-002 signing route | 09 | Certificate protection and renewal runbook depend on the route chosen; the control is listed, the mechanism is 09's |
+| D-002 signing route (decided: self-managed certificate) | 09 | The private key is now a first-class asset of this plan: it lives on the signing host under a restricted ACL, never in a GitHub secret, and its loss or compromise is an incident with a defined path (R5 compromise variant). Certificate protection and renewal are ours to run; the control is listed, the mechanism is 09's |
 
 Deviations and Azure notes:
 

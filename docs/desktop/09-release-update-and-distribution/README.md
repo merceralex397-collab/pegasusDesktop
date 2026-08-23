@@ -154,7 +154,8 @@ Official documentation (all fetched 2026-08-23):
 ### Assumptions
 
 - Package identity `CollisionEngineers.Pegasus`, one identity for both
-  channels; the Publisher string is fixed by the signing decision (D-002).
+  channels; the Publisher string is the subject of the self-managed
+  certificate (D-002) and is fixed before the first package is built.
 - The feed is reachable from every workstation over HTTPS (or UNC) without
   authentication; confidentiality comes from signed packages, unguessable
   paths, and the gateway's minimum-version gate, not from the feed.
@@ -209,8 +210,14 @@ made here:
   install/update/rollback before the pilot).
 - **Signing** happens only in a protected CI job (tag-triggered) or on the
   authorised release terminal; never on a PR build. Timestamping is
-  mandatory. The signing route itself is **D-002 (open)** — the
-  [matrix](signing-and-hosting-decision-matrix.md) carries all options.
+  mandatory. The signing route is **decided (D-002, 2026-08-23): a
+  self-managed certificate**, self-signed, held in-house, trusted per
+  workstation in `LocalMachine\TrustedPeople` (never `Trusted Root`), with
+  the subject fixed to the manifest `Publisher` and a ~3-year validity. The
+  `.pfx` never leaves the signing host and is not a GitHub secret. Trust
+  always reaches a machine **before** a package signed with that certificate
+  does. The [matrix](signing-and-hosting-decision-matrix.md) records the
+  chosen shape and the rejected options.
 - **Feed hosting** is **decided (D-003, 2026-08-23): a UNC file share** on
   an always-on in-house Windows host, one folder per channel, served to App
   Installer over SMB. It follows from constraint C-01 (the repositories
@@ -238,9 +245,10 @@ made here:
   `Dependencies` element; package size is measured, ReadyToRun only after
   measurement.
 - ⚠ Azure writes in this area are all conditional: feed container or
-  account — **no longer applicable, D-003 chose the UNC share**; signing
-  account/identity/RBAC or Key Vault certificate (D-002, still open). They
-  are mirrored
+  account — **withdrawn, D-003 chose the UNC share**; signing
+  account/identity/RBAC or Key Vault certificate — **withdrawn, D-002 chose a
+  self-managed certificate**. **This area now requires no Azure write at
+  all.** The withdrawals are mirrored
   in [area 11](../11-azure-disposition/README.md).
 
 ## 4. Target state and exit gate
@@ -277,9 +285,9 @@ Exit gate (release side of §24 Phases 2, 9 and 10 and §27 items 4, 13):
 | DSK-09-04 | `scripts/Build-DesktopRelease.ps1` (terminal route) | feature | DSK-09-02, DSK-09-03 | Clean-HEAD, locked restore, x64 Release build, `winapp package`, manifest, SBOM, hashes; no signing unless `-Sign` with a route parameter | Run on release terminal; artifacts hashed; re-run reproduces hashes for deterministic parts | 1 | pegasus-release-packager · winui-packaging, pegasus-release · — |
 | DSK-09-05 | CI desktop lanes: build, dev-cert package, packaging tests, artifact upload | feature | DSK-02-12, DSK-08-10 | `windows-latest` job green on PRs; unsigned-for-prod artifact attached; Linux Web/Worker jobs unaffected | `ci.yml` run; artifact present; existing jobs green | 1 | pegasus-release-packager · authoring-github-workflows, winui-packaging · Microsoft Learn |
 | DSK-09-06 | Development certificate pipeline (`winapp cert generate`, trust on Test/UAT machines) | chore | DSK-02-10 | Dev-signed MSIX installs on a clean Windows 11 test machine after `winapp cert install` | Install/uninstall smoke on the Test/UAT stack | 7 | pegasus-release-packager · winui-packaging · — |
-| DSK-09-07 | D-002 spike A: Azure Artifact Signing eligibility and dry run | spike | — | Eligibility (org, tax history, region) confirmed or refuted; Public vs Private Trust choice argued; Azure writes listed ⚠ (not executed) | Written spike result in the ticket; no resource created | 1 | pegasus-release-packager, pegasus-azure-auditor · azure-resource-lookup · Microsoft Learn, Azure MCP (read) |
-| DSK-09-08 | D-002 spike B: self-managed certificate and trust rollout test | spike | DSK-09-06 | Cert issued from a controlled key; trust installed on two test machines by script; renewal and revocation rehearsal written up | Test/UAT stack install from a self-managed-signed package | 7 | pegasus-release-packager · winui-packaging · Microsoft Learn |
-| DSK-09-09 | D-002 spike C: OV certificate procurement and Key Vault signing dry run | spike | — | CA options, cost, lead time; AzureSignTool flow documented; ⚠ Key Vault certificate import listed as the write | Written spike result; no write executed | 1 | pegasus-release-packager, pegasus-azure-auditor · azure-resource-lookup · Microsoft Learn, Azure MCP (read) |
+| ~~DSK-09-07~~ | ~~D-002 spike A: Azure Artifact Signing eligibility and dry run~~ — **withdrawn 2026-08-23**, D-002 chose the self-managed certificate | — | — | — | — | — | — |
+| DSK-09-08 | Issue the production self-managed certificate (subject = manifest `Publisher`, ~3 years, key on the signing host with a restricted ACL), export the `.cer`, prove the trust rollout on two machines, then roll it to the estate; record whether the mechanism is a scripted `Import-Certificate` or Group Policy Trusted People | feature | DSK-09-06 | Cert issued from a controlled key; trust installed on two test machines by script; renewal and revocation rehearsal written up | Test/UAT stack install from a self-managed-signed package | 7 | pegasus-release-packager · winui-packaging · Microsoft Learn |
+| ~~DSK-09-09~~ | ~~D-002 spike C: OV certificate procurement and Key Vault signing dry run~~ — **withdrawn 2026-08-23** | — | — | — | — | — | — |
 | DSK-09-10 | Stand up the decided UNC feed (D-003): stable path (DFS/CNAME), per-channel folders, ACLs, backup, publisher account, and the `UpdateUris` fallback check | feature | DSK-09-03 | Read-only checks done (`allowBlobPublicAccess`, RBAC, costs); MIME/Range/Content-Length verification procedure written; ⚠ writes enumerated with approval text | Spike result; local feed on the Test/UAT stack proves the client side | 1 | pegasus-azure-auditor, pegasus-release-packager · azure-storage, azure-resource-lookup · Azure MCP (read), Microsoft Learn |
 | DSK-09-11 | Pilot-ring release runbook R1 and first pilot release | feature | DSK-09-04, DSK-09-05, D-002, D-003 | R1 executed once end to end with evidence; pilot users updated from the pilot feed | Evidence in ticket proof; `docs/operations.md` desktop release row | 12 | pegasus-release-packager · pegasus-release, winui-packaging · Kanmer |
 | DSK-09-12 | Mandatory-update runbook R3 and test | feature | DSK-04-06, DSK-09-11 | Raising the minimum version blocks an old client with the update-required screen; new client proceeds | Test/UAT stack + pilot evidence | 7 | pegasus-release-packager, pegasus-test-engineer · winui-ui-testing · — |

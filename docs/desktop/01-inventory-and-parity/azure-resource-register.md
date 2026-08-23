@@ -75,7 +75,7 @@ proposal §19.1 "do not add by default" list applies:
 | Deployment slots / S1 / multi-region / private networking | `docs/operations.md:910-918` "Not planned" |
 | Any dev/test/UAT/staging Azure environment | ADR-0014; L-02 keeps Test/UAT local |
 | Document Intelligence / OCR service | Absent (`.azure/deployment-plan.md:69`) |
-| Key Vault certificates, signing service, App Installer feed | None exist; D-002/D-003 decide |
+| Key Vault certificates, signing service, App Installer feed | None exist, and none will: D-002 chose a self-managed certificate and D-003 an in-house UNC share (both 2026-08-23) |
 
 ## Read-only verification procedure (DSK-01-08)
 
