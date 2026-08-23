@@ -1,0 +1,62 @@
+areas:
+  - id: pr-review
+    name: PR Review
+    color: "#b48cff"
+    prefix: PR
+idPrefixes:
+  ticket: TICK
+  plan: PLAN
+  research: RES
+profiles:
+  feature:
+    leave-backlog:
+      - governing-doc
+    leave-preparing:
+      - research
+      - files
+      - plan
+      - checklist
+      - questions-resolved
+    enter-review:
+      - post-implementation-report
+      - questions-resolved
+    enter-done:
+      - proof
+      - questions-resolved
+  fix:
+    leave-preparing:
+      - files
+      - plan
+      - questions-resolved
+    enter-review:
+      - post-implementation-report
+      - questions-resolved
+    enter-done:
+      - proof
+      - questions-resolved
+  chore:
+    leave-preparing:
+      - plan
+      - questions-resolved
+    enter-done:
+      - proof
+      - questions-resolved
+  spike:
+    enter-done:
+      - research
+      - questions-resolved
+  custom: {}
+defaultProfile: fix
+groupKinds:
+  - id: epic
+    name: Epic
+    prefix: EPIC
+    color: "#b48cff"
+  - id: horizon
+    name: Horizon
+    prefix: HZN
+    color: "#5bd1c9"
+proofTypes:
+  - visual
+  - test-output
+  - command-log
