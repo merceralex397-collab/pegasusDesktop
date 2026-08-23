@@ -274,20 +274,42 @@ Purpose: publish files so App Installer accepts them.
 
 Steps:
 
-1. Upload with content types: `.msix` → `application/msix`,
-   `.appinstaller` → `application/appinstaller`, manifest/SBOM → `application/json`.
-2. Cache control: short max-age (for example 60 s) on `.appinstaller`;
-   long on `.msix` (immutable names include the version).
-3. Keep at least the previous package per channel; never overwrite a
-   published `.msix` (new version → new file name).
-4. Verify: `curl -I <feed>/<channel>/Pegasus.appinstaller` shows the type and
-   `Content-Length`; `curl -r 0-1023 -o NUL -w "%{http_code}"
-   <feed>/<channel>/Pegasus_<ver>_x64.msix` returns `206`.
-5. If the host is Azure Blob (D-003 Azure options): uploads use the
-   publisher identity with `Storage Blob Data Contributor` on the container
-   only; anonymous read on that container only; no shared keys (the existing
-   accounts have shared-key access disabled). Any change to the account or
-   container is ⚠ an Azure write with exact-target approval.
+The feed is the **UNC share decided in D-003** (2026-08-23):
+`\\<host>\<share>\<channel>` with `<channel>` = `prod` or `pilot`. SMB carries
+Windows authentication, so there is no anonymous endpoint and no MIME,
+`Content-Length` or byte-range configuration to get right.
+
+Steps:
+
+1. Copy the new package **first** and the `.appinstaller` **last** — a client
+   that reads the manifest mid-publish must never find a package that is not
+   there yet:
+   `robocopy <staging> \\<host>\<share>\<channel> Pegasus_<ver>_x64.msix /Z /R:2 /W:5`,
+   then `desktop-release-manifest.json`, then `Pegasus.appinstaller`.
+2. Keep at least the previous package per channel; never overwrite a
+   published `.msix` (a new version always means a new file name). Only
+   `Pegasus.appinstaller` is replaced in place, and its `Version` attribute
+   must increase every time.
+3. ACLs: staff group = read and execute; publisher account = modify; nobody
+   else writes. The signing certificate never lives on the share.
+4. Verify from a workstation that is **not** the publisher, signed in as an
+   ordinary staff user: the path resolves (`Test-Path`); the manifest shows
+   the expected `Version` and `Uri` (`Select-Xml -XPath /*`); the package
+   hash matches `desktop-release-manifest.json` (`Get-FileHash`); the staff
+   group has no write permission (`Get-Acl`).
+5. Confirm the `Uri` attribute inside the `.appinstaller` is byte-identical
+   to the path clients installed from. It is baked into every installed
+   client: changing the host name, share name or channel folder breaks
+   updates for every existing installation and forces a reinstall.
+6. Availability: the share is the single point of failure for updates (a UNC
+   fallback in `UpdateUris` is not documented as supported — see the decision
+   matrix). If the host is down, clients keep running and simply do not
+   update; the gateway minimum-version gate remains the safety line. Restore
+   from the host's backup or republish from the CI artifacts.
+7. Off-network clients do not check for updates until they are back on the
+   LAN or VPN. That is expected. Do not raise the gateway minimum version
+   while a pilot user is known to be away, or they are locked out of work
+   until they return.
 
 ## R10 · Diagnostics collection from a desktop
 

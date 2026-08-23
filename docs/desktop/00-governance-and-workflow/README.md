@@ -206,7 +206,8 @@ review rules already assume it — with four fork-specific additions:
    to commits. CI builds an unsigned MSIX on every PR and builds + signs on
    `main` tags only; publishing to the production feed stays a
    runbook-controlled step (same culture as the `pegasus-release` skill);
-   pilot-feed publishing may be automated once D-002/D-003 are decided.
+   pilot-feed publishing to the decided UNC share (D-003) may be automated
+   once D-002 settles how packages are signed.
 
 **D-001 (decided 2026-08-23) — release source of truth after Phase 2.**
 The operator chose **Option A**: when the first gateway change is needed in

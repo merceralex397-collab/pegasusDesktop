@@ -87,7 +87,7 @@ client secret), App Insights, ACR; Worker → SQL, transport storage (queues,
 
 - No Azure writes are needed for Phases 0–1; the first possible writes
   arrive with Phase 2 (desktop gateway flag/settings) and the first pilot
-  feed (D-002/D-003).
+  feed (D-002 only; D-003 chose an in-house UNC share and needs no Azure).
 - The desktop client will never call Azure directly — every dependency is
   reached through the gateway or the feed — so the register's "used by"
   column gains at most the feed host and the signing service.
@@ -162,12 +162,12 @@ approval.
 | Key Vault `pegasusprodkv252ow37g` | Retain | Retain | Server-held provider credentials | Unchanged unless D-002 chooses an OV certificate | ⚠ certificate import (D-002 option D only) |
 | Storage `pegtrans*` (queues, app-package) | Retain | Retain | Worker transport and deployment package | None | No |
 | Storage `pegcustody*` (transient-intake, authentication-ring, box-links) | Retain | Retain | Transient custody, Data Protection keys, Box links | None unless D-003 option A chooses a container here | ⚠ container + public access (D-003 A only) |
-| Update-feed storage (does not exist yet) | — | Retain or repurpose | Mandatory package distribution | Created only if D-003 chooses Azure | ⚠ container (A) or account (B) |
+| Update-feed storage (does not exist, and will not) | — | Not applicable | Mandatory package distribution | **D-003 decided 2026-08-23: an in-house UNC file share.** No Azure resource hosts the feed | **None** — the conditional feed write is withdrawn |
 | Log Analytics + App Insights | Retain | Reassess after stabilisation | Migration evidence; optional long-term desktop telemetry | Gateway adds client-version and blocked-client telemetry; cap may need raising | ⚠ daily cap change (PLAT-036) |
 | Alert rules (2) + action group | Retain | Retain through cutover | Operational signal | Possible third rule for blocked-client spikes | ⚠ Bicep alert addition (optional) |
 | ACR Basic | Retain | Retain | Web image store | None | No |
 | Container Apps environment | Retain | Retain | Hosts the gateway | None | No |
-| UAMIs + role assignments | Retain | Retain | Least privilege | A publisher identity for the feed may be added | ⚠ RBAC for feed publisher (D-003 A/B) |
+| UAMIs + role assignments | Retain | Retain | Least privilege | No feed publisher identity is needed (D-003 chose a UNC share); a signing identity may be added if D-002 chooses Azure Artifact Signing | ⚠ RBAC only under D-002 A/B/D |
 | Budget | Retain | Retain | Cost guard | Desktop-era costs reviewed in DSK-11-04 | No |
 | Front Door/CDN, SignalR, Service Bus, Redis, APIM, slots, test env | — | Does not exist — do not add (§19.1) | n/a | n/a | n/a |
 | Server-side report renderer (in the Web image) | Retain during parity | Candidate after native renderer passes (L-03) | Remove only after all report types match and no unattended use remains; would supersede ADR-0028 | Image shrink, cpu/memory reduction possible | ⚠ Container App resource change at that time |
@@ -179,7 +179,7 @@ approval.
 | --- | --- | --- | --- | --- | --- |
 | Enable `Features:DesktopGateway` (and any related non-secret settings) on the Web Container App | First production deployment of the gateway API (Phase 2) | `pegasus-prod-web-252ow37gij` env/app settings | `platform.bicep:354-478` (container app env block, by analogy with `:429`) | Exact-target approval; applied via `azd provision` by the `pegasus-release` route | Set the flag to `false` and re-provision |
 | Minimum client version setting | Only if config-backed (not recommended) | same | same | same | same |
-| Update-feed container with anonymous read + RBAC for publisher | D-003 option A | `pegcustody*` (or `pegtrans*`) container `desktop-releases` | storage section `:154-193` | D-003 decision + exact-target approval | Delete container and role assignment |
+| ~~Update-feed container with anonymous read + RBAC for publisher~~ | **Withdrawn 2026-08-23** — D-003 chose an in-house UNC share, so no Azure resource, container, public-access setting or publisher RBAC is required for distribution | — | — | — |
 | New storage account + container + RBAC | D-003 option B | new account in `rg-pegasus-prod` | new module/section in `platform.bicep` | D-003 + approval | Delete account |
 | Artifact Signing account, identity validation, certificate profile, CI federated credential/app registration, `Trusted Signing Certificate Profile Signer` role | D-002 option A or B | new resources in `rg-pegasus-prod` (or a dedicated RG) | new module | D-002 + approval | Delete resources and role |
 | Key Vault certificate import + RBAC for signer | D-002 option D | `pegasusprodkv252ow37g` | `:85` | D-002 + approval | Remove certificate and role |
@@ -370,13 +370,15 @@ anything else that appears in the register with "candidate"):
 
 - `docs/desktop/01-inventory-and-parity/azure-resource-register.md` is the
   living register; this README owns the disposition and the writes catalogue.
-- `docs/operations.md § Production environment` gains the feed host and
-  signing identity when D-002/D-003 are executed, and a "desktop releases"
-  table (area 09).
+- `docs/operations.md § Production environment` records the in-house UNC
+  feed host as a non-Azure dependency (D-003, decided), gains the signing
+  identity when D-002 is executed, and gains a "desktop releases" table
+  (area 09).
 - `docs/current-architecture.md` deployment boundary updated at the first
   production gateway enablement and again at cutover.
 - ADR-0101 (cloud split and justification test) and, later, an ADR
   superseding ADR-0028 when the renderer leaves the Web image.
 - `docs/capabilities.md`: `DSK` rows for the register and deprovision
   checklist; `docs/open-decisions.md § Azure ownership and retirement
-  targets` updated with D-002/D-003 and the post-cutover candidates.
+  targets` updated with D-002 and the post-cutover candidates (D-003 needs no
+  entry there — it adds no Azure resource).

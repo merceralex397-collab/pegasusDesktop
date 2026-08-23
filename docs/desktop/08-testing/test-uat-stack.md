@@ -29,7 +29,7 @@ no production data.
 | Intake artifacts | File system | `artifacts/local-development/default/intake` (ignored) | `FileSystemIntakeArtifactStore` |
 | Report rendering (gateway side, retained until parity) | In-process Playwright Chromium | Pinned Chromium installed by `Initialize-LocalDevelopment.ps1` | `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs` |
 | Report rendering (desktop side, L-03) | WebView2 runtime on the test machine | Evergreen runtime present on Windows 11 | area 07 |
-| Update feed | Local static host serving `.appinstaller` + `.msix` over HTTPS (or a UNC share) | Correct MIME types (`application/appinstaller`, `application/msix`), `Content-Length`, byte ranges; `.appinstaller` `Uri` equals the served URL | area 09 appinstaller template |
+| Update feed | A **file share or local folder share** — the same SMB mechanism as production (D-003), so the stack rehearses the real path rather than an HTTP substitute | Correct MIME types (`application/appinstaller`, `application/msix`), `Content-Length`, byte ranges; `.appinstaller` `Uri` equals the served URL | area 09 appinstaller template |
 | Desktop client | Installed MSIX from the local feed, dev-signed | Channel config baked for `teststack` (gateway base URL = local Kestrel, feed URL = local host) | area 02 channel configuration |
 | Seed data | Script-loaded fixtures | Generic UK-shaped casework from `reference/` and deliberately generic fixtures; never `corpus/` | repository data rules |
 

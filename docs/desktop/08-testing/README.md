@@ -167,9 +167,10 @@ Locked and open decisions this area depends on
 - **L-03** — reports render locally through WebView2; golden-file parity tests
   are therefore a desktop-side test concern (owned by 07, executed in the
   lanes defined here).
-- **D-002 / D-003** — signing and feed hosting are open; packaging tests are
-  written against a dev certificate and a local feed until decided, and the
-  production feed/signing variants are added when D-002/D-003 close.
+- **D-003 is decided** (UNC share), so the Test/UAT stack rehearses the real
+  transport: packaging tests run against a file share, not an HTTP
+  substitute. **D-002 (signing) is open**, so they run with a dev
+  certificate; the production signing variant is added when D-002 closes.
 
 Deviations from the proposal, stated explicitly:
 
@@ -260,6 +261,7 @@ Tier numbers are the `docs/engineering.md` evidence tiers. Routing is
 | DSK-08-16 | E2E business scenarios 1–14 as UAT scripts; map each to Test/UAT stack or pilot ring | feature | Test/UAT stack, slices | Each scenario has steps, expected results, evidence to capture, and the tier it proves | Dry run once on the stack | 12 | `pegasus-test-engineer` · `kanmer-verify` · Kanmer |
 | DSK-08-17 | Build the Test/UAT stack lifecycle (extend `scripts/Invoke-LocalDevelopment.ps1` with a `TestStack` mode) | feature | 02, 04, local feed | `Start`, `Status`, `Smoke`, `Reset`, `Stop` bring up gateway + Worker + Azurite + DB + feed; `Invoke-Doctor.ps1` reports prerequisites | Clean Windows 11 machine walkthrough recorded | 6, 12 | `pegasus-test-engineer` · `run-tests` · Microsoft Learn |
 | DSK-08-18 | Golden-file report parity lane (executes 07's fixtures on the stack; WebView2 vs gateway output) | feature | 07 renderer tickets | Text/values/layout fixtures compared; differences explained or fixed | Lane green | 8 | `pegasus-test-engineer` · `run-tests` · Kanmer |
+| DSK-08-19 | CI cost and runner plan for the private-repository era (C-01): measure current Windows-minute consumption, price the added desktop lanes, decide self-hosted runner vs paid plan vs lane trimming, and record it in `docs/engineering.md` | spike | DSK-08-13, DSK-08-14 | A written recommendation with measured minutes per PR run and per month, the chosen option, and the migration steps; if self-hosted, the host is the D-003 share host and its isolation/permissions are specified | Actions usage report for the last 30 days; a dry-run costing of the new lanes | 1 | `pegasus-release-packager` · `authoring-github-workflows` · Kanmer |
 
 ## 6. Routing table
 
@@ -280,6 +282,20 @@ Tier numbers are the `docs/engineering.md` evidence tiers. Routing is
 
 ## 7. Risks and traps
 
+- **CI minutes stop being free when the repositories go private (constraint
+  C-01).** GitHub Actions bills private-repository **Windows** runners at a
+  2× multiplier against a monthly included-minutes allowance, and this
+  repository already runs most of `ci.yml` on `windows-latest` — with the
+  desktop build, MSIX packaging, `winapp ui` and packaging lanes still to be
+  added on top. Verify the current allowance and per-minute rates for the
+  account's plan at decision time. Mitigations, in order of fit: a
+  **self-hosted Windows runner** on the same always-on host that serves the
+  D-003 UNC share (self-hosted minutes are not billed, the machine is
+  already required, and it is the natural custodian of the signing
+  certificate if D-002 lands on a self-managed cert); a paid plan; or
+  trimming Windows lanes (for example running contract and view-model tests
+  on the cheapest lane that can host them). Decide before the repositories
+  flip, not after — see DSK-08-19.
 - **UI automation flakiness on hosted runners.** Mitigation: AutomationId
   contract, `wait-for` instead of sleeps, two fix-and-rerun cycles maximum
   (from the skill), and the DSK-08-12 spike decides hosted vs self-hosted.

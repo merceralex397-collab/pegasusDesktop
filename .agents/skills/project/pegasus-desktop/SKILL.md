@@ -41,9 +41,12 @@ scale does not apply unless a Pegasus decision adopts it.
   deprovisioned before cutover, observed use, and rollback approval.
 - Decided: D-001 (2026-08-23) — the fork is the single release source for
   gateway and desktop from the first production gateway change; upstream is
-  merged in one final time, then frozen. Open: D-002 signing route; D-003
-  feed hosting. Do not pre-empt the open two; work with a dev certificate
-  and a local feed until they are recorded.
+  merged in one final time, then frozen. D-003 (2026-08-23) — the update
+  feed is an in-house UNC file share served over SMB (constraint C-01: the
+  repositories become private on completion, so no GitHub-hosted anonymous
+  feed can survive); no Azure resource hosts the feed, and update checks
+  need the office network or VPN. Open: D-002 signing route only — work
+  with a dev certificate until it is recorded.
 
 ## Dependency boundaries
 

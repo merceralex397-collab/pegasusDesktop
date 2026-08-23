@@ -46,7 +46,13 @@ They bind the plans until a recorded decision changes them.
 | L-05 | Kanmer board is seeded by the implementing agent from the ticket tables in these plans; the open upstream board is triaged in 01 | Locked | 00, 01 |
 | D-001 | Release source of truth after Phase 2 | Decided 2026-08-23: Option A — the fork becomes the single release source for gateway and desktop at the first production gateway change (upstream merged in, then frozen); record in ADR-0100 consequences and `docs/operations.md` at execution (DSK-00-10) | 00 |
 | D-002 | Production code-signing route: Azure Artifact Signing (Public or Private Trust), self-managed certificate, or purchased OV certificate | Open, matrix recorded; blocks the first pilot feed | 09 |
-| D-003 | Update-feed hosting: existing storage account container, new storage account, or a non-Azure host | Open, matrix recorded; blocks the first pilot feed | 09 |
+| D-003 | Update-feed hosting | **Decided 2026-08-23: UNC file share** on an always-on in-house Windows host, served to App Installer over SMB. Driven by constraint C-01 below; costs nothing and needs **no Azure write** | 09 |
+
+### Constraints recorded after planning began
+
+| ID | Constraint | Consequences |
+| --- | --- | --- |
+| C-01 (2026-08-23) | **The repositories become private once the conversion is complete.** They are public today only because GitHub gives free CI minutes to public repositories. | (a) The update feed must not depend on anonymous HTTPS from GitHub — GitHub Releases and GitHub Pages are ruled out permanently, which decided D-003 in favour of a UNC share (SMB carries Windows authentication, so a private feed works). (b) GitHub Actions minutes stop being free: private-repository Windows runners bill at a 2× multiplier against a monthly allowance, and this repository runs most jobs on `windows-latest` with desktop packaging and UI lanes still to be added — see [08 · CI cost](08-testing/README.md#7-risks-and-traps) and ticket DSK-08-19. |
 
 Azure rule throughout: reads are free; every write is marked ⚠ in the plans,
 is conditional on a decision above or on exact-target approval

@@ -115,7 +115,9 @@ Official documentation (all fetched 2026-08-23):
 - Manual `.appinstaller` authoring, including the `Uri` attribute and
   `Version` rules:
   <https://learn.microsoft.com/windows/msix/app-installer/how-to-create-appinstaller-file>.
-- Web delivery requirements — MIME types `application/msix`,
+- Web delivery requirements (apply to an **HTTP** host only; the decided
+  UNC share carries none of them, because SMB is not HTTP) — MIME types
+  `application/msix`,
   `application/msixbundle`, `application/appinstaller`; every response
   must carry `Content-Length`; byte-range support (HTTP/1.1):
   <https://learn.microsoft.com/windows/msix/msix-troubleshooting-guide> and
@@ -209,11 +211,19 @@ made here:
   authorised release terminal; never on a PR build. Timestamping is
   mandatory. The signing route itself is **D-002 (open)** — the
   [matrix](signing-and-hosting-decision-matrix.md) carries all options.
-- **Feed hosting** is **D-003 (open)**; all options must satisfy the same
-  MIME/Content-Length/range requirements; ⚠ the Azure options are writes
-  conditional on exact-target approval.
+- **Feed hosting** is **decided (D-003, 2026-08-23): a UNC file share** on
+  an always-on in-house Windows host, one folder per channel, served to App
+  Installer over SMB. It follows from constraint C-01 (the repositories
+  become private on completion, so no GitHub-hosted anonymous feed can
+  survive) and it needs **no Azure write and no recurring cost**. MIME,
+  `Content-Length` and byte-range requirements do not apply over SMB;
+  share ACLs and a permanently stable UNC path replace them. Accepted
+  trade-off: update checks work on the office network or VPN only — the
+  launch check fails open there, and the gateway minimum-version gate still
+  fails closed, so an obsolete client cannot work.
 - **Publication.** The pilot feed publish may be automated from CI once
-  D-002/D-003 are decided and approved; production feed publish stays a
+  D-002 is decided and approved (the feed itself is settled: D-003, the UNC
+  share); production feed publish stays a
   runbook-controlled terminal step with explicit operator approval
   (phrase proposed in [runbooks](runbooks.md)). This mirrors the existing
   `MERGE AUTH GRANTED` culture without extending that literal phrase's
@@ -228,8 +238,9 @@ made here:
   `Dependencies` element; package size is measured, ReadyToRun only after
   measurement.
 - ⚠ Azure writes in this area are all conditional: feed container or
-  account (D-003), signing account/identity/RBAC or Key Vault certificate
-  (D-002), CI publisher identity RBAC (D-003 + approval). They are mirrored
+  account — **no longer applicable, D-003 chose the UNC share**; signing
+  account/identity/RBAC or Key Vault certificate (D-002, still open). They
+  are mirrored
   in [area 11](../11-azure-disposition/README.md).
 
 ## 4. Target state and exit gate
@@ -269,7 +280,7 @@ Exit gate (release side of §24 Phases 2, 9 and 10 and §27 items 4, 13):
 | DSK-09-07 | D-002 spike A: Azure Artifact Signing eligibility and dry run | spike | — | Eligibility (org, tax history, region) confirmed or refuted; Public vs Private Trust choice argued; Azure writes listed ⚠ (not executed) | Written spike result in the ticket; no resource created | 1 | pegasus-release-packager, pegasus-azure-auditor · azure-resource-lookup · Microsoft Learn, Azure MCP (read) |
 | DSK-09-08 | D-002 spike B: self-managed certificate and trust rollout test | spike | DSK-09-06 | Cert issued from a controlled key; trust installed on two test machines by script; renewal and revocation rehearsal written up | Test/UAT stack install from a self-managed-signed package | 7 | pegasus-release-packager · winui-packaging · Microsoft Learn |
 | DSK-09-09 | D-002 spike C: OV certificate procurement and Key Vault signing dry run | spike | — | CA options, cost, lead time; AzureSignTool flow documented; ⚠ Key Vault certificate import listed as the write | Written spike result; no write executed | 1 | pegasus-release-packager, pegasus-azure-auditor · azure-resource-lookup · Microsoft Learn, Azure MCP (read) |
-| DSK-09-10 | D-003 spike: feed hosting options (blob container, new account, UNC/own host) | spike | DSK-09-03 | Read-only checks done (`allowBlobPublicAccess`, RBAC, costs); MIME/Range/Content-Length verification procedure written; ⚠ writes enumerated with approval text | Spike result; local feed on the Test/UAT stack proves the client side | 1 | pegasus-azure-auditor, pegasus-release-packager · azure-storage, azure-resource-lookup · Azure MCP (read), Microsoft Learn |
+| DSK-09-10 | Stand up the decided UNC feed (D-003): stable path (DFS/CNAME), per-channel folders, ACLs, backup, publisher account, and the `UpdateUris` fallback check | feature | DSK-09-03 | Read-only checks done (`allowBlobPublicAccess`, RBAC, costs); MIME/Range/Content-Length verification procedure written; ⚠ writes enumerated with approval text | Spike result; local feed on the Test/UAT stack proves the client side | 1 | pegasus-azure-auditor, pegasus-release-packager · azure-storage, azure-resource-lookup · Azure MCP (read), Microsoft Learn |
 | DSK-09-11 | Pilot-ring release runbook R1 and first pilot release | feature | DSK-09-04, DSK-09-05, D-002, D-003 | R1 executed once end to end with evidence; pilot users updated from the pilot feed | Evidence in ticket proof; `docs/operations.md` desktop release row | 12 | pegasus-release-packager · pegasus-release, winui-packaging · Kanmer |
 | DSK-09-12 | Mandatory-update runbook R3 and test | feature | DSK-04-06, DSK-09-11 | Raising the minimum version blocks an old client with the update-required screen; new client proceeds | Test/UAT stack + pilot evidence | 7 | pegasus-release-packager, pegasus-test-engineer · winui-ui-testing · — |
 | DSK-09-13 | Rollback runbook R4 and test | feature | DSK-09-11 | Previous package republished with higher `.appinstaller` version; client downgrades; minimum version lowered | Test/UAT stack rehearsal, pilot rehearsal | 7 | pegasus-release-packager · winui-packaging · — |

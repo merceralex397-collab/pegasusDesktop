@@ -128,7 +128,10 @@ Desktop side and platform (official docs, fetched 2026-08-23):
 
 Locked decisions binding here: L-01 (gateway in `Pegasus.Web`), L-03
 (WebView2 presence check at startup). Open decisions it touches: D-002 (trust
-step only for a self-managed certificate), D-003 (feed URL per channel).
+step only for a self-managed certificate); D-003 is decided — the feed is a
+UNC share, so the per-channel feed path baked into the package is
+`\\<host>\<share>\<channel>\Pegasus.appinstaller` and update checks require the
+office network or VPN.
 ADRs: **ADR-0102** (existing Pegasus credentials with a token session),
 **ADR-0105** (MSIX/App Installer + minimum-version gate), ADR-0103 (gateway,
 not direct DB) underpins everything.

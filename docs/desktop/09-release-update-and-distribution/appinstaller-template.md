@@ -114,11 +114,21 @@ validator live with the script (fixture files for each failure).
 | Requirement | Value | Why |
 | --- | --- | --- |
 | Transport | HTTPS (or UNC file share); no authentication | App Installer does not authenticate; TLS protects integrity in transit, the signature protects the package |
-| MIME `.msix` | `application/msix` | App Installer rejects or misroutes wrong types |
-| MIME `.appinstaller` | `application/appinstaller` | same |
-| MIME manifest/SBOM | `application/json` | tooling |
-| `Content-Length` | present on every `GET`/`HEAD` | required by App Installer |
-| Byte ranges | HTTP/1.1 range requests honoured (`206`) | App Installer streams packages |
+**Decided host (D-003, 2026-08-23): a UNC share.** Over SMB none of the
+HTTP requirements below apply; they are kept only in case a future decision
+moves the feed to an HTTP host. For the share the requirements are: a
+permanently stable UNC path (DFS namespace or CNAME'd host, never a machine
+name that may be replaced, never a mapped drive letter), read and execute
+for the staff group, write for the publisher only, and a `Uri` attribute
+byte-identical to the path clients installed from. The `Uri` values then
+read `\\<host>\<share>\<channel>\Pegasus.appinstaller` and
+`\\<host>\<share>\<channel>\Pegasus_<ver>_x64.msix`.
+
+| MIME `.msix` | `application/msix` | HTTP hosts only; App Installer rejects or misroutes wrong types |
+| MIME `.appinstaller` | `application/appinstaller` | HTTP hosts only |
+| MIME manifest/SBOM | `application/json` | HTTP hosts only; tooling |
+| `Content-Length` | present on every `GET`/`HEAD` | HTTP hosts only; required by App Installer |
+| Byte ranges | HTTP/1.1 range requests honoured (`206`) | HTTP hosts only; App Installer streams packages |
 | Cache-Control | short on `.appinstaller` (≈60 s); long on `.msix` | updates are detected promptly; packages are immutable per version |
 | Retention | current + previous package per channel, never overwrite | rollback (R4) |
 | Path stability | `<feed>/<channel>/Pegasus.appinstaller` never changes | the `Uri` is baked into every installation |

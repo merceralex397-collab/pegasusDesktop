@@ -1,9 +1,11 @@
 # 09 · Signing and hosting decision matrix (D-002, D-003)
 
-Both decisions are **open**. This page gives the operator the options with
-their consequences, the read-only checks an agent may run now, the ⚠ Azure
-writes each option would need (none executed without exact-target
-approval), and a recommendation. The plans in this folder are written so
+**D-002 (signing) is open; D-003 (feed hosting) was decided on 2026-08-23 —
+a UNC file share.** This page gives the operator the options with their
+consequences, the read-only checks an agent may run now, the ⚠ Azure writes
+each option would need (none executed without exact-target approval), and a
+recommendation. The D-003 tables are kept as the record of what was
+considered and why the choice was made. The plans in this folder are written so
 that either decision can be taken without rewriting them: the
 `.appinstaller` template, validator, runbooks and CI lanes are the same; only
 the signing step and the upload target differ.
@@ -50,6 +52,18 @@ zero Azure change and accepts the trust-rollout and renewal burden; **B**
 sits between B-for-speed and C-for-trust-burden and is rarely the best fit
 for ten workstations.
 
+**How D-003's outcome (UNC share) re-weights this decision.** The feed is
+now private and LAN-only, which removes two of A's and D's advantages:
+SmartScreen reputation is irrelevant when nothing is downloaded from the
+internet, and no anonymous endpoint exposes the packages. What remains is
+the trust-rollout and renewal burden, which is real but bounded at ten
+machines and one estate. **C (self-managed certificate) therefore becomes a
+defensible choice rather than a last resort**, and it is the only option
+that keeps the whole distribution path free of Azure writes and recurring
+cost. A remains the lowest-maintenance option if the organisation passes
+identity validation. The operator has not decided; both readings are
+recorded here so the choice is made on current facts.
+
 Spikes that settle the choice: DSK-09-07 (A/B eligibility dry run, no
 resource created), DSK-09-08 (C trust rollout on two test machines),
 DSK-09-09 (D procurement and Key Vault signing dry run).
@@ -72,14 +86,43 @@ Approval text template for the ⚠ writes (to be filled per option):
 > `infra/modules/platform.bicep` section `<name>`; rollback = delete the
 > resource/role; no other resource is touched.
 
-## D-003 · Update-feed hosting
+## D-003 · Update-feed hosting — DECIDED 2026-08-23: option C (UNC share)
 
-Repository facts: two storage accounts exist (`pegtrans<suffix>` for
-transport, `pegcustody<suffix>` for custody; Standard_LRS; shared-key access
-disabled; `infra/modules/platform.bicep:100` and `:154`); no CDN/Front Door,
-no Static Web App; the runbook forbids Azure writes without exact-target
-approval; App Installer needs unauthenticated HTTPS or UNC with byte ranges,
-correct MIME types and `Content-Length`.
+**Decision.** The update feed is a **UNC file share** on an always-on
+in-house Windows host: `\\<host>\<share>\<channel>\Pegasus.appinstaller`
+beside the `.msix` packages. App Installer fetches and updates over **SMB**,
+so the feed is reachable only from the office network or VPN and carries
+Windows authentication — no anonymous endpoint exists anywhere. **No Azure
+write, no recurring cost.**
+
+**What decided it (constraint C-01).** The repositories become **private**
+once the conversion is complete; they are public today only for free CI
+minutes. App Installer performs plain, unauthenticated GETs and cannot send
+an `Authorization` header, so every GitHub-hosted feed (Releases, Pages)
+would stop working the day the repository flips — and the feed is permanent
+infrastructure that every installed client re-reads on every launch. Any
+option whose viability depends on the repository staying public was
+therefore excluded, not merely ranked lower. The same constraint removed the
+appeal of the Azure options: their advantage over a share was
+internet-reachability for users away from the network, which the operator
+does not need.
+
+Supporting facts (fetched 2026-08-23):
+[App Installer file overview](https://learn.microsoft.com/windows/msix/app-installer/app-installer-file-overview)
+— "App Installer file downloads and updates support **https, http and smb**
+protocols"; [Troubleshoot installation issues](https://learn.microsoft.com/windows/msix/app-installer/troubleshoot-appinstaller-issues)
+— UNC/share hosting and configurable update checks since Windows 10 build
+17134 (1803), well below the Windows 11 baseline;
+[Create an App Installer file with Visual Studio](https://learn.microsoft.com/windows/msix/app-installer/create-appinstallerfile-vs)
+— for UNC publishing the package output folder and the installation URL are
+the same path. MIME types, `Content-Length` and HTTP byte ranges are
+HTTP-only concerns and do **not** apply over SMB.
+
+Repository facts (unchanged, kept for the record): two storage accounts
+exist (`pegtrans<suffix>` for transport, `pegcustody<suffix>` for custody;
+Standard_LRS; shared-key access disabled; `infra/modules/platform.bicep:100`
+and `:154`); no CDN/Front Door, no Static Web App; the runbook forbids Azure
+writes without exact-target approval.
 
 | Criterion | A · New container in an existing storage account | B · New dedicated storage account | C · Non-Azure host (UNC share or own HTTPS host) | D · Azure Static Web Apps / Front Door |
 | --- | --- | --- | --- | --- |
@@ -92,18 +135,49 @@ correct MIME types and `Content-Length`.
 | Rollback | Delete container/blobs; remove RBAC | Delete account | Remove files | n/a |
 | Proposal fit | §19 "Storage used for MSIX/update feed: retain or repurpose" — closest to "repurpose" | §19 allows it if justified; new resource | §4 test: no cloud requirement for a static feed if an in-house host exists | Fails §19.1 |
 
-Recommendation (status **Open**): **B** (new, dedicated storage account
-with one public-read container per channel) if any Azure write is
-acceptable — it keeps public-read content out of the custody/transport
-accounts and is a single small Bicep module; **A** if the operator prefers
-zero new resources and accepts a public-read container alongside private
-data (container-scoped access, no shared keys); **C** if the operator
-wants no Azure change at all and already runs a reachable server or share
-(VPN-only access is fine for ten users). **D** is not recommended.
+**E · GitHub Releases / GitHub Pages — evaluated and excluded.** A
+permanent release per channel (assets replaced on publish) gives stable
+anonymous URLs and costs nothing, and was the strongest zero-Azure option
+while the repository is public. It is excluded by C-01: private-repository
+release assets require an authenticated request that App Installer cannot
+make, and GitHub Pages on private repositories is an Enterprise feature.
+Recorded here so the option is not re-proposed.
 
-Spike that settles the choice: DSK-09-10 (read-only checks below, then a
-local feed on the Test/UAT stack to prove the client side; Azure writes only
-after approval).
+**Outcome: C (UNC share).** It is the only option that is free, works with
+private repositories, keeps the packages off the public internet, and
+requires no Azure resource. Accepted trade-off: update checks work only on
+the office network or VPN. That is safe by design — when the share is
+unreachable App Installer's launch check fails open, and the gateway's
+minimum-version gate (area 04) still fails closed, so an obsolete client
+cannot work; it simply cannot self-update until it is back on the network.
+
+Chosen shape (settled by DSK-09-10, now an implementation ticket rather than
+a decision spike):
+
+- **Stable path from day one.** The `.appinstaller` `Uri` is baked into every
+  installed client, so the share name must never change: use a DFS namespace
+  or a CNAME'd host (`\\pegasus-files\apps\...`), never a machine name that
+  may be replaced, and never a mapped drive letter (mapped drives are
+  per-session and are not guaranteed to exist in App Installer's context).
+- **Layout**: `\\<host>\<share>\prod\` and `\\<host>\<share>\pilot\`,
+  each holding `Pegasus.appinstaller`, the versioned
+  `Pegasus_<ver>_x64.msix` files (at least the previous one retained), and
+  `desktop-release-manifest.json`.
+- **ACLs**: read + execute for the staff group, write for the publisher
+  account only; the signing certificate never lives on the share.
+- **Publisher**: the release step copies files with `robocopy` from the
+  release terminal or a self-hosted runner on that host (see C-01's CI
+  consequence) — R9 carries the procedure.
+- **Caveat to verify in DSK-09-10**: the `UpdateUris` fallback element is
+  documented as *"Web URI as a string"*
+  ([s4:UpdateUri](https://learn.microsoft.com/uwp/schemas/appinstallerschema/element-s4-updateuri),
+  fetched 2026-08-23), so a second **UNC** path may not be accepted as a
+  fallback. If it is not, the feed has no fallback and share availability is
+  the single point of failure for updates — acceptable (updates are not
+  time-critical; the gateway gate holds the safety line), but it must be
+  stated in the runbook rather than assumed.
+- **Backup**: the share is backed up with the host; a lost share means
+  republishing from the CI artifacts, not a client migration.
 
 Read-only checks an agent may run now:
 
@@ -132,11 +206,18 @@ Approval text template for the ⚠ writes:
 
 ## How the decisions interact
 
-- A self-managed certificate (D-002 C) with a non-Azure host (D-003 C) is
-  the only combination with **no Azure write at all**; it costs the most
-  operational care (trust rollout, renewal, your own host).
-- Artifact Signing (D-002 A) with a dedicated storage account (D-003 B) is
-  the combination with the least operational care and the smallest, most
-  additive set of Azure writes.
+- D-003 is settled as the UNC share, so the remaining question is only how
+  packages are signed before they are copied there.
+- A self-managed certificate (D-002 C) on the decided share is the
+  combination with **no Azure write at all** and no recurring cost; its
+  price is the trust rollout and the renewal discipline (R5, R7).
+- Artifact Signing (D-002 A) on the decided share keeps the signing
+  lifecycle managed by Azure while the feed stays in-house; the ⚠ writes are
+  confined to the signing account and its CI credential — nothing about the
+  feed.
+- The always-on host that serves the share is also the natural home for a
+  self-hosted CI runner and, if D-002 lands on C, for the signing
+  certificate — one machine, one set of ACLs, no cloud dependency (see
+  constraint C-01 in the plan index).
 - Whatever the choice, the gateway minimum-version gate, the `.appinstaller`
   template, the validator, and runbooks R1–R10 do not change.
