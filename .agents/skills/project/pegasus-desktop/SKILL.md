@@ -39,9 +39,11 @@ scale does not apply unless a Pegasus decision adopts it.
 - Azure: reads are free; every write is ⚠, conditional on exact-target
   approval or on D-002 (signing) / D-003 (feed hosting); nothing is
   deprovisioned before cutover, observed use, and rollback approval.
-- Open: D-001 release source of truth after Phase 2; D-002 signing route;
-  D-003 feed hosting. Do not pre-empt them; work with a dev certificate and a
-  local feed until they are recorded.
+- Decided: D-001 (2026-08-23) — the fork is the single release source for
+  gateway and desktop from the first production gateway change; upstream is
+  merged in one final time, then frozen. Open: D-002 signing route; D-003
+  feed hosting. Do not pre-empt the open two; work with a dev certificate
+  and a local feed until they are recorded.
 
 ## Dependency boundaries
 

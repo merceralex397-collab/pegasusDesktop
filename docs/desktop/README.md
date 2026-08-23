@@ -44,7 +44,7 @@ They bind the plans until a recorded decision changes them.
 | L-03 | Report rendering moves to the desktop through an isolated, non-UI WebView2 HTML→PDF path; the gateway renderer is retained only until golden-file parity passes; needs ADR-0108 (reserved desktop ADR block ADR-0100…0110, see 00) | Locked | 07 |
 | L-04 | Specialist Codex subagents exist as `.codex/agents/*.toml`; every ticket names its subagent, skills, and MCP tools | Locked | 12 |
 | L-05 | Kanmer board is seeded by the implementing agent from the ticket tables in these plans; the open upstream board is triaged in 01 | Locked | 00, 01 |
-| D-001 | Release source of truth after Phase 2 (fork becomes the single source vs. merge back upstream) | Open, recommendation recorded | 00 |
+| D-001 | Release source of truth after Phase 2 | Decided 2026-08-23: Option A — the fork becomes the single release source for gateway and desktop at the first production gateway change (upstream merged in, then frozen); record in ADR-0100 consequences and `docs/operations.md` at execution (DSK-00-10) | 00 |
 | D-002 | Production code-signing route: Azure Artifact Signing (Public or Private Trust), self-managed certificate, or purchased OV certificate | Open, matrix recorded; blocks the first pilot feed | 09 |
 | D-003 | Update-feed hosting: existing storage account container, new storage account, or a non-Azure host | Open, matrix recorded; blocks the first pilot feed | 09 |
 

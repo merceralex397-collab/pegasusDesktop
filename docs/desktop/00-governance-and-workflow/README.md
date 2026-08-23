@@ -110,9 +110,10 @@ Official documentation (fetched 2026-08-23):
 
 ### Assumptions
 
-- A-00-1: the fork is the conversion line and becomes the release source of
-  truth once a gateway change is needed in production (open decision D-001,
-  recommendation below). Until then upstream keeps releasing the web app.
+- A-00-1 (resolved 2026-08-23, now a decision): D-001 was decided as
+  Option A — the fork is the conversion line and becomes the single release
+  source once a gateway change is needed in production (see D-001 below).
+  Until that point upstream keeps releasing the web app.
 - A-00-2: the operator accepts a reserved ADR number block for the
   conversion (section 3). If refused, the implementing agent uses "next free
   number" after the first upstream sync and updates every cross-reference in
@@ -208,15 +209,19 @@ review rules already assume it — with four fork-specific additions:
    runbook-controlled step (same culture as the `pegasus-release` skill);
    pilot-feed publishing may be automated once D-002/D-003 are decided.
 
-**D-001 (open) — release source of truth after Phase 2.** The first gateway
-change needed in production (compatibility endpoint and staff token flow,
-[04](../04-auth-session-update-and-startup/README.md)) must be deployed from
-one repository. Recommendation: the fork becomes the single release source
-for gateway and desktop at that point (upstream merged in, then frozen),
-consistent with proposal §6.3 "no permanent second Pegasus repository".
-Alternative: merge fork gateway changes back upstream per release (double
-CI/review cost, two `docs/operations.md`). Record the answer in ADR-0100's
-consequences and in `docs/operations.md`.
+**D-001 (decided 2026-08-23) — release source of truth after Phase 2.**
+The operator chose **Option A**: when the first gateway change is needed in
+production (compatibility endpoint and staff token flow,
+[04](../04-auth-session-update-and-startup/README.md)), the fork becomes the
+**single release source for gateway, worker and desktop** — upstream
+`collisionengineers/pegasus` is merged in one final time and then frozen
+(read-only/archived), consistent with proposal §6.3 "no permanent second
+Pegasus repository". The alternative (merging fork gateway changes back
+upstream per release) was rejected for its double CI/review cost and two
+current-state documents. Execution notes: until the freeze, the one-way
+`upstream` sync above continues; the freeze itself is an action in the
+upstream repository agreed with its owners; DSK-00-10 records the decision
+in ADR-0100's consequences and `docs/operations.md` when they are written.
 
 ### Kanmer board shape for the fork
 
@@ -365,7 +370,7 @@ no ticket can leave `backlog` without a governing doc (probe one with
 | DSK-00-07 | Author ADR-0108 (WebView2 rendering) as `proposed`; accept after the Phase 7 spike | feature | 07 spike | ADR exists with evidence section pointing at the spike | Links pass | 1 | `pegasus-desktop-reviewer` · `kanmer-docs`, `microsoft-docs` · Microsoft Learn |
 | DSK-00-08 | FRD-13 "Desktop operator experience" + PRD scope update + `DSK` family rows in `docs/capabilities.md` + `docs/frd/README.md`, `docs/index.md` links | feature | DSK-00-05 | FRD cites `docs/design/README.md`; capabilities rows have canonical owners | Links pass; `docs/capabilities.md` allocation summary updated | 1 | — · `kanmer-docs` · Kanmer `link_doc` |
 | DSK-00-09 | Record the release-tag convention (`gateway/r<N>`, `desktop/v<M.m.b>`) in `docs/engineering.md` § Branches and delivery and the `pegasus-release` skill | chore | DSK-00-01 | Convention documented; first gateway tag applied on the next release | `git tag --list 'gateway/*'` | 1 | `pegasus-release-packager` · `pegasus-release` · — |
-| DSK-00-10 | Decide and record D-001 (release source of truth after Phase 2) in ADR-0100 consequences and `docs/operations.md` | spike | DSK-00-05 | Operator decision recorded with date | Text present in both files | 1 | — · `kanmer-docs` · Kanmer |
+| DSK-00-10 | Record the decided D-001 (Option A, 2026-08-23 — fork is the single release source; upstream merged then frozen) in ADR-0100 consequences and `docs/operations.md`, and agree the upstream freeze with that repository's owners | chore | DSK-00-05 | Decision text with date in both files; freeze agreed and dated | Text present in both files | 1 | — · `kanmer-docs` · Kanmer |
 | DSK-00-11 | Ticket-template enforcement: `kanmer-plan` plan docs for DSK tickets carry `## Routing` and `## Simplification pass`; add the check to the review checklist | chore | DSK-00-04 | Reviewer checklist updated; a sample ticket passes | `get_ticket_doc` on a sample | 1 | `pegasus-desktop-reviewer` · `kanmer-plan`, `kanmer-review` · Kanmer |
 | DSK-00-12 | Parity-matrix home: register `docs/desktop/01-inventory-and-parity/parity-matrix.md` in `docs/index.md` and `docs/capabilities.md` notes; decide whether it later moves to `docs/features/` per proposal §23 | chore | 01 · DSK-01-01 | One canonical path; no duplicate matrix | Links pass | 1 | — · `kanmer-docs` · — |
 | DSK-00-13 | Retire the proposal's unresolved "prior documents" reference: note in ADR-0100 that they are not in the repository and not an input | chore | DSK-00-05 | Sentence present | — | 1 | — · — · — |
