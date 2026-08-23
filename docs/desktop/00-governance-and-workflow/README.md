@@ -114,10 +114,9 @@ Official documentation (fetched 2026-08-23):
   Option A — the fork is the conversion line and becomes the single release
   source once a gateway change is needed in production (see D-001 below).
   Until that point upstream keeps releasing the web app.
-- A-00-2: the operator accepts a reserved ADR number block for the
-  conversion (section 3). If refused, the implementing agent uses "next free
-  number" after the first upstream sync and updates every cross-reference in
-  these plans.
+- A-00-2 (resolved 2026-08-23, now a decision): the operator confirmed the
+  reserved ADR block ADR-0100…ADR-0110; `AGENTS.md` § ADR conventions
+  records it. The "next free number" fallback is retired.
 - A-00-3: the Kanmer GUI/MCP in use supports `create_group`, `create_item`,
   and area creation through `kanmer-setup`; if areas can only be created in
   the GUI, the board-seeding ticket records that step as operator-performed.
@@ -142,11 +141,11 @@ apply (proposal §2).
 **Deviation: reserved ADR block.** `AGENTS.md` § ADR conventions says the
 next free number. Upstream keeps issuing ADRs (29 issued, active), and the
 one-way upstream sync in the branching flow would collide with any number
-the fork takes next. The conversion therefore uses **ADR-0100…ADR-0110** and
-records this in the first conversion ADR; the implementing agent confirms
-the block with the operator and amends `AGENTS.md` § ADR conventions in the
-same PR (ticket DSK-00-05). ADR bodies stay immutable; supersession is by
-new ADR as today. **ADR-0014 is not superseded** — Test/UAT is local (L-02).
+the fork takes next. The conversion therefore uses **ADR-0100…ADR-0110**, and
+the first conversion ADR restates it. **The operator confirmed the block on
+2026-08-23** and `AGENTS.md` § ADR conventions now records it (done in this
+planning task); DSK-00-05 authors the ADRs themselves. ADR bodies stay
+immutable; supersession is by new ADR as today. **ADR-0014 is not superseded** — Test/UAT is local (L-02).
 
 ADR set (Appendix A template; each answers the cloud-justification test):
 
@@ -348,8 +347,8 @@ twelve content plans created with a governing-doc reference
 (`link_doc` to an ADR/FRD or `docs_todo: true`); ADR-0100…ADR-0110 are
 accepted (ADR-0108 may be `proposed` until the Phase 7 spike); FRD-13 and
 the PRD update are merged; `docs/capabilities.md` carries the `DSK` family;
-`AGENTS.md` § ADR conventions records the reserved block; `docs/index.md`
-links everything.
+`AGENTS.md` § ADR conventions records the reserved block (done, operator
+confirmation 2026-08-23); `docs/index.md` links everything.
 
 Exit gate (Phase 0 governance part): `pwsh ./scripts/Test-DocumentationLinks.ps1`
 and the placement gate pass on `dev`; `get_status` on the board shows the
@@ -365,7 +364,7 @@ no ticket can leave `backlog` without a governing doc (probe one with
 | DSK-00-02 | Add read-only `upstream` remote; first one-way sync (32 commits) via PR into `dev`; never push upstream | chore | DSK-00-01 | `upstream/main` merged into `dev` and promoted; CI green | `git merge-base --is-ancestor <fork-main> upstream/main`; `repository-check` green | 1 | `pegasus-desktop-reviewer` reviews the sync diff · — · Kanmer |
 | DSK-00-03 | Seed the fork board: areas, HZN phases, EPIC per area plan, `context.md` per group | chore | — | `get_status` lists the 16 areas and 24 groups | Kanmer `list_board`, `list_groups` | 1 | — · `kanmer-setup`, `kanmer-tickets` · Kanmer `create_group`, `create_item` |
 | DSK-00-04 | Create every DSK ticket from plans 01–12 with `refs`/`docs_todo`, profile, area, group and a `## Routing` block | chore | DSK-00-03 | Every ticket row in the plans exists on the board | `list_items` count equals the plan rows; `get_doc_gates` on a sample | 1 | — · `kanmer-tickets` · Kanmer `create_item`, `link_doc`, `set_ticket_doc` |
-| DSK-00-05 | Author ADR-0100, ADR-0101, ADR-0103, ADR-0104, ADR-0105, ADR-0110 (block adoption + AGENTS.md § ADR conventions amendment) | feature | — | ADRs accepted; index table updated; AGENTS.md amended | `Test-DocumentationLinks.ps1`; ADR frontmatter valid | 1 | `pegasus-parity-researcher` (evidence) · `kanmer-docs` · Kanmer `link_doc` |
+| DSK-00-05 | Author ADR-0100, ADR-0101, ADR-0103, ADR-0104, ADR-0105, ADR-0110 (the reserved block is already confirmed and recorded in AGENTS.md § ADR conventions) | feature | — | ADRs accepted; index table updated | `Test-DocumentationLinks.ps1`; ADR frontmatter valid | 1 | `pegasus-parity-researcher` (evidence) · `kanmer-docs` · Kanmer `link_doc` |
 | DSK-00-06 | Author ADR-0102, ADR-0106, ADR-0107, ADR-0109 from the flow records of 01 | feature | 01 · DSK-01-02 | ADRs accepted with the cloud-justification table answered | Links pass; each table has six answers | 1 | `pegasus-parity-researcher` · `kanmer-docs` · Kanmer |
 | DSK-00-07 | Author ADR-0108 (WebView2 rendering) as `proposed`; accept after the Phase 7 spike | feature | 07 spike | ADR exists with evidence section pointing at the spike | Links pass | 1 | `pegasus-desktop-reviewer` · `kanmer-docs`, `microsoft-docs` · Microsoft Learn |
 | DSK-00-08 | FRD-13 "Desktop operator experience" + PRD scope update + `DSK` family rows in `docs/capabilities.md` + `docs/frd/README.md`, `docs/index.md` links | feature | DSK-00-05 | FRD cites `docs/design/README.md`; capabilities rows have canonical owners | Links pass; `docs/capabilities.md` allocation summary updated | 1 | — · `kanmer-docs` · Kanmer `link_doc` |
@@ -421,7 +420,7 @@ names; the project skill `pegasus-desktop`
 | Document | Change |
 | --- | --- |
 | `docs/adr/0100…0110-*.md`, `docs/adr/README.md` | New ADRs and index rows; ADR-0009 `superseded_by` note limited to its deferral clause (body immutable — record in ADR-0100) |
-| `AGENTS.md` | § ADR conventions: reserved block; § New Markdown placement: done in this task |
+| `AGENTS.md` | § ADR conventions: reserved block recorded (done, 2026-08-23); § New Markdown placement: done in this task |
 | `docs/index.md` | Desktop plan-set row (done); FRD-13 link |
 | `docs/frd/frd-13-desktop-operator-experience.md`, `docs/frd/README.md` | New FRD |
 | `docs/prd/pegasus-product.md` | Scope: native desktop client, web retirement after cutover |

@@ -81,7 +81,12 @@ ADRs are an append-only decision log of durable technical/architectural choices.
 - **Stable IDs.** Never renumber, reuse, or delete an ADR. Supersede a decision
   by writing a **new** ADR (the next free number) and setting the old one's
   `status: superseded`. The number is a permanent citation key used across code,
-  tests, and tracked plans.
+  tests, and tracked plans. One operator-confirmed exception (2026-08-23):
+  the native-desktop conversion uses the reserved block ADR-0100–ADR-0110
+  instead of the next free number, so one-way syncs from the still-active
+  upstream `collisionengineers/pegasus` ADR sequence cannot collide with
+  conversion ADRs; every other decision keeps taking the next free number
+  below ADR-0100.
 - **One decision per ADR** — a durable technical/architectural choice, not a
   bundle of them.
 - **YAML frontmatter** on every ADR, so currency and relationships are
