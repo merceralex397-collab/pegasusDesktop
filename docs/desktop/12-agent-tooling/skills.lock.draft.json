@@ -1,0 +1,382 @@
+{
+  "version": 2,
+  "generatedBy": "docs/desktop/12-agent-tooling (draft, 2026-08-23); promote to eng/skills/skills.lock.json via eng/skills/sync-skills.ps1",
+  "policy": {
+    "vendorRoot": ".agents/skills/vendor/",
+    "projectSkill": ".agents/skills/project/pegasus-desktop/SKILL.md",
+    "rule": "Agents load skills only from the vendored destinations at the pinned commits; never from a moving branch. verify-skills.ps1 fails CI when a computedHash differs."
+  },
+  "sources": {
+    "dotnet-skills": {
+      "repository": "https://github.com/dotnet/skills",
+      "commit": "98f848512e9ee4877e399a0ae367bb5e4a193144",
+      "commitDate": "2026-08-21",
+      "license": "MIT"
+    },
+    "win-dev-skills": {
+      "repository": "https://github.com/microsoft/win-dev-skills",
+      "commit": "f1028dd5bb19af59df400cb4a2ab867e40a40a4a",
+      "commitDate": "2026-07-22",
+      "release": "0.5.0",
+      "license": "MIT"
+    },
+    "azure-skills": {
+      "repository": "https://github.com/microsoft/azure-skills",
+      "commit": "1a03acfb9ac1a1a05518bf7420d4618cc41847be",
+      "commitDate": "2026-08-21",
+      "license": "MIT"
+    }
+  },
+  "skills": [
+    {
+      "name": "winui-setup",
+      "source": "win-dev-skills",
+      "skillPath": "plugins/winui/skills/winui-setup/SKILL.md",
+      "destination": ".agents/skills/vendor/windows/winui-setup/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "One-time machine prerequisites (.NET 10 SDK, winapp CLI, WinUI templates, Developer Mode); user-invoked"
+    },
+    {
+      "name": "winui-dev-workflow",
+      "source": "win-dev-skills",
+      "skillPath": "plugins/winui/skills/winui-dev-workflow/SKILL.md",
+      "destination": ".agents/skills/vendor/windows/winui-dev-workflow/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Build and run workflow, BuildAndRun.ps1, winapp run diagnosis"
+    },
+    {
+      "name": "winui-design",
+      "source": "win-dev-skills",
+      "skillPath": "plugins/winui/skills/winui-design/SKILL.md",
+      "destination": ".agents/skills/vendor/windows/winui-design/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Fluent/XAML correctness, control selection, theming, winui-search.exe"
+    },
+    {
+      "name": "winui-code-review",
+      "source": "win-dev-skills",
+      "skillPath": "plugins/winui/skills/winui-code-review/SKILL.md",
+      "destination": ".agents/skills/vendor/windows/winui-code-review/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Post-build quality checklist and Windows App SDK analyzer rules"
+    },
+    {
+      "name": "winui-ui-testing",
+      "source": "win-dev-skills",
+      "skillPath": "plugins/winui/skills/winui-ui-testing/SKILL.md",
+      "destination": ".agents/skills/vendor/windows/winui-ui-testing/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "winapp ui UIA batch testing, AutomationId audit, screenshots"
+    },
+    {
+      "name": "winui-packaging",
+      "source": "win-dev-skills",
+      "skillPath": "plugins/winui/skills/winui-packaging/SKILL.md",
+      "destination": ".agents/skills/vendor/windows/winui-packaging/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "MSIX packaging, certificates, signing, CI sample, self-contained"
+    },
+    {
+      "name": "winui-wpf-migration",
+      "source": "win-dev-skills",
+      "skillPath": "plugins/winui/skills/winui-wpf-migration/SKILL.md",
+      "destination": ".agents/skills/vendor/windows/winui-wpf-migration/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Reference only: control/namespace mapping tables; no WPF source to migrate"
+    },
+    {
+      "name": "winui-session-report",
+      "source": "win-dev-skills",
+      "skillPath": "plugins/winui/skills/winui-session-report/SKILL.md",
+      "destination": ".agents/skills/vendor/windows/winui-session-report/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "User-invoked session analysis; carries a privacy warning"
+    },
+    {
+      "name": "dotnet-webapi",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-aspnetcore/skills/dotnet-webapi/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/dotnet-webapi/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Gateway endpoints, OpenAPI metadata, problem details"
+    },
+    {
+      "name": "minimal-api-file-upload",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-aspnetcore/skills/minimal-api-file-upload/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/minimal-api-file-upload/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Upload session endpoints replacing IFormFile pages"
+    },
+    {
+      "name": "configuring-opentelemetry-dotnet",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-aspnetcore/skills/configuring-opentelemetry-dotnet/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/configuring-opentelemetry-dotnet/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Reference only; App Insights SDK remains the default telemetry path"
+    },
+    {
+      "name": "optimizing-ef-core-queries",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-data/skills/optimizing-ef-core-queries/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/optimizing-ef-core-queries/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Slow read-model or paging queries behind the gateway"
+    },
+    {
+      "name": "run-tests",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-test/skills/run-tests/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/run-tests/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Exact dotnet test commands, filters, TRX, shards"
+    },
+    {
+      "name": "code-testing-agent",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-test/skills/code-testing-agent/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/code-testing-agent/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Generating unit/contract/view-model tests"
+    },
+    {
+      "name": "scaffold-dotnet-test-project",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-test/skills/scaffold-dotnet-test-project/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/scaffold-dotnet-test-project/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "New test projects (Desktop.ViewModelTests, Api.ContractTests, Desktop.UITests, Packaging.Tests)"
+    },
+    {
+      "name": "test-gap-analysis",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-test/skills/test-gap-analysis/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/test-gap-analysis/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Pseudo-mutation gap hunting on moved or new rules"
+    },
+    {
+      "name": "assertion-quality",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-test/skills/assertion-quality/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/assertion-quality/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Grading assertion strength in new suites"
+    },
+    {
+      "name": "analyzing-dotnet-performance",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-diag/skills/analyzing-dotnet-performance/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/analyzing-dotnet-performance/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Performance anti-pattern review against the section 15.1 budgets"
+    },
+    {
+      "name": "dotnet-trace-collect",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-diag/skills/dotnet-trace-collect/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/dotnet-trace-collect/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Trace/counter capture for startup and navigation profiling"
+    },
+    {
+      "name": "dump-collect",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-diag/skills/dump-collect/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/dump-collect/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Crash dump collection for desktop crash triage"
+    },
+    {
+      "name": "directory-build-organization",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-msbuild/skills/directory-build-organization/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/directory-build-organization/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Directory.Build.props/targets and Directory.Packages.props layout"
+    },
+    {
+      "name": "convert-to-cpm",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-nuget/skills/convert-to-cpm/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/convert-to-cpm/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Introduce Central Package Management across the solution"
+    },
+    {
+      "name": "binlog-failure-analysis",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-msbuild/skills/binlog-failure-analysis/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/binlog-failure-analysis/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Diagnosing MSIX/XAML build failures from binlogs"
+    },
+    {
+      "name": "dotnet-aot-compat",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet-upgrade/skills/dotnet-aot-compat/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/dotnet-aot-compat/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Reference only; AOT/trimming deferred until startup is profiled"
+    },
+    {
+      "name": "setup-local-sdk",
+      "source": "dotnet-skills",
+      "skillPath": "plugins/dotnet/skills/setup-local-sdk/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/setup-local-sdk/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Pinning a local .NET SDK for CI/test machines"
+    },
+    {
+      "name": "authoring-github-workflows",
+      "source": "dotnet-skills",
+      "skillPath": ".agents/skills/authoring-github-workflows/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/authoring-github-workflows/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Desktop CI lanes in .github/workflows/ci.yml"
+    },
+    {
+      "name": "create-custom-agent",
+      "source": "dotnet-skills",
+      "skillPath": ".agents/skills/create-custom-agent/SKILL.md",
+      "destination": ".agents/skills/vendor/dotnet/create-custom-agent/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Reference only: VS Code .agent.md format, not Codex TOML"
+    },
+    {
+      "name": "azure-resource-lookup",
+      "source": "azure-skills",
+      "skillPath": "skills/azure-resource-lookup/SKILL.md",
+      "destination": ".agents/skills/vendor/azure/azure-resource-lookup/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Read-only inventory of rg-pegasus-prod for the resource register"
+    },
+    {
+      "name": "azure-resource-visualizer",
+      "source": "azure-skills",
+      "skillPath": "skills/azure-resource-visualizer/SKILL.md",
+      "destination": ".agents/skills/vendor/azure/azure-resource-visualizer/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Resource-group diagram for the disposition plan"
+    },
+    {
+      "name": "azure-cost",
+      "source": "azure-skills",
+      "skillPath": "skills/azure-cost/SKILL.md",
+      "destination": ".agents/skills/vendor/azure/azure-cost/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Read-only cost baseline and forecast"
+    },
+    {
+      "name": "azure-diagnostics",
+      "source": "azure-skills",
+      "skillPath": "skills/azure-diagnostics/SKILL.md",
+      "destination": ".agents/skills/vendor/azure/azure-diagnostics/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Read-only AppLens/monitor triage of gateway and worker"
+    },
+    {
+      "name": "azure-compliance",
+      "source": "azure-skills",
+      "skillPath": "skills/azure-compliance/SKILL.md",
+      "destination": ".agents/skills/vendor/azure/azure-compliance/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Read-only azqr review; no remediation"
+    },
+    {
+      "name": "azure-validate",
+      "source": "azure-skills",
+      "skillPath": "skills/azure-validate/SKILL.md",
+      "destination": ".agents/skills/vendor/azure/azure-validate/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Only Bicep what-if once a write is approved under D-002/D-003"
+    },
+    {
+      "name": "azure-storage",
+      "source": "azure-skills",
+      "skillPath": "skills/azure-storage/SKILL.md",
+      "destination": ".agents/skills/vendor/azure/azure-storage/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Blob semantics (MIME, public access, range) for the update-feed option"
+    },
+    {
+      "name": "appinsights-instrumentation",
+      "source": "azure-skills",
+      "skillPath": "skills/appinsights-instrumentation/SKILL.md",
+      "destination": ".agents/skills/vendor/azure/appinsights-instrumentation/",
+      "computedHash": "TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)",
+      "reviewedOn": "2026-08-23",
+      "owner": "desktop conversion",
+      "reason": "Guidance for client-version telemetry on the gateway; no OTel collector"
+    }
+  ]
+}

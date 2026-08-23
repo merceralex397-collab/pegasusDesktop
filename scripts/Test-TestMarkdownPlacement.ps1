@@ -77,6 +77,8 @@ try {
         'docs/frd/new.md',
         'docs/adr/new.md',
         'docs/design/new.md',
+        'docs/desktop/new-area/README.md',
+        '.agents/skills/project/example/SKILL.md',
         '.design-sync/new.md',
         '.grok/skills/example/SKILL.md',
         '.stitch/DESIGN.md',

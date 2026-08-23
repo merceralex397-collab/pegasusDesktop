@@ -25,6 +25,7 @@ design assets remain under [`docs/design/`](design/).
 | What is the Azure production state? | [Operations § Production environment](operations.md#production-environment) — the sole current-state owner; `.azure/deployment-plan.md` is the immutable 2026-08-02 execution record |
 | What do the imported source workspaces own? | [Workspaces](../workspaces/README.md) |
 | What do domain terms mean? | [`CONTEXT.md`](../CONTEXT.md) (repo root) |
+| How is the native Windows desktop conversion planned (areas, tickets, decisions, agent routing)? | [Desktop conversion plan set](desktop/README.md), programme planning only; decisions still land as ADRs, behaviour as FRDs |
 
 ## Authority
 

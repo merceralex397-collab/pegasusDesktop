@@ -121,6 +121,14 @@ ADR is required to authorise a PRD or FRD; a new PRD or FRD records its canonica
 owner in `docs/capabilities.md` and is linked from `docs/index.md`.
 Workspace-local documentation stays governed by its accepted integration
 contract and existing workspace tree.
+The one planning exception is `docs/desktop/`: the native-desktop conversion
+plan set (area plans, matrices, draft runbooks, decision matrices) indexed by
+[`docs/desktop/README.md`](docs/desktop/README.md). It holds programme
+planning only: a durable decision still becomes an ADR, behaviour an FRD,
+scope a PRD, and ticket-transient research, plans, and proof still live in
+the owning Kanmer ticket. Agent skill playbooks (`SKILL.md` under
+`.agents/skills/`) are agent tooling, not documentation, and are governed by
+[`docs/desktop/12-agent-tooling/README.md`](docs/desktop/12-agent-tooling/README.md).
 
 ## Planning process
 
