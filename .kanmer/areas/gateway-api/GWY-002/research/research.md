@@ -43,7 +43,7 @@ Read from the repository at fork `main`, 2026-08-24; each carries its path and l
 
 - **`src/Pegasus.Web/Api` does not exist.** `ls src/Pegasus.Web` returns `AiWork`, `Authentication`,
   `Data`, `Health`, `Mcp`, `Pages`, `Presentation`, `Program.cs`, `Properties`, `appsettings*.json`,
-  `wwwroot`, `Pegasus.Web.csproj`, `packages.lock.json`. Every file in step 3–7 is new.
+  `wwwroot`, `Pegasus.Web.csproj`, `packages.lock.json`. Every file in steps 3–7 is new.
 - **`Program.cs` is 1,216 lines and the mapping region is `:939-964`**, exactly as the body cites:
   `MapHealthChecks("/health/live")` `:939-944`, `MapHealthChecks("/health/ready")` `:945-950`,
   `MapStaticAssets()` `:952-953`, `MapGet("/diagnostics/version")` `:954-958`, `MapRazorPages()`
@@ -188,23 +188,23 @@ The six-question cloud-justification test from
 | --- | --- | --- |
 | Shared authority — must several users see and update the same state? | **Yes — on the existing evolved `Pegasus.Web` gateway, not on anything new.** | The route group is the ingress through which every desktop operator reaches the one authoritative case store; `src/Pegasus.Infrastructure/Persistence` and the Core use cases behind it are shared by definition. Locked decision L-01 (`docs/desktop/README.md` § Locked decisions) fixes the host as `Pegasus.Web` evolved in place — "same Container App, no new deployment unit" — so the responsibility lands on a process that already exists. |
 | Unattended execution — must it run with every desktop closed? | **No** | The group serves requests; it initiates nothing. Unattended work stays in `Pegasus.Worker` (ADR-0106), which this ticket does not touch. |
-| Protected credentials — a long-lived secret that must not sit on workstations? | **No, for this ticket.** | The skeleton composes no credential: `DesktopGatewayOptions` carries a boolean flag and a base path, unlike `AutomationMcpOptions`, which validates a client secret of at least 32 characters (`AutomationMcp.cs`, `TryCreate`). Provider secrets stay behind the gateway under ADR-0107, and the token path is area 04's. |
+| Protected credentials — a long-lived secret that must not sit on workstations? | **No, for this ticket.** | The skeleton composes no credential: `DesktopGatewayOptions` carries a boolean flag and a base path, unlike `AutomationMcpOptions`, whose `TryCreate` validates a client secret of at least 32 characters. Provider secrets stay behind the gateway under ADR-0107, and the token path is area 04's. |
 | Public callback — must an external service call a stable public endpoint? | **No** | Nothing external calls `/api/v1`; the desktop is the only client. The external-audience surfaces stay Razor (`Pages/Uploads/Request.cshtml.cs`, `endpoint-map.md` § Stays web-only). |
-| Central enforcement — revocation, permissions, audit or an invariant independent of the client? | **Yes — again on the existing gateway process.** | The composition gate itself is central enforcement: with `Features:DesktopGateway` off, no desktop build of any version can reach the API, which is the rollback lever for the Phase 2 pilot. The problem-details mapping is the other half — refusals like `version-conflict` and `lease-conflict` originate in Core (`CaseWorkflowContracts.cs:125-157`) and must be stated by the server, never inferred by the client. ADR-0103 records "gateway, never direct database access from workstations". No Azure write arises here; the one app-setting change is owned by [[PLAT-020]]-class work in area 11, not by this ticket. |
+| Central enforcement — revocation, permissions, audit or an invariant independent of the client? | **Yes — again on the existing gateway process.** | The composition gate itself is central enforcement: with `Features:DesktopGateway` off, no desktop build of any version can reach the API, which is the rollback lever for the Phase 2 pilot. The problem-details mapping is the other half — refusals like `version-conflict` and `lease-conflict` originate in Core (`CaseWorkflowContracts.cs:125-157`) and must be stated by the server, never inferred by the client. ADR-0103 records "gateway, never direct database access from workstations". No Azure write arises here: the one app-setting change (`Features__DesktopGateway=true` on the production Web Container App) is owned by [[PLAT-024]] (plan handle `DSK-11-06`) and by no other ticket. |
 | Measured operational advantage — measured evidence that central is materially better? | **No** | No measurement exists or is claimed. Area 03 § 2 assumption A-1 explicitly defers the "can the Container App absorb the JSON surface" question to the area-10 performance baseline. Claiming a measured advantage here would be the dishonest answer this test exists to catch. |
 
 **Conclusion.** Four "no" and two "yes"; both "yes" answers land on the **already-running
 `Pegasus.Web` Container App** under L-01, and neither creates a new Azure resource or a new deployment
 unit. The only Azure action the area implies is a one-off app-setting change at the Phase 2 release,
-which this ticket's Guardrails explicitly assign elsewhere.
+which this ticket's Guardrails explicitly assign to [[PLAT-024]].
 
 ## Implications
 
 1. **The composition gate has three registration points, not one.** `AutomationMcpOptions` is resolved
    once at `Program.cs:246` and consulted at `:625` (services), `:820` (middleware) and `:961`
    (mapping). The desktop gateway needs the same three: services (problem details + the exception
-   handler), middleware (the scoped exception-handler branch and the correlation filter's pipeline
-   dependencies), and mapping. Registering only at the mapping site leaves a half-composed feature.
+   handler), middleware (the scoped exception-handler branch), and mapping. Registering only at the
+   mapping site leaves a half-composed feature.
 2. **The scoped `UseExceptionHandler` is the crux of the whole ticket.** Because `UseExceptionHandler`
    is inside `if (!app.Environment.IsDevelopment())` (`:754-756`) and every integration test runs
    Development, an `AddExceptionHandler`-only implementation compiles, ships and is silently dead
@@ -239,6 +239,6 @@ which this ticket's Guardrails explicitly assign elsewhere.
   repository fact or by a named plan row (`docs/desktop/03-gateway-api-and-data/README.md:160-168`),
   and the four assumptions each name the command inside this ticket's own steps that settles them. The
   two decisions that are *scope boundaries* rather than open questions — bearer authentication for
-  `/api/v1`, and the production app-setting that opens the gate — are owned by [[GWY-021]] and by
-  area 11 respectively and are recorded in the plan's Risks section, as the ticket's Guardrails
+  `/api/v1`, and the production app-setting that opens the gate — are owned by [[GWY-021]] and
+  [[PLAT-024]] respectively and are recorded in the plan's Risks section, as the ticket's Guardrails
   instruct.
