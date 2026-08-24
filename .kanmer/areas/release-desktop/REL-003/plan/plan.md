@@ -36,7 +36,9 @@ The ticket's `refs` list is **empty** and its frontmatter carries `docs_todo: tr
 (`get_doc_gates REL-003`). No existing PRD/FRD/ADR is claimed to be met.
 
 > **New ADR** — ADR-0105 (signed MSIX / App Installer distribution with a gateway
-> minimum-version gate), authored by `DSK-09-01` (board `REL-001`). This plan implements
+> minimum-version gate), authored by [[REL-001]] (plan handle `DSK-09-01`); see
+> [[REL-001]]'s plan for the ownership reconciliation — ADR-0105 has three claimants
+> (`REL-001`, `FND-005`, `FND-042`). This plan implements
 > its Decision clauses (a) — the 2021 schema with
 > `OnLaunch HoursBetweenUpdateChecks="0" ShowPrompt="true" UpdateBlocksActivation="true"`,
 > `AutomaticBackgroundTask` and `ForceUpdateFromAnyVersion` — and (d) — one package
@@ -57,9 +59,9 @@ Binding operator decisions, written to as decisions and never as options:
   `MainPackage/@Publisher` against the `signerSubject` field of
   `desktop-release-manifest.json`, which records that certificate's subject.
 
-Contract this plan **consumes**: the thirteen manifest fields fixed by `DSK-09-02` (board
-`REL-002`), in particular `version`, `packageSha256`, `signerSubject`,
-`appInstallerVersion` and `channel`.
+Contract this plan **consumes**: the thirteen manifest fields fixed by
+[[REL-002]] (plan handle `DSK-09-02`), in particular `version`, `packageSha256`,
+`signerSubject`, `appInstallerVersion` and `channel`.
 
 ## Routing
 
@@ -72,7 +74,9 @@ the plan document.
 - **Skills**, loaded in this order: `pegasus-desktop`
   (`.agents/skills/project/pegasus-desktop/SKILL.md`, verified present) →
   `winui-packaging` (`.codex/skills/winui-packaging/SKILL.md`, vendored from
-  `microsoft/win-dev-skills` v0.5.0 `f1028dd5`, verified present).
+  `microsoft/win-dev-skills` v0.5.0 `f1028dd5`, verified present; the path moves to
+  `.agents/skills/vendor/windows/winui-packaging/` once
+  [[TOOL-002]] (plan handle `DSK-12-02`) lands).
 - **MCP**: Kanmer (`get_status`, `get_doc_gates`, `take_ticket`, `set_ticket_doc`,
   `append_scratch`, `move_item`); Microsoft Learn (`microsoft_docs_search`,
   `microsoft_docs_fetch`) for the App Installer update-settings and schema pages.
@@ -80,9 +84,11 @@ the plan document.
   `kanmer-execute` → `kanmer-review` → `kanmer-verify` → `kanmer-closeout`. Call
   `get_doc_gates REL-003` before every move; a move crosses at most one gated boundary.
   `get_doc_gates` reports four gated boundaries: `leave-backlog` needs `governing-doc`
-  (already satisfied), `leave-preparing` needs `research`, `files`, `plan` and
-  `checklist`, `enter-review` needs `post-implementation-report`, `enter-done` needs
-  `proof`.
+  (already satisfied by `docs_todo: true`), `leave-preparing` needs `research`, `files`,
+  `plan`, `checklist` **and `questions-resolved`**, `enter-review` needs
+  `post-implementation-report` **and `questions-resolved`**, `enter-done` needs
+  `proof` **and `questions-resolved`**. `questions-resolved` sits at three of the four
+  and **never at `leave-backlog`**.
 - **Reviewer**: `pegasus-desktop-reviewer` — an agent that did not implement
   (`AGENTS.md` § Repository task workflow step 5).
 
@@ -158,7 +164,8 @@ same paths.
    attribute changed, so the test proves the check fires on that attribute alone. Each
    fixture is paired with a fixture `desktop-release-manifest.json`; the Publisher and
    hash come from the paired manifest, **never** from a literal inside the validator, so
-   the fixtures stay valid when `DSK-09-08` (board `REL-007`) fixes the real subject.
+   the fixtures stay valid when [[REL-007]] (plan handle `DSK-09-08`) fixes the real
+   subject.
 9. **Create `eng/packaging/Test-TestAppInstaller.ps1`** in the shape of
    `scripts/Test-CiChangeFlags.ps1:9-30`: a local `Assert-Failure`/`Assert-Pass` helper
    that `throw`s a message beginning with the case name, then a flat list of ten cases.
@@ -174,10 +181,10 @@ same paths.
 
 Evidence tier from the body: **Tier 1 — Static/build/architecture.** The obligation is
 fixture-driven proof that the validator's failures fire. App Installer's real behaviour is
-proven later by the packaging suite `DSK-08-10` (board `TEST-010`) against the local feed,
-and this ticket must not claim it. `proof` is the captured stdout and exit codes of the
-three commands below, as proof type `test-output` for the first and `command-log` for the
-others.
+proven later by the packaging suite [[TEST-010]] (plan handle `DSK-08-10`) against the
+local feed, and this ticket must not claim it. `proof` is the captured stdout and exit
+codes of the three commands below, as proof type `test-output` for the first and
+`command-log` for the others.
 
 | Command | Expected evidence |
 | --- | --- |
@@ -192,8 +199,9 @@ acceptance criterion no command checks.
 
 Note for whoever runs CI on this branch: `scripts/Get-CiChangeFlags.ps1:11`'s
 `$buildPattern` does **not** match `^eng/`, so these tests run in **no** CI lane until
-`DSK-09-05` (board `REL-005`) step 3 resolves the change-flag question. Run them locally
-and say so in the proof rather than pointing at a green CI run that never executed them.
+[[REL-005]] (plan handle `DSK-09-05`) step 3 resolves the change-flag question. Run them
+locally and say so in the proof rather than pointing at a green CI run that never executed
+them.
 
 ## Risks / open questions
 
@@ -207,20 +215,30 @@ and say so in the proof rather than pointing at a green CI run that never execut
   (for example previous `1.0.10.0`, candidate `1.0.9.0`) so a string compare is caught.
 - **Risk — check 5 cannot resolve a UNC path at build time.** Assumption A-09-1 in the
   research document. Mitigation: step 5's relative-resolution rule; the fixture set
-  exercises the local-file path only, and R9 step 4 (`DSK-09-10`, board `REL-008`) owns
-  the published-file check.
+  exercises the local-file path only, and R9 step 4 ([[REL-008]], plan handle `DSK-09-10`)
+  owns the published-file check.
 - **Risk — the fixtures encode a Publisher that never matches reality.** The subject is
-  fixed by `DSK-09-08` (board `REL-007`). Mitigation: step 8's rule that the Publisher
+  fixed by [[REL-007]]. Mitigation: step 8's rule that the Publisher
   comes from the paired fixture manifest, never a literal in the validator.
 - **Risk — someone adds an HTTP header check.** MIME, `Content-Length` and byte ranges are
   HTTP-only and do not exist over SMB (D-003); such a check would make the validator
   unrunnable against the real feed. Mitigation: it is a Guardrail in the body and an
   explicit Out-of-scope entry in the files document.
-- **Open questions**: none that block. The concrete Publisher string and the concrete UNC
-  root are inputs supplied by `DSK-09-08` (board `REL-007`) and `DSK-09-10` (board
-  `REL-008`); the fixtures make this ticket fully testable without either. No
-  `open-questions` document is created, because an unticked item would block every stage
-  move for values another ticket is already scheduled to supply.
+- **Open questions: none opened, and the reason is not cost.** An earlier draft of this
+  section said "an unticked item would block every stage move for values another ticket is
+  already scheduled to supply". The first half is false and is withdrawn: an unticked
+  `- [ ]` line above `## Parked` blocks exactly `leave-preparing`, `enter-review` and
+  `enter-done`, and never `leave-backlog`. For this `feature` that is three of the four
+  gated boundaries, and blocking Preparing would have been affordable if there were a real
+  question.
+
+  The second half is the real reason and it stands on the authoring contract's own rule:
+  the concrete Publisher string and the concrete UNC root are **inputs supplied by named
+  sibling tickets** — [[REL-007]] and [[REL-008]] — which makes them scope boundaries
+  recorded here rather than `open-questions` entries. And they do not gate this ticket at
+  all: every fixture is paired with its own fixture manifest, so the validator is fully
+  testable before either value exists. Nothing in this ticket's body instructs that a
+  question be recorded in `open-questions/`.
 
 ## Simplification pass
 
