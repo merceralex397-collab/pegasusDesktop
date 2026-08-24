@@ -30,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.634Z'
-updated: '2026-08-24T23:49:47.880Z'
+updated: '2026-08-24T23:50:30.207Z'
 ---
 
 ## What
@@ -102,9 +102,9 @@ Tier 3 obliges adapter-contract evidence: deterministic external failure handlin
 
 ## Documentation changes
 
-- `docs/adr/0108-desktop-webview2-report-rendering.md` — record packaged-app validation evidence for ADR-0108's fixed documented `HWND_MESSAGE` host (not a second ADR)
-- `docs/current-architecture.md` — the renderer composition (desktop plus retained gateway fallback), after the slice ships
-- `docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md` — the local-render behaviour clause, including the fail-closed engineer-identity rule
+- FND-007's proposed ADR is not edited here; packaged-controller evidence is recorded in this ticket's proof and supplied to [[FEAT-038]].
+- `docs/current-architecture.md` — renderer composition (desktop plus retained gateway fallback) after the slice ships.
+- `docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md` — local-render behaviour including the fail-closed engineer-identity rule.
 
 ## Guardrails
 

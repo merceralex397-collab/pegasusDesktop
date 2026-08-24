@@ -17,7 +17,7 @@ Measured on 2026-08-24. Paths that do not exist yet carry the ticket that create
 | The desktop host's DI registration (`src/Pegasus.Desktop`, created by [[FND-030]] (plan handle `DSK-02-05`); composition shape from [[FND-032]] (plan handle `DSK-02-07`)) | Register the desktop renderer as the `IAssessmentReportRenderer` **when the WebView2 runtime is present and the parity flag allows it**, leaving the gateway draft endpoint reachable as the fallback. Record the flag name in `plan`. |
 | `tests/Pegasus.Desktop.ViewModelTests/Reports/WebView2RendererTests.cs` *(new; project created by [[TEST-004]] (plan handle `DSK-08-04`) / [[FND-038]] (plan handle `DSK-02-13`))* | Placeholder rejection, cancellation, provenance, concurrency, and every step-5 engineer-tuple fail-closed case. |
 | `tests/Pegasus.ArchitectureTests` (extending [[FND-037]] (plan handle `DSK-02-12`)'s no-WebView rule) | The single-permitted-`WebView2`-usage fact: only this renderer type may reference `WebView2`, and it never navigates to an http/https Pegasus URL nor hosts application XAML. |
-| `docs/adr/0108-desktop-webview2-report-rendering.md` | The fixed documented `HWND_MESSAGE` controller recorded by ADR-0108; this ticket supplies packaged-app validation evidence, never a second ADR. |
+| `docs/adr/0108-desktop-webview2-report-rendering.md` | **Context only; not edited here.** FND-007 records the fixed documented `HWND_MESSAGE` controller. This ticket supplies packaged-app evidence to FEAT-038. |
 | `docs/current-architecture.md` | The renderer composition — desktop plus retained gateway fallback — after the slice ships. |
 | `docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md` | The local-render behaviour clause, including the fail-closed engineer-identity rule. |
 

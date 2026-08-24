@@ -53,8 +53,7 @@ one holds.
   capped at `timeout-minutes: 25` with `MaxParallelThreads=2`. If the capture is run in the same
   lane as the comparison the budget must be re-measured, and C-01 makes overflowing into a new lane
   a real recurring cost.
-- **Documentation.** ADR-0108's Verification section (edited through [[FEAT-038]]'s file) and the
-  parity-matrix report rows. The **results table** produced by this ticket is consumed by
+- **Documentation.** The parity-matrix report rows change here. The **results table** is handed to [[FEAT-038]]; ADR-0108 and its index remain untouched by this ticket. The results table is consumed by
   [[FEAT-038]] as the acceptance evidence and by [[FEAT-042]] (plan handle `DSK-07-16`) as the
   condition for switching the gateway renderer off behind its flag — so it is a deliverable with
   two named readers, not an internal artefact.
@@ -80,7 +79,7 @@ a decision.
   version of this suite; it is a wrong one.
 - **Flipping ADR-0108 to `accepted` or adding its index row.** Both belong to [[FEAT-038]] (plan
   handle `DSK-07-12`); ADR bodies are immutable once accepted and the flip is frontmatter-only.
-  This ticket produces the evidence and edits only the Verification section.
+  This ticket produces the evidence and does not edit ADR-0108.
 - **Switching the gateway renderer off.** L-03 keeps it until parity passes and [[FEAT-042]] owns
   the flag.
 - **Adding a third CI lane.** C-01 (index § Constraints): private-repository Windows runner minutes

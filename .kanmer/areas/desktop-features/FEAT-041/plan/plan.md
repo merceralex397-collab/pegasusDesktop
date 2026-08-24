@@ -38,7 +38,7 @@ The ticket carries **`docs_todo: true`**, so no conversion ADR governs it yet:
 > **New ADR** — ADR-0108 (isolated, non-UI WebView2 HTML→PDF rendering; gateway renderer retained
 > until golden-file parity), authored by [[FND-007]] (plan handle `DSK-00-07`); ADR-0108 has two
 > claimants, so see [[FND-007]]'s plan for the ownership reconciliation — [[FEAT-038]] (plan handle
-> `DSK-07-12`) owns the Phase 7 content and the `proposed` → `accepted` flip, and **this ticket
+> `DSK-07-12`) owns the narrow `proposed` → `accepted` acceptance change, and **this ticket
 > produces the evidence that flip depends on**.
 > This plan is written to the decision as recorded in
 > `docs/desktop/00-governance-and-workflow/README.md` § 3 (the ADR-0108 row) and in
