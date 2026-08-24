@@ -7,14 +7,16 @@ Microsoft Learn documents `HWND_MESSAGE` as the valid parent for an invisible `C
 
 Surveyed 2026-08-24 against the working tree at `origin/main`
 `191ddf334208b8966dc5e32f4f597e434a086233`. Every path was confirmed with `ls`
-or `grep`. Exactly one file is created and **nothing existing is edited at this
-merge** — including the ADR index.
+or `grep`. This branch adds ADR-0108 and updates the Phase 0 and Phase 7 source
+plans; the ADR index remains unchanged at this merge.
 
 ## Where the change lands
 
 | Path | Why |
 | --- | --- |
 | `docs/adr/0108-desktop-webview2-report-rendering.md` | **New; this correction also updates the Phase 0 and Phase 7 source plans.** `status: proposed` at first merge. Carries: the § 23.2 exception quoted from the proposal; the never-visible / never-hosts-Pegasus-UI constraint; the six-question cloud-justification table answered for report rendering; the decision to move rendering to `Pegasus.Desktop.Infrastructure` behind the existing `IAssessmentReportRenderer` port using the shared Scriban templates; the fixed documented `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)` host, with [[FEAT-040]] (plan handle `DSK-07-14`) supplying packaged-app validation; the retention gate on the gateway renderer; and a `## Reversal condition`. `ls docs/adr/010*` returned *No such file or directory* on 2026-08-24, so there is no existing file to extend |
+| `docs/desktop/00-governance-and-workflow/README.md` | **Edit.** Aligns DSK-00-07’s Phase 0 gate and acceptance wording with the fixed documented `HWND_MESSAGE` controller; Phase 7 validates packaged integration rather than choosing a host. |
+| `docs/desktop/07-integrations/README.md` | **Edit.** Replaces the host-selection spike with the documented `HWND_MESSAGE` controller and retains packaged-app/PDF/parity validation. |
 | `docs/adr/README.md` | **NOT edited by this ticket** — listed here because the omission is a decision, not an oversight. The index has one accepted table (`:16`, header `| ADR \| Title \| Related FRD |` at `:18`) and **no status column**, and `:11-12` states that the current architecture *is* that table; a row would assert a `proposed` ADR as current architecture. [[FEAT-038]] (plan handle `DSK-07-12`) adds the row at acceptance |
 
 ## Context files
@@ -88,8 +90,7 @@ already forbid them.
   (`DSK-00-05`), even though this ticket must read the wrong sentence to avoid
   following it.
 - **The other ten ADRs of the reserved block** — ADR-0100/0101/0103/0104/0105/0110
-  are [[FND-005]]'s and ADR-0102/0106/0107/0109 are [[FND-006]]'s. This ticket
-  writes exactly one file.
+  are [[FND-005]]'s and ADR-0102/0106/0107/0109 are [[FND-006]]'s. This ticket adds ADR-0108 and updates the two named source plans.
 - **`docs/desktop/01-inventory-and-parity/parity-matrix.md`** — `PAR-15` is cited,
   never edited; the matrix belongs to the area 01 tickets.
 - **Golden-file fixtures and any `dotnet test` run.** Tier 3 evidence owned by

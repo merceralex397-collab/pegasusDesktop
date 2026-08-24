@@ -7,7 +7,7 @@ Microsoft Learn documents `HWND_MESSAGE` as the valid parent for an invisible `C
 
 ## Summary
 
-Added the proposed ADR-0108 record in commit `39c704dc` on `fnd-007-webview2-adr`. It records the isolated, never-visible WebView2 HTML-to-PDF exception; keeps the gateway renderer until local Test/UAT golden-file parity; and names the documented `HWND_MESSAGE` controller as the invisible host; Phase 7 validates packaged-app integration rather than selecting a host. This is not a merged, accepted, or implemented renderer. The ticket remains **Implementing** because this clone has no `origin/dev` for the required PR path and this run must not push.
+Added the proposed ADR-0108 record in commit `39c704dc` on `fnd-007-webview2-adr`. It records the isolated, never-visible WebView2 HTML-to-PDF exception; keeps the gateway renderer until local Test/UAT golden-file parity; and names the documented `HWND_MESSAGE` controller as the invisible host; Phase 7 validates packaged-app integration rather than selecting a host. This is not a merged, accepted, or implemented renderer. The ticket remains **Implementing** until FND-005 merges into `dev`; FND-007 then needs its own scoped PR with an independent review. Acceptance and final proof remain separately dependent on Phase 7 validation and parity.
 
 ## Changes
 
@@ -71,3 +71,11 @@ Microsoft Learn's documented `HWND_MESSAGE` host invalidated the former two-host
 - `git diff --check` — passed.
 
 2026-08-25 — User-directed Microsoft Learn correction committed as `f328076d`: ADR-0108 and the Phase 0/7 plans now use `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`; Phase 7 validates packaged integration rather than selecting a host. Documentation links, placement regression, committed-range placement and `git diff --check` passed. The commit is local only; no push was requested.
+
+
+## Current delivery status — 2026-08-25
+
+- `origin/dev` now exists at `ecb9b7b4`, the shared desktop-plan baseline. FND-007 is a descendant of FND-005, so FND-005 must merge first; FND-007 will then update from `dev` before its own PR so that PR contains only its work.
+- The current FND-007 branch delta is three docs: ADR-0108 plus `docs/desktop/00-governance-and-workflow/README.md` and `docs/desktop/07-integrations/README.md`, which fix Phase 7 to the documented `HWND_MESSAGE` controller.
+- FND-005 PR #1 is independently approved at the documentation level but has no GitHub CI run. Until that gate is restored and FND-005 merges, this ticket cannot open its correctly scoped PR.
+- Even after its proposed-ADR PR, FND-007 cannot close until [[FEAT-040]], [[FEAT-041]], and [[FEAT-038]] supply the packaged-controller, parity, and acceptance evidence required by this ticket.

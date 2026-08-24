@@ -140,7 +140,7 @@ and the file paths are the body's. Measured values were read on 2026-08-24.
    supersedes: []
    superseded_by: []
    related_capabilities: []
-   related_frd: [FRD-11]
+   related_frd: [frd-11]
    tags: []
    ---
    ```
@@ -148,7 +148,7 @@ and the file paths are the body's. Measured values were read on 2026-08-24.
    ADR-0025 and ADR-0028 and supersedes neither, exactly as ADR-0028 itself
    relates to ADR-0015 and ADR-0025 (`docs/adr/0028-…:14-16`).
    > **Flag for the reviewer at the point of writing.** The ticket body
-   > prescribes `related_frd: [FRD-11]`, and the body is settled, so that is what
+   > prescribes `related_frd: [frd-11]`, and the body is settled, so that is what
    > this plan carries. But the measured house form across all 28 existing ADRs
    > is the **lowercase file stem** — `grep -h '^related_frd:' docs/adr/*.md`
    > returns only `[]` and values like `[frd-11]`, `[frd-10, frd-11]`, and
@@ -268,7 +268,7 @@ produced by [[FEAT-041]] — cite it, do not re-run it.
 | `grep -n '^## ' docs/adr/0108-*.md` | `## Status`, `## Context`, `## Decision`, `## Consequences`, `## Reversal condition`, `## Options considered`, `## Links` — Status first |
 | `grep -c 'must not host Pegasus UI' docs/adr/0108-*.md` | at least 1 — the § 23.2 sentence is quoted, not paraphrased |
 | `grep -n 'learn.microsoft.com' docs/adr/0108-*.md` | the fetched URLs, each with the fetch date, **outside** any fenced block |
-| `git diff --stat` on the branch | `1 file changed`, ~130 insertions, **0 deletions** — a deletion means an existing file was edited |
+| `git diff --stat` on the branch | `3 files changed`: ADR-0108 plus the Phase 0/7 source plans; deletions are expected only where the obsolete host-selection language was removed |
 | `git diff --stat -- docs/adr/0025-*.md docs/adr/0028-*.md docs/adr/README.md AGENTS.md` | **empty** |
 | `pwsh ./scripts/Test-DocumentationLinks.ps1` | exits 0 |
 | `pwsh ./scripts/Test-TestMarkdownPlacement.ps1` | exits 0 |
@@ -291,7 +291,7 @@ Proof is written on merged `main`, after review and merge — never before
   with it, and CI never checks external URLs
   (`scripts/Test-DocumentationLinks.ps1:1-3`). Mitigation: step 2 fetches and
   records the URL **and the date**, so a later reader knows what was true when.
-- **`related_frd: [FRD-11]` versus the measured `[frd-11]`.** A one-token
+- **`related_frd: [frd-11]` versus the measured `[frd-11]`.** A one-token
   discrepancy between the settled ticket body and the form all 28 existing ADRs
   use. Mitigation: step 3 follows the body and flags it to the reviewer in the
   PR. It blocks nothing.

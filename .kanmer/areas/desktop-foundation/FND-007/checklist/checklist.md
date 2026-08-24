@@ -10,7 +10,7 @@ One box per plan step, in plan order. Tick with
 than rewriting.
 
 - [x] Read the plan row, `docs/desktop/00-governance-and-workflow/README.md` § 3's ADR-0108 line, `docs/desktop/07-integrations/README.md:227-231` and `:251-259`, and the two renderer ADRs `docs/adr/0025-*.md` and `docs/adr/0028-*.md`
-- [x] Call `get_doc_gates FND-007`, confirm `leave-backlog: [governing-doc]` is satisfied by `docs_todo`, then `take_ticket` with a real branch and worktree cut from `fnd-005-foundation-adrs` at `d22c39dd` because `origin/dev` is absent
+- [x] Call `get_doc_gates FND-007`, confirm `leave-backlog: [governing-doc]` is satisfied by `docs_todo`, then `take_ticket` with a real branch and worktree cut from `fnd-005-foundation-adrs` at `d22c39dd`; `origin/dev` now exists and FND-005 must merge there first
 - [x] Run `ls docs/adr/010*` **before writing** and record the output (expected: `No such file or directory`; a file appearing means someone else wrote this ADR)
 - [x] `microsoft_docs_search` for `CoreWebView2.PrintToPdfStreamAsync`, and again for `CoreWebView2Controller` hosting on a window handle; `microsoft_docs_fetch` the WebView2 print how-to
 - [x] Create `docs/adr/0108-desktop-webview2-report-rendering.md` with the eight-key frontmatter, `status: proposed`, `supersedes: []`, `superseded_by: []`, and reviewer-normalised `related_frd: [frd-11]`
@@ -29,7 +29,7 @@ than rewriting.
 - [x] Write `## Reversal condition`: WebView2 runtime absent or unmaintainable across the fleet; packaged-app failure of the documented `HWND_MESSAGE` controller; or unclosable golden-file divergence
 - [x] Confirm **no** row was added to `docs/adr/README.md`, and that `AGENTS.md` was not edited
 - [x] Run `pwsh ./scripts/Test-DocumentationLinks.ps1` and `pwsh ./scripts/Test-TestMarkdownPlacement.ps1`; both exit 0, with the Microsoft Learn URLs and their fetch date **outside** any fenced block
-- [x] Confirm `git diff --stat` shows 1 file changed and **0 deletions**, and that `git diff --stat -- docs/adr/0025-*.md docs/adr/0028-*.md docs/adr/README.md AGENTS.md` is empty
+- [x] Confirm `git diff --stat` shows 3 documentation files (ADR-0108 plus the Phase 0/7 source-plan correction) with expected deletions only from obsolete host-selection text, and that `git diff --stat -- docs/adr/0025-*.md docs/adr/0028-*.md docs/adr/README.md AGENTS.md` is empty
 - [ ] Open the PR against `dev` with `gh pr create --base dev` and merge on the independent review from `pegasus-desktop-reviewer`, whose named judgement is that the renderer is not a web shell
 - [ ] After [[FEAT-040]] and [[FEAT-041]] are done, verify [[FEAT-038]]'s frontmatter-only acceptance PR against the reversal condition and the § 23.2 statement — making **no** edit to ADR-0108 from this ticket
 - [ ] Verification run: record the proof as the two PR references plus the golden-file test output cited from [[FEAT-041]], together with the command table from the plan's `## Verification` section
@@ -52,3 +52,5 @@ Paused before the PR/reviewer/acceptance steps: this clone has `origin/main` and
 2026-08-25 — User-directed correction: Microsoft Learn explicitly documents `HWND_MESSAGE` as the valid invisible parent for `CoreWebView2Controller` on Windows 8+. ADR-0108 and the Phase 0/7 source plans now fix that host; Phase 7 retains only packaged-app/PDF validation and parity.
 
 2026-08-25 — User-directed Microsoft Learn correction committed as `f328076d`: ADR-0108 and the Phase 0/7 plans now use `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`; Phase 7 validates packaged integration rather than selecting a host. Documentation links, placement regression, committed-range placement and `git diff --check` passed. The commit is local only; no push was requested.
+
+2026-08-25 — `origin/dev` now exists at `ecb9b7b4`, but FND-005 must merge first and its PR currently has no CI run. FND-007 remains implementing; its proposed-ADR PR will update from `dev` after that integration step so it contains only its three-file delta.
