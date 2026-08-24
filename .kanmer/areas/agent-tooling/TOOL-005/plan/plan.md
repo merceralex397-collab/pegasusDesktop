@@ -31,7 +31,9 @@ housekeeping here; it is the guardrail.
 The ticket carries `refs: []` and **`docs_todo: true`**.
 
 > **New ADR** — ADR-0110 (agent-skill pinning and the invocation protocol), authored by
-> [[TOOL-008]] (plan handle `DSK-12-08`), filename
+> [[TOOL-008]] (plan handle `DSK-12-08`); see [[TOOL-008]]'s plan for the ownership
+> reconciliation — ADR-0110 has two claimants, `TOOL-008` and
+> [[FND-005]] (plan handle `DSK-00-05`). Filename
 > `docs/adr/0110-pin-agent-skills-and-invocation-protocol.md`. This plan is written to the
 > decision as recorded in `docs/desktop/12-agent-tooling/README.md` § 3 (".codex/config.toml
 > gains an `[agents]` table and, once verified, a disabled-by-default Azure MCP server
@@ -63,14 +65,16 @@ Copied from the ticket body's `## Routing` block.
   **Do not load `create-custom-agent`.** `docs/desktop/12-agent-tooling/skill-routing.md`
   § Not applicable rules it out (it targets the VS Code `.agent.md` format, not Codex TOML),
   and `EPIC-013/context.md` records that where the per-area index and the do-not-load table
-  disagree, **the do-not-load table wins**.
+  disagree, **the do-not-load table wins**. Note that the skill *is* vendored — "do not
+  load" is not "do not vendor"; [[TOOL-002]] (plan handle `DSK-12-02`) step 10 sets out that
+  distinction and the two checks that follow from it.
 - **MCP**: Kanmer (`get_status`, `get_doc_gates`, `take_ticket`, `set_ticket_doc`,
   `append_scratch`, `move_item`).
 - **Kanmer pipeline** for profile `chore`: `kanmer-plan` → `kanmer-execute` →
   `kanmer-review` → `kanmer-verify` → `kanmer-closeout`. Gates confirmed by
   `get_doc_gates TOOL-005`: `leave-preparing` needs `plan` + `questions-resolved`;
-  `enter-done` needs `proof` + `questions-resolved`. Call `get_doc_gates TOOL-005` before
-  every move.
+  `enter-done` needs `proof` + `questions-resolved`. `leave-backlog` is **not** a gated
+  boundary for a `chore`. Call `get_doc_gates TOOL-005` before every move.
 - **Reviewer**: `pegasus-desktop-reviewer` — an agent that did not implement
   (`AGENTS.md` § Repository task workflow step 5).
 
@@ -83,7 +87,9 @@ discover.
 1. **Orientation.** Read `EPIC-013/context.md` (`get_group_doc EPIC-013 context.md`), then
    the plan sections in the body's **Source of truth** — in particular
    `docs/desktop/12-agent-tooling/subagents.md` § Roster and § `.codex/config.toml`
-   additions. `get_doc_gates TOOL-005`, then `take_ticket`.
+   additions. `get_doc_gates TOOL-005`, then `take_ticket`. Read this ticket's
+   `open-questions` document: its single substantive entry is parked, and step 11 below is
+   the step that may promote it.
 2. **Verify, do not create.** `test -f .agents/skills/project/pegasus-desktop/SKILL.md` —
    confirmed present and tracked 2026-08-24, 110 lines, frontmatter `name: pegasus-desktop`,
    sections: Locked decisions, Dependency boundaries, UI and accessibility conventions,
@@ -101,8 +107,9 @@ discover.
    Fix drift **in the skill, not in the plan set**. Note the forward dependency, which is
    not this ticket's work: operator decision **D-004** (OPS-10 acceptance folds into the
    desktop pilot approval) is owned by plan 09 and is recorded in
-   `docs/desktop/README.md` § Locked decisions by `DSK-09-11`; when it lands there, the
-   project skill needs the same one-line reconcile. Do not add it before it is in the README.
+   `docs/desktop/README.md` § Locked decisions by [[REL-009]] (plan handle `DSK-09-11`); when
+   it lands there, the project skill needs the same one-line reconcile. Do not add it before
+   it is in the README, and do not re-open it — it is a decided operator decision.
 4. **Verify the roster.** `ls .codex/agents` — confirmed 2026-08-24 to return exactly the
    eight tracked TOMLs: `pegasus-azure-auditor`, `pegasus-desktop-reviewer`,
    `pegasus-gateway-dev`, `pegasus-parity-researcher`, `pegasus-release-packager`,
@@ -126,6 +133,8 @@ discover.
    key** — keep it that way; models are deliberately not pinned.
    Also confirm each still carries its never-delegate-to-your-own-kind sentence: measured
    2026-08-24, all eight do.
+   This step verifies the fields are **declared**. Whether the runtime **honours** them is
+   step 11, and it is a different question.
 7. **Add the `[agents]` table** to `.codex/config.toml`, exactly as
    `docs/desktop/12-agent-tooling/subagents.md` § `.codex/config.toml` additions gives it:
 
@@ -140,7 +149,8 @@ discover.
    Today the file is 15 lines: `[features]` (`:1`), `[mcp_servers.mcp_microsoftdocs]`
    (`:5`), `[mcp_servers.kanmer]` (`:9`), `[mcp_servers.kanmer.env]` (`:13`). Leave the
    commented Azure MCP block from that same `subagents.md` section in place **as a
-   comment**; enabling it is [[TOOL-006]]'s (`DSK-12-06`) work and must not happen here.
+   comment**; enabling it is [[TOOL-006]]'s (plan handle `DSK-12-06`) work and must not
+   happen here.
 8. **Stage only that hunk.** `git add -p .codex/config.toml` and commit the `[agents]` hunk
    alone. The `[mcp_servers.kanmer]` lines in the working tree contain absolute
    `C:\Users\PC\...` paths and must not be pushed. Confirm with
@@ -158,16 +168,29 @@ discover.
    any TOML parser and record which was used.)
 10. **Operator step** — restart Codex at the repository root and run `/agent`; hand back
     the roster listing. Expected: the eight names. Record whether it differs from the
-    "before" state [[TOOL-001]] (`DSK-12-01`) captured — that comparison is the only thing
-    that proves the `[agents]` table changed anything.
-11. **Record which optional fields the installed build honours.** If it ignores
-    `model_reasoning_effort` or `sandbox_mode`, write that down plainly: the read-only
-    guarantee for `pegasus-parity-researcher`, `pegasus-desktop-reviewer` and
-    `pegasus-azure-auditor` then rests on the `developer_instructions` prose alone. That is
-    the case [[TOOL-001]]'s "Open question to carry" guardrail routes here, and it is
-    material to [[TOOL-006]], whose Azure read-only guarantee has no per-tool permission
-    behind it either. If it is unenforced, open it as a **blocking** `open-questions` item
-    on this ticket at that point — not now, because today it is unobserved, not unresolved.
+    "before" state [[TOOL-001]] (plan handle `DSK-12-01`) captured — that comparison is the
+    only thing that proves the `[agents]` table changed anything.
+11. **Record which optional fields the installed build honours, and promote the parked
+    question if the answer is "neither".** If it ignores `model_reasoning_effort` or
+    `sandbox_mode`, write that down plainly: the read-only guarantee for
+    `pegasus-parity-researcher`, `pegasus-desktop-reviewer` and `pegasus-azure-auditor`
+    then rests on the `developer_instructions` prose alone. That is the case
+    [[TOOL-001]]'s "Open question to carry" guardrail routes here, and it is material to
+    [[TOOL-006]], whose Azure read-only guarantee has no per-tool permission behind it
+    either.
+
+    The question is already recorded, **parked**, in this ticket's `open-questions`
+    document. If the build honours neither field, move that entry **above** the
+    `## Parked (explicitly deferred)` heading as an unticked `- [ ]` box at that moment: it
+    then blocks `enter-done` until the consequence is written down and [[TOOL-006]] is told,
+    which is the correct outcome. Shipping an `[agents]` table that advertises unenforced
+    sandboxes is worse than shipping none.
+
+    It is parked **now** rather than unticked because the answer is *unobserved*, not
+    *unresolved*, and this very step is what observes it — an unticked box today would block
+    `leave-preparing`, the boundary that stands between Preparing and the step that produces
+    the answer. That is the reason, and it is not a claim about cost: an unticked box blocks
+    `leave-preparing`, `enter-review` and `enter-done` only, never `leave-backlog`.
 12. **Record the Appendix C evidence**: the reconciliation diff (what drifted, what was
     fixed — expect L-04 and L-05), the nine parse checks, the `/agent` output, and the
     honoured-fields finding.
@@ -182,8 +205,8 @@ starts immediately after it at `AGENTS.md:24` (`# Pegasus repository instruction
 
 Evidence tier **1 — Static/build/architecture**, as the body states. Parse-check output and
 a tool listing showing the roster loads; it proves nothing about agent *behaviour*, which is
-[[TOOL-009]]'s (`DSK-12-09`) job. `proof` is a `command-log` plus the operator's `/agent`
-capture.
+[[TOOL-009]]'s (plan handle `DSK-12-09`) job. `proof` is a `command-log` plus the operator's
+`/agent` capture.
 
 1. `python -c "import tomllib, sys; tomllib.load(open(sys.argv[1], 'rb'))" .codex/config.toml`
    → exit 0, no output. Repeat for each of the eight agent TOMLs — nine clean runs.
@@ -197,21 +220,34 @@ capture.
 5. `grep -n 'L-04\|L-05' .agents/skills/project/pegasus-desktop/SKILL.md` → both present
    after the reconcile.
 6. The recorded `/agent` output → the eight roster names.
+7. `get_doc_gates TOOL-005` before the move to `done` → `questions-resolved` satisfied. If
+   step 11 promoted the parked entry, this is where it bites: the box must be ticked with
+   the consequence written down first.
 
 ## Risks / open questions
 
 | Risk | Mitigation |
 | --- | --- |
 | A whole-file `git add` pushes one workstation's absolute paths into `.codex/config.toml`. | Step 8: `git add -p`, then `git diff --cached` before committing; verification item 4 catches it at review. |
-| The installed build silently ignores `sandbox_mode`, so "read-only" agents are only read-only by convention. | Step 11 records it; if unenforced it becomes a blocking `open-questions` item on this ticket and is material evidence for [[TOOL-006]]'s guardrail sentence. |
+| The installed build silently ignores `sandbox_mode`, so "read-only" agents are only read-only by convention. | Step 11 records it. The question is parked in this ticket's `open-questions` today and is **promoted to an unticked, `enter-done`-blocking box** if the build honours neither field; it is material evidence for [[TOOL-006]]'s guardrail sentence either way. |
 | Editing inside the `AGENTS.md` managed Kanmer block (`:1-22`) — `kanmer-setup` overwrites it. | The `AGENTS.md` note above pins the insertion point at or after `:24`. |
 | Creating what already exists (a second project skill, a ninth agent). | Steps 2 and 4 are stated as verifications with the measured "already present" result, so the defect shape is visible before it happens. |
 | `docs/desktop/12-agent-tooling/subagents.md` and `.codex/agents/` diverge. | Step 6's audit found no divergence on 2026-08-24. If a future run does, **`.codex/agents/` is the source of truth** — correct the document, not the file. |
-| D-004 is not yet in `docs/desktop/README.md` § Locked decisions, so it is not reconciled into the project skill here. | Recorded in step 3 as a forward dependency owned by plan 09 / `DSK-09-11`. It is a **decided** operator decision, not an open question, and must not be re-opened. |
+| D-004 is not yet in `docs/desktop/README.md` § Locked decisions, so it is not reconciled into the project skill here. | Recorded in step 3 as a forward dependency owned by plan 09 / [[REL-009]], and parked in `open-questions`. It is a **decided** operator decision, not an open question, and must not be re-opened. |
 
-Open questions: **none opened now.** The one candidate (does the build honour
-`sandbox_mode`?) is an observation the ticket makes in step 11, not a question blocking its
-start; opening it today would block every stage move on a ticket whose own step answers it.
+**Open questions: one, recorded and parked.** This ticket has an `open-questions` document
+because two bodies route a question to it — [[TOOL-001]]'s "Open question to carry" guardrail
+and this ticket's own body step 11. The entry sits below
+`## Parked (explicitly deferred)`, so `questions-resolved` stays satisfied and no move is
+blocked; step 11 carries the rule for promoting it.
+
+An earlier draft of this section declined to record anything, reasoning in part that
+"opening it today would block every stage move on a ticket whose own step answers it". The
+second half of that is the real reason and it stands — the answer is unobserved and step 11
+observes it, so an unticked box would block the boundary before the step that resolves it.
+The first half was false and is withdrawn: an unticked box blocks `leave-preparing`,
+`enter-review` and `enter-done`, and never `leave-backlog`; a `chore` carries only the first
+and the last of those three.
 
 ## Simplification pass
 
