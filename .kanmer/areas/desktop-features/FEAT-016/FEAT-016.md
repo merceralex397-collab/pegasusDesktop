@@ -26,7 +26,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:57:08.715Z'
-updated: '2026-08-24T12:36:13.968Z'
+updated: '2026-08-24T12:53:45.417Z'
 ---
 
 ## What
@@ -99,7 +99,7 @@ Tier 7 obliges keyboard, focus, semantic-label and text-plus-colour evidence fro
 ## Documentation changes
 
 - `docs/desktop/01-inventory-and-parity/parity-matrix.md` — image and evidence rows
-- `docs/desktop/06-ui-design/screen-specs.md` § `§13.7 Documents and evidence` — record the viewer contract (open in place, previous/next, download, close, `Escape` and click-outside dismissal, a document previewed through [[DSK-07-06]]'s preview surface, download offered for a type outside its safe list) with the matching AutomationIds beside `Case.Documents.Preview`; §13.7 promises the CASE-011 gallery viewer today and the specification never states its behaviour. **Coordination rule, identical in [[DSK-03-07]] and this ticket:** `screen-specs.md` is edited **once per block, by that block's owner** — [[DSK-03-07]] owns the `:230-231` "Upstream carry-over absorbed" line in the case-workspace block, this ticket owns the § `§13.7 Documents and evidence` viewer contract, and neither edits the other's block. [[DSK-06-13]] then adopts both blocks into `docs/frd/frd-13-desktop-operator-experience.md` and is the **only** ticket that writes FRD-13's §13.7 and case-workspace content — so **[[DSK-06-13]] must not adopt either block until both corrections have landed**, and must record in its plan document which case applied. If [[DSK-06-13]] runs first it freezes the uncorrected absorbed list and an unstated viewer contract into FRD-13, and both then have to be corrected twice.
+- `docs/desktop/06-ui-design/screen-specs.md` § `§13.7 Documents and evidence` — record the viewer contract (open in place, previous/next, download, close, `Escape` and click-outside dismissal, a document previewed through [[DSK-07-06]]'s preview surface, download offered for a type outside its safe list) with the matching AutomationIds beside `Case.Documents.Preview`; §13.7 promises the CASE-011 gallery viewer today and the specification never states its behaviour. **Coordination rule, stated in the same words in [[DSK-03-07]] and [[DSK-05-16]]:** `screen-specs.md` is edited **once per block, by that block's owner** — [[DSK-03-07]] owns the `:230-231` "Upstream carry-over absorbed" line in the case-workspace block, [[DSK-05-16]] owns the § `§13.7 Documents and evidence` viewer contract, and neither edits the other's block. [[DSK-06-13]] then adopts both blocks into `docs/frd/frd-13-desktop-operator-experience.md` and is the **only** ticket that writes FRD-13's §13.7 and case-workspace content — so **[[DSK-06-13]] must not adopt either block until both corrections have landed**, and must record in its plan document which case applied. If [[DSK-06-13]] runs first it freezes the uncorrected absorbed list and an unstated viewer contract into FRD-13, and both then have to be corrected twice.
 - `docs/frd/frd-13-desktop-operator-experience.md` — gallery behaviour note, including the viewer contract; written by [[DSK-06-13]] under the coordination rule above, not by this ticket
 - `docs/capabilities.md` — `DSK` row for the image gallery
 
