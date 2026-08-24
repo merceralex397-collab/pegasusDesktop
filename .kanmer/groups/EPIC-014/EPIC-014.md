@@ -1,15 +1,23 @@
 ---
 id: EPIC-014
 kind: epic
-title: Upstream carry-over from collisionengineers/pegasus
+title: Upstream carry-over — the subset the desktop conversion still needs
 archived: false
 created: '2026-08-24T10:00:58.667Z'
-updated: '2026-08-24T10:00:58.667Z'
+updated: '2026-08-24T10:03:34.211Z'
 ---
-Every open, non-archived ticket carried over from the original repository's Kanmer board, imported 2026-08-24 from the read-only clone of `collisionengineers/pegasus` branch `kanmer-board` at `a5b28111` ("chore(kanmer): sync board 2026-08-24T09:58:09.026Z").
+Holds only the upstream tickets the desktop conversion genuinely still needs as tickets of their own. **This is deliberately not a wholesale import.**
 
-114 tickets: 53 with a live disposition from the triage in `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` (`desktop-screen-spec`, `gateway-worker-ticket`, `report-decision`), 56 `unchanged-backlog` (post-alpha capability work outside conversion scope, parked in HZN-012), and 5 that postdate the 2026-08-23 triage and carry no disposition yet (`DOCS-013`, `ENG-014`, `ENG-015`, `INTK-034`, `INTK-035`, labelled `needs-triage`).
+Source: read-only clone of `collisionengineers/pegasus` branch `kanmer-board` at `a5b28111` ("chore(kanmer): sync board 2026-08-24T09:58:09.026Z"), read 2026-08-24. That head carries **114** open, non-archived tickets — five more than the 109 in the 2026-08-23 triage (`DOCS-013`, `ENG-014`, `ENG-015`, `INTK-034`, `INTK-035` postdate it); no triaged ticket has since closed.
 
-Every ticket keeps its upstream id in the title (`upstream:<ID> · …`) and in a label, its upstream body verbatim, its upstream labels, and any upstream pipeline documents copied verbatim. The 233 done and 114 archived upstream tickets are not imported; their history stays upstream and is reachable through the `upstream` remote once `DSK-00-02` adds it.
+Each of the 114 was classified against the 208 seeded conversion tickets, not against its upstream disposition alone:
 
-`DSK-01-09` owns re-triaging this batch against the current upstream head and assigning the 53 live ones to their area plans and phases.
+- **covered by the plan set** — a conversion ticket already delivers the outcome in the desktop world. Not imported; the cross-reference is recorded on the covering ticket.
+- **partially covered** — a conversion ticket owns the area but would ship without the requirement. Not imported; the requirement is added to that ticket.
+- **import needed** — real work no conversion ticket covers. These land here.
+- **moot after conversion** — exists only because of the Razor front end and dies with it. Not imported; what supersedes it is recorded.
+- **out of scope / post-alpha** — future capability work outside the conversion. Not imported; `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` stays their register.
+
+A Razor UI ticket is not automatically moot: its *intent* usually survives into a desktop screen spec even though its *implementation* does not. Only the implementation being Razor makes something moot.
+
+`DSK-01-09` (FND-022) owns re-running this classification against the then-current upstream head before Phase 3, and `DSK-00-04` (FND-004) owns verifying the counts.
