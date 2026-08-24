@@ -29,7 +29,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.634Z'
-updated: '2026-08-24T08:52:16.358Z'
+updated: '2026-08-24T09:35:47.578Z'
 ---
 
 ## What
@@ -98,7 +98,7 @@ Tier 3 obliges adapter-contract evidence: deterministic external failure handlin
 
 ## Documentation changes
 
-- `docs/adr/0108-isolated-webview2-report-rendering.md` — record the chosen off-screen host in the decision's consequences (via [[DSK-07-12]]'s file, not a second ADR)
+- `docs/adr/0108-desktop-webview2-report-rendering.md` — record the chosen off-screen host in the decision's consequences (via [[DSK-07-12]]'s file, not a second ADR)
 - `docs/current-architecture.md` — the renderer composition (desktop plus retained gateway fallback), after the slice ships
 - `docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md` — the local-render behaviour clause
 
