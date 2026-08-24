@@ -25,7 +25,7 @@ validates that arrangement from the packaged app rather than supplying a later
 body edit. The ADR records port, project, templates, isolation, single-flight,
 fallback, retention gate and reversal condition now.
 
-The rejected alternative was waiting for the Phase 7 spike and writing one
+The rejected alternative was waiting for Phase 7 packaged-controller validation and writing one
 `accepted` ADR. It is tidier and it is wrong twice over: plan 00 § 4 makes
 ADR-0100…ADR-0110 part of the **Phase 0** governance exit gate and explicitly
 allows ADR-0108 to stand `proposed` until the spike, so waiting would hold that
@@ -313,6 +313,7 @@ Proof is written on merged `main`, after review and merge — never before
 
 ## Simplification pass
 
-_Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over
-this branch's own diff before the PR, recorded here under a dated heading.
-Expected outcome for this ticket: `n/a — docs-only`._
+2026-08-25 — n/a — docs-only. The correction removes the speculative two-host
+choice, a collapsed XAML control, an arbitrary hidden window, and the proposed
+host-selection abstraction. It keeps the existing renderer port and adds no
+new project, runtime, service, dependency, or Azure change.
