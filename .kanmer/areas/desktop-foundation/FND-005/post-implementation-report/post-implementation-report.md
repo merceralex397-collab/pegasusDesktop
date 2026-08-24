@@ -27,3 +27,7 @@ The branch cannot yet be opened for integration: the remote has no `dev` branch,
 ## Focused independent re-review — 2026-08-24
 
 PASS. The reviewer confirmed that `d22c39dd` changes only ADR-0105 and the area-02 README; the two affirmative cloud-placement rows now name the always-on in-house feed host and in-house signing host, the selected ADR-0100/0104 filenames are propagated, and the dependent FND-026, TOOL-008, FND-010, and FND-013 plans use those paths. `Test-DocumentationLinks.ps1` and `Test-MarkdownPlacement.ps1 -Base ecb9b7b4 -Head d22c39dd` passed. No remaining review finding.
+
+## Delivery update — 2026-08-24
+
+Live remote verification now finds `origin/fnd-005-foundation-adrs` at `d22c39dde51f087620e30ac1c343a2896585b114`, and the local branch tracks it. The earlier HTTP 403 is superseded as the delivery blocker. `origin/dev` remains absent, so the required PR target, Review movement, links, and merged proof are still pending.

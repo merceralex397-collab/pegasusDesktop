@@ -18,7 +18,7 @@ One box per implementation obligation. The original checklist's stale filenames 
 - [x] Verify documentation links and allowed Markdown placement on the committed branch.
 - [ ] Link each ADR to FND-005 and affected tickets, then clear only the corresponding `docs_todo` values. This must wait until the committed files are merged into the MCP repository root, where `link_doc` can validate them.
 - [ ] Re-probe one cleared ticket's gates after the links exist.
-- [x] Obtain an independent review, address its findings, and pass focused re-review.\n- [ ] Push/open the dependent documentation PR and move FND-005 to Review. The repository has no `dev` branch yet; FND-001 must establish the integration target, and the configured remote rejected the branch push with HTTP 403.
+- [x] Obtain an independent review, address its findings, and pass focused re-review.\n- [ ] Open the dependent documentation PR and move FND-005 to Review. The branch is published; the repository still has no `dev` branch, so FND-001 must establish the integration target.
 - [ ] After merge, write Tier-1 proof against the merged result and close out the ticket.
 
 ## Progress notes
