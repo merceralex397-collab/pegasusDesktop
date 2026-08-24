@@ -5,7 +5,7 @@ date: 2026-08-24
 supersedes: []
 superseded_by: []
 related_capabilities: []
-related_frd: [FRD-11]
+related_frd: [frd-11]
 tags: []
 ---
 
