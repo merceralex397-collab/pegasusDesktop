@@ -1,0 +1,1 @@
+2026-08-24 — Took FND-007 on `fnd-007-webview2-adr` in `.worktrees/fnd-007`, created from local `fnd-005-foundation-adrs` at `d22c39dd` because this clone has no `origin/dev`. FND-007 is intentionally left Implementing after its proposed ADR and report; no remote/push/PR action is available or authorized in this run. No Azure operation is in scope.
