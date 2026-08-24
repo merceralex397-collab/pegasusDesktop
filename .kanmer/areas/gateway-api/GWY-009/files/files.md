@@ -34,7 +34,7 @@ Read these before writing a line. Each one is here for the specific thing it tel
 | `src/Pegasus.Infrastructure/Persistence/EfCaseNoteStore.cs` (66 lines) | The template for every event this ticket writes, and the reason it must be `CaseWorkflowEventEntity`: its class comment at `:13-18` records the Release 22 defect verbatim — "The note was persisted, the page reported success, and the timeline stayed empty." The field set to copy is `:48-63`; the replay guard to copy is `:35-44` (`AnyAsync` on `CaseId` + `OperationKey`) |
 | `src/Pegasus.Infrastructure/Persistence/EfCaseQueryStore.cs:181-196` | The history projection your tests assert through — `CaseWorkflowEvents` only, ordered newest-first, `Take(200)`, projected into `CaseHistoryEntry`. It reads nothing from `CaseHistory`, which is why moving the writes is the fix. The `Take(200)` cap is why a test asserts presence of the new entry rather than a total count |
 | `src/Pegasus.Infrastructure/Persistence/EfCaseWorkflowStore.cs:901-921` | The existing **system-written** automatic event, `report_evidence_auto_linked`: before/after JSON, version increment, `ClearLease`, then `AddEvent(...)` at `:909-921`. The new custody notes copy this shape. Its replay arm at `:855-872` shows how a replayed operation key is recognised by `RequestHash` |
-| `src/Pegasus.Web/Presentation/OperatorLabels.cs:389-394` | The five labels that already exist and must not be reworded: "Sent report linked automatically", "Audit evidence confirmed", "Audit evidence stored", "Audit evidence storage failed", "Document stored", "Document storage failed". Four become reachable for the first time when the writes move. If you find yourself wanting to add a label, the event type you invented is wrong |
+| `src/Pegasus.Web/Presentation/OperatorLabels.cs:389-394` | The five labels that already exist and must not be reworded: "Sent report linked automatically", "Audit evidence stored", "Audit evidence storage failed", "Document stored", "Document storage failed". Four become reachable for the first time when the writes move. If you find yourself wanting to add a label, the event type you invented is wrong |
 | `src/Pegasus.Core/Documents/DocumentContracts.cs:146-152`, `:206-210` | `LogicallyRemoveDocumentCommand` and `ILogicallyRemoveDocument` — that the removal already carries `Reason`, `OperationKey`, `ExpectedCaseVersion` and `EditLeaseToken`, so the new event has an operator-supplied reason and a replay key without any contract change |
 | `src/Pegasus.Infrastructure/Persistence/Migrations/20260729199000_RuntimeRoleReconciliation.cs` | That `("CaseWorkflowEvents", "SELECT, INSERT")` is already granted to the **Web** role (`WebGrants`, `:94` list, entry `:122`) **and** the **Worker** role (`WorkerGrants`, `:166` list, entry `:181`). The area plan § 7 names missing runtime grants as the "works locally, fails only in production" trap that has shipped three times; here it does not apply, and this file is the evidence |
 | `tests/Pegasus.IntegrationTests/AzureSqlRuntimeRoleMigrationTests.cs:119`, `:177` | The pinned grant census already records `CaseWorkflowEvents:SELECT,INSERT` for both roles — so no census edit either. Read it before concluding you need a migration |
@@ -55,9 +55,10 @@ Read these before writing a line. Each one is here for the specific thing it tel
   (created by [[FND-031]]; generator and CI no-op check by [[GWY-005]]) regenerates from that
   snapshot. CI runs `git diff --exit-code` after regeneration, so an uncommitted regeneration is a
   red build.
-- **[[FEAT-006]] is the caller** — this ticket is listed in its blockers. The desktop task strip
-  cannot be built until these routes and the `CaseTaskResponseDto` shape land, and the response
-  must carry both `version` and `caseVersion` or that slice needs a re-read after every command.
+- **[[FEAT-006]] (plan handle `DSK-05-06`, "S6 Workflow, closure and tasks commands") is the
+  caller** — this ticket is listed in its blockers. The desktop task strip cannot be built until
+  these routes and the `CaseTaskResponseDto` shape land, and the response must carry both
+  `version` and `caseVersion` or that slice needs a re-read after every command.
 - **[[GWY-017]] (plan handle `DSK-03-17`)** adds compression, ETags and cancellation across every
   `/api/v1` endpoint including these eight; **[[GWY-018]] (plan handle `DSK-03-18`)** runs the
   independent authorization/contract gap review over them. Both are listed as blocked by this
@@ -92,7 +93,7 @@ decision, not infer it.
   half. This ticket owns the notes rule only.
 - Anything in `src/Pegasus.Infrastructure` other than the three named files and their named line
   ranges — including a shared `CaseWorkflowEventWriter` helper, which would be the natural
-  refactor and is explicitly outside the named exception. Six inline writes is the intended shape.
+  refactor and is explicitly outside the named exception. Inline writes are the intended shape.
 - `EfExternalWorkStore.cs:210` — a `CaseHistory.Add` for a different event. The guardrail names
   four ranges in that file and this is not one of them.
 - Activating the Case Details notes capability. Upstream CASE-004 keeps that surface
