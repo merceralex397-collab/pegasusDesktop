@@ -24,7 +24,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.690Z'
-updated: '2026-08-24T08:52:07.234Z'
+updated: '2026-08-24T10:34:25.509Z'
 ---
 
 ## What
@@ -33,7 +33,7 @@ Build the desktop half of Box-backed documents: a native folder/file browser for
 
 ## Why
 
-Proposal § 12.2 assigns the desktop browsing, drag-and-drop upload, preview, a bounded local working cache, transfer progress and cancellation, and conflict communication; § 13.7 adds "evidence that the canonical copy was saved"; § 16.3 requires temporary document files to use per-user access controls and bounded retention. The Phase 6 exit gate is explicit: *large and failed transfers recover safely*. Siblings: [[DSK-07-05]] supplies the broker endpoints, [[DSK-07-07]] decides the transfer mode, [[DSK-07-08]] owns version conflict, [[DSK-05-14]] is the case-workspace slice that hosts this tab.
+Proposal § 12.2 assigns the desktop browsing, drag-and-drop upload, preview, a bounded local working cache, transfer progress and cancellation, and conflict communication; § 13.7 adds "evidence that the canonical copy was saved"; § 16.3 requires temporary document files to use per-user access controls and bounded retention. The Phase 6 exit gate is explicit: *large and failed transfers recover safely*. Siblings: [[DSK-07-05]] supplies the broker endpoints, [[DSK-07-07]] decides the transfer mode, [[DSK-07-08]] owns version conflict, [[DSK-05-14]] is the case-workspace slice that hosts this tab and extends the view model and transfer service this ticket owns.
 
 ## Source of truth
 
@@ -56,9 +56,9 @@ Proposal § 12.2 assigns the desktop browsing, drag-and-drop upload, preview, a 
 
 1. Orient: read the plan row, the Documents screen spec, `docs/frd/frd-05-documents-extraction-and-custody.md`, and the [[DSK-07-07]] spike result. Call `get_doc_gates <this ticket id>`, then `take_ticket` on branch `task/dsk-07-06-document-browser`.
 2. Record the transfer mode this ticket implements: **gateway streaming** (the default under this area's § 3 deviation) or direct transfer, only if [[DSK-07-07]] proved a short-lived, file-scoped downscoped token *and* a follow-up ticket enabled it. Do not decide it here; if the spike has not landed, the ticket stays in Preparing.
-3. Implement `TransferQueueService` in `src/Pegasus.Desktop.Infrastructure`: a bounded queue of upload and download items, each with `notStarted`/`running`/`succeeded`/`failed`/`cancelled` state, a correlation id, progress in bytes, cancellation via `CancellationTokenSource`, and explicit retry of a failed item (proposal § 16.1). Uploads use the three-step session from [[DSK-07-05]]; a cancelled or failed upload never calls `complete`.
+3. Implement `TransferQueueService` in `src/Pegasus.Desktop.Infrastructure`: a bounded queue of upload and download items, each with `notStarted`/`running`/`succeeded`/`failed`/`cancelled` state, a correlation id, progress in bytes, cancellation via `CancellationTokenSource`, and explicit retry of a failed item (proposal § 16.1). Uploads use the three-step session from [[DSK-07-05]]; a cancelled or failed upload never calls `complete`. This ticket owns that type: if [[DSK-05-14]] landed first it created it under exactly this shape, so extend it in place and add no second transfer service.
 4. Implement the bounded working cache in the same project: files land under the packaged app's temporary folder, with per-user ACLs, a total-size cap and an age-based purge on startup and on case close. Every cached file records the `versionId` and `sha256` it came from so a stale copy can be detected. Nothing in the cache is ever presented as the canonical copy.
-5. Build `CaseDocumentsViewModel` in `src/Pegasus.Desktop`: the file list from `GET /api/v1/cases/{id}/documents`, a queue pane bound to `TransferQueueService`, and commands for upload (picker and drag-and-drop), download, preview, open externally, reasoned removal and upload-link create/revoke. Follow `winui-code-review`'s MVVM checklist — `[ObservableProperty]` partial properties, `[RelayCommand]`, no UI types in the view model.
+5. Build `CaseDocumentsViewModel` in `src/Pegasus.Desktop`: the file list from `GET /api/v1/cases/{id}/documents`, a queue pane bound to `TransferQueueService`, and commands for upload (picker and drag-and-drop), download, preview, open externally, reasoned removal and upload-link create/revoke. Follow `winui-code-review`'s MVVM checklist — `[ObservableProperty]` partial properties, `[RelayCommand]`, no UI types in the view model. This ticket owns that type and its view: if [[DSK-05-14]] landed first it created it under exactly these members, so extend it in place and add no second view model.
 6. Build `CaseDocumentsView.xaml` to the screen spec with the six AutomationIds listed there, using the data-table pattern from [[DSK-06-07]]. Show name, type, size (MB, one decimal), source, uploader, time and custody state, plus an explicit canonical-copy indicator distinct from any local working copy.
 7. Implement the preview pane for safe types only: images decoded to display size natively. For PDF, use the isolated document-render path from [[DSK-07-14]] — the preview surface is a document viewer, never a WebView hosting Pegasus UI (proposal § 23.2, ADR-0108). "Open externally" is an explicit user command, never automatic.
 8. Make interruption safe and visible: a failed or cancelled transfer keeps its row with the failure sentence and a retry command; it never silently disappears and never leaves a partial file in the cache. Failed rows persist across navigation within the session.
@@ -91,7 +91,7 @@ Tier 7 obliges a real run on a real package; an automated scan does not replace 
 
 ## Documentation changes
 
-- `docs/frd/frd-13-desktop-operator-experience.md` — documents and transfer-queue section
+- `docs/frd/frd-13-desktop-operator-experience.md` — documents and transfer-queue section (this ticket authors the section; [[DSK-05-14]] adds the export, custody-retry and permission-checked removal behaviour as a sub-heading inside it)
 - `docs/frd/frd-05-documents-extraction-and-custody.md` — desktop behaviour clause (local working copy vs canonical, transfer states)
 - `docs/desktop/01-inventory-and-parity/parity-matrix.md` — document rows advance to `implemented`
 
@@ -99,7 +99,7 @@ Tier 7 obliges a real run on a real package; an automated scan does not replace 
 
 - **Azure**: no write.
 - **Scope boundary**: may touch `src/Pegasus.Desktop`, `src/Pegasus.Desktop.Infrastructure`, `tests/Pegasus.Desktop.ViewModelTests`, `tests/Pegasus.Desktop.UITests`. Must not reference `src/Pegasus.Infrastructure/Custody/` or `Box.Sdk.Gen` from any desktop project, and must not add gateway endpoints (that is [[DSK-07-05]]).
-- **Traps**: ADR-0107 — a Box credential in the package is a defect, and so is a "temporary" long-lived URL left in a log; the working cache must never masquerade as custody; no hidden overwrite — a collision is a decision, and version conflict is [[DSK-07-08]]; custody retry stays human-only; the PDF preview must not become a WebView hosting Pegasus UI (proposal § 23.2).
+- **Traps**: ADR-0107 — a Box credential in the package is a defect, and so is a "temporary" long-lived URL left in a log; the working cache must never masquerade as custody; no hidden overwrite — a collision is a decision, and version conflict is [[DSK-07-08]]; custody retry stays human-only; the PDF preview must not become a WebView hosting Pegasus UI (proposal § 23.2). One view model per screen and one transfer service: this ticket owns `CaseDocumentsViewModel`, `CaseDocumentsView.xaml` and `TransferQueueService`, [[DSK-05-14]] extends them; a second view model for the same screen, or a second transfer service, is a stop condition.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome
