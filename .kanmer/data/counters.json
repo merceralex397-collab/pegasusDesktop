@@ -2,7 +2,7 @@
   "HZN": 11,
   "EPIC": 14,
   "REL": 16,
-  "DUI": 16,
+  "DUI": 17,
   "TEST": 19,
   "GWY": 24,
   "FEAT": 45,
@@ -13,5 +13,5 @@
   "DOCS": 3,
   "CASE": 2,
   "ENG": 2,
-  "INTK": 4
+  "INTK": 6
 }
