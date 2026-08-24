@@ -36,7 +36,9 @@ The ticket's `refs` list is **empty** and its frontmatter carries `docs_todo: tr
 (`get_doc_gates REL-004`). No existing PRD/FRD/ADR is claimed to be met.
 
 > **New ADR** — ADR-0105 (signed MSIX / App Installer distribution with a gateway
-> minimum-version gate), authored by `DSK-09-01` (board `REL-001`). This plan implements
+> minimum-version gate), authored by [[REL-001]] (plan handle `DSK-09-01`); see
+> [[REL-001]]'s plan for the ownership reconciliation — ADR-0105 has three claimants
+> (`REL-001`, `FND-005`, `FND-042`). This plan implements
 > its Decision clause (c) — package version `1.<minor>.<build>.0` — through the `-Version`
 > pattern in step 3, and its Consequences — signing with the self-managed certificate,
 > always timestamped — through steps 6 and 7. This plan is written to the decisions as
@@ -48,7 +50,7 @@ Existing ADRs this plan **meets** rather than introduces:
 - **ADR-0007** (`docs/adr/0007-direct-terminal-azure-deployment.md`) — releases run from
   an authorised Windows terminal. **Meets**: steps 1–3 make the script a terminal command
   with clean-HEAD and exact-revision preconditions; there is no unattended path, and the
-  later tag lane (`DSK-09-17`, board `REL-015`) is still gated on a human approval.
+  later tag lane ([[REL-015]], plan handle `DSK-09-17`) is still gated on a human approval.
 
 Binding operator decisions, written to as decisions and never as options:
 
@@ -62,8 +64,9 @@ Binding operator decisions, written to as decisions and never as options:
   download, and GitHub Releases and GitHub Pages are permanently ruled out.
 
 Contracts this plan **consumes**: the thirteen manifest fields and generator parameters
-fixed by `DSK-09-02` (board `REL-002`), and the `.appinstaller` generator plus eight-check
-validator and its exit-code contract fixed by `DSK-09-03` (board `REL-003`).
+fixed by [[REL-002]] (plan handle `DSK-09-02`), and the `.appinstaller` generator plus
+eight-check validator and its exit-code contract fixed by
+[[REL-003]] (plan handle `DSK-09-03`).
 
 ## Routing
 
@@ -76,18 +79,22 @@ the plan document.
 - **Skills**, loaded in this order: `pegasus-desktop`
   (`.agents/skills/project/pegasus-desktop/SKILL.md`, verified present) →
   `winui-packaging` (`.codex/skills/winui-packaging/SKILL.md`,
-  `microsoft/win-dev-skills` v0.5.0 `f1028dd5`, verified present) → `pegasus-release`
-  (`.agents/skills/pegasus-release/SKILL.md`, verified present, for the release-terminal
-  conventions and traps table).
+  `microsoft/win-dev-skills` v0.5.0 `f1028dd5`, verified present — the path moves to
+  `.agents/skills/vendor/windows/winui-packaging/` once [[TOOL-002]] lands) →
+  `pegasus-release` (`.agents/skills/pegasus-release/SKILL.md`, verified present, for the
+  release-terminal conventions and traps table).
 - **MCP**: Kanmer (`get_status`, `get_doc_gates`, `take_ticket`, `set_ticket_doc`,
   `append_scratch`, `move_item`); Microsoft Learn (`microsoft_docs_search`,
   `microsoft_docs_fetch`).
 - **Kanmer pipeline** for profile `feature`: `kanmer-research` → `kanmer-plan` →
   `kanmer-execute` → `kanmer-review` → `kanmer-verify` → `kanmer-closeout`. Call
   `get_doc_gates REL-004` before every move; a move crosses at most one gated boundary.
-  `get_doc_gates` reports `leave-backlog` (governing-doc, already satisfied),
-  `leave-preparing` (research, files, plan, checklist), `enter-review`
-  (post-implementation-report) and `enter-done` (proof).
+  `get_doc_gates` reports `leave-backlog` (`governing-doc`, already satisfied by
+  `docs_todo: true`), `leave-preparing` (`research`, `files`, `plan`, `checklist`,
+  **`questions-resolved`**), `enter-review` (`post-implementation-report`,
+  **`questions-resolved`**) and `enter-done` (`proof`, **`questions-resolved`**).
+  Note that `questions-resolved` appears at three of those four boundaries and **never at
+  `leave-backlog`** — verified 2026-08-24.
 - **Reviewer**: `pegasus-desktop-reviewer` — an agent that did not implement
   (`AGENTS.md` § Repository task workflow step 5).
 
@@ -97,7 +104,9 @@ These refine the body's thirteen implementation steps in the same order, with th
 ownership and the same file paths.
 
 1. **Orient and take.** Read the area plan § 5 row `DSK-09-04`, `runbooks.md` § R1 steps
-   1–4, and area plan § 3. `get_doc_gates REL-004`, then `take_ticket REL-004`.
+   1–4, and area plan § 3. `get_doc_gates REL-004`, then `take_ticket REL-004`. Read this
+   ticket's `open-questions` document — every entry in it is parked, so none of them blocks
+   a move, but each names something not to re-decide here.
 2. **Read the precedent end to end.** `scripts/Build-ReleaseArtifacts.ps1`, all 130 lines.
    Reuse its safety shape verbatim in structure: `Set-StrictMode -Version Latest`,
    `$ErrorActionPreference = 'Stop'`, `$repositoryRoot = Split-Path -Parent $PSScriptRoot`,
@@ -107,9 +116,9 @@ ownership and the same file paths.
 3. **Create `scripts/Build-DesktopRelease.ps1`** with parameters `-Channel`
    (`ValidateSet 'pilot','prod'`), `-Version` (`ValidatePattern '^1\.\d+\.\d+\.0$'`),
    `-SourceRevision` (`ValidatePattern '^[0-9a-f]{40}$'`), `-Sign` (switch),
-   `-CertificatePath`, `-TimestampUrl`, `-FeedRoot`, and — added now so `DSK-09-16`
-   (board `REL-014`) can extend additively — `-SbomPath`. **Fail immediately** if `-Sign`
-   is passed without both `-CertificatePath` and `-TimestampUrl`, with a message that
+   `-CertificatePath`, `-TimestampUrl`, `-FeedRoot`, and — added now so [[REL-014]]
+   (plan handle `DSK-09-16`) can extend additively — `-SbomPath`. **Fail immediately** if
+   `-Sign` is passed without both `-CertificatePath` and `-TimestampUrl`, with a message that
    names all three parameters; this check runs before any build work, because a signed
    package without a timestamp is a latent estate-wide failure. Also fail fast when
    `-Sign` is passed and `signtool` is not resolvable on `PATH`
@@ -142,24 +151,36 @@ ownership and the same file paths.
    Extract the signer subject and thumbprint from that output and carry them into the
    manifest at step 9. Ordering matters: a failed verification must leave no manifest, no
    `.appinstaller` and no hash list.
-8. **Write the vulnerability report.**
+8. **Write the vulnerability report, and record the SBOM question rather than answering it.**
    `dotnet list ./src/Pegasus.Desktop/Pegasus.Desktop.csproj package --vulnerable
    --include-transitive > <releaseRoot>/vulnerability-report.txt`, and throw if the text
    contains `Critical` or `High`. Inspect the **text**, never the exit code: `dotnet list
    package --vulnerable` returns `0` even when it reports findings, and a gate that trusts
    the exit code is a no-op. `--include-transitive` is essential because the package is
-   self-contained and ships its own runtime. Leave the SBOM **generator choice** to
-   `DSK-09-16` (board `REL-014`), which the board makes the single owner of the generator,
-   the gate contract and the suppression register: add the `-SbomPath` pass-through
-   (step 3) and record in this document that the choice belongs there. **Do not create an
-   `open-questions` document for it** — an unticked item would block every stage move on
-   this ticket for a decision a named sibling ticket already owns.
+   self-contained and ships its own runtime.
+
+   Leave the SBOM **generator choice** to [[REL-014]], which the board makes the single
+   owner of the generator, the gate contract and the suppression register: add the
+   `-SbomPath` pass-through (step 3) and **record the open question in `open-questions/`**,
+   as the ticket body directs in as many words. That document now exists, with the SBOM
+   question recorded **below `## Parked (explicitly deferred)`** — recorded, owned, and not
+   blocking, because the body tells this ticket to add the hook and proceed. `REL-014`'s own
+   step 1 says it will read "the `-SbomPath` hook and the open question `DSK-09-04` left", so
+   leaving nothing there would have broken a sibling's first step.
+
+   The earlier draft of this step said not to create the document at all, on the ground that
+   "an unticked item would block every stage move". That reason is false and is withdrawn: an
+   unticked box blocks `leave-preparing`, `enter-review` and `enter-done`, and never
+   `leave-backlog`. The sound half of the reasoning — that a decision a named sibling ticket
+   owns is a scope boundary rather than an open question — is why the entry is parked instead
+   of unticked. Verified 2026-08-24 with `get_doc_gates REL-004`: with a parked-only
+   `open-questions`, `questions-resolved` remains satisfied at all three boundaries.
 9. **Emit the manifest and the `.appinstaller`.** Call
-   `eng/packaging/New-DesktopReleaseManifest.ps1` (`DSK-09-02`, board `REL-002`) with the
+   `eng/packaging/New-DesktopReleaseManifest.ps1` ([[REL-002]]) with the
    version, channel, source revision, package path, signer subject and thumbprint from
    step 7, and the gateway compatibility range; then
    `eng/packaging/New-AppInstaller.ps1` and `eng/packaging/Test-AppInstaller.ps1`
-   (`DSK-09-03`, board `REL-003`) for the requested channel. **Throw on a non-zero
+   ([[REL-003]]) for the requested channel. **Throw on a non-zero
    validator exit** — the validator is a gate, not a report.
 10. **Write the evidence files and the single result.** A `build-log.txt`, and a hash list
     from `Get-FileHash -Algorithm SHA256` over the `.msix`, the `.appinstaller` and the
@@ -186,10 +207,10 @@ ownership and the same file paths.
 
 Evidence tier from the body: **Tier 1 — Static/build/architecture.** The obligation is a
 green build and a produced, validated artefact set on the release terminal. Install and
-update behaviour is proven by `DSK-08-10` (board `TEST-010`) and by runbook R1 in
-`DSK-09-11` (board `REL-009`), and this ticket must not claim it. `proof` is the captured
-console output of the four cases below as proof type `command-log`, plus the two-run hash
-comparison from step 12.
+update behaviour is proven by [[TEST-010]] (plan handle `DSK-08-10`) and by runbook R1 in
+[[REL-009]] (plan handle `DSK-09-11`), and this ticket must not claim it. `proof` is the
+captured console output of the four cases below as proof type `command-log`, plus the
+two-run hash comparison from step 12.
 
 | Command | Expected evidence |
 | --- | --- |
@@ -215,23 +236,32 @@ were compared and the observed result — stable or not — is recorded; and
 - **Risk — `signtool` is not on the release terminal's `PATH`.** It ships with the Windows
   SDK, not the .NET SDK, and nothing here installs it. Mitigation: step 3's fail-fast
   `Get-Command signtool` check when `-Sign` is passed; never skip the verification.
+  Parked as A-09-6 in `open-questions`.
 - **Risk — `winapp package` names the output file itself.** Mitigation: step 6's rename
   fallback, applied unconditionally rather than conditionally on a flag that may not
-  exist.
+  exist. Parked as A-09-5 in `open-questions`.
 - **Risk — the reproducibility claim outruns the measurement.** Mitigation: step 12
   records the observed result including instability; the acceptance criterion is the
-  measurement, not a stable hash.
+  measurement, not a stable hash. Parked as A-09-7 in `open-questions`.
 - **Risk — the script grows past a reviewable size.** The body's sizing concern: build,
   package, sign, manifest, validate, vulnerability report is a lot for one ticket. If the
-  diff outgrows review, split the SBOM/vulnerability half into `DSK-09-16` (board
-  `REL-014`) rather than inventing a new handle.
+  diff outgrows review, split the SBOM/vulnerability half into [[REL-014]] rather than
+  inventing a new handle.
 - **Risk — the desktop project does not exist yet.** `src/Pegasus.Desktop/` is created by
-  `DSK-02-05` (board `FND-030`). Mitigation: the parameter block, guards, escape guard and
-  wiring can be written and reviewed first; only steps 5–10's execution needs the project.
-- **Open questions**: none that block. `winapp package`'s output flag, `signtool`
-  availability and MSIX determinism are each settled by running one command on the release
-  terminal and each has a recorded fallback. The SBOM generator is owned by `DSK-09-16`
-  (board `REL-014`) — a ticket, not a question. No `open-questions` document is created.
+  [[FND-030]] (plan handle `DSK-02-05`). Mitigation: the parameter block, guards, escape
+  guard and wiring can be written and reviewed first; only steps 5–10's execution needs the
+  project.
+- **Open questions — recorded, and none of them blocking.** This ticket now has an
+  `open-questions` document, because its body's step 8 instructs one in as many words and
+  [[REL-014]]'s own step 1 expects to find it. Every entry sits below
+  `## Parked (explicitly deferred)`: the **SBOM generator choice** (owned by `REL-014`),
+  `winapp package`'s output flag (A-09-5), `signtool` availability (A-09-6) and MSIX
+  determinism (A-09-7). The last three are each settled by running one command on the
+  release terminal and each has a recorded fallback that does not require an answer first.
+  Verified 2026-08-24: with the document parked-only, `questions-resolved` is satisfied at
+  `leave-preparing`, `enter-review` and `enter-done` — so recording the questions costs this
+  ticket nothing, and the earlier reason for not recording them ("would block every stage
+  move") was false in both its halves.
 
 ## Simplification pass
 
