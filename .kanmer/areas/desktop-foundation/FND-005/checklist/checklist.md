@@ -18,7 +18,7 @@ One box per implementation obligation. The original checklist's stale filenames 
 - [x] Verify documentation links and allowed Markdown placement on the committed branch.
 - [ ] Link each ADR to FND-005 and affected tickets, then clear only the corresponding `docs_todo` values. This must wait until the committed files are merged into the MCP repository root, where `link_doc` can validate them.
 - [ ] Re-probe one cleared ticket's gates after the links exist.
-- [ ] Push/open the dependent documentation PR, obtain an independent `pegasus-desktop-reviewer` review, and move FND-005 to Review. The repository has no `dev` branch yet; FND-001 must establish the integration target first.
+- [x] Obtain an independent review, address its findings, and pass focused re-review.\n- [ ] Push/open the dependent documentation PR and move FND-005 to Review. The repository has no `dev` branch yet; FND-001 must establish the integration target, and the configured remote rejected the branch push with HTTP 403.
 - [ ] After merge, write Tier-1 proof against the merged result and close out the ticket.
 
 ## Progress notes
@@ -28,3 +28,4 @@ One box per implementation obligation. The original checklist's stale filenames 
 - 2026-08-24 — Microsoft Learn verified App Installer `UpdateBlocksActivation` / `ShowPrompt` behavior and LocalMachine TrustedPeople certificate import requirements.
 - 2026-08-24 — committed `fb634d1c docs: add desktop foundation ADRs` and `79bb5860 docs: clarify foundation ADR evidence`.
 - 2026-08-24 — `pwsh ./scripts/Test-DocumentationLinks.ps1` passed (232 files); `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base ecb9b7b4 -Head HEAD` passed.
+- 2026-08-24 — committed `d22c39dde51f087620e30ac1c343a2896585b114 docs: reconcile foundation ADR review`; link, placement, and placement-regression checks passed; focused independent re-review passed.

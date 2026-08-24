@@ -23,3 +23,7 @@
 An independent review identified the two placement/path-consumer corrections above; `d22c39dd` applies them. Focused independent re-review is pending.
 
 The branch cannot yet be opened for integration: the remote has no `dev` branch, and pushing `fnd-005-foundation-adrs` was rejected with GitHub HTTP 403 for the configured remote. The ADR files are therefore not present in the MCP repository root, so `link_doc`, reference cleanup, Review movement, and merged proof remain intentionally pending.
+
+## Focused independent re-review — 2026-08-24
+
+PASS. The reviewer confirmed that `d22c39dd` changes only ADR-0105 and the area-02 README; the two affirmative cloud-placement rows now name the always-on in-house feed host and in-house signing host, the selected ADR-0100/0104 filenames are propagated, and the dependent FND-026, TOOL-008, FND-010, and FND-013 plans use those paths. `Test-DocumentationLinks.ps1` and `Test-MarkdownPlacement.ps1 -Base ecb9b7b4 -Head d22c39dd` passed. No remaining review finding.
