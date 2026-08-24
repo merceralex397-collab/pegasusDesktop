@@ -27,7 +27,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:39:42.036Z'
-updated: '2026-08-24T11:57:35.552Z'
+updated: '2026-08-24T12:30:20.002Z'
 ---
 
 ## What
@@ -128,7 +128,7 @@ The upstream `research`, `files` and `open-questions` documents are copied onto 
 8. Extend `tests/Pegasus.IntegrationTests/AutomationMcpIngressTests.cs` so the canonical tool inventory fact records the new total. Today the seven `*McpTools.cs` files carry 35 `[McpServerTool(` declarations (Assessment 5, Case 5, Document 3, Intake 2, Mail 3, Triage 13, Unidentified 4); after this ticket the expected total is 38.
 9. Extend `tests/Pegasus.IntegrationTests/AutomationMailIngressTests.cs` with, for each new tool: success under `automation.mail`; scope denial with no side effect; exact-message identity (a wrong or unknown message id is refused, never coerced); stale-version conflict; replay of the same `operationKey` returning the same outcome without a second effect; durable actor attribution visible in permanent history; and, for the move, the provider-absent case.
 10. Add the parity facts the upstream Verification demands: for the same seeded retained message, the Automation caller and the `/api/v1` caller produce the same Core outcome and the same permanent history entries. Record in the post-implementation report which oracle was used (`/api/v1` contract tests, and `MailWorkspaceWebTests.cs` while it still exists).
-11. Update `docs/frd/frd-10-mcp-automation-and-actor-boundary.md` with the three tools and the authority boundary each inherits (no tool broadens Outlook or cloud authority beyond its owning capability). Hand the corrected `PAR-46` tool count to [[DSK-01-05]] rather than editing `docs/desktop/01-inventory-and-parity/parity-matrix.md:91` here — that row belongs to that ticket.
+11. Update `docs/frd/frd-10-mcp-automation-and-actor-boundary.md` with the three tools and the authority boundary each inherits (no tool broadens Outlook or cloud authority beyond its owning capability). In the **same** commit make the three plan corrections listed under § Documentation changes, using the exact replacement wording recorded there: `docs/desktop/06-ui-design/screen-specs.md:268-269`, the § S10 bullet at `docs/desktop/05-implementation-and-migration/vertical-slices.md:404-406`, and the `AUTO-003` register row at `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md:81`. Re-read each of the three lines before editing it and stop if it no longer reads as § Documentation changes quotes it. Touch only the S10 bullet in `vertical-slices.md` — § S9 of that document is [[INTK-004]]'s. Hand the corrected `PAR-46` tool count to [[DSK-01-05]] rather than editing `docs/desktop/01-inventory-and-parity/parity-matrix.md:91` here — that row belongs to that ticket.
 12. Run the simplification pass over the branch diff, record it under a dated `## Simplification pass` heading in this ticket's `plan` document, then open the PR into `dev`.
 
 ## Acceptance criteria
@@ -141,6 +141,7 @@ The upstream `research`, `files` and `open-questions` documents are copied onto 
 - [ ] Each new tool carries explicit expected versions, a required reason, an `mcp:`-prefixed operation key, and — on the link pair — a case edit-lease token.
 - [ ] The provider-absent move returns a normalised content-safe failure and performs no side effect.
 - [ ] No Core policy is duplicated: each tool delegates to the same use case the `/api/v1` endpoint calls.
+- [ ] The three plan statements that still describe upstream AUTO-003 as absorbed or leave it unowned are corrected in the same edit and each names this ticket as the owner: `screen-specs.md:268-269`, the § S10 bullet of `vertical-slices.md:404-406`, and the `AUTO-003` row of `upstream-kanmer-carryover.md:81`. `parity-matrix.md` `PAR-46` is **not** edited here — [[DSK-01-05]] owns it.
 
 ## Verification
 
@@ -148,6 +149,7 @@ The upstream `research`, `files` and `open-questions` documents are copied onto 
 - [ ] `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~AutomationMailIngressTests"` — expected: every new authorization, identity, version, replay, attribution and provider-absent fact passes.
 - [ ] `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~AutomationMcpIngressTests"` — expected: the canonical tool-inventory fact passes at the new total.
 - [ ] `git grep -c "McpServerTool(" -- src/Pegasus.Web/Mcp` — expected: the per-file counts sum to `38` (35 before this ticket).
+- [ ] `git grep -n "AUTO-003" -- docs/desktop` — expected: exactly three hits — `screen-specs.md`, `vertical-slices.md` and `upstream-kanmer-carryover.md` — and none of them describes AUTO-003 as absorbed or leaves it without naming board ticket `AUTO-001`.
 - [ ] `pwsh ./scripts/Test-DocumentationLinks.ps1` — expected: exit code 0 after the FRD-10 edit.
 
 ## Evidence tier
@@ -158,8 +160,10 @@ Tier 5 obliges observable evidence that each new tool route actually reaches Cor
 ## Documentation changes
 
 - `docs/frd/frd-10-mcp-automation-and-actor-boundary.md` — the three new tools and the authority boundary each inherits.
-- `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md:81` — annotate the AUTO-003 row with this fork ticket id so the register stops reading as unowned.
-- `docs/desktop/01-inventory-and-parity/parity-matrix.md` `PAR-46` — **not edited here**; the corrected tool count is handed to [[DSK-01-05]].
+- `docs/desktop/06-ui-design/screen-specs.md:268-269` — the Inbox/Message block's last bullet reads today "Upstream carry-over absorbed: AUTO-003 (expose completed workspace actions to Automation — gateway side), MAIL-008 label maps." Rewrite it, keeping the file's existing line wrapping, as: "Upstream carry-over: MAIL-008 label maps absorbed. AUTO-003 (expose completed workspace actions to Automation — gateway side) is **not** absorbed here — it is owned by board ticket `AUTO-001` (`upstream:AUTO-003`) in `automation-integrations`, and this screen specification builds no Automation Actor tool." A screen specification cannot deliver an MCP tool and this ticket is that tool's owner, so the line must stop reading as absorbed. Make the edit before [[DSK-06-13]] adopts the block into FRD-13.
+- `docs/desktop/05-implementation-and-migration/vertical-slices.md:404-406` — § S10's last bullet reads today "**Absorbs upstream**: AUTO-003 (expose completed email-workspace actions through the Automation Actor — same Core use cases; gateway side), MAIL-011/MAIL-012 fixes arrive via upstream sync." Rewrite it, keeping the file's existing line wrapping, as: "**Absorbs upstream**: MAIL-011/MAIL-012 fixes arrive via upstream sync. AUTO-003 (expose completed email-workspace actions through the Automation Actor — same Core use cases; gateway side) is **not** absorbed — it is owned by board ticket `AUTO-001` (`upstream:AUTO-003`), and this slice must not build a second path over the same Core use cases." Touch only the S10 bullet; § S9 of this document is [[INTK-004]]'s.
+- `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md:81` — the AUTO-003 triage row's final `Fork area` cell reads `automation-integrations`. Replace that cell with ``automation-integrations — board ticket `AUTO-001`, created 2026-08-24`` so the register names the owner and the row stops reading as unowned. Change no other cell on the row, and change nothing in § Disposition categories — that section is [[DSK-01-09]] step 15's.
+- `docs/desktop/01-inventory-and-parity/parity-matrix.md` `PAR-46` — **not edited here**. [[DSK-01-05]] owns that row: its step 10 counts the `pegasus_*` tools and its acceptance criterion pins the actual count. Step 11 hands it the corrected total.
 
 ## Guardrails
 
@@ -169,7 +173,7 @@ Tier 5 obliges observable evidence that each new tool route actually reaches Cor
 - **Blocked by**: [[DSK-03-12]], [[DSK-07-03]] and [[DSK-05-10]]. The upstream `research` document is explicit — "Keep this ticket behind the owning MAIL tickets… re-read the landed Core contracts and reduce its scope to the actions that are actually available." Planning before those land would invent wire shapes.
 - **Sibling, not duplicate**: [[DSK-05-10]]'s trap says do not build a second path. Step 4 honours it literally — the tools call the same Core use cases as the `/api/v1` endpoints and hold no policy of their own. If a plan step ever requires new Core behaviour, that is a different ticket.
 - **Upstream label note**: `post-alpha` is carried verbatim as provenance. It records the upstream board's allocation of the *unlanded* MAIL capabilities, not a fork decision to defer this work; no horizon is set on this ticket because the carry-over phase is assigned by [[DSK-01-09]].
-- **Traps**: never add a generic mail-action envelope, a second policy engine or a duplicate taxonomy (`docs/engineering.md` § One Core owner); a dormant tool for an unlanded Core use case is forbidden; the upstream body's `EPIC-005` and `EPIC-006` are **upstream** group ids and do not correspond to this board's groups; upstream ids are written in full (`upstream:AUTO-003`), never abbreviated.
+- **Traps**: the three plan statements above have exactly **one** owner — this ticket — and `PAR-46` has exactly one owner, [[DSK-01-05]]; never write a second copy of either correction; never add a generic mail-action envelope, a second policy engine or a duplicate taxonomy (`docs/engineering.md` § One Core owner); a dormant tool for an unlanded Core use case is forbidden; the upstream body's `EPIC-005` and `EPIC-006` are **upstream** group ids and do not correspond to this board's groups; upstream ids are written in full (`upstream:AUTO-003`), never abbreviated.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in this ticket's `plan` document.
 
 ## Outcome
