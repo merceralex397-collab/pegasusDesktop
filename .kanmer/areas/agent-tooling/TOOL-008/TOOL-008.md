@@ -18,7 +18,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:10:38.229Z'
-updated: '2026-08-24T08:10:38.229Z'
+updated: '2026-08-24T09:58:43.104Z'
 ---
 
 ## What
@@ -61,9 +61,9 @@ Every routing decision in this plan set rests on "skills are pinned and vendored
 ## Implementation steps
 
 1. Orientation. Read the plan row and the plan sections named under **Source of truth**, then `get_doc_gates <this ticket's board id>` and `take_ticket`.
-2. **Check before writing**: `ls docs/adr/0110-*.md`. If a file exists, [[DSK-00-05]] has already authored it — this ticket then verifies and completes that file (steps 5–10) and creates nothing new. Record which path was taken in the first line of the plan document.
+2. **Check before writing**: `ls docs/adr/0110-*.md`. If a file exists, [[DSK-00-05]] has already authored it — this ticket then verifies and completes that file (steps 5–10) and creates nothing new. ADR-0110 is also claimed by [[DSK-00-05]]; one filename, `docs/adr/0110-pin-agent-skills-and-invocation-protocol.md`, and one rule — whichever of the two is worked first authors the file, the other verifies that it covers its content and extends it in place, never a second file for the same number. Record which path was taken in the first line of the plan document.
 3. Read `AGENTS.md` § ADR conventions (`AGENTS.md:77`) and `docs/adr/README.md:1-20` for the frontmatter contract, then read `docs/adr/0025-integrate-renderer-and-extractor-into-the-application.md` as the shape reference.
-4. Create `docs/adr/0110-pin-agent-skills-and-invocation-protocol.md` with frontmatter: `id: 0110`, `status: accepted`, `date: <today>`, `supersedes: []`, `superseded_by: null`, `related_capabilities: []`, `related_frd: []`, `tags: [agent-tooling, desktop-conversion]`. Follow the exact key names used by the existing ADRs; do not invent a field.
+4. Create `docs/adr/0110-pin-agent-skills-and-invocation-protocol.md` with frontmatter: `id: ADR-0110`, `status: accepted`, `date: <today>`, `supersedes: []`, `superseded_by: []`, `related_capabilities: []`, `related_frd: []`, `tags: [agent-tooling, desktop-conversion]`. The id carries the `ADR-` prefix and `superseded_by` is an empty list, never `null`: the precedent is `docs/adr/0026-enable-automation-mcp-by-explicit-deployment-configuration.md:1-9`, whose frontmatter reads `id: ADR-0026` at line 2 and `superseded_by: []` at line 6, and every other ADR in `docs/adr/` matches it. Follow the exact key names used by the existing ADRs; do not invent a field.
 5. Body sections, following proposal Appendix A: **Context** (proposal §20.1–20.2: skills are playbooks, mutable instructions make review and reproduction unreliable); **Current evidence** (the lockfile at `eng/skills/skills.lock.json`, the vendored destinations `.agents/skills/vendor/{dotnet,windows,azure}/`, the CI verifier step in `.github/workflows/ci.yml`); **Options** (fetch at execution time / vendor unpinned / vendor pinned by commit).
 6. **Decision**: agents load skills only from the vendored destinations at the pinned commits, never from a moving branch. Record the three pins verbatim: `dotnet/skills` `98f848512e9ee4877e399a0ae367bb5e4a193144`, `microsoft/win-dev-skills` `f1028dd5bb19af59df400cb4a2ab867e40a40a4a` (v0.5.0), `microsoft/azure-skills` `1a03acfb9ac1a1a05518bf7420d4618cc41847be`. Record that a skill update is a reviewed PR that bumps the commit and re-runs the sync ([[DSK-12-10]]).
 7. Include the invocation protocol as the seven numbered steps from `docs/desktop/12-agent-tooling/README.md` § 6, and the review protocol from proposal §20.6 (the reviewer loads the skills independently and verifies dependency boundaries, XAML/native implementation, async and UI-thread safety, accessibility, package and update implications, API and data compatibility, test evidence, cloud placement). Do not rewrite them into new words.
