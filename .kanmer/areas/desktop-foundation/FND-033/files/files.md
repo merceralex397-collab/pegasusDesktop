@@ -1,90 +1,92 @@
 # Files — FND-033
 
-Surveyed 2026-08-24 against fork `main`. Existing paths were confirmed with `ls`/`sed`; new files are
-marked; files created by a named earlier ticket say so.
+Surveyed 2026-08-24 against fork `main`. Every existing path was confirmed with `ls`/`sed`/`grep`;
+paths created by an earlier ticket are marked with that ticket.
 
 ## Where the change lands
 
 | Path | Why |
 | --- | --- |
-| `src/Pegasus.Desktop/Shell/ShellPage.xaml` and `.xaml.cs` | **New.** The `NavigationView` frame: `PaneDisplayMode="Left"`, `OpenPaneLength="236"`, `IsPaneToggleButtonVisible="False"`, seven rail items in the authority order, the restyled selection indicator, and the content host. **Path note**: [[DUI-004]] (plan handle `DSK-06-04`) step 3 names `src/Pegasus.Desktop/Views/ShellPage.xaml` for the same file. This ticket creates it, so `Shell/` is the path and [[DUI-004]] dresses it there — see the plan's Risks section. |
-| `src/Pegasus.Desktop/Shell/ShellViewModel.cs` | **New.** Rail visibility per role and per composed capability, environment badge state, connection state, status-bar values, and the shell state machine (authenticated / unauthenticated / update-required / blocked / disabled account / stale role). Bound with `Mode=OneWay` — `x:Bind` defaults to `OneTime`, which is [[DUI-004]]'s recorded trap. |
-| `src/Pegasus.Desktop/Shell/TitleBar*.xaml` | **New.** Logo slot, environment badge (`Shell.Title.Environment`), connection glyph plus word, version and channel, and the user menu (`Shell.Title.User`) with Change password, Sign out, Diagnostics. The checksummed logo asset itself is [[DUI-003]] (plan handle `DSK-06-03`); this ticket places the slot. |
-| `src/Pegasus.Desktop/Shell/StatusBar*.xaml` | **New.** `Shell.Status.Connection`, last sync in Europe/London, background-transfer summary, `Shell.Status.Update`. |
-| `src/Pegasus.Desktop/Services/INavigationService.cs` and its implementation | **New.** The **only** navigation mechanism; every rail item routes through it. |
-| `src/Pegasus.Desktop/Services/IDialogService.cs` and its implementation | **New.** The only prompt mechanism. |
-| `src/Pegasus.Desktop/Hosting/PegasusHost.cs` (created by [[FND-032]], plan handle `DSK-02-07`) | Register the two services. [[FND-032]] deliberately did **not** create empty interfaces for them (`docs/engineering.md` § Abstractions, `:113`); this is the ticket that defines them, so this is where they enter the container. |
-| `tests/Pegasus.Desktop.ViewModelTests/…` (created by [[FND-038]], plan handle `DSK-02-13`) | Rail visibility for administrator vs non-administrator; environment badge hidden in the production channel and shown otherwise; status-bar connection text for connected and disconnected; navigation service routing to each of the seven routes. |
+| `src/Pegasus.Desktop/Shell/ShellPage.xaml` | **New.** The `NavigationView`: `PaneDisplayMode="Left"`, `OpenPaneLength="236"`, `IsPaneToggleButtonVisible="False"`, seven `NavigationViewItem`s in the approved order (Dashboard, Inbox, Upload, Queues, Cases, Operations, Administration), the restyled selection indicator, the custom title bar and the status bar. Every `{ThemeResource}` key comes from [[FND-034]] (plan handle `DSK-02-09`); **no hex literal and no raw `FontSize`** may appear. |
+| `src/Pegasus.Desktop/Shell/ShellPage.xaml.cs` | **New.** Code-behind only for what XAML cannot do: title-bar drag regions (`SetTitleBar` / `SetDragRectangles`) and hooking the `NavigationView` selection to the navigation service. No business logic. |
+| `src/Pegasus.Desktop/Shell/ShellViewModel.cs` | **New.** The properties every negative requirement is tested against: rail-item visibility (`IsAdministrationVisible`, `IsInboxVisible`), rail counts as **nullable** so "absent" and "zero" are different values, `IsEnvironmentBadgeVisible` plus the badge text, connection state text, last-sync time, transfer summary, update availability, and the five shell states. Nullable counts are the mechanism that makes "never a shell-level `0`" enforceable rather than aspirational. |
+| `src/Pegasus.Desktop/Services/INavigationService.cs` + its implementation | **New.** The only navigation mechanism in the application. Every rail item routes through it; a `Frame.Navigate` call anywhere else is a defect review must catch. |
+| `src/Pegasus.Desktop/Services/IDialogService.cs` + its implementation | **New.** The only prompt mechanism, wrapping `ContentDialog`. The `Dialog.Reason.Text` / `Dialog.Reason.Confirm` / `Dialog.Reason.Cancel` AutomationIds from `screen-specs.md:36-37` belong to it. |
+| `src/Pegasus.Desktop/Hosting/PegasusHost.cs` (created by [[FND-032]], plan handle `DSK-02-07`) | Register `INavigationService` and `IDialogService`. [[FND-032]] deliberately registered **no** placeholder for them (`docs/engineering.md` § Abstractions `:113`), so this is their first appearance — the registration and the real caller land together. |
+| `src/Pegasus.Desktop/App.xaml.cs` (created by [[FND-030]], plan handle `DSK-02-05`, edited by [[FND-032]]) | Point the root window's content at `ShellPage`. Touch only that; the host build and the pre-window region belong to [[FND-032]] and [[FND-035]] (plan handle `DSK-02-10`). |
+| `tests/Pegasus.Desktop.ViewModelTests/**` (created by [[FND-038]], plan handle `DSK-02-13`) | Four test classes against `ShellViewModel` and the navigation service — rail visibility, environment badge, status-bar connection text, and routing. They run without a dispatcher, which is why the state lives in a view model rather than in `ShellPage.xaml.cs`. |
 
 ## Context files
 
-What the implementer must **read** and what each one tells them.
+What the implementer must **read**, and what each one tells them.
 
 | Path | What it tells the implementer |
 | --- | --- |
-| `docs/desktop/06-ui-design/screen-specs.md` § Shell | **The specification, not a summary** — read it in full. The ASCII frame, the three `NavigationView` settings, the absence rules for `Administration` and `Inbox`, the "never a shell-level `0`" count rule, the title-bar and status-bar contents, the six shell states, the keyboard subset and the five AutomationIds. |
-| `docs/desktop/06-ui-design/screen-specs.md` § AutomationId convention (`:31-40`) | The naming grammar `<Screen>.<Region>.<Element>[.<Key>]`, PascalCase, stable across releases, unique per window — and that `pegasus-ui-verifier`'s coverage audit "must report 100%". A missing id is a harness failure, not a style nit. |
-| `docs/design/README.md:30-46` | The **canonical** authenticated route list — seven routes including **6. Operations** — "settled by the operator on 2026-08-04 and shipped in releases 6 and 7", and what it superseded. This is the list the rail implements. |
-| `docs/design/README.md:474-475` | The abbreviated restatement that **omits Operations**. Read it knowing `:30-38` is canonical and `:1089-1091` reconciles them ("Operations is a scoped staff workspace in the implementation; its documentation does not prove a deployed or released route"). Without this note the next reader opens a question that has an answer. |
-| `docs/design/README.md:586` | The exercised shell component: the current route carries "a weight change **and a 2px Collision-red left border** so it is not signalled by colour alone; the Inbox item is conditional and is **absent**, never a disabled span, where the capability is not composed". Both halves are acceptance criteria. |
-| `docs/design/README.md:172-173` | Two rules that decide shell behaviour: a not-composed capability is **absent**, never disabled or "Unavailable" (`:172`); but an *action* the record will offer once a condition is met stays visible and disabled with the condition named (`:173`). Capability ≠ condition, and confusing them produces exactly the wrong rail. |
-| `docs/design/README.md:172` (the Europe/London paragraph) | "`ToLocalTime()` is never correct: it resolves against the server clock… so it looks right exactly where it is tested and is wrong through British Summer Time where it runs." The status bar's last-sync time must go through the shared operator-label map. |
-| `docs/design/README.md:489-491` | The zero rule in full: "`0` is a current result, never a substitute for stale, partial, unavailable, failed, or not-yet-loaded data, and no shipped tile may render a placeholder for a query that does not exist." This is why a rail count is **absent**, not `0`, before the query returns. |
-| `docs/design/README.md:169-170` | The operator-copy rules: one H1, no lede or subtitle, guidance only beside a control with a consequence and then one sentence; and the banned vocabulary (Azure, OCR, AI, queue mechanics, extraction, deployment, adapter, lease/version, projection, ingress, artifact — and the word "intake" never in operator-facing text). A shell that explains is a defect against this. |
-| `docs/design/README.md:764-772` § Complete UI state contract | The repository-level required-state list the shell's six states are an application of — Queries must cover loading, empty, current, stale with last-good time, partial, unavailable, failed/retry, unauthenticated, disabled, stale-role and denied. |
-| `docs/desktop/06-ui-design/keyboard-and-accessibility.md` § Keyboard map | The **full** map, of which this ticket implements only the shell subset. It also carries the focus order ("title bar → rail → page header → content → status bar"), the `F6` region cycle, and the claim that there are no conflicts with `NavigationView` defaults — which step 12's keyboard pass tests rather than trusts. [[DUI-014]] (plan handle `DSK-06-14`) owns the map. |
-| `docs/desktop/02-architecture-and-foundation/README.md` § 3 decision 9 | "No desktop framework on top of WinUI": a shell service, a navigation service, a dialog service and a handful of project controls are the whole permitted surface. It bounds what this ticket may add. |
-| `docs/desktop/02-architecture-and-foundation/README.md` § 7 | "Do not recreate the web shell — the shell is a `NavigationView`, not a port of `_Layout.cshtml`; 06 owns the rules." |
-| `src/Pegasus.Web/Pages/Shared/_Layout.cshtml` (6,948 bytes), `_LayoutAuth.cshtml` (1,061 bytes) | The two files this shell replaces, and the two files this ticket must **not** touch — the web front end stays live until cutover. Read them to know what is being replaced, never to port markup. |
-| `src/Pegasus.Web/Presentation/RailCountsPageFilter.cs` | How rail counts are obtained today. The desktop replaces it with `GET /api/v1/dashboard/rail-counts` ([[DUI-004]]'s binding decision under L-01) — never a direct database read. |
-| `src/Pegasus.Core/Identity/StaffAuthorization.cs` | The fail-closed `StaffAccessRight` matrix. It is why hiding `Administration` in the rail is a convenience rather than a control: the server authorises every request regardless of what the rail shows. |
-| `src/Pegasus.Desktop/Hosting/PegasusHost.cs` (created by [[FND-032]]) | Where the two new services are registered, and the reason they did not exist before: [[FND-032]] step 5 deliberately deferred creating empty interfaces. |
-| `.codex/skills/winui-design/SKILL.md` and `winui-search.exe` | The control-choice guidance and the API-lookup binary. Its anti-pattern table warns against "reflexively" choosing `NavigationView` Left — here it is not reflexive, it is the authority's rail, and recording that reasoning is what satisfies the skill. |
-| `.codex/skills/winui-code-review/references/quality-rules.md` | The checklist step 13 runs: theming, no raw `FontSize`, no hex literals, AutomationIds present. |
+| `docs/desktop/06-ui-design/screen-specs.md:41-81` § Shell | **The specification, not a summary — read it in full before anything else.** It fixes the three `NavigationView` properties with their reason (`:59-60`, "the authority's rail never hides"); the route order in the ASCII diagram (`:43-56`); the current item as "weight change plus the 2px Collision-red left marker … **never colour alone**" (`:62-63`); counts "absent when the query has not returned; never a shell-level `0`" (`:64-66`); title bar and status bar contents (`:67-72`); the exact connectivity string "Disconnected — reconnecting" with saves disabled and existing content visible (`:73-74`); the five states (`:75-77`); the keyboard contract (`:78-79`); and the five AutomationIds (`:80-81`). |
+| `docs/desktop/06-ui-design/screen-specs.md:31-39` § AutomationId convention | That the five shell names are **instances of a repository-wide convention** — `<Screen>.<Region>.<Element>[.<Key>]`, PascalCase, "stable across releases, unique per window", 100% coverage audited by `pegasus-ui-verifier`. Inventing a different shape here breaks [[TEST-006]] (plan handle `DSK-08-06`)'s harness and [[DUI-015]] (plan handle `DSK-06-15`)'s audit, not just this screen. |
+| `docs/desktop/06-ui-design/screen-specs.md:27-30` | The absent-vs-disabled rule, which has **two halves** that are easy to conflate: "Deferred capabilities are **absent**, not disabled; an action the record will offer once a condition is met stays **visible and disabled with the condition named on the control** (\"Available in Review\")." `Administration` for a non-administrator is the first case (absent). Do not apply the second. |
+| `src/Pegasus.Web/Pages/Shared/_Layout.cshtml` (135 lines) | **Read for the route inventory, then close it.** `:56-99` is the existing rail and names the seven routes and their order: `/Index`, `/Mail/Index`, `/Upload`, `/Triage/Index`, `/Cases/Index`, `/Operations/Index`, `/Administration/Index`, with the last two already conditionally rendered. `:107-114` is the user menu's three items. Plan 02 § 7 and this ticket's Guardrails forbid porting its structure — this is a `NavigationView`, not a port of `_Layout.cshtml`. |
+| `src/Pegasus.Web/Pages/Shared/_Layout.cshtml:6` | The single strongest argument in this repository for absent-over-disabled, written by someone who had already made the mistake: *"disabled nav span: a permanently inert item says the product is broken"*. It agrees exactly with `screen-specs.md:27-28`. |
+| `docs/design/README.md` | The binding design authority. The sections that bind this ticket: § Design principles (`:160`), § Tokens (`:182`), § Voice, labels and necessary copy (`:396`), **§ No explanatory copy and page economy (`:422`)** — labels, values, and at most one consequence sentence on a destructive action; a shell that "explains" is a defect — § Access and permissions (`:447`), § Operations-first shell (`:461`), § Complete UI state contract (`:764`), § Accessibility (`:774`), § Deferred and absent UI seams (`:810`). |
+| `docs/desktop/06-ui-design/tokens-and-theme.md` | Where the `{ThemeResource}` keys this XAML consumes are **defined** — § Files and load order (`:11`), § Colour tokens (`:29`), § Typography (`:85`), § Spacing, density and layout (`:115`), § Shape, borders, focus, depth (`:132`), § Control styles (`:174`), § Change rule (`:197`). This ticket **consumes** keys; [[FND-034]] wires the dictionaries into `App.xaml` and [[DUI-001]] (plan handle `DSK-06-01`) owns the values. Do not define a token here. |
+| `docs/frd/frd-12-operator-experience.md` § Operator experience (`:4-27`) | This ticket's one real `ref`. `:13-14` — "clear counts that link to their exact filtered work and **do not render stale zero placeholders**" — is the FRD-level origin of the spec's "never a shell-level `0`", so the nullable-count design satisfies an FRD requirement, not a style preference. `:24-25` requires "keyboard, pointer, screen-reader, 200% zoom, forced-colour, and reduced-motion support". `:28` requires one consistent icon per semantic action across Pegasus. |
+| `src/Pegasus.Core/Identity/StaffAuthorization.cs` | The fail-closed `StaffAccessRight` matrix the **gateway** enforces. Read it to understand that hiding `Administration` in the rail is a convenience and not a control — `screen-specs.md:60-62` says the role is "derived from the role matrix and **server authorisation**". [[FND-046]] (plan handle `DSK-04-10`) supplies the real role signal; this ticket binds to a view-model property. |
+| `src/Pegasus.Desktop/Hosting/PegasusHost.cs` (created by [[FND-032]]) | Where the two services register, and the options instance the environment badge reads its channel from. [[FND-032]] registered no navigation or dialog placeholder on purpose, so there is no dead interface waiting — the registration and the caller land together here. |
+| `.codex/skills/winui-design/` (with `winui-search.exe`) | The control-lookup binary step 2 requires. Use it to confirm the `NavigationView` API surface and its selection-indicator template parts **before** writing XAML; do not guess property names. |
+| `.codex/skills/winui-code-review/SKILL.md` | The theming checklist step 13 runs: no hex literals, no raw `FontSize`, AutomationIds present, theme resources used. This is the executable form of three of this ticket's negative requirements. |
+| `.codex/skills/winui-dev-workflow/BuildAndRun.ps1:142-172` | That the script **injects** a project-level `Directory.Build.props` (the existence test at `:152` checks the project directory only, not up the tree) which **shadows** the root one, dropping `TreatWarningsAsErrors`. Use the script to launch and look at the shell; use `dotnet build ./Pegasus.slnx --configuration Release` to gate. |
+| `Directory.Build.props` (19 lines) | `TreatWarningsAsErrors=true` and `AnalysisLevel=latest-recommended` apply to XAML-generated code too. Narrow, individually-commented `NoWarn` entries in the desktop csproj are the only permitted remedy. |
 
 ## Ripple effects
 
-- **[[DUI-004]] dresses this file.** Its § Source of truth names `DSK-02-08` as "the shell scaffold,
-  navigation and dialog services **this ticket dresses**", and its steps then set the rail width from
-  `PegasusRailWidth`, restyle the indicator, bind the counts, add landmarks, place the checksummed
-  logo, cap the content region at `PegasusContentMaxWidth`, decide the backdrop and write
-  `tests/Pegasus.Desktop.UITests/shell-tests.ps1`. Every one of those lands **in the file this ticket
-  creates**, so the path must be agreed here.
-- **Theme keys.** Every brush this shell uses is a `{ThemeResource}` from [[FND-034]] (plan handle
-  `DSK-02-09`); no hex literal may appear. If [[FND-034]] has not landed, the keys are referenced and
-  the shell renders unstyled rather than being hard-coded — recorded, not worked around.
-- **Host registrations.** `PegasusHost.cs` gains two registrations, which is the first time
-  [[FND-032]]'s "register only services with a real caller" rule is exercised.
-- **Tests.** `tests/Pegasus.Desktop.ViewModelTests` gains four view-model tests;
-  `tests/Pegasus.Desktop.UITests` (created by [[TEST-006]], plan handle `DSK-08-06`) gains the shell
-  smoke batch — and if it does not exist, the evidence is an explicitly-recorded manual pass naming
-  [[TEST-006]] as the automation follow-up.
-- **Downstream.** [[FND-034]], [[FND-041]] (plan handle `DSK-02-16`), [[FND-046]] (plan handle
-  `DSK-04-10`, role-aware shell), [[FEAT-001]] (plan handle `DSK-05-01`) and [[DUI-004]] all name this
-  shell. [[FND-035]] (plan handle `DSK-02-10`) routes redirected activations through
-  `INavigationService`.
-- **No solution, architecture-test, package or restore change.** This ticket adds no project and no
-  package, so `Pegasus.slnx`, `DependencyDirectionTests.cs` and every `packages.lock.json` are
-  untouched.
-- **Documentation.** None owed. `docs/desktop/06-ui-design/screen-specs.md` is the **source** and is
-  not edited; the `DSK-01` capability row is [[FND-008]]'s (plan handle `DSK-00-08`).
+- **The five AutomationIds become a contract with two other tickets the moment they are written.**
+  [[TEST-006]] (plan handle `DSK-08-06`) builds its `winapp ui` harness around them and [[DUI-015]]
+  audits 100% coverage. A renamed id later is a silent break discovered in another area's lane.
+- **[[FND-034]] is unblocked and immediately constrained.** It wires the Light/Dark/HighContrast
+  dictionaries into `App.xaml` and bans hard-coded colours — every `{ThemeResource}` key this XAML
+  references must exist by the time that ticket's ban is enforced, or the shell fails to load rather
+  than merely looking wrong.
+- **[[FND-046]] (plan handle `DSK-04-10`) replaces this ticket's placeholder role signal** with the
+  real `StaffAccessRight`. It already carries all four documents and a 28-item checklist, so the
+  view-model property this ticket introduces is the seam it plugs into — name it deliberately.
+- **[[FND-047]] (plan handle `DSK-04-11`) owns the real connectivity state machine.** This ticket
+  renders "Disconnected — reconnecting"; that one decides when it is true and disables saves. The
+  status-bar binding is the shared seam.
+- **Every area 05 slice navigates through `INavigationService`.** [[FEAT-001]] (plan handle
+  `DSK-05-01`) onward assume it exists and that no other navigation mechanism does. A second
+  navigation path added later is a duplication that will not fail any build.
+- **[[FND-041]] (plan handle `DSK-02-16`), the Phase 1 exit review**, requires a clean Windows 11
+  machine to launch the native shell and navigate. This ticket is what makes that gate row
+  answerable.
+- **No OpenAPI or generated-client ripple.** This ticket introduces no contract type and calls no
+  endpoint — rail counts come from a query [[FEAT-001]] owns. Say so in the PR rather than leaving
+  the reviewer to check `openapi/pegasus-v1.json`.
+- **No documentation ripple in this ticket.** `docs/desktop/06-ui-design/screen-specs.md` is the
+  **source** and is not edited; the `docs/capabilities.md` `DSK-01` row belongs to [[FND-008]] (plan
+  handle `DSK-00-08`).
 
 ## Out of scope
 
 Recorded so the reviewer sees each was a decision, matching the ticket's Guardrails.
 
-- **Theme token values and the `Styles/` dictionaries** — [[FND-034]] wires them and [[DUI-001]] (plan
-  handle `DSK-06-01`) owns the values. This ticket defines no colour.
-- **Sign-in, the update-required screen's behaviour and the compatibility gate** — area 04
-  ([[FND-044]], [[FND-045]]). The states exist here as view-model states with placeholder content.
-- **The rail-counts query itself** — `GET /api/v1/dashboard/rail-counts` is `DSK-03-06`'s; [[DUI-004]]
-  binds the counts.
-- **The full keyboard map** — [[DUI-014]]. Only the screen spec's shell subset is wired here.
-- **`src/Pegasus.Web/Pages/Shared/_Layout.cshtml` and any Razor view** — untouched; the web front end
-  stays live until cutover.
-- **Any `WebView2` element** — refused in this or any view; the only permitted use is the isolated
-  report renderer under ADR-0108, in area 07.
-- **A second shell page** — refused. One file, at the path this plan fixes.
-- **Explanatory copy** — refused under `docs/design/README.md:169-170`; labels, values, and at most
-  one consequence sentence beside a destructive action.
-- **A shell-level `0` for an unqueried count** — refused under `docs/design/README.md:489-491`.
+- **Theme token values and the theme dictionaries themselves** — [[FND-034]] wires them, [[DUI-001]]
+  owns the values. This ticket consumes `{ThemeResource}` keys and defines none.
+- **Sign-in, the update-required screen's behaviour, the compatibility gate, session restore** —
+  area 04: [[FND-043]] (plan handle `DSK-04-07`), [[FND-044]] (plan handle `DSK-04-08`),
+  [[FND-045]] (plan handle `DSK-04-09`). This ticket implements the five shell **states** as
+  view-model states with placeholder content only.
+- **The real role signal** — [[FND-046]]. Rail visibility binds to a view-model property here.
+- **The real connectivity state machine and save disabling** — [[FND-047]].
+- **The full keyboard map** — [[DUI-014]] (plan handle `DSK-06-14`) owns `Ctrl+N`, `Ctrl+S`,
+  `Ctrl+W`, `Esc` and the rest. This ticket wires only the shell subset the spec names at
+  `screen-specs.md:78-79`: the seven rail access keys, `Ctrl+K` and `F5`.
+- **The dashboard rail-counts query** — [[FEAT-001]]. This ticket renders a nullable count and shows
+  nothing when it is null.
+- **Building the shell twice** — [[DUI-004]] (plan handle `DSK-06-04`) names the same deliverable
+  and has no documents yet. The ownership reconciliation is recorded in this ticket's plan, as the
+  Guardrails require, before any XAML is written.
+- **Porting `_Layout.cshtml`** — refused. It is read for the route inventory and nothing else.
+- **Editing `docs/desktop/06-ui-design/screen-specs.md`** — refused. Any ambiguity found is recorded
+  in the ticket, not resolved by amending the source.
+- **Relaxing `Directory.Build.props`** — never. Narrow, commented `NoWarn` entries in the desktop
+  csproj only.
