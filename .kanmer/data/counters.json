@@ -10,5 +10,6 @@
   "TOOL": 11,
   "PLAT": 27,
   "AUTO": 2,
-  "DOCS": 3
+  "DOCS": 3,
+  "CASE": 2
 }
