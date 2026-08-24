@@ -379,3 +379,22 @@ Expected outcome for this ticket: `n/a — docs-only`._
 ## 2026-08-24 ownership decision
 
 The operator assigned **ADR-0105 authorship to FND-005**. This ticket therefore owns the single canonical file `docs/adr/0105-msix-app-installer-and-minimum-version-gate.md`; FND-009, FND-040, FND-041, REL work, and TOOL-008 link to or verify the resulting authority and must not create a competing ADR-0105. This resolves the ownership uncertainty recorded in the ticket body without changing the already-settled distribution mechanism.
+
+## 2026-08-24 implementation reconciliation
+
+The canonical paths for this ticket are:
+
+- `docs/adr/0100-native-winui-3-client-in-the-fork.md`
+- `docs/adr/0101-local-execution-cloud-authority-split.md`
+- `docs/adr/0103-gateway-not-direct-database-access.md`
+- `docs/adr/0104-online-required-bounded-local-cache.md`
+- `docs/adr/0105-msix-app-installer-and-minimum-version-gate.md`
+- `docs/adr/0110-agent-skill-pinning-and-invocation-protocol.md`
+
+They resolve the stale alternative filenames in the ticket body and checklist. FND-005 owns this one canonical file for each listed ADR; tickets that cite a listed decision link to or review it and do not create another file with the same ADR ID.
+
+The repository currently has no `origin/dev`; `origin/main` also lacks the already-tracked `docs/desktop/` conversion plan that these ADRs cite. The branch therefore has the clean documented base `task/desktop-plan-segmentation` (commit `ecb9b7b4`), with no changes to that branch. A PR must be retargeted to the project integration branch once FND-001 establishes it.
+
+## Simplification pass — 2026-08-24
+
+n/a — documentation-only. The diff contains the six ticket-owned ADRs, their index rows, and the two explicitly named consistency corrections; it adds no runtime abstraction, compatibility path, deployment unit, or unrelated cleanup.

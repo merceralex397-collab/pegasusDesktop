@@ -1,0 +1,54 @@
+# Plan — GWY-014: DSK-03-14 · Vehicle lookup and assessment endpoints: damage, estimate import, specification, report draft, send
+
+## Governing documents
+
+- No canonical document is linked yet. Retain the ticket's existing `docs_todo` state; do not invent or link a proposed desktop ADR.
+
+## Chosen approach
+
+Add the vehicle-lookup and assessment surfaces to `/api/v1`: request a lookup, accept a suggestion, read the assessment, save damage, import an estimate through an upload session, accept the repair specification, generate the report draft, register a final report, and send or reconcile the assessment.
+
+## Routing and constraints
+
+- Future owner: `pegasus-gateway-dev`; tests: `pegasus-test-engineer`; independent review: `pegasus-desktop-reviewer`.
+- Use `dotnet-webapi`, `optimizing-ef-core-queries` where the ticket changes a query, and `run-tests` for the actual runner profile. The project decision overrides generic “service per endpoint” advice: route handlers translate to existing `Pegasus.Core` ports; no second policy/service layer is introduced.
+- The shared EPIC context binds this to versioned `/api/v1` route groups in the existing `Pegasus.Web`, the existing rate-limiter mechanism, an OpenAPI snapshot, and no Azure write.
+
+- Microsoft Learn (fetched 2026-08-24): [ASP.NET Core OpenAPI support](https://learn.microsoft.com/aspnet/core/fundamentals/openapi/overview?view=aspnetcore-10.0) confirms first-party OpenAPI generation. Use the repository’s planned committed snapshot and contract-test flow rather than adding a parallel API documentation path.
+
+
+## Ordered implementation steps
+
+1. Orient. Read the nine endpoint rows quoted above in `docs/desktop/03-gateway-api-and-data/endpoint-map.md` § Cases, then `docs/desktop/07-integrations/README.md` § 5 rows `DSK-07-09`, `DSK-07-16` and `DSK-07-19` so this ticket does not re-decide what area 07 owns. Then `get_doc_gates <this ticket id>` and `take_ticket`.
+2. Read `src/Pegasus.Web/Pages/Cases/Vehicle.cshtml.cs` and `src/Pegasus.Web/Pages/Cases/Assessment/Index.cshtml.cs` in full and record, per handler, the Core interface, the request record and the readiness/validation rules it relies on.
+3. Add `src/Pegasus.Contracts/Assessment/` and `src/Pegasus.Contracts/Vehicle/` DTOs: the assessment model and readiness summary, the damage save command, the estimate-import completion, the specification acceptance, the report draft/registration and the send/reconcile commands — each carrying the `CaseMutationRequest` fields (`operationKey`, `expectedVersion`, `editLeaseToken`, `reason`).
+4. Add `src/Pegasus.Web/Api/VehicleEndpoints.cs` with `POST /cases/{id}/vehicle/lookups` and `POST /cases/{id}/vehicle/suggestions/{sid}/accept`, calling the same Core lookup-request and suggestion-acceptance commands the page calls. The lookup writes a durable request row; the Worker executes it — the endpoint must not call the provider synchronously.
+5. Add `src/Pegasus.Web/Api/AssessmentEndpoints.cs` with the read, the damage save, the specification acceptance, the report draft, the report registration and content read, and send/reconcile. Apply `.RequireStaffRight` per row — `PerformCasework` everywhere except specification acceptance, which requires the Engineer role.
+6. Implement the estimate import on the upload-session mechanism from [[DSK-03-11]]: `POST /cases/{id}/assessment/estimate-import` opens a session, the bytes go to `PUT /upload-sessions/{sid}`, and completion runs the Core import through `IEstimateDocumentParser`. Never accept an `IFormFile` on `/api/v1`.
+7. Distinguish provider failure from "not found": a DVLA/DVSA outage produces `urn:pegasus:problem:provider-unavailable`, a genuine no-record result produces `not-found`, and neither is retried automatically — § 3 row *Retry* allows automatic retry on idempotent `GET`s only. Use the taxonomy `DSK-07-19` defines; if it has not landed, map to the two problem types above and record the dependency in the ticket plan.
+8. Keep the gateway renderer path intact for `POST /cases/{id}/reports/draft`: call `GenerateCaseAssessmentReportDraft` → `IAssessmentReportRenderer` exactly as the page does, return bytes with a weak `ETag`, and add nothing that presumes the desktop renderer. Add `POST /cases/{id}/reports` for registering a desktop-rendered final PDF and `GET /cases/{id}/reports/{rid}/content` for reading it back, both using the byte conventions from [[DSK-03-10]].
+9. Apply provider-specific timeouts per endpoint and propagate `HttpContext.RequestAborted` into every Core call, so a cancelled desktop request releases the database connection and any provider call.
+10. Add `tests/Pegasus.IntegrationTests/DesktopGatewayAssessmentTests.cs` and `DesktopGatewayVehicleTests.cs` using the existing replay adapters: the seven-case matrix for each command, the Engineer-only fact for specification acceptance, a provider-outage fact returning `provider-unavailable`, a no-record fact returning `not-found`, an estimate-import round trip through the upload session, and a report-draft fact comparing bytes with `Cases/Assessment/Index`'s draft for the same case.
+11. Regenerate and commit the OpenAPI snapshot and the generated client.
+12. Run `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DesktopGatewayAssessmentTests|FullyQualifiedName~DesktopGatewayVehicleTests"`, then run the simplification pass and record it under a dated `## Simplification pass` heading in the ticket plan.
+
+## Acceptance conditions
+
+- [ ] A provider outage is distinguishable from a not-found result, and neither is retried automatically.
+- [ ] The vehicle lookup writes a durable request row; the endpoint does not call the provider synchronously.
+- [ ] Specification acceptance requires the Engineer role; every other command requires `PerformCasework`.
+- [ ] The estimate import runs through the upload session; no `IFormFile` exists on `/api/v1`.
+- [ ] The report-draft endpoint returns bytes with an `ETag` from the retained gateway renderer, and the registration endpoint accepts a desktop-rendered final PDF.
+- [ ] Every command has the seven-case test matrix.
+
+## Verification
+
+- [ ] `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DesktopGatewayAssessmentTests"` — expected: all facts pass, including the provider-outage and no-record facts.
+- [ ] `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~AssessmentEstimateImportWebTests"` — expected: the existing assessment web tests still pass unchanged.
+
+## Risks and boundaries
+
+- **Azure**: no write. DVLA/DVSA and the renderer are reached through the existing adapters; replay adapters stand in locally (L-02).
+- **Scope boundary**: may touch `src/Pegasus.Web/Api/**`, `src/Pegasus.Contracts/{Assessment,Vehicle}/**`, `openapi/`, the generated client and the test projects. Must not touch `src/Pegasus.Core/Assessment/**`, `src/Pegasus.Core/Vehicle/**`, the renderer in `src/Pegasus.Infrastructure`, or the Razor assessment page.
+- **Traps**: L-03 says the gateway renderer is retained **until golden-file parity passes** — removing or bypassing it here is out of bounds. Do not retry commands automatically; only idempotent `GET`s. `Pegasus.Web` still publishes `linux-x64` for the Playwright renderer base image, so no Windows-only package may enter it. **Phase span**: `README.md` § 5 sequencing lists this row as "11, 14 (Phase 6–7)", and `endpoint-map.md` gives the two vehicle rows Phase 6 and the assessment rows Phase 7; the horizon is set to the earliest phase that needs any of it. If the reviewer prefers endpoints to land with their callers, split the assessment rows into a Phase 7 follow-up rather than delaying the Phase 6 vehicle slice.
+- **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
