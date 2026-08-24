@@ -22,7 +22,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.657Z'
-updated: '2026-08-24T08:18:48.657Z'
+updated: '2026-08-24T10:32:35.782Z'
 ---
 
 ## What
@@ -31,7 +31,7 @@ Build the native Operations screen in `src/Pegasus.Desktop`: retryable external 
 
 ## Why
 
-Proposal § 13.10 makes integration health and failed-work review parity capabilities, and § 16.2 requires the client to show when data is cached and when it was obtained. Today this is `src/Pegasus.Web/Pages/Operations/Index.cshtml.cs` (236 lines) whose `LoadedAtUtc` is deliberately set only after a successful query (`:43-46`) so a failed load never claims freshness — the desktop must keep that property. This is the operator-visible half of [[DSK-07-01]] and [[DSK-07-02]]; without it, Phase 5's exit gate has no surface to demonstrate.
+Proposal § 13.10 makes integration health and failed-work review parity capabilities, and § 16.2 requires the client to show when data is cached and when it was obtained. Today this is `src/Pegasus.Web/Pages/Operations/Index.cshtml.cs` (236 lines) whose `LoadedAtUtc` is deliberately set only after a successful query (`:43-46`) so a failed load never claims freshness — the desktop must keep that property. This is the operator-visible half of [[DSK-07-01]] and [[DSK-07-02]]; without it, Phase 5's exit gate has no surface to demonstrate. [[DSK-05-20]] is the area-05 slice that adds the audited retry and revoke commands to the screen this ticket owns.
 
 ## Source of truth
 
@@ -55,7 +55,7 @@ Proposal § 13.10 makes integration health and failed-work review parity capabil
 
 1. Orient: read the plan row, the Operations screen spec, the cross-cutting state contract and `docs/design/README.md` (the operator-copy authority — a screen that explains instead of stating is a defect). Call `get_doc_gates <this ticket id>`, then `take_ticket` on branch `task/dsk-07-04-operations-screen`.
 2. Confirm the contracts published by [[DSK-07-01]] and [[DSK-07-02]] in `src/Pegasus.Contracts` and regenerate the API client with `pwsh ./eng/api/Generate-ApiClient.ps1` (the script established by [[DSK-03-05]]). Expected: `git diff --exit-code` is clean after a second regeneration.
-3. Add `OperationsViewModel` to `src/Pegasus.Desktop` (the project scaffolded by [[DSK-02-05]]) using `ObservableObject` and `[RelayCommand]` per `winui-code-review`'s MVVM checklist — no `SolidColorBrush`, `Visibility` or other UI type in the view model.
+3. Add `OperationsViewModel` to `src/Pegasus.Desktop` (the project scaffolded by [[DSK-02-05]]) using `ObservableObject` and `[RelayCommand]` per `winui-code-review`'s MVVM checklist — no `SolidColorBrush`, `Visibility` or other UI type in the view model. This ticket owns that type: if [[DSK-05-20]] landed first it created it under exactly these members, so extend it in place and add no second view model.
 4. Model the load state explicitly per proposal § 16.1: `not started`, `running`, `succeeded`, `failed`, `cancelled`. Set the "obtained at" timestamp **only** on success, reproducing `Index.cshtml.cs:43-46`; on failure the screen keeps the previous data, labels it as previously obtained, and shows the failure sentence.
 5. Build `OperationsPage.xaml` from the screen spec: an external-work table (kind, case, last failure, attempts, next action) with `Operations.External.Table`, a retry command with `Operations.External.Retry`, an upload-links table with `Operations.Links.Revoke`, and one health row per dependency with `Operations.Health.<Dependency>`. Use the data-table pattern from [[DSK-06-07]] rather than a bespoke grid.
 6. Bind retry enablement to the gateway's `canRetry` field alone. Never infer eligibility client-side from an attempt count — the server owns that decision, and a client that guesses will produce a refused command the operator cannot explain.
@@ -88,14 +88,14 @@ Tier 7 obliges a real run against the gateway, not a mocked screenshot; an autom
 
 ## Documentation changes
 
-- `docs/frd/frd-13-desktop-operator-experience.md` — Operations screen section
+- `docs/frd/frd-13-desktop-operator-experience.md` — Operations screen section (this ticket authors the section; [[DSK-05-20]] adds the retry and revoke command behaviour as a sub-heading inside it)
 - `docs/desktop/01-inventory-and-parity/parity-matrix.md` — the Operations row moves to `implemented`
 
 ## Guardrails
 
 - **Azure**: no write.
 - **Scope boundary**: may touch `src/Pegasus.Desktop`, `src/Pegasus.Desktop.Infrastructure`, `tests/Pegasus.Desktop.ViewModelTests`, `tests/Pegasus.Desktop.UITests`. Must not add endpoints (that is [[DSK-07-01]] / [[DSK-07-02]]), must not reference `src/Pegasus.Infrastructure`, and must not host any Pegasus UI in a WebView — the architecture test from [[DSK-02-12]] enforces both.
-- **Traps**: poison-queue visibility must survive the friendly redesign; a blank screen after a failed load is a lie; secrets and raw provider payloads never reach the client (ADR-0107) — a health row shows a state and a last-good time, nothing more; operator copy rules apply (`docs/design/README.md`), so a row that explains rather than states is a defect.
+- **Traps**: poison-queue visibility must survive the friendly redesign; a blank screen after a failed load is a lie; secrets and raw provider payloads never reach the client (ADR-0107) — a health row shows a state and a last-good time, nothing more; operator copy rules apply (`docs/design/README.md`), so a row that explains rather than states is a defect. One view model per screen: this ticket owns `OperationsViewModel` and `OperationsPage.xaml`, [[DSK-05-20]] extends them; a second view model for the same screen is a stop condition.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome

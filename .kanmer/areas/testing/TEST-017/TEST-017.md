@@ -33,7 +33,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:55:26.147Z'
-updated: '2026-08-24T09:09:15.929Z'
+updated: '2026-08-24T10:32:55.464Z'
 ---
 
 ## What
@@ -61,7 +61,7 @@ Locked decision L-02 replaces the proposal's "Test/UAT with production-like Azur
   - D-003 — the local feed is a file share or folder share, the same SMB mechanism as production, never an HTTP substitute.
   - D-002 — the development certificate lives in `Cert:\LocalMachine\TrustedPeople`, the same store the production certificate uses.
   - **Deviation (runtime profile)**: no `TestStack` runtime profile is added. `Runtime:Profile` keeps exactly two values; the stack runs under `DevelopmentOffline` with `Features:LocalIntake` and `Features:LocalDocumentCustody`.
-- Depends on: `DSK-02-07` — channel-selected desktop configuration, so a package can be built for the `teststack` channel. `DSK-04-06` — the `/api/v1/client-compatibility` endpoint `Status` probes. `DSK-04-12` — the `.appinstaller` template and local feed this mode hosts.
+- Depends on: `DSK-02-07` — channel-selected desktop configuration, so a package can be built for the `teststack` channel. `DSK-04-06` — the `/api/v1/client-compatibility` endpoint `Status` probes. `DSK-04-12` — the `.appinstaller` template and local feed this mode hosts, and the `teststack` channel path the `Publish-Feed` verb publishes into. It supplies that channel path only: the `Publish-Feed` verb itself is owned here (step 8), and [[DSK-04-12]] must not implement a second verb or a sibling lifecycle script.
 
 ## Routing
 
@@ -80,7 +80,7 @@ Locked decision L-02 replaces the proposal's "Test/UAT with production-like Azur
 5. Implement `Smoke -Mode TestStack`: obtain a token from `/connect/token` with the seeded staff account, list cases, open one, and check the report-generation dependencies are present. Fail with a named repair line, following the `Get-RequiredApplication` pattern already in the script.
 6. Implement `Reset -Mode TestStack`: drop and recreate the database, clear the Azurite data and the artifact root, reseed, and optionally uninstall the desktop package. It is destructive by design; require an explicit confirmation switch and say so in the help.
 7. Implement `Stop -Mode TestStack`: stop every process the mode started, using the existing run-manifest ownership so it never kills a process another worktree owns.
-8. Implement the new `Publish-Feed` verb: copy a freshly packaged `.msix` and its `.appinstaller` for the `teststack` channel into the feed folder, bumping the `.appinstaller` `Version` (it must increase on every publish, including a rollback publish) and leaving `Uri` equal to the served path. This verb is what [[DSK-08-10]] uses to simulate mandatory updates and rollbacks.
+8. Implement the new `Publish-Feed` verb. **This ticket ([[DSK-08-17]]) owns the verb** — it owns `scripts/Invoke-LocalDevelopment.ps1`'s whole `TestStack` mode and every verb in it, and [[DSK-04-12]] supplies the `teststack` channel path the verb publishes into and must not implement a second `Publish-Feed` verb or a sibling lifecycle script. This step is the authority for the contract, stated here so [[DSK-04-12]] can restate it verbatim and the two cannot drift: copy a freshly packaged `.msix` and its `.appinstaller` for the `teststack` channel into the channel folder [[DSK-04-12]] creates, bump the `.appinstaller` `Version` (it must increase on every publish, including a rollback publish), leave `Uri` equal to the served path, and keep the existing `-Action` values of `scripts/Invoke-LocalDevelopment.ps1` working unchanged. This verb is what [[DSK-08-10]] uses to simulate mandatory updates and rollbacks.
 9. Extend `scripts/Invoke-Doctor.ps1 -Profile Offline` with the desktop prerequisites from `test-uat-stack.md` § "Machine prerequisites": PowerShell 7, .NET SDK 10.0.302, Node, Functions Core Tools v4, SQL Server Express LocalDB, the WebView2 Evergreen runtime, `winapp` CLI ≥ 0.3, `AxeWindowsCLI`, and a development certificate in `Cert:\LocalMachine\TrustedPeople`. Use `Add-Check` with a real `Repair` line for each, and `-Advisory` only where the requirement genuinely does not apply — never report Passed for something that is not true.
 10. Build the seed dataset from `reference/` material and the existing integration builders under `tests/Pegasus.IntegrationTests/DocumentExtraction/`: plausible VRMs and references, irregular counts, Europe/London dates. Never `corpus/`, never operational email, never a real provider payload.
 11. **Operator step**: walk the whole thing through on a clean, dedicated Windows 11 machine — run `Invoke-Doctor.ps1 -Profile Offline`, fix what it names, then `Start`, `Status`, `Smoke`, install the desktop package from the feed, `Publish-Feed` a newer version, take the update, then `Reset` and `Stop`. Hand back the transcript. That transcript is the ticket's proof.
@@ -112,14 +112,14 @@ Tiers 6 and 12 — Functions/Azurite caller, and Integrated workflow. It obliges
 
 - `docs/runbook.md` — the `TestStack` mode, its verbs, the prerequisites and the Windows-only note.
 - `docs/operations.md` — the stack as the UAT surface, and what it does not prove.
-- `docs/desktop/08-testing/test-uat-stack.md` — mark the lifecycle as implemented and correct anything the implementation had to change.
+- `docs/desktop/08-testing/test-uat-stack.md` — mark the lifecycle as implemented, record the `Publish-Feed` verb and its contract (this ticket owns that record; [[DSK-04-12]] records only the `teststack` channel path), and correct anything the implementation had to change.
 - `docs/capabilities.md` — a `DSK` row for "Test/UAT stack" with the canonical owner named.
 
 ## Guardrails
 
 - **Azure**: no write, and no Azure resource of any kind. Asking for an Azure test resource is out of bounds under L-02 and ADR-0014.
 - **Scope boundary**: may edit `scripts/Invoke-LocalDevelopment.ps1`, `scripts/Invoke-Doctor.ps1`, the seed fixtures and the documentation named above. Must not add a `TestStack` value to `Runtime:Profile`, must not create a sibling lifecycle script, and must not change the composition root in `src/Pegasus.Web/Program.cs`.
-- **Traps**: the existing `Development` mode must behave identically after this change — it is used by every developer and by CI-adjacent scripts. `Invoke-Doctor.ps1` must never report Passed for something untrue; use `-Advisory` honestly. The local feed proves App Installer mechanics but not the production host's configuration or the production certificate — record that gap rather than hiding it. Never fabricate domain data; `corpus/` is never copied. `Reset` is destructive and must be explicit.
+- **Traps**: the existing `Development` mode must behave identically after this change — it is used by every developer and by CI-adjacent scripts. `Invoke-Doctor.ps1` must never report Passed for something untrue; use `-Advisory` honestly. The local feed proves App Installer mechanics but not the production host's configuration or the production certificate — record that gap rather than hiding it. Never fabricate domain data; `corpus/` is never copied. `Reset` is destructive and must be explicit. One lifecycle script, one `Publish-Feed` verb — [[DSK-08-17]] owns it and [[DSK-04-12]] supplies the `teststack` channel; a second verb or a sibling script is a stop condition.
 - **Stale row wording**: the Update feed row of `docs/desktop/08-testing/test-uat-stack.md:32` predates D-003 and still requires "Correct MIME types (`application/appinstaller`, `application/msix`), `Content-Length`, byte ranges" — HTTP-only concerns that do not apply over SMB. Follow D-003 and correct the row's wording in the plan in the same task.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
