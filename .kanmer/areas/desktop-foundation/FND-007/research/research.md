@@ -59,20 +59,18 @@ Read on **2026-08-24** at `origin/main` `191ddf3342…`, each with its source.
   UI**." The locked constraint it excepts is at `:1351` — "no WebView shell" —
   inside § 2.1 Locked constraints (heading at `:54`). ADR-0108 must quote both,
   or the first renderer commit reads as a violation of a locked constraint.
-- **F2 — the host is genuinely undecided, and the plan says so.**
-  `docs/desktop/07-integrations/README.md:255` (§ 7 Risks and traps, heading at
-  `:251`): "a WinUI `WebView2` control needs a XAML root; a zero-size collapsed
-  control **may still initialise, but behaviour must be proven** (DSK-07-14
-  spike); `CoreWebView2Controller` on a hidden HWND is the fallback host", with
-  the mitigation "Spike first; **record the chosen host in ADR-0108**; keep the
-  renderer behind `IAssessmentReportRenderer` so the host can change." This is
-  why `status: proposed` is the honest first state, not a formality.
+- **F2 — Microsoft Learn fixes the invisible host.**
+  `docs/desktop/07-integrations/README.md:120-125` records the direct Learn
+  reference: `HWND_MESSAGE` is a valid `ParentWindow` for an invisible
+  `CoreWebView2Controller` on Windows 8+; it will never become visible. Phase 7
+  validates that controller in the packaged app, not a collapsed-XAML alternative.
+  `status: proposed` remains honest because packaged integration and parity are
+  still future evidence.
 - **F3 — the work breakdown assigns the acceptance flip to another ticket.**
   `docs/desktop/07-integrations/README.md:227` — row `DSK-07-12`, profile
   `chore`, "ADR-0108 isolated WebView2 HTML→PDF rendering (scope, never-UI rule,
   fallback, parity gate)", acceptance "**Accepted ADR** with the §23.2 statement
-  and reversal condition". `DSK-07-14` (`:229`) is the renderer plus the
-  off-screen-host spike; `DSK-07-15` (`:230`) is the golden-file parity suite.
+  and reversal condition". `DSK-07-14` (`:229`) is the renderer plus packaged-controller validation; `DSK-07-15` (`:230`) is the golden-file parity suite.
   Board ids, resolved with `search_items` (read, never computed):
   `DSK-07-12` → [[FEAT-038]], `DSK-07-13` → [[FEAT-039]], `DSK-07-14` →
   [[FEAT-040]], `DSK-07-15` → [[FEAT-041]].
@@ -136,15 +134,16 @@ Read on **2026-08-24** at `origin/main` `191ddf3342…`, each with its source.
 - **F12 — this ticket is Phase 0 work despite depending on Phase 7.** It carries
   `HZN-001` and plan 00 § 4 Target state makes ADR-0100…ADR-0110 part of the
   Phase 0 governance exit gate, explicitly allowing "ADR-0108 may be `proposed`
-  until the Phase 7 spike". Only step 10's verification waits.
+  until Phase 7 packaged-controller validation and parity". Only step 10's verification waits.
 
 ### Assumptions
 
-- **A-00-7-1 — a collapsed or hidden WebView2 will in fact produce a PDF.**
-  Unverified: no desktop project exists yet. *Confirmed by:* [[FEAT-040]]'s spike
-  (F2). *Breaks if:* neither host initialises off-screen — then L-03 itself is in
-  question and the reversal condition of step 7 fires before any code ships. This
-  is precisely why `proposed` is the honest first status.
+- **A-00-7-1 — the documented `HWND_MESSAGE` controller will produce a PDF in Pegasus.**
+  The host itself is supported by Microsoft Learn; the product integration remains
+  unverified because no desktop project exists yet. [[FEAT-040]] validates
+  initialization, PDF output and no-window behaviour from the packaged app. If it
+  fails, the gateway remains and ADR-0108's reversal condition fires; no second host
+  is trialled.
 - **A-00-7-2 — `PrintToPdfStreamAsync` is the right API and it is current.**
   `docs/desktop/07-integrations/README.md:112-115` cites the Microsoft Learn
   print how-to and the `CoreWebView2` WinRT reference, and `:229` names
@@ -196,11 +195,9 @@ existing port and deprovisions nothing.
 
 ## Implications
 
-- **Write `status: proposed` and mean it.** F2 makes the host genuinely
-  undecided, and `docs/adr/README.md:12-14` makes the body immutable once merged.
-  The ADR must be written so that recording the host later is a **frontmatter and
-  named-blank** change, not a body rewrite — otherwise acceptance costs a
-  superseding ADR.
+- **Write `status: proposed` and mean it.** The host is documented, but packaged
+  integration and parity are not yet evidenced. The ADR body names `HWND_MESSAGE`
+  now; the later acceptance change is frontmatter and index only.
 - **The §23.2 quotation is the ADR's spine** (F1). Quote `:1715` and `:1351`
   verbatim in `## Context`, then state the two constraints that keep the
   exception intact: the control never hosts Pegasus UI, and it is never visible.
@@ -224,8 +221,9 @@ existing port and deprovisions nothing.
 - **Cite Microsoft Learn with a fetch date** (A-00-7-2). An immutable body that
   names a renamed API ages badly, and the ADR's own `## Links` is the only place
   the claim can be checked later.
-- **This ticket's own diff is one file.** No code, no index row, no change to
-  ADR-0025 or ADR-0028, and nothing in `src/` — the renderer is [[FEAT-040]]'s.
+- **This ticket's own diff is three docs files.** ADR-0108 and the two source plans
+  are corrected together; no code, index row, ADR-0025/0028 change, or `src/` change
+  is included. The renderer remains [[FEAT-040]]'s.
 
 ## Open questions
 
@@ -236,9 +234,7 @@ existing port and deprovisions nothing.
   discrepancy for the reviewer at the point of writing** rather than diverging
   silently. It is a one-token frontmatter value, it blocks nothing, and it is
   raised here rather than opened as a blocking question.
-- **Nothing else is open.** The host choice is a spike owned by [[FEAT-040]]; the
-  acceptance flip is owned by [[FEAT-038]]; the parity fixtures are owned by
-  [[FEAT-041]]; the `AGENTS.md` index sentence is owned by [[FND-005]]. Each is a
-  scope boundary with a named owner and belongs in the plan's *Risks / open
-  questions*, not in an `open-questions` document — and none of them gates this
-  ticket's `leave-preparing`.
+- **Nothing else is open.** Packaged-controller validation is owned by [[FEAT-040]];
+  the acceptance flip by [[FEAT-038]]; parity fixtures by [[FEAT-041]]; and the
+  `AGENTS.md` index sentence by [[FND-005]]. Each is a scope boundary with a named
+  owner and none gates this ticket's `leave-preparing`.

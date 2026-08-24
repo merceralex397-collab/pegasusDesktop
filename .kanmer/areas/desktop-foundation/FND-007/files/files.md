@@ -14,7 +14,7 @@ merge** — including the ADR index.
 
 | Path | Why |
 | --- | --- |
-| `docs/adr/0108-desktop-webview2-report-rendering.md` | **New, and the only file this ticket writes.** `status: proposed` at first merge. Carries: the § 23.2 exception quoted from the proposal; the never-visible / never-hosts-Pegasus-UI constraint; the six-question cloud-justification table answered for report rendering; the decision to move rendering to `Pegasus.Desktop.Infrastructure` behind the existing `IAssessmentReportRenderer` port using the shared Scriban templates; the fixed documented `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)` host, with [[FEAT-040]] (plan handle `DSK-07-14`) supplying packaged-app validation; the retention gate on the gateway renderer; and a `## Reversal condition`. `ls docs/adr/010*` returned *No such file or directory* on 2026-08-24, so there is no existing file to extend |
+| `docs/adr/0108-desktop-webview2-report-rendering.md` | **New; this correction also updates the Phase 0 and Phase 7 source plans.** `status: proposed` at first merge. Carries: the § 23.2 exception quoted from the proposal; the never-visible / never-hosts-Pegasus-UI constraint; the six-question cloud-justification table answered for report rendering; the decision to move rendering to `Pegasus.Desktop.Infrastructure` behind the existing `IAssessmentReportRenderer` port using the shared Scriban templates; the fixed documented `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)` host, with [[FEAT-040]] (plan handle `DSK-07-14`) supplying packaged-app validation; the retention gate on the gateway renderer; and a `## Reversal condition`. `ls docs/adr/010*` returned *No such file or directory* on 2026-08-24, so there is no existing file to extend |
 | `docs/adr/README.md` | **NOT edited by this ticket** — listed here because the omission is a decision, not an oversight. The index has one accepted table (`:16`, header `| ADR \| Title \| Related FRD |` at `:18`) and **no status column**, and `:11-12` states that the current architecture *is* that table; a row would assert a `proposed` ADR as current architecture. [[FEAT-038]] (plan handle `DSK-07-12`) adds the row at acceptance |
 
 ## Context files
@@ -26,10 +26,10 @@ Read these before writing a line. Each says what it tells the implementer.
 | `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md:1715` (§ 23.2, heading `:1701`) | **The single sentence this whole ADR exists to satisfy**: an isolated WebView2 "is not automatically a web wrapper, but it requires an ADR and must not host Pegasus UI". Quote it verbatim — a paraphrase is not a citation |
 | `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md:1351` (§ 2.1, heading `:54`) | The locked constraint being excepted: "no WebView shell". The ADR must show why the exception does not swallow the rule |
 | `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md:751` § 12.5 | The rendering design the ADR records |
-| `docs/desktop/07-integrations/README.md:255` (§ 7, heading `:251`) | **Why `proposed` is the honest first status**: "a WinUI `WebView2` control needs a XAML root; a zero-size collapsed control *may still initialise, but behaviour must be proven*; `CoreWebView2Controller` on a hidden HWND is the fallback host" — with the mitigation "record the chosen host in ADR-0108" |
+| `docs/desktop/07-integrations/README.md:260` (§ 7) | The documented `HWND_MESSAGE` controller host, its packaged-app validation, and the retained existing `IAssessmentReportRenderer` port — not a host-selection wrapper |
 | `docs/desktop/07-integrations/README.md:257-258` | The two failure modes the ADR must pre-empt: runtime missing or outdated → named failure plus gateway fallback; and golden-file drift, because "WebView2 runtime updates itself; Playwright is pinned to 1.61.0" → tolerant comparison, **not pixel equality** |
 | `docs/desktop/07-integrations/README.md:112-115` | The Microsoft Learn URLs already chosen for the print how-to and the `CoreWebView2` WinRT reference — the starting point for step 2, not a substitute for fetching them |
-| `docs/desktop/07-integrations/README.md:227,229,230` | The three rows that own the successor work: `DSK-07-12` → [[FEAT-038]] (the acceptance flip, profile `chore`), `DSK-07-14` → [[FEAT-040]] (renderer plus off-screen-host spike), `DSK-07-15` → [[FEAT-041]] (golden-file parity suite). Read them to see exactly what this ADR is promising on their behalf |
+| `docs/desktop/07-integrations/README.md:227,229,230` | The three rows that own the successor work: `DSK-07-12` → [[FEAT-038]] (the acceptance flip, profile `chore`), `DSK-07-14` → [[FEAT-040]] (renderer plus packaged-controller validation), `DSK-07-15` → [[FEAT-041]] (golden-file parity suite). Read them to see exactly what this ADR is promising on their behalf |
 | `docs/adr/0028-run-integrated-renderer-in-web-container-app.md` | **The model to copy, and the decision most at risk of looking contradicted.** Its `## Status` `:13-16` shows the house form for a refining decision ("refines ADR-0015 and ADR-0025; it supersedes neither"); `:22-27` records what central rendering costs the Web image (pinned Chromium, native Linux dependencies, fonts, writable temp); `:33-36` states that FRD-11 report behaviour "remain[s] governed by FRD-11 and `Pegasus.Core` rather than by this ADR"; and `:57-60` already requires "measured evidence… and a new accepted ADR" before the renderer changes host — which is what ADR-0108 plus the parity gate supply |
 | `docs/adr/0025-integrate-renderer-and-extractor-into-the-application.md:30-36` | Why the templates are product behaviour and must co-version with the FRDs and Core policy that feed them — the reason the desktop renderer must consume the same governed source rather than a copy |
 | `docs/adr/README.md:11-14` | The two facts that shape the whole ticket: the current architecture **is** the accepted table, and **published bodies are immutable**. Together they mean no index row now, and no body edit later |
@@ -52,8 +52,8 @@ Read these before writing a line. Each says what it tells the implementer.
   find.
 - **Successor work this ADR authorises, each with a named owner** — nothing here
   is unowned: [[FEAT-039]] (`DSK-07-13`) embeds the templates hash-checked;
-  [[FEAT-040]] (`DSK-07-14`) writes the renderer and runs the off-screen-host
-  spike whose answer lands in this ADR's named blank; [[FEAT-041]]
+  [[FEAT-040]] (`DSK-07-14`) writes the renderer and validates the documented
+  `HWND_MESSAGE` controller from the packaged app; [[FEAT-041]]
   (`DSK-07-15`) produces the golden-file parity evidence that opens the retention
   gate; [[FEAT-042]] (`DSK-07-16`) adds the finalise endpoint that keeps report
   *registration* on the gateway; [[TEST-018]] (`DSK-08-18`) runs the parity lane
@@ -79,9 +79,7 @@ already forbid them.
 
 - **Any renderer code** — `Pegasus.Desktop.Infrastructure`, the Scriban call, the
   `PrintToPdfStreamAsync` call, the PDFsharp post-processing. All [[FEAT-040]]'s.
-- **The off-screen host choice itself.** This ADR records a named blank; the
-  spike decides. Filling it here would be inventing the evidence the ADR exists
-  to wait for.
+- **Renderer host experimentation.** The ADR already fixes the documented `HWND_MESSAGE` host; [[FEAT-040]] validates it, but does not introduce a collapsed-XAML or arbitrary-hidden-HWND alternative.
 - **Any edit to `docs/adr/0025-…` or `docs/adr/0028-…`.** Bodies are immutable
   (`docs/adr/README.md:12-14`); ADR-0108 *relates to* them and supersedes
   neither. `supersedes: []` and `superseded_by: []` stay empty on all three.
