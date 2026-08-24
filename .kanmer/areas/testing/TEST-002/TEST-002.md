@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-02 · Authorization and failure-path test template for every `/api/v1`
   command
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:13.034Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -23,7 +25,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:12.565Z'
-updated: '2026-08-24T08:51:07.699Z'
+updated: '2026-08-24T21:34:13.034Z'
 ---
 
 ## What

@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-01 · Scaffold `tests/Pegasus.Api.ContractTests` (xunit 2.9.3,
   WebApplicationFactory, locked restore)
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:12.811Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -22,7 +24,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:12.549Z'
-updated: '2026-08-24T10:01:29.787Z'
+updated: '2026-08-24T21:34:12.811Z'
 ---
 
 ## What
