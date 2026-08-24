@@ -30,8 +30,10 @@ The ticket's `refs` list is **empty** and its frontmatter carries `docs_todo: tr
 can claim to meet, and it must not pretend otherwise.
 
 > **New ADR** — ADR-0105 (signed MSIX / App Installer distribution with a gateway
-> minimum-version gate), **authored by this ticket** (`REL-001`). This plan is written
-> to the decisions as recorded in
+> minimum-version gate), authored by [[REL-001]]; see [[REL-001]]'s plan for the
+> ownership reconciliation — that is this document, and the reconciliation is the
+> **Ownership** paragraph below plus the two boxes in this ticket's `open-questions`.
+> This plan is written to the decisions as recorded in
 > `docs/desktop/09-release-update-and-distribution/README.md` § 3 (two-layer
 > enforcement, versioning, channels, order of deployment, known-good package, signing,
 > feed hosting) and in `signing-and-hosting-decision-matrix.md` (D-002 self-managed
@@ -47,14 +49,20 @@ Existing ADRs this one **relates to** and must not modify:
   production only, no Azure test environment. L-02 keeps it standing; ADR-0105 must not
   imply a test feed in Azure.
 - **FRD-13** does not exist yet; `docs/frd/README.md` lists FRD-01…FRD-12. Step 8 adds a
-  forward pointer only, phrased as a pointer to work `DSK-00-08` (board `FND-008`) will
-  do — never as a claim that FRD-13 exists.
+  forward pointer only, phrased as a pointer to work [[FND-008]] (plan handle `DSK-00-08`)
+  will do — never as a claim that FRD-13 exists.
 
-**Ownership.** ADR-0105 has three claimants: this ticket, `DSK-00-05` (board `FND-005`,
-"Author ADR-0100, ADR-0101, ADR-0103, ADR-0104, ADR-0105 and ADR-0110 in the reserved
-block") and `DSK-04-01` (board `FND-042`, "Author ADR-0102 … and ADR-0105"). The body's
-reconciliation binds: one filename, and the first of the three to be worked authors it.
-Step 2 below makes the board check mandatory before anything is created.
+**Ownership.** ADR-0105 has three claimants: this ticket,
+[[FND-005]] (plan handle `DSK-00-05`, "Author ADR-0100, ADR-0101, ADR-0103, ADR-0104,
+ADR-0105 and ADR-0110 in the reserved block") and
+[[FND-042]] (plan handle `DSK-04-01`, "Author ADR-0102 … and ADR-0105"). The body's
+reconciliation binds on **execution**: one filename, and the first of the three to be
+worked authors it while the other two extend it in place. It does **not** settle who owns
+the row — the body says in the same paragraph that this is "an ownership question for the
+operator to settle before Phase 2, not something the first agent to start decides
+silently", and that the change of shape is recorded in `open-questions/`. Both are now
+unticked boxes in this ticket's `open-questions` document, which is what the body asked
+for. Step 2 below still makes the board check mandatory before anything is created.
 
 ## Routing
 
@@ -74,8 +82,10 @@ the plan document.
 - **Kanmer pipeline** for profile `chore`: `kanmer-plan` → `kanmer-execute` →
   `kanmer-review` → `kanmer-verify` → `kanmer-closeout`. Call `get_doc_gates REL-001`
   before every move; a move crosses at most one gated boundary. `get_doc_gates` reports
-  only two gated boundaries for this profile: `leave-preparing` needs `plan`
-  (this document) and `enter-done` needs `proof`.
+  exactly two gated boundaries for this profile: **`leave-preparing` needs `plan` (this
+  document) **and** `questions-resolved`**, and **`enter-done` needs `proof` **and**
+  `questions-resolved`**. `leave-backlog` is not a gated boundary at all for a `chore` —
+  verified 2026-08-24, it does not even appear in the boundary list.
 - **Reviewer**: `pegasus-desktop-reviewer` — an agent that did not implement
   (`AGENTS.md` § Repository task workflow step 5).
 
@@ -88,7 +98,9 @@ ownership; they add the *how* the body leaves out.
    `docs/desktop/09-release-update-and-distribution/README.md` § 3 and the § 5 row
    `DSK-09-01`, `signing-and-hosting-decision-matrix.md` in full, and proposal § 9 in
    `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md`. Then `get_doc_gates REL-001`
-   and `take_ticket REL-001`.
+   and `take_ticket REL-001`. Read this ticket's `open-questions` document first — both of
+   its boxes must be ticked before the ticket can leave Preparing, and one of them needs an
+   operator.
 2. **Resolve the three-way claim before creating anything.** Run Kanmer
    `search_items` for `ADR-0105`, and check `docs/adr/` on disk with
    `ls docs/adr/0105*`. Three outcomes, and the plan must record which applied:
@@ -96,7 +108,10 @@ ownership; they add the *how* the body leaves out.
    step 3; (b) the file exists → this ticket becomes a **review** of that ADR against
    § 3 of the area 09 plan plus whatever area 09 still owes, and extends it in place;
    (c) another ticket is in `implementing` on it → stop and coordinate rather than race.
-   Record the outcome in this document under a dated note before proceeding.
+   Record the outcome in this document under a dated note **and in the second box of
+   `open-questions`**, which is where the body requires the change of shape to be recorded.
+   Measured 2026-08-24: outcome (a) — `ls docs/adr/0105*` returns nothing and all three
+   claimants sit in `backlog`, untaken. Re-run it anyway; that is the whole point.
 3. **Create the file at the single agreed path**,
    `docs/adr/0105-msix-app-installer-and-minimum-version-gate.md`. Copy the frontmatter
    block shape from `docs/adr/0015-host-web-on-container-apps-consumption.md:1-10`,
@@ -147,7 +162,7 @@ ownership; they add the *how* the body leaves out.
    Azure", "the web app does it" and "it may scale later" are not answers.
 8. **§ Relates**: ADR-0007 (gateway release route unchanged), ADR-0014 (two
    environments; no Azure test feed), and a forward pointer to FRD-13 *when*
-   `DSK-00-08` (board `FND-008`) writes it — phrased so the link is not created before
+   [[FND-008]] writes it — phrased so the link is not created before
    the file exists, or `scripts/Test-DocumentationLinks.ps1` fails.
 9. **Index row** in `docs/adr/README.md`, in ADR-number order, matching the existing
    three-column shape `| [0105](0105-msix-app-installer-and-minimum-version-gate.md) |
@@ -177,6 +192,7 @@ output pasted verbatim as proof type `command-log`.
 | `pwsh ./scripts/Test-TestMarkdownPlacement.ps1` | exit code `0` — the new file is under `docs/adr/`, an allowed root (`scripts/Test-MarkdownPlacement.ps1:31`) |
 | `ls docs/adr/0105*` | exactly one file, `0105-msix-app-installer-and-minimum-version-gate.md` |
 | `git diff --name-only` | exactly `docs/adr/0105-msix-app-installer-and-minimum-version-gate.md` and `docs/adr/README.md` |
+| `get_doc_gates REL-001` | `questions-resolved` satisfied — both `open-questions` boxes ticked, with the operator's answer and the step-2 outcome recorded |
 
 Behaviour to read rather than assume: open the rendered ADR and confirm each of the five
 Decision clauses reads as a decision ("Pegasus signs…", "the package check fails open…")
@@ -188,22 +204,29 @@ evidence in every row. That reading is the acceptance criterion the commands can
 - **Risk — a second ADR-0105 is created.** Two agents working area 00 and area 09 in
   parallel could both create the file. Mitigation: step 2 makes the `search_items` +
   `ls docs/adr/0105*` check mandatory *before* creation, and the outcome is recorded in
-  this document.
-- **Open question — which of the three claimants authors ADR-0105.** The body says this
-  is for the operator to settle before Phase 2 and must not be decided silently. It is
-  **not blocking**, because the body supplies the tie-break: the first of the three to
-  be worked authors the file and the other two extend it in place. Step 2 executes that
-  tie-break and records the answer here, which is what the body asks for. Who answers
-  the ownership question itself: the operator, before Phase 2. No `open-questions`
-  document is opened, because an unticked item would block every stage move for a
-  question the body has already given a working rule for.
+  this document and in the second `open-questions` box.
+- **Open question, and it is open — which of the three claimants authors ADR-0105.**
+  The body says it is for the operator to settle before Phase 2 and "not something the
+  first agent to start decides silently", and it directs that the resulting change of
+  shape be recorded in `open-questions/`. Both are now unticked boxes in this ticket's
+  `open-questions` document.
+  An earlier draft of this plan declined to open them, reasoning that "an unticked item
+  would block every stage move". That reason was false and is withdrawn: an unticked box
+  blocks `leave-preparing`, `enter-review` and `enter-done`, never `leave-backlog`, and for
+  a `chore` the board declares only the first and the last of those three. Verified
+  2026-08-24 with `get_doc_gates REL-001`: with `open-questions` present, `leave-preparing`
+  is `passable: false` and `preparing` is still reachable. Blocking Preparing is the
+  *intended* behaviour here — the body's whole point is that an agent must not start
+  authoring before the operator has said who owns the row.
+  The body's tie-break (first-to-be-worked authors, the other two extend in place) still
+  governs execution once ownership is settled, and step 2 executes it.
 - **Risk — an ADR number outside the reserved block.** `AGENTS.md` § ADR conventions
   still opens with "the next free number" and only then records the 2026-08-23 exception.
   Mitigation: step 3 requires reading `AGENTS.md:77-99` and confirming the reserved-block
   sentence before using 0105.
 - **Risk — a forward link to FRD-13 breaks the link gate.** `docs/frd/README.md` lists
   FRD-01…FRD-12 only. Mitigation: step 8 writes the pointer as prose naming the ticket
-  that will author FRD-13, with no relative link until the file exists.
+  that will author FRD-13 ([[FND-008]]), with no relative link until the file exists.
 - **Risk — ADR bodies are immutable once accepted.** If § 3 of the area 09 plan changes
   after this ADR is accepted, the correction is a new superseding ADR, not an edit. Noted
   here so the implementer does not "fix" the body later.
