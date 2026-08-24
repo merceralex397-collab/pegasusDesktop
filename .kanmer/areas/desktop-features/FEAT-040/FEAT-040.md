@@ -31,7 +31,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.634Z'
-updated: '2026-08-24T23:03:05.495Z'
+updated: '2026-08-24T23:07:55.700Z'
 ---
 
 ## What
@@ -57,7 +57,7 @@ Locked decision L-03 and ADR-0108 move report rendering to the desktop so a repo
 
 - **Subagent**: `winui-dev` — `.codex/agents/winui-dev.toml`, then `pegasus-desktop-reviewer` — `.codex/agents/pegasus-desktop-reviewer.toml`
 - **Skills**, loaded in this order: `pegasus-desktop` (`.agents/skills/project/pegasus-desktop/SKILL.md`) → `winui-dev-workflow` (`.codex/skills/winui-dev-workflow/SKILL.md`) → `microsoft-code-reference` (Microsoft Learn plugin) → `winui-code-review` (`.codex/skills/winui-code-review/SKILL.md`, the `WUI4xxx` interop rules for WebView2 initialisation)
-- **MCP**: Kanmer (`get_status`, `get_doc_gates`, `take_ticket`, `set_ticket_doc`, `append_scratch`, `move_item`); Microsoft Learn (`microsoft_docs_fetch` on <https://learn.microsoft.com/microsoft-edge/webview2/how-to/print> and the `CoreWebView2` reference; `microsoft_code_sample_search` for `PrintToPdfStreamAsync` and `CoreWebView2Environment.CreateAsync`)
+- **MCP**: Kanmer (`get_status`, `get_doc_gates`, `take_ticket`, `set_ticket_doc`, `append_scratch`, `move_item`); Microsoft Learn (`microsoft_docs_fetch` on <https://learn.microsoft.com/microsoft-edge/webview2/how-to/print> and the `CoreWebView2` reference; `microsoft_code_sample_search` for `PrintToPdfStreamAsync` and `CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`)
 - **Kanmer pipeline** for profile `feature`: `kanmer-research` → `kanmer-plan` → `kanmer-execute` → `kanmer-review` → `kanmer-verify` → `kanmer-closeout` (call `get_doc_gates <id>` before every move; a move crosses at most one gated boundary)
 - **Reviewer**: `pegasus-desktop-reviewer` — an agent that did not implement (`AGENTS.md` § Repository task workflow step 5)
 
@@ -103,7 +103,7 @@ Tier 3 obliges adapter-contract evidence: deterministic external failure handlin
 
 ## Documentation changes
 
-- `docs/adr/0108-desktop-webview2-report-rendering.md` — record the chosen off-screen host in the decision's consequences (via [[DSK-07-12]]'s file, not a second ADR)
+- `docs/adr/0108-desktop-webview2-report-rendering.md` — record packaged-app validation evidence for ADR-0108's fixed documented `HWND_MESSAGE` host (not a second ADR)
 - `docs/current-architecture.md` — the renderer composition (desktop plus retained gateway fallback), after the slice ships
 - `docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md` — the local-render behaviour clause, including the fail-closed engineer-identity rule
 

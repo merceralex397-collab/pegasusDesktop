@@ -5,30 +5,25 @@
 Microsoft Learn documents `HWND_MESSAGE` as the valid parent for an invisible `CoreWebView2Controller` on Windows 8 and later; the WebView will never become visible. The fixed design is `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`. This supersedes every earlier collapsed-XAML/hidden-HWND host-selection instruction below. Phase 7 validates packaged-app initialisation, PDF output and no-window behaviour; it does not select a host. This user-directed correction also adds `docs/desktop/00-governance-and-workflow/README.md` and `docs/desktop/07-integrations/README.md` to FND-007's docs-only scope.
 
 
-**Diff estimate: ~1 file, ~130 lines.**
+**Diff estimate: ~3 files, ~180 lines.**
 
-Derived from the `files` document, not asserted. One new ADR and nothing else —
-no index row at this merge, no code, no edit to any existing file. The 130 lines
-are budgeted against the measured house lengths: ADR-0028 is 84 lines and
-ADR-0025 is the fullest recent comparator; ADR-0108 carries everything ADR-0028
-does **plus** the ten-line six-question table, two verbatim proposal quotations,
-a named blank for the off-screen host, and a `## Reversal condition` section the
-house form does not usually have. `git diff --stat` on the branch should show
-`1 file changed, ~130 insertions(+)` and **zero deletions** — a deletion means
-something was edited that should not have been.
+Derived from the `files` document, not asserted. This user-directed correction
+changes ADR-0108 plus the Phase 0 and Phase 7 source plans; it adds no renderer
+code or index row. ADR-0108 still carries the six-question table, proposal
+quotations, documented `HWND_MESSAGE` host and reversal condition. `git diff --stat`
+on the branch should show only those three docs files; deletions are expected where
+the obsolete two-host decision is removed.
 
 ## Approach
 
-Write ADR-0108 once, merge it `proposed`, and never touch it again from this
-ticket. The whole design of the document is aimed at one property: **the
-acceptance flip must be a frontmatter-and-named-blank change, not a body
-rewrite.** `docs/adr/README.md:12-14` makes a published body immutable, so if the
-Decision section is written as though the off-screen host were already known,
-[[FEAT-040]]'s (plan handle `DSK-07-14`) spike result cannot be recorded without
-a whole superseding ADR. The body therefore states what is decided now — port,
-project, templates, isolation, single-flight, fallback, retention gate — and
-carries an explicitly named blank for the host, which [[FEAT-038]] (plan handle
-`DSK-07-12`) fills at acceptance.
+Write ADR-0108 as `proposed` with the documented controller host and never touch
+it again from this ticket after this correction. The acceptance flip remains
+frontmatter-and-index only: `docs/adr/README.md:12-14` makes a published body
+immutable. Microsoft Learn fixes the host as
+`CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`; Phase 7
+validates that arrangement from the packaged app rather than supplying a later
+body edit. The ADR records port, project, templates, isolation, single-flight,
+fallback, retention gate and reversal condition now.
 
 The rejected alternative was waiting for the Phase 7 spike and writing one
 `accepted` ADR. It is tidier and it is wrong twice over: plan 00 § 4 makes
@@ -62,8 +57,8 @@ strength of `docs_todo`. No repository ADR governs this work today.
 > non-UI WebView2 HTML→PDF path; the gateway renderer is retained only until
 > golden-file parity passes; needs ADR-0108") and to
 > `docs/desktop/00-governance-and-workflow/README.md` § 3's ADR set table row for
-> ADR-0108. If the Phase 7 spike lands differently the ADR is accepted with the
-> host it actually proves — which is why the blank is named rather than guessed.
+> ADR-0108. Phase 7 validates the documented `HWND_MESSAGE` controller from the
+> packaged app; it does not change the ADR's host.
 
 Because `refs` is empty, the authorities that bind today are these:
 
@@ -74,7 +69,7 @@ Because `refs` is empty, the authorities that bind today are these:
 | Proposal § 12.5 (`:751`) | Documents, PDFs and reports — the rendering design | Step 5 |
 | L-03 (`docs/desktop/README.md` § Locked decisions) | Isolated non-UI WebView2 HTML→PDF; gateway renderer retained until golden-file parity | Steps 4–6 |
 | L-02 | Parity evidence is produced on the local Test/UAT stack, not in an Azure environment | Step 6 (the gate names [[FEAT-041]] and [[TEST-018]], not a cloud run) |
-| Plan 00 § 4 Target state and exit gate | ADR-0100…ADR-0110 are the Phase 0 governance exit gate; "ADR-0108 may be `proposed` until the Phase 7 spike" | The whole ticket, and why it is `HZN-001` |
+| Plan 00 § 4 Target state and exit gate | ADR-0100…ADR-0110 are the Phase 0 governance exit gate; "ADR-0108 may be `proposed` until Phase 7 packaged-controller validation and parity" | The whole ticket, and why it is `HZN-001` |
 | `AGENTS.md:81-89` | Stable IDs; the operator-confirmed reserved block ADR-0100–ADR-0110 | Step 3 |
 | `AGENTS.md:94-108` | The eight-key YAML frontmatter block | Step 3 |
 | `AGENTS.md:107-110` | Heading set with **Status first**, "so a body-only read is never mistaken for current when it is superseded" | Step 3 |
@@ -83,7 +78,7 @@ Because `refs` is empty, the authorities that bind today are these:
 | ADR-0028 `:57-60` | A move to another renderer host requires measured evidence and a **new accepted ADR** | Steps 6–7 (this ADR plus the parity gate are that evidence route) |
 | ADR-0028 `:33-36` | FRD-11 report behaviour stays governed by FRD-11 and `Pegasus.Core` | Step 5 (the desktop produces bytes; the gateway registers reports) |
 | ADR-0025 `:30-36` | Templates are product behaviour and must co-version with the FRDs and Core policy | Step 5 (the same governed template source, embedded by [[FEAT-039]]) |
-| `docs/desktop/07-integrations/README.md:255` | Record the chosen off-screen host **in ADR-0108**; keep the renderer behind `IAssessmentReportRenderer` so the host can change | Step 5's named blank |
+| `docs/desktop/07-integrations/README.md:255` | Use the documented `HWND_MESSAGE` controller and validate it from the packaged app; retain the existing renderer port for the gateway parity transition | Step 5's fixed host |
 | `docs/desktop/07-integrations/README.md:257` | Runtime missing or outdated → named failure and gateway fallback | Step 5 |
 | `scripts/Test-MarkdownPlacement.ps1:31` + `.github/workflows/ci.yml:70-87` | New Markdown only under the allowed roots; the `documentation` job runs on every change set | Step 9 |
 
@@ -188,8 +183,7 @@ and the file paths are the body's. Measured values were read on 2026-08-24.
    honestly that "measured operational advantage" is **no, and not yet measured**;
    claiming a measurement that has not been taken is the failure this row exists
    to catch.
-5. **Write `## Decision`** so it separates what is decided now from what the
-   spike still owes.
+5. **Write `## Decision`** with the fixed documented host.
    Decided now: rendering moves to `Pegasus.Desktop.Infrastructure` behind the
    **existing** `IAssessmentReportRenderer` port
    (`src/Pegasus.Core/Reports/AssessmentReportRendering.cs:284`, consumed by
@@ -203,10 +197,9 @@ and the file paths are the body's. Measured values were read on 2026-08-24.
    the desktop **produces the document bytes but never registers the report** —
    registration, custody and audit stay behind the gateway ([[FEAT-042]], plan
    handle `DSK-07-16`).
-   Left open, as a **named blank**: the off-screen host — a collapsed WinUI
-   `WebView2` control versus `CoreWebView2Controller` on a hidden HWND — "recorded
-   here once [[FEAT-040]] proves it". Write that blank as a labelled sentence a
-   later editor can fill without touching anything around it.
+   The invisible host is `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`.
+    Microsoft Learn documents `HWND_MESSAGE` as never visible on Windows 8+; [[FEAT-040]]
+    validates packaged-app initialization and PDF output, rather than selecting a host.
 6. **Write `## Consequences`** with the retention rule stated as a gate with an
    owner, not a sentiment: the gateway renderer
    (`src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs:13`,
@@ -224,9 +217,9 @@ and the file paths are the body's. Measured values were read on 2026-08-24.
    time it can be written honestly. At minimum: WebView2 runtime absent or
    unmaintainable across the workstation fleet (recorded as an *assumption* at
    `docs/desktop/07-integrations/README.md:125`, not a fact); a golden-file
-   divergence that cannot be closed within documented tolerance; or neither
-   off-screen host initialising without a visible window, which would put L-03
-   itself back to the operator.
+   divergence that cannot be closed within documented tolerance; or the documented
+    `HWND_MESSAGE` controller failing to initialise or print from the packaged app,
+    which would put L-03 itself back to the operator.
 8. **Add no row to `docs/adr/README.md` at this merge.** The index has one
    accepted table (`:16`, header `:18`) and **no status column**, and `:11-12`
    states the current architecture *is* that table — a row would assert ADR-0108
@@ -252,8 +245,7 @@ and the file paths are the body's. Measured values were read on 2026-08-24.
    renderer is not a web shell.
 10. **After [[FEAT-040]] and [[FEAT-041]] are done, [[FEAT-038]] opens the
     frontmatter-only acceptance PR** — `status: accepted`, the acceptance `date:`,
-    the recorded host choice filled into the named blank, and the
-    `ADR | Title | Related FRD` row added to `docs/adr/README.md`. **This ticket
+    the `ADR | Title | Related FRD` row added to `docs/adr/README.md`. **This ticket
     verifies that PR** against the reversal condition and the § 23.2 statement and
     closes on it; **it performs no edit to ADR-0108 after the first merge.** If
     [[FEAT-038]] is descoped, this ticket has an unowned successor — raise it
@@ -286,12 +278,10 @@ Proof is written on merged `main`, after review and merge — never before
 
 ## Risks / open questions
 
-- **Writing the host choice instead of a named blank.** The one failure that
-  cannot be repaired: `docs/adr/README.md:12-14` makes the body immutable, so a
-  Decision section written as though the host were known forces a superseding ADR
-  when [[FEAT-040]]'s spike answers differently. Mitigation: step 5 makes the
-  blank an explicitly labelled sentence, and the whole Approach is built around
-  it.
+- **Changing the documented host without evidence.** `docs/adr/README.md:12-14`
+  makes a published body immutable. Mitigation: ADR-0108 names `HWND_MESSAGE` from
+  Microsoft Learn now; a packaged-controller failure reopens L-03 rather than
+  introducing a collapsed-XAML alternative.
 - **Adding an index row "for discoverability".** It would assert a `proposed`
   decision as current architecture (`docs/adr/README.md:11-12`), and
   `AGENTS.md:115` actively encourages the mistake by describing a status column
@@ -310,8 +300,8 @@ Proof is written on merged `main`, after review and merge — never before
   the review to `pegasus-desktop-reviewer`, whose named job this is. An isolated
   WebView2 that ever renders Pegasus UI is a **stop condition**, not a review
   comment.
-- **Scope boundaries owned by named tickets, not open questions:** the off-screen
-  host spike ([[FEAT-040]]); the acceptance flip and index row ([[FEAT-038]]);
+- **Scope boundaries owned by named tickets, not open questions:** packaged-controller
+  validation ([[FEAT-040]]); the acceptance flip and index row ([[FEAT-038]]);
   the golden-file fixtures ([[FEAT-041]]); the shared-template embedding
   ([[FEAT-039]]); the finalise endpoint that keeps report registration on the
   gateway ([[FEAT-042]]); the parity lane on the local stack ([[TEST-018]]); the
