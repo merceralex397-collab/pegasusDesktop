@@ -28,7 +28,7 @@ The conversion plan contains a draft lockfile and routing material. The accepted
 decision does not claim that the future vendored tree, lockfile, or CI verifier
 already exists; their implementation and proof remain the owned follow-up work.
 
-## Cloud-justification test
+### Cloud-justification test
 
 | Question | Answer | Evidence |
 | --- | --- | --- |

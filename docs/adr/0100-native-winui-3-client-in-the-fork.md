@@ -32,7 +32,7 @@ The earlier desktop-conversion documents named by the proposal are not present
 in this repository and are not implementation input. The current conversion
 brief, repository evidence, and accepted ADRs are the authority for this work.
 
-## Cloud-justification test
+### Cloud-justification test
 
 | Question | Answer | Evidence |
 | --- | --- | --- |

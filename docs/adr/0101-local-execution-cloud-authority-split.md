@@ -28,7 +28,7 @@ Test/UAT remains local under ADR-0014. This decision does not supersede
 ADR-0014 and does not authorize a new Azure development, test, staging, or UAT
 environment.
 
-## Cloud-justification test
+### Cloud-justification test
 
 | Question | Answer | Evidence |
 | --- | --- | --- |

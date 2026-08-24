@@ -27,15 +27,15 @@ The existing `Pegasus.Web` boundary is evolved in place into the gateway. This
 is a narrow trusted boundary, not a second implementation of business policy or
 a new microservice estate.
 
-## Cloud-justification test
+### Cloud-justification test
 
 | Question | Answer | Evidence |
 | --- | --- | --- |
-| Shared authority — must several users see and update the same state? | Yes | Case, document, and account state has one authoritative shared database. |
+| Shared authority — must several users see and update the same state? | Yes | The `Pegasus.Web` gateway applies case, document, and account changes to one authoritative shared database. |
 | Unattended execution — must it run with every desktop closed? | No | An interactive gateway request is initiated by a client; workers are addressed separately. |
-| Protected credentials — long-lived secret that must not sit on workstations? | Yes | Database and organization integration credentials remain server-held. |
+| Protected credentials — long-lived secret that must not sit on workstations? | Yes | The `Pegasus.Web` gateway retains database and organization integration credentials. |
 | Public callback — must an external service call a stable public endpoint? | No | A public callback is not required to justify normal desktop-to-gateway requests. |
-| Central enforcement — revocation, permissions, audit, invariant independent of the client? | Yes | Authorization, concurrency, transactions, audit, and client-version rejection must survive a compromised or stale client. |
+| Central enforcement — revocation, permissions, audit, invariant independent of the client? | Yes | The `Pegasus.Web` gateway applies authorization, concurrency, transactions, audit, and client-version rejection independently of a client. |
 | Measured operational advantage — measured evidence central is materially better? | No | The required central controls already justify the boundary. |
 
 ## Decision

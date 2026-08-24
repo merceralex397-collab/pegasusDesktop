@@ -28,15 +28,15 @@ updater. The project has three settled operational constraints:
 - C-01: repositories are private, so GitHub Releases and GitHub Pages are not a
   distribution channel.
 
-## Cloud-justification test
+### Cloud-justification test
 
 | Question | Answer | Evidence |
 | --- | --- | --- |
-| Shared authority — must several users see and update the same state? | Yes | One signed channel manifest and compatibility policy must be common to every client. |
+| Shared authority — must several users see and update the same state? | Yes | The approved UNC App Installer feed holds one signed channel manifest and compatibility policy for every client. |
 | Unattended execution — must it run with every desktop closed? | No | A client checks the package feed at launch. |
 | Protected credentials — long-lived secret that must not sit on workstations? | No | Signing-key handling is release-process scope; installed clients do not need it. |
 | Public callback — must an external service call a stable public endpoint? | No | The in-house SMB feed has no public callback. |
-| Central enforcement — revocation, permissions, audit, invariant independent of the client? | Yes | The gateway must reject a client below the supported version even when package update configuration fails. |
+| Central enforcement — revocation, permissions, audit, invariant independent of the client? | Yes | The `Pegasus.Web` gateway rejects a client below the supported version even when package update configuration fails. |
 | Measured operational advantage — measured evidence central is materially better? | No | Shared authority and central enforcement already justify the minimum boundary. |
 
 ## Decision

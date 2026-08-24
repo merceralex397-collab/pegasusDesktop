@@ -23,7 +23,7 @@ persistence, another migration stream, and ambiguous authority without a stated
 operator need. Desktop responsiveness still needs small local working state and
 safe handling of a temporary connectivity loss.
 
-## Cloud-justification test
+### Cloud-justification test
 
 | Question | Answer | Evidence |
 | --- | --- | --- |
