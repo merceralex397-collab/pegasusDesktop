@@ -23,7 +23,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:24:13.928Z'
-updated: '2026-08-24T08:24:13.928Z'
+updated: '2026-08-24T10:36:11.442Z'
 ---
 
 ## What
@@ -32,7 +32,7 @@ Build the Vehicle tab in `src/Pegasus.Desktop`: registration normalisation and v
 
 ## Why
 
-Proposal § 13.5 requires vehicle registration data, lookups, mileage history, and "source and timestamp of external data"; § 16.2 requires the desktop to show when data is cached and when it was obtained, and that a failed external lookup must not corrupt the case. § 12.3 permits a direct desktop provider call **only** if the API is explicitly designed for public/native clients and needs no privileged secret, and says that must be proven from the provider contract rather than assumed — this area's § 2 records it as an assumption and names this ticket as the check. Siblings: [[DSK-07-09]] supplies the endpoints and the provenance fields; [[DSK-05-15]] is the case-workspace slice that hosts this tab.
+Proposal § 13.5 requires vehicle registration data, lookups, mileage history, and "source and timestamp of external data"; § 16.2 requires the desktop to show when data is cached and when it was obtained, and that a failed external lookup must not corrupt the case. § 12.3 permits a direct desktop provider call **only** if the API is explicitly designed for public/native clients and needs no privileged secret, and says that must be proven from the provider contract rather than assumed — this area's § 2 records it as an assumption and names this ticket as the check. Siblings: [[DSK-07-09]] supplies the endpoints and the provenance fields; [[DSK-05-15]] is the case-workspace slice that hosts this tab and extends the view model this ticket owns with the EVA handoff commands.
 
 ## Source of truth
 
@@ -58,7 +58,7 @@ Proposal § 13.5 requires vehicle registration data, lookups, mileage history, a
 2. **Operator step** — the provider-contract check. The operator reads the current DVLA Vehicle Enquiry Service and DVSA MOT History API terms and hands back, in writing: whether either API is designed for public/native clients, whether either can be called without a privileged secret, and the date and document version read. Record the answer verbatim in the ticket's `research` document. Until it is recorded, the assumption in this area's § 2 stands and the desktop calls only the gateway.
 3. If — and only if — the operator's answer says a direct native call is permitted without a privileged secret, do **not** implement it here: raise a follow-up ticket in area 07 and record why. Placement stays as ADR-0107 has it for this ticket.
 4. Regenerate the API client with `pwsh ./eng/api/Generate-ApiClient.ps1` and confirm the vehicle contracts carry `outcome`, `provider`, `providerVersion`, `retrievedAtUtc`, `sourceObservedAtUtc` and `failure`.
-5. Add `CaseVehicleViewModel` to `src/Pegasus.Desktop` using `ObservableObject`, `[ObservableProperty]` partial properties and `[RelayCommand]`. Reuse the shared normalisation rule rather than writing a second one: uppercase, strip whitespace, ASCII letters and digits only, maximum 20 characters — the same rule `VehicleLookupRequest` enforces at `LookupContracts.cs:22-33`. If the shared rule is not yet reachable from the desktop, take it from `src/Pegasus.Contracts` as [[DSK-05-23]] relocates shared vocabulary; do not copy the regex into the view model.
+5. Add `CaseVehicleViewModel` to `src/Pegasus.Desktop` using `ObservableObject`, `[ObservableProperty]` partial properties and `[RelayCommand]`. Reuse the shared normalisation rule rather than writing a second one: uppercase, strip whitespace, ASCII letters and digits only, maximum 20 characters — the same rule `VehicleLookupRequest` enforces at `LookupContracts.cs:22-33`. If the shared rule is not yet reachable from the desktop, take it from `src/Pegasus.Contracts` as [[DSK-05-23]] relocates shared vocabulary; do not copy the regex into the view model. This ticket owns that type and its view: if [[DSK-05-15]] landed first it created it under exactly these members, so extend it in place and add no second view model.
 6. Build `CaseVehicleView.xaml` from the screen spec: the VRM field with inline validation placed per [[DSK-06-08]], make/model/colour/year rows each carrying a provenance glyph ([[DSK-06-11]]) and a source-and-age chip, MOT and mileage observations classified supplied/external/estimated, suggestion rows with an Accept command keyed `Case.Vehicle.Suggestion.Accept.<Key>`, and the `Case.Vehicle.Lookup` command.
 7. Render the seven provider outcomes as distinct, named states using `StatusChip` from [[DSK-06-06]] — `current`, `stale`, `partial`, `not found`, `throttled`, `unavailable`, `failed`. Text plus colour, never colour alone (`docs/desktop/06-ui-design/keyboard-and-accessibility.md`). "Not found" and "unavailable" must never share a presentation.
 8. Show cache honesty: every externally sourced value displays where it came from and when it was obtained, computed from `retrievedAtUtc` / `sourceObservedAtUtc`. A stale value stays visible and labelled rather than being hidden or silently refreshed.
@@ -91,7 +91,7 @@ Tier 7 obliges a real run against the gateway with the keyboard walk recorded; a
 
 ## Documentation changes
 
-- `docs/frd/frd-13-desktop-operator-experience.md` — Vehicle tab section
+- `docs/frd/frd-13-desktop-operator-experience.md` — Vehicle tab section (this ticket authors the section; [[DSK-05-15]] adds the EVA handoff behaviour as a sub-heading inside it)
 - `docs/frd/frd-06-vehicle-and-engineering-evidence.md` — desktop provenance-display clause
 - `docs/desktop/07-integrations/README.md` § 2 Assumptions — the DVLA/DVSA assumption is replaced by the recorded check result
 
@@ -99,7 +99,7 @@ Tier 7 obliges a real run against the gateway with the keyboard walk recorded; a
 
 - **Azure**: no write.
 - **Scope boundary**: may touch `src/Pegasus.Desktop`, `src/Pegasus.Desktop.Infrastructure`, `tests/Pegasus.Desktop.ViewModelTests`, `tests/Pegasus.Desktop.UITests`. Must not add endpoints (that is [[DSK-07-09]]), must not reference `src/Pegasus.Infrastructure/Vehicle/`, must not contain a provider base URI or key.
-- **Traps**: ADR-0107 — no provider key in the package; a second registration-normalisation rule in the client is duplication under `AGENTS.md` § Simplicity rails; provider failure must stay distinguishable from "not found"; the release-15 automatic sweep means a case may already hold lookup evidence the operator did not request — show its provenance rather than presenting it as staff-entered; operator copy rules apply (`docs/design/README.md`).
+- **Traps**: ADR-0107 — no provider key in the package; a second registration-normalisation rule in the client is duplication under `AGENTS.md` § Simplicity rails; provider failure must stay distinguishable from "not found"; the release-15 automatic sweep means a case may already hold lookup evidence the operator did not request — show its provenance rather than presenting it as staff-entered; operator copy rules apply (`docs/design/README.md`). One view model per screen: this ticket owns `CaseVehicleViewModel` and `CaseVehicleView.xaml`, [[DSK-05-15]] extends them; a second view model for the same screen is a stop condition.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome
