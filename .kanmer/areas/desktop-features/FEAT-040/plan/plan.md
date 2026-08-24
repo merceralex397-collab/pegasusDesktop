@@ -91,7 +91,7 @@ Copied from the ticket body's `## Routing` block.
 Refines the body's fourteen steps in the same order.
 
 1. **Orient and take.** Read the plan row (`docs/desktop/07-integrations/README.md` § 5,
-   `DSK-07-14`), ADR-0108 from [[FEAT-038]], that area's § 2 WebView2 facts and § 7 trap rows, the
+   `DSK-07-14`), the proposed ADR-0108 from [[FND-007]], that area's § 2 WebView2 facts and § 7 trap rows, the
    [[FEAT-043]] (plan handle `DSK-07-17`) upstream `TICK-216` record, and
    `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs` **end to end** (326
    lines). Call `get_doc_gates FEAT-040`, then `take_ticket` on branch
@@ -150,7 +150,7 @@ Refines the body's fourteen steps in the same order.
     the desktop renderer when the runtime is present and the parity flag allows it; the gateway
     `POST /api/v1/cases/{id}/reports/draft` remains the fallback until [[FEAT-041]] signs off.
     **Record the flag name in this document** under a dated heading — [[FEAT-042]] (plan handle
-    `DSK-07-16`) step 9 and [[FEAT-038]] step 9 both cite it, so it is named once, here or there,
+    `DSK-07-16`) step 9 consumes it after parity; record it once in the renderer plan or the finalise ticket,
     whichever lands first.
 11. **Prove the never-UI rule mechanically.** The WebView2 is never navigated to an http/https
     Pegasus URL, hosts no application XAML, and is created off-screen. Extend [[FND-037]]'s (plan
@@ -215,7 +215,7 @@ a second render started while one is in flight waits rather than throwing.
 - **Scope boundary, not an open question** — which engineer identities are authorised is
   [[FEAT-043]]'s recorded disposition of an already-accepted upstream contract; which signature
   assets are embedded is [[FEAT-039]]'s; the parity fixtures are [[FEAT-041]]'s; storage and
-  preview are [[FEAT-042]]'s; the ADR file is [[FEAT-038]]'s.
+  preview are [[FEAT-042]]'s; ADR-0108 is authored by [[FND-007]]; only its later acceptance flip is [[FEAT-038]]'s.
 - **No open question is opened.** The host is settled by the documented `HWND_MESSAGE` API; margin
   units and packaged-app integration are implementation facts, and step 13 is an operator action
   producing proof, not a decision anyone is waiting on.

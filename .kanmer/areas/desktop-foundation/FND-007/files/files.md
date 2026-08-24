@@ -1,5 +1,9 @@
 # Files — FND-007
 
+## Scope correction — 2026-08-25
+
+The Phase 7 tickets named below are successors only. FND-007 closes after its own proposed-ADR PR and proof; it does not wait for renderer validation, parity, or the later accepted-index change.
+
 ## 2026-08-25 correction — documented invisible host
 
 Microsoft Learn documents `HWND_MESSAGE` as the valid parent for an invisible `CoreWebView2Controller` on Windows 8 and later; the WebView will never become visible. The fixed design is `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`. This supersedes every earlier collapsed-XAML/hidden-HWND host-selection instruction below. Phase 7 validates packaged-app initialisation, PDF output and no-window behaviour; it does not select a host. This user-directed correction also adds `docs/desktop/00-governance-and-workflow/README.md` and `docs/desktop/07-integrations/README.md` to FND-007's docs-only scope.

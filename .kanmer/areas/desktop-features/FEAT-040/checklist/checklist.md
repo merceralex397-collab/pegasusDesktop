@@ -7,7 +7,7 @@ Microsoft Learn documents `HWND_MESSAGE` as the valid parent for an invisible `C
 
 One box per plan step, in plan order. Tick with `set_ticket_doc`; append progress notes below.
 
-- [ ] Read the plan row `DSK-07-14`, ADR-0108 from [[FEAT-038]] (plan handle `DSK-07-12`), area 07 § 2's WebView2 facts and § 7's four trap rows, [[FEAT-043]] (plan handle `DSK-07-17`)'s upstream TICK-216 record, and all 326 lines of `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs`
+- [ ] Read the plan row `DSK-07-14`, the proposed ADR-0108 from [[FND-007]] (plan handle `DSK-00-07`), area 07 § 2's WebView2 facts and § 7's four trap rows, [[FEAT-043]] (plan handle `DSK-07-17`)'s upstream TICK-216 record, and all 326 lines of `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs`
 - [ ] Call `get_doc_gates FEAT-040` and `take_ticket` on branch `task/dsk-07-14-desktop-renderer`
 - [ ] Fetch <https://learn.microsoft.com/microsoft-edge/webview2/how-to/print> and the `CoreWebView2` reference with `microsoft_docs_fetch`, and record the facts in `research` with **today's** fetch date
 - [ ] Re-fetch the Learn controller and print documentation; create `CoreWebView2Controller` through `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`

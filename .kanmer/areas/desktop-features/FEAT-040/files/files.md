@@ -46,13 +46,10 @@ Measured on 2026-08-24. Paths that do not exist yet carry the ticket that create
   `PageCount`, `TemplateVersion` and `EngineVersion` in the register call. If `EngineVersion` does
   not name WebView2 and its runtime version, that ticket cannot record which engine produced a
   stored report.
-- **[[FEAT-018]] (plan handle `DSK-05-18`)** and **[[FND-007]] (plan handle `DSK-00-07`)** are
-  blocked by this ticket per its `blocks` list, along with [[TEST-018]] (plan handle `DSK-08-18`).
+- **[[FEAT-018]] (plan handle `DSK-05-18`)** and [[TEST-018]] (plan handle `DSK-08-18`) are blocked by this ticket. [[FND-007]] blocks this ticket until its proposed ADR has merged; the renderer is no longer a blocker for FND-007.
 - **`tests/Pegasus.ArchitectureTests`** — [[FND-037]]'s no-WebView rule gains its single exception;
   the rule must still fail for any other `WebView2` reference in the solution.
-- **`docs/adr/0108-desktop-webview2-report-rendering.md`** — consequences edited through
-  [[FEAT-038]]'s file. ADR bodies are immutable once accepted, so this lands while it is still
-  `proposed`.
+- **`docs/adr/0108-desktop-webview2-report-rendering.md`** — the fixed documented `HWND_MESSAGE` controller is authored by [[FND-007]] as `proposed`. This ticket supplies packaged-app evidence to [[FEAT-038]]; it does not edit the ADR body, frontmatter, or index.
 - **The MSIX** — the WebView2 / Windows App SDK reference and the embedded signature set change
   package contents; [[TEST-010]] (plan handle `DSK-08-10`)'s packaging tests and [[TEST-011]] (plan
   handle `DSK-08-11`)'s secret scan of the package both see this ticket's output.
@@ -72,6 +69,6 @@ Measured on 2026-08-24. Paths that do not exist yet carry the ticket that create
   accepted tuple and chooses nothing.
 - **Storing, uploading or registering the PDF** — [[FEAT-042]].
 - **The parity fixtures and tolerances** — [[FEAT-041]].
-- **A second ADR-0108** — [[FEAT-038]] owns the file.
+- **A second ADR-0108** — [[FND-007]] owns the proposed file and [[FEAT-038]] owns only its later acceptance flip.
 - **Pixel equality with Playwright's Chromium** — explicitly not the target; the WebView2 runtime
   updates itself while `Directory.Build.props:18` pins Playwright to 1.61.0.

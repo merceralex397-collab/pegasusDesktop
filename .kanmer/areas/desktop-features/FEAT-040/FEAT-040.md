@@ -21,7 +21,6 @@ groups:
   - HZN-008
 links: []
 blocks:
-  - FND-007
   - FEAT-018
   - FEAT-041
   - FEAT-042
@@ -31,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.634Z'
-updated: '2026-08-24T23:07:55.700Z'
+updated: '2026-08-24T23:49:47.880Z'
 ---
 
 ## What
@@ -51,7 +50,7 @@ Locked decision L-03 and ADR-0108 move report rendering to the desktop so a repo
 - Repository evidence: `src/Pegasus.Core/Reports/AssessmentReportRendering.cs:272-310` (`RenderedReportArtifact`, `AssessmentReportDraft`, `IAssessmentReportRenderer`, and `GenerateAssessmentReportDraft`'s SHA-256 provenance check that rejects a mismatched artifact); `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs:19` (`SemaphoreSlim(1,1)`), `:23-80` (the two Scriban contexts built from one `AssessmentReportSnapshot`), `:100-129` (template parse, unresolved-placeholder rejection, `SetContentAsync`, `PdfAsync` with `Format = "A4"`, `PrintBackground = true`, `DisplayHeaderFooter = true`, footer template, margins top `8mm` right `12mm` bottom `22mm` left `12mm`), `:130-142` (`PdfReader.Open` and `RenderedReportArtifact` with page count, SHA-256, `TemplateVersion` and an engine-version string), `:305-315` (`ResourceStream` naming); `src/Pegasus.Core/Reports/AssessmentReportProjection.cs`; `docs/design/brand/signatures/` (`andy_patterson.png`, `ed_mawdsley.png`, `neil_oreilly.png`); `tests/Pegasus.IntegrationTests/Reports/AssessmentReportRendererTests.cs` (the `[Trait("Category", "Browser")]` baseline suite)
 - Upstream evidence: `TICK-216` — the operator's 2026-08-19 "all yes" authorises the exact supplied wording, named qualifications and three signatures **provided** the selected engineer matches as one tuple, missing or mismatched authorisation fails closed, absent or placeholder content is never invented, and human approval remains required before issue
 - Binding decisions: **L-03 / ADR-0108** — isolated non-UI WebView2; the gateway renderer is retained until golden-file parity passes. L-01 — the canonical store stays behind the gateway. L-02 — all evidence is produced locally.
-- Depends on: `DSK-07-12` the accepted-or-proposed ADR-0108; `DSK-07-13` the shared embedded templates and the authorised signature assets; `DSK-07-17` the recorded TICK-216 acceptance the tuple check enforces; `DSK-02-06` the `Pegasus.Desktop.Infrastructure` project; `DSK-02-05` the packaged desktop app
+- Depends on: [[FND-007]]'s merged `proposed` ADR-0108; `DSK-07-13` the shared embedded templates and authorised signature assets; `DSK-07-17` the recorded TICK-216 acceptance the tuple check enforces; `DSK-02-06` the `Pegasus.Desktop.Infrastructure` project; `DSK-02-05` the packaged desktop app
 
 ## Routing
 
@@ -63,7 +62,7 @@ Locked decision L-03 and ADR-0108 move report rendering to the desktop so a repo
 
 ## Implementation steps
 
-1. Orient: read the plan row, ADR-0108 from [[DSK-07-12]], the plan's § 2 WebView2 facts and § 7 trap rows, the [[DSK-07-17]] TICK-216 record, and `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs` end to end. Call `get_doc_gates <this ticket id>`, then `take_ticket` on branch `task/dsk-07-14-desktop-renderer`.
+1. Orient: read the plan row, the proposed ADR-0108 from [[FND-007]], the plan's § 2 WebView2 facts and § 7 trap rows, the [[DSK-07-17]] TICK-216 record, and `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs` end to end. Call `get_doc_gates <this ticket id>`, then `take_ticket` on branch `task/dsk-07-14-desktop-renderer`.
 2. Validate the documented host **first** and record the evidence in `research`: create `CoreWebView2Controller` through `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`, render a trivial HTML document to PDF twice, and run the same check from the packaged desktop app. Use `microsoft_docs_fetch` on the controller and print APIs; do not code from memory. Record the runtime version, non-empty PDF output, and evidence that no window appeared. This validates product integration; it does not choose between hosts.
 3. Create `WebView2AssessmentReportRenderer` in `src/Pegasus.Desktop.Infrastructure` implementing `Pegasus.Core.Reports.IAssessmentReportRenderer`. Reuse the existing interface for the desktop/gateway renderer boundary; do not add a host-selection wrapper.
 4. Reproduce the composition, not a reinterpretation of it: build the two `ScriptObject` contexts exactly as `PlaywrightAssessmentReportRenderer` does from one `AssessmentReportSnapshot`, parse the templates from the embedded resources shared by [[DSK-07-13]], and keep the unresolved-placeholder rejection (`html.Contains("{{")` or `'«'` → `ReportRenderRejectedException`). Any divergence here shows up as a golden-file failure in [[DSK-07-15]] that looks like a renderer bug but is not.
@@ -113,6 +112,10 @@ Tier 3 obliges adapter-contract evidence: deterministic external failure handlin
 - **Scope boundary**: may touch `src/Pegasus.Desktop.Infrastructure`, the desktop host's DI registration, `tests/Pegasus.Desktop.ViewModelTests` and `tests/Pegasus.ArchitectureTests`. Must not modify `PlaywrightAssessmentReportRenderer.cs`, must not remove `AddPegasusReportRendering` from the Web host, must not edit a template or a signature asset, and must not decide which engineer identities are authorised — that record is [[DSK-07-17]]'s and the assets are [[DSK-07-13]]'s.
 - **Traps**: one print operation per WebView at a time — parallel renders throw; Microsoft Learn's `HWND_MESSAGE` controller host is fixed; the packaged-app smoke check proves its integration, not host selection; the WebView2 runtime updates itself while Playwright is pinned to 1.61.0, so exact pixel equality is not the target ([[DSK-07-15]] sets tolerances); a WebView2 that ever hosts Pegasus UI breaks proposal § 23.2 and ADR-0108; a valid signature paired with another engineer's name or qualification is a professional-attribution defect and must fail closed, never render with a silent omission or a fallback; the gateway renderer must stay registered until parity sign-off.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
+
+## Dependency correction — 2026-08-25
+
+This ticket starts after [[FND-007]] has merged ADR-0108 as `proposed`; that proposed ADR is the required recorded exception for the renderer dependency. This ticket supplies packaged `HWND_MESSAGE` controller evidence to [[FEAT-038]] and does not wait for, perform, or block ADR acceptance.
 
 ## Outcome
 

@@ -1,5 +1,9 @@
 # Research — FND-007: ADR-0108, the one sanctioned WebView2 in the conversion
 
+## Scope correction — 2026-08-25
+
+FND-007 is complete once its own Phase 0 proposed-ADR PR is merged and verified. The Phase 7 evidence below explains why ADR-0108 is proposed; it is owned by [[FEAT-040]] and [[FEAT-041]] and later consumed by [[FEAT-038]], not by FND-007 closeout.
+
 ## 2026-08-25 correction — documented invisible host
 
 Microsoft Learn documents `HWND_MESSAGE` as the valid parent for an invisible `CoreWebView2Controller` on Windows 8 and later; the WebView will never become visible. The fixed design is `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`. This supersedes every earlier collapsed-XAML/hidden-HWND host-selection instruction below. Phase 7 validates packaged-app initialisation, PDF output and no-window behaviour; it does not select a host. This user-directed correction also adds `docs/desktop/00-governance-and-workflow/README.md` and `docs/desktop/07-integrations/README.md` to FND-007's docs-only scope.
@@ -134,7 +138,7 @@ Read on **2026-08-24** at `origin/main` `191ddf3342…`, each with its source.
 - **F12 — this ticket is Phase 0 work despite depending on Phase 7.** It carries
   `HZN-001` and plan 00 § 4 Target state makes ADR-0100…ADR-0110 part of the
   Phase 0 governance exit gate, explicitly allowing "ADR-0108 may be `proposed`
-  until Phase 7 packaged-controller validation and parity". Only step 10's verification waits.
+  until Phase 7 packaged-controller validation and parity". No FND-007 step waits on Phase 7; later acceptance is solely [[FEAT-038]]'s work.
 
 ### Assumptions
 
@@ -152,11 +156,7 @@ Read on **2026-08-24** at `origin/main` `191ddf3342…`, each with its source.
   *Breaks if:* the API is renamed, deprecated, or unavailable in the pinned
   Windows App SDK — the ADR would then name the wrong mechanism, and a published
   body is immutable.
-- **A-00-7-3 — [[FEAT-038]] performs the acceptance flip, not this ticket.**
-  Based on F3 and the body's step 10. *Confirmed by:* the acceptance PR existing
-  and being verified by this ticket. *Breaks if:* [[FEAT-038]] is descoped —
-  then this ticket has an unowned successor step, which is the one thing that
-  would leave ADR-0108 `proposed` forever.
+- **A-00-7-3 — [[FEAT-038]] performs the acceptance flip, not this ticket.** This is a successor ownership boundary: after the packaged-controller and parity evidence exists, FEAT-038 updates only ADR-0108 frontmatter and the index. Its absence does not block FND-007 proof or closeout.
 - **A-00-7-4 — the WebView2 runtime is present on every target Windows 11
   workstation.** `docs/desktop/07-integrations/README.md:125` records this as an
   assumption, not a fact. *Confirmed by:* the area 04 startup check.

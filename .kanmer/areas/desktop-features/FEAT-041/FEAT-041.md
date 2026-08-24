@@ -21,12 +21,13 @@ groups:
 links: []
 blocks:
   - TEST-018
+  - FEAT-038
 refs:
   - docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.649Z'
-updated: '2026-08-24T21:31:45.187Z'
+updated: '2026-08-24T23:49:47.922Z'
 ---
 
 ## What
@@ -101,6 +102,10 @@ Tier 3 obliges deterministic adapter evidence: stable outputs, resource and canc
 - **Scope boundary**: may touch `tests/Pegasus.IntegrationTests/Reports/`, the desktop test project and the fixture directory. Must not change either renderer to make a fixture pass — a failing fixture is either a renderer defect ([[DSK-07-14]]) or a reviewed tolerance change, never a quiet edit.
 - **Traps**: the WebView2 runtime updates itself while Playwright is pinned, so tolerant comparison is the design, not a compromise; a silent re-baseline destroys the gate; fixtures are large binaries — keep the catalogue small enough to review and never commit corpus material (`docs/engineering.md` tier 8 keeps detailed corpus evidence local and ignored); C-01 means reusing existing CI lanes rather than adding one.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
+
+## Dependency correction — 2026-08-25
+
+The results table produced here is the formal acceptance evidence for [[FEAT-038]]. [[FND-007]] owns the merged proposed ADR and [[FEAT-040]] provides packaged-controller evidence. This ticket does not edit ADR-0108's body, frontmatter, or index.
 
 ## Outcome
 
