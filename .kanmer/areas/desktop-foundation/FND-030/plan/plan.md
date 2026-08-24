@@ -1,78 +1,100 @@
 # Plan — FND-030: Scaffold `src/Pegasus.Desktop` (WinUI 3, x64, packaged, self-contained, pinned Windows App SDK 2.x)
 
-**Diff estimate: ~24 files, ~600 lines** — of which roughly 380 are template-generated and ~220 are
-authored or edited.
+**Diff estimate: ~20 files, ~700 hand-written and template lines, plus one generated `packages.lock.json` of several thousand lines.**
 
-`docs/engineering.md` § Plan sizing (`:201`) requires the estimate first. Derived from the files
-document: the `winui-mvvm` template emits on the order of 18–20 files (csproj, `App.xaml`/`App.xaml.cs`,
-`MainWindow.xaml`/`.cs`, a sample page and view model, `Package.appxmanifest`, `app.manifest`,
-`Assets/*`, launch settings) — count them at step 4 and correct this line before the PR rather than
-carrying an estimate the diff disproves. Authored on top: csproj edits ~40 lines,
-`Package.appxmanifest` edits ~6, `Directory.Packages.props` +5 `PackageVersion` lines,
-`Pegasus.slnx` +1, `DependencyDirectionTests.cs` +1, `docs/current-architecture.md` ~+6,
-`docs/runbook.md` ~+3, plus a generated and committed `src/Pegasus.Desktop/packages.lock.json`
-(large — hundreds of lines, RID-specific to `win-x64`; it dominates the raw line count and should be
-reported separately in the PR description so the reviewable diff is visible).
+`docs/engineering.md` § Plan sizing (`:201`) requires the estimate first. It is derived from this
+ticket's `files` document and re-measured on 2026-08-24 against the working tree, with the command
+shown.
+
+| Path | Measured current state | Change | Lines |
+| --- | --- | --- | --- |
+| `src/Pegasus.Desktop/**` | absent — `ls src` returns exactly `Pegasus.Core`, `Pegasus.Infrastructure`, `Pegasus.Web`, `Pegasus.Worker` | `dotnet new winui-mvvm` output: csproj, `App.xaml`(`.cs`), `MainWindow.xaml`(`.cs`), `Package.appxmanifest`, `app.manifest`, `Assets/**`, a View/ViewModel pair | ~13 files, ~550 lines (template-generated, not hand-written) |
+| `src/Pegasus.Desktop/Pegasus.Desktop.csproj` | part of the above | hand edits: TFM, min platform, `Platforms`, RID, the self-contained pair, `PublishReadyToRun=false`, an explicit analyzer `PackageReference`, commented `NoWarn` entries, version literals stripped | ~+30 / ~-6 |
+| `src/Pegasus.Desktop/Package.appxmanifest` | part of the above | `Identity/@Name`, `Identity/@Publisher`, `Identity/@Version`, two `DisplayName` values | ~6 changed lines |
+| `src/Pegasus.Desktop/packages.lock.json` | absent | **generated** by `dotnet restore -r win-x64 --force-evaluate`, then committed. Contrast `src/Pegasus.Core/packages.lock.json` — 124 bytes, three empty entries (`net10.0`, `net10.0/linux-x64`, `net10.0/win-x64`). The desktop one carries the whole Windows App SDK graph and is RID-specific | +2,000–6,000 (generated) |
+| `Directory.Packages.props` | **absent today** — `ls Directory.Packages.props` → *No such file or directory*. Created by [[FND-027]] (plan handle `DSK-02-02`) | five `<PackageVersion>` elements | +5 |
+| `Pegasus.slnx` | 14 lines; four `/src/` and three `/tests/` `<Project Path=…/>` elements | one `<Project Path="src/Pegasus.Desktop/Pegasus.Desktop.csproj" />` under `/src/` | +1 |
+| `tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs` | 520 lines (`wc -l`). `ApplicationSolutionExcludesSourceWorkspaces` at `:128`; the ordinal expected array at `:141-149`, its seven path literals at `:142-148`; helpers `ProjectReferences` `:493`, `FindRepositoryRoot` `:509` | one string inserted into the array, between the Core and Infrastructure entries | +1 |
+| `docs/current-architecture.md` | 682 lines. § System shape at `:27`, § Components and dependency direction at `:55` | the desktop client added to both | ~+8 |
+| `docs/runbook.md` | 1254 lines. § Supported platform `:19-40`, with "record the platform actually exercised" at `:38` | one line: the desktop build requires Windows — **conditional**, see step 14 | ~+3 or 0 |
+
+Totals: **~20 files**; **~700 lines** of template output plus hand edits; **one generated lock
+file** that dominates the raw diff and must not be counted as authored work. Nothing under
+`src/Pegasus.Core`, `src/Pegasus.Infrastructure`, `src/Pegasus.Web` or `src/Pegasus.Worker` is
+touched.
 
 ## Approach
 
-Scaffold from the vendored `winui-mvvm` template and then **retarget** it, rather than hand-writing a
-csproj. The template is what `.codex/skills/winui-dev-workflow/SKILL.md` prescribes, it already pairs
-CommunityToolkit.Mvvm with a `TitleBar`, `MicaBackdrop` and `Frame` navigation, and its
-`Package.appxmanifest` and asset set are the parts most easily got wrong by hand. The rejected
-alternative is `winapp init` over an empty `Microsoft.NET.Sdk` project: it produces the same
-`net10.0-windows10.0.26100.0` target and the same three build-tools packages
-(<https://learn.microsoft.com/windows/apps/dev-tools/winapp-cli/guides/dotnet>) but no MVVM wiring, so
-[[FND-032]] (plan handle `DSK-02-07`) and [[FND-033]] (plan handle `DSK-02-08`) would each rebuild
-what the template gives free — and `docs/engineering.md` § Abstractions forbids that kind of
-hand-rolled scaffolding when a supported one exists.
+Scaffold from the vendored `winui-mvvm` template and then **retarget** it, rather than hand-writing
+a csproj from the Windows App SDK documentation. The template is the path the vendored toolchain
+supports end to end — `.codex/skills/winui-dev-workflow/SKILL.md:10` names
+`dotnet new winui-mvvm -n <AppName>` as the creation command, and `BuildAndRun.ps1` expects the
+output layout `bin\<Platform>\<Config>\<tfm>\win-<rid>\` (`:228`) that the template produces. It
+also brings CommunityToolkit.Mvvm, a TitleBar, MicaBackdrop and Frame navigation already wired,
+which [[FND-032]] (plan handle `DSK-02-07`) and [[FND-033]] (plan handle `DSK-02-08`) then replace
+deliberately rather than invent.
 
-Two things this plan does differently from a naive reading of the ticket, both from measurement:
+The rejected alternative is `winapp init` on an empty folder. It is documented
+(<https://learn.microsoft.com/windows/apps/dev-tools/winapp-cli/guides/dotnet>, fetched 2026-08-23
+by the plan-02 author) and sets the same `net10.0-windows10.0.26100.0` TFM, but it produces no MVVM
+wiring, no `App.xaml` composition point and no sample View/ViewModel pair, so every one of those
+would be hand-written here — work that [[FND-032]] and [[FND-033]] own. It is rejected for scope,
+not for correctness.
 
-- **The authoritative build gate is `dotnet build ./Pegasus.slnx --configuration Release`, not
-  `BuildAndRun.ps1`.** Measured at `.codex/skills/winui-dev-workflow/BuildAndRun.ps1:146-157`, the
-  script tests for `Directory.Build.props` **in the project directory only** and writes one there when
-  it is absent. MSBuild stops at the first such file walking up, so the injected file shadows the
-  repository-root props and that build runs *without* `TreatWarningsAsErrors=true`. The script is
-  therefore the right tool for **launching** and the wrong tool for proving zero warnings.
-- **The `Identity.Publisher` string is treated as the ticket's highest-consequence output.** It is
-  permanent, the production certificate's subject must equal it exactly (D-002; plan 09 `:216`,
-  `:329`), and [[REL-007]] (plan handle `DSK-09-08`) is blocked until it exists in writing.
+Three properties of this repository make "scaffold then retarget" more than a formality, and the
+steps below exist to handle them:
+
+1. `global.json` pins SDK `10.0.302` with **`allowPrerelease: false`**, so only a *stable* Windows
+   App SDK 2.x may be pinned, with a floor of **2.1.3** — below that, `MSB3073` /
+   `XamlCompiler.exe … exited with code 1` names no `.xaml` file at all
+   (`.codex/skills/winui-dev-workflow/SKILL.md:79`). 2.4.0 (2026-08-13) is the latest stable
+   recorded in plan 02 § 2 and is the default choice.
+2. `Directory.Build.props` (19 lines) applies `TreatWarningsAsErrors=true` and
+   `AnalysisLevel=latest-recommended` to every project including this one, and template plus XAML
+   generated code will trip it. That is absorbed with narrow, individually-commented `NoWarn`
+   entries in the desktop csproj — never by relaxing the root props.
+3. `BuildAndRun.ps1` **injects** a project-level `Directory.Build.props`, which shadows the root one
+   for the duration of that build. See § Risks; the consequence for the approach is that plain
+   `dotnet build ./Pegasus.slnx --configuration Release` is the authoritative zero-warning gate and
+   `BuildAndRun.ps1` is the launch mechanism, not the gate.
 
 ## Governing docs
 
-The ticket's `refs` array is empty and `get_doc_gates FND-030` reports `docs_todo: true`, so there is
-no linked PRD/FRD/ADR to meet today.
+The ticket's `refs` array is empty and `get_doc_gates FND-030` reports `docs_todo: true`, so there
+is no linked PRD/FRD/ADR to meet today.
 
 > **New ADR** — ADR-0100 (native WinUI 3 / Windows 11 desktop client converted inside this fork, no
-> WebView shell; it is what authorises this new top-level project under `AGENTS.md` § Product
-> invariants), authored by [[FND-026]] (plan handle `DSK-02-01`); [[FND-005]] (plan handle
-> `DSK-00-05`) also claims ADR-0100 in the reserved block — see [[FND-026]]'s plan for the ownership
-> reconciliation. ADR-0105 (signed MSIX/App Installer distribution with a gateway minimum-version
-> gate) is likewise claimed by [[REL-001]] (plan handle `DSK-09-01`), [[FND-005]] and [[FND-042]]
-> (plan handle `DSK-04-01`) — see [[REL-001]]'s plan for that reconciliation.
-> This plan is written to the decisions as recorded in
-> `docs/desktop/00-governance-and-workflow/README.md` § 3 (ADR set table) and
-> `docs/desktop/02-architecture-and-foundation/README.md` § 3 decisions 2, 3 and 9; if either ADR
-> lands differently this plan is revised before implementation.
+> WebView shell — the ADR that authorises this new top-level project), authored by [[FND-026]]
+> (plan handle `DSK-02-01`); [[FND-005]] (plan handle `DSK-00-05`) also claims ADR-0100 in the
+> reserved block ADR-0100…ADR-0110 — see [[FND-026]]'s plan for the ownership reconciliation.
+> ADR-0104 (online-required, bounded local cache) has the same two claimants; it bounds anything the
+> desktop later caches and therefore constrains [[FND-031]] (plan handle `DSK-02-06`), not this
+> ticket, which adds no cache.
+> This plan is written to the decision as recorded in
+> `docs/desktop/00-governance-and-workflow/README.md` § 3 (ADR set table, ADR-0100 row) and
+> `docs/desktop/02-architecture-and-foundation/README.md` § 3 decisions 2, 3 and 9; if the ADR lands
+> differently this plan is revised before implementation.
 
-Because `refs` is empty, these are the authorities that actually bind today:
+Because `refs` is empty, the authorities that actually bind today are these:
 
 | Authority | Requirement | Met by |
 | --- | --- | --- |
-| Proposal § 7.1 Runtime | .NET 10, latest stable Windows App SDK pinned centrally, Windows 11 x64, self-contained signed MSIX, no AOT/trimming initially | Steps 5, 6 |
-| Proposal § 7.2 Application composition | Packaged single-project MSIX with package identity | Steps 5, 8, 11 |
-| Proposal § 5.4, § 24 Phase 1 | Solution structure and the Phase 1 project set | Steps 4, 9 |
-| Plan 02 § 3 decision 2 | Four new source projects, each a boundary project; features are folders inside them | Step 4 creates the first of them and adds no feature assembly |
-| Plan 02 § 3 decision 3 | The exact target properties: `net10.0-windows10.0.26100.0`, `Platforms x64`, min OS 10.0.22000, packaged single-project MSIX, `WindowsAppSDKSelfContained=true`, `SelfContained=true`, `RuntimeIdentifier win-x64`, `PublishReadyToRun=false`, no trimming/AOT, WinAppSDK pinned centrally | Step 5 |
-| Plan 02 § 3 decision 4 | Central package management; major Windows App SDK / toolkit upgrades are reviewed PRs, never automatic | Step 6 |
-| Plan 02 § 3 decision 9 | No desktop framework on top of WinUI | Step 4 deletes nothing but replaced sample pages and adds no framework |
-| Plan 02 § 7 (five recorded traps) | XAML compiler silence (pin ≥ 2.1.3); `TreatWarningsAsErrors` + generated code; the `BuildAndRun.ps1` props behaviour; package identity churn; self-contained size measured for the release manifest | Steps 6, 7, 11, 12, 3, and § Verification item 5 |
-| **D-002** (locked) | Production signing uses a self-managed certificate whose **subject must equal the manifest `Publisher` exactly** | Step 3, and the verbatim record it produces |
-| **D-003** (locked) + **C-01** | The update feed is an in-house UNC share over SMB; no anonymous HTTPS feed | Cited only — this ticket adds no feed reference; [[FND-048]] (plan handle `DSK-04-12`) and area 09 own it |
-| L-04 (locked) | Every ticket names its subagent, skills and MCP tools | § Routing below |
-| `AGENTS.md` § Product invariants (`:235`) | A new top-level project requires an accepted ADR | The New-ADR paragraph above; the dependency on [[FND-026]] |
-| `docs/engineering.md` § Required evidence tiers (`:72`), tier 1 | A compiling, launching project and an enforced solution shape — consistency only, no operator capability claimed | § Verification |
+| Proposal § 7.1 Runtime | .NET 10, latest **stable** Windows App SDK pinned centrally, Windows 11 x64, self-contained signed MSIX, no AOT/trimming initially | Steps 6, 7 |
+| Proposal § 7.2 Application composition | A WinUI app composed with a generic host, not a framework built on top of WinUI | Step 5 — the template's composition is left in place; host composition is [[FND-032]]'s |
+| Proposal § 5.4 solution structure | `src/Pegasus.Desktop` is one boundary project; features stay folders inside it | Steps 5, 10 |
+| Plan 02 § 3 decision 3 | `net10.0-windows10.0.26100.0`, min OS `10.0.22000.0`, `Platforms` x64 only, packaged single-project MSIX, `WindowsAppSDKSelfContained=true`, `SelfContained=true`, `RuntimeIdentifier=win-x64`, `PublishReadyToRun=false`, no trimming/AOT | Step 6 |
+| Plan 02 § 3 decision 4 | Central package management; `RestorePackagesWithLockFile=true` for every project | Steps 7, 11 |
+| Plan 02 § 4 target-state table (`src/Pegasus.Desktop` row) | References Core, Contracts and Desktop.Infrastructure; never `Pegasus.Infrastructure`, EF, Azure SDKs, Box/Graph SDKs or `Microsoft.AspNetCore.*` | Step 5 — the scaffold adds **no** `ProjectReference` at all; the rules themselves are [[FND-037]]'s (plan handle `DSK-02-12`) |
+| Plan 02 § 7 — package identity churn | `Identity.Name` and `Identity.Publisher` are permanent; the signing certificate subject must equal the `Publisher` exactly | Steps 4, 9 |
+| Plan 02 § 7 — self-contained size | "acceptable for ten users but measure and record in 09's release manifest" | Verification V5 |
+| Plan 02 § 7 — XAML compiler silence | Pin ≥ 2.1.3 on the 2.x line | Step 7 |
+| Plan 02 § 7 — `TreatWarningsAsErrors` | Generated code needs explicit `NoWarn` / `GeneratedCodeAttribute` handling, never a relaxed repository policy | Step 13 |
+| **D-002** (`docs/desktop/README.md` § Locked decisions, decided 2026-08-23) | Production signing uses a self-managed certificate whose subject is fixed to the manifest `Publisher` | Step 4 fixes the string; [[REL-007]] (plan handle `DSK-09-08`) issues the certificate against it |
+| **L-04** (`docs/desktop/README.md` § Locked decisions) | Every ticket names its subagent, skills and MCP tools | § Routing below |
+| `AGENTS.md` § Product invariants (`:235`) | A new top-level project requires an accepted ADR proving the existing boundary cannot carry it | The [[FND-026]] dependency; this plan does **not** proceed on an unaccepted ADR-0100 |
+| `docs/engineering.md` § Plan sizing (`:201`) | A plan states its diff estimate first, derived from a measured inventory | The inventory table above |
+| `docs/engineering.md` § Required evidence tiers, tier 1 (`:76`) | "compile the four approved projects, enforce dependency direction and one policy owner … This proves consistency only" | § Verification, and its honesty clauses |
+| **C-01** (`docs/desktop/README.md` § Constraints) | The repositories become private; GitHub Actions Windows minutes stop being free | This ticket adds **no** CI job — [[FND-040]] (plan handle `DSK-02-15`) owns the `desktop-build` lane |
 
 ## Routing
 
@@ -80,192 +102,259 @@ Copied from the ticket body's `## Routing` block, as
 `docs/desktop/00-governance-and-workflow/README.md` § Ticket template requires of the plan document
 specifically.
 
-- **Subagent**: `winui-dev` — `.codex/agents/winui-dev.toml` (verified present).
+- **Subagent**: `winui-dev` — `.codex/agents/winui-dev.toml`.
 - **Skills**, loaded in this order: `pegasus-desktop`
   (`.agents/skills/project/pegasus-desktop/SKILL.md`) → `winui-setup`
-  (`.codex/skills/winui-setup/SKILL.md`; its frontmatter carries `disable-model-invocation: true`, so
-  it is **user-invoked**, prerequisites only) → `winui-dev-workflow`
+  (`.codex/skills/winui-setup/SKILL.md` — **user-invoked**; its frontmatter carries
+  `disable-model-invocation: true`; prerequisites only) → `winui-dev-workflow`
   (`.codex/skills/winui-dev-workflow/SKILL.md`) → `winui-design`
   (`.codex/skills/winui-design/SKILL.md`), all vendored from `microsoft/win-dev-skills` v0.5.0
   `f1028dd5`.
-- **MCP**: Kanmer (`get_status`, `get_doc_gates`, `take_ticket`, `set_ticket_doc`, `append_scratch`,
-  `move_item`); Microsoft Learn (`microsoft_docs_search`, `microsoft_docs_fetch` for the Windows App
-  SDK 2.x release notes and single-project MSIX).
+- **MCP**: Kanmer (`get_status`, `get_doc_gates`, `take_ticket`, `set_ticket_doc`,
+  `append_scratch`, `move_item`); Microsoft Learn (`microsoft_docs_search`, `microsoft_docs_fetch`
+  for the Windows App SDK 2.x release notes and single-project MSIX).
 - **Kanmer pipeline** for profile `feature`: `kanmer-research` → `kanmer-plan` → `kanmer-execute` →
-  `kanmer-review` → `kanmer-verify` → `kanmer-closeout`. Call `get_doc_gates <id>` before every move;
-  a move crosses at most one gated boundary.
-- **Reviewer**: `pegasus-desktop-reviewer` — an agent that did not implement
-  (`AGENTS.md` § Repository task workflow step 5).
+  `kanmer-review` → `kanmer-verify` → `kanmer-closeout`. Call `get_doc_gates <id>` before every
+  move; a move crosses at most one gated boundary. `get_doc_gates FND-030` reports the owed set as
+  `governing-doc` at `leave-backlog` (satisfied by `docs_todo: true`); `research`, `files`, `plan`,
+  `checklist` and `questions-resolved` at `leave-preparing`; `post-implementation-report` at
+  `enter-review`; `proof` at `enter-done`.
+- **Reviewer**: `pegasus-desktop-reviewer` — an agent that did not implement (`AGENTS.md`
+  § Repository task workflow step 5).
 
 ## Steps
 
-These refine the ticket body's thirteen steps: same order, same ownership, same paths.
+These refine the ticket body's thirteen implementation steps: same order, same ownership, same file
+paths, adding the *how* the body leaves out. The body's steps 2–3 are split into steps 2–4 here
+because prerequisites and package identity are two separate operator interactions, and the first
+gates the second.
 
-1. **Orient.** Read `docs/desktop/02-architecture-and-foundation/README.md` § 3 decisions 2/3/9 and
-   § 7, and `.codex/skills/winui-dev-workflow/SKILL.md` in full. Then `get_doc_gates FND-030` and
-   `take_ticket` on branch `task/desktop-scaffold` in worktree
-   `../pegasus-worktrees/desktop-scaffold` from `origin/dev`.
-2. **Operator step — prerequisites.** Run the detection block from
-   `.codex/skills/winui-setup/SKILL.md` verbatim: `dotnet --list-sdks`; `winapp --version` (must be
-   ≥ 0.3 after stripping a `-prerelease.N` suffix); `dotnet new list winui | Select-String 'winui-mvvm'`;
-   and `Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock' -Name AllowDevelopmentWithoutDevLicense`
-   expecting `1`. Enabling Developer Mode and `winget install --id Microsoft.WinAppCLI` need a UAC
-   elevation only the operator can accept. **Do not install anything yourself** — stop and ask
-   (`winui-dev-workflow` § Prerequisites). Also record `$env:PROCESSOR_ARCHITECTURE`: on ARM64,
-   `BuildAndRun.ps1:89` will append `/p:Platform=ARM64` and collide with `<Platforms>x64</Platforms>`,
-   so every later `BuildAndRun.ps1` call must add `/p:Platform=x64`.
-3. **Operator step — fix the package identity, permanently.** Confirm with the operator (a) the
-   `Identity.Name` — `docs/desktop/09-release-update-and-distribution/README.md:156` assumes
-   `CollisionEngineers.Pegasus`, one identity for both channels, and that is an *assumption* awaiting
-   confirmation, not a decision; and (b) the exact `Identity.Publisher` distinguished name, which
-   under D-002 must equal the subject of the self-managed production certificate issued by
-   [[REL-007]] (plan handle `DSK-09-08`). Record both **verbatim** in this document under a dated
-   heading. Neither is ever changed afterwards: plan 09 `:329` records "Publisher mismatch between
-   certificate and `Identity.Publisher`" as a release trap, and to Windows a changed identity is a
-   different application.
-4. **Scaffold.** `dotnet new winui-mvvm -n Pegasus.Desktop -o src/Pegasus.Desktop`. Do **not** `mkdir`
-   first. Count the emitted files and correct this plan's diff estimate. Delete nothing except sample
-   pages actually replaced; never delete `Package.appxmanifest`.
-5. **Retarget the csproj** to plan 02 § 3 decision 3: `<TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>`,
-   `<TargetPlatformMinVersion>10.0.22000.0</TargetPlatformMinVersion>`, `<Platforms>x64</Platforms>`,
-   `<RuntimeIdentifier>win-x64</RuntimeIdentifier>`, `<SelfContained>true</SelfContained>`,
+1. **Orient.** Read `docs/desktop/02-architecture-and-foundation/README.md` § 3 decisions 2, 3 and
+   9, § 4 target-state table and § 7 in full; read `.codex/skills/winui-dev-workflow/SKILL.md` in
+   full (its § Critical Rules matter more than the rest); read this ticket's `research` and `files`
+   documents. Call `get_doc_gates FND-030`, then `take_ticket` on branch `task/desktop-scaffold` in
+   worktree `../pegasus-worktrees/desktop-scaffold` created from `origin/dev`.
+2. **Confirm the two hard prerequisites have landed.** [[FND-026]] must have ADR-0100 accepted
+   (`ls docs/adr/0100-*.md`, then confirm its frontmatter status) — without it `AGENTS.md`
+   § Product invariants forbids creating this top-level project at all. [[FND-027]] must have
+   created `Directory.Packages.props` (`ls Directory.Packages.props`; it is absent today). If
+   [[FND-027]] has not landed, **stop and record the sequencing** rather than inlining version
+   literals that step 7 would then have to strip again — see § Risks. Also check whether
+   [[FND-028]] (plan handle `DSK-02-03`) has landed the server entry point; if it has not, this
+   ticket makes the repository Windows-only for developers and the proof must say so.
+3. **Operator step — toolchain prerequisites.** Run the detection block from
+   `.codex/skills/winui-setup/SKILL.md`: `dotnet --list-sdks`; `winapp --version` (must be ≥ 0.3
+   after stripping any `-prerelease.N` suffix); `dotnet new list winui | Select-String 'winui-mvvm'`;
+   and the registry read `HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock` →
+   `AllowDevelopmentWithoutDevLicense -eq 1`. Enabling Developer Mode and
+   `winget install --id Microsoft.WinAppCLI` each need a UAC elevation only the operator can
+   accept. **Do not attempt to install these yourself if they are missing — stop and ask**
+   (`winui-dev-workflow` § Prerequisites). Paste the four outputs into this plan's progress notes.
+4. **Operator step — fix the package identity, permanently.** Ask the operator for two strings and
+   record them verbatim in this plan under a dated heading **before writing any file**:
+   - `Identity/@Name` — plan 09 § 2
+     (`docs/desktop/09-release-update-and-distribution/README.md:156-158`) assumes
+     `CollisionEngineers.Pegasus`, one identity for both channels. That is a **plan assumption, not
+     an operator confirmation**; this step is where it becomes fixed.
+   - `Identity/@Publisher` — the exact distinguished name. It is written down nowhere in the
+     repository and can only come from the operator. Under **D-002** the self-managed production
+     certificate's subject must equal it character for character; plan 09 `:329` records
+     "Publisher mismatch between certificate and `Identity.Publisher`" as a named trap, and
+     [[REL-007]] (plan handle `DSK-09-08`) cannot issue the certificate until this string exists.
+
+   Neither value is ever changed afterwards: to Windows a changed `Identity.Name` or `Publisher` is
+   a *different application*, and every workstation that already installed the old one keeps it.
+5. **Scaffold.** `dotnet new winui-mvvm -n Pegasus.Desktop -o src/Pegasus.Desktop`. **Do not
+   `mkdir` first** — the template creates the folder (`winui-dev-workflow` § Create or Open a
+   Project). Delete nothing from the output except sample pages you actually replace, and **never**
+   `Package.appxmanifest`. Add no `ProjectReference` in this ticket: Core and Contracts arrive with
+   [[FND-031]] and [[FND-032]], and adding them early would put an unenforced dependency edge in
+   place before [[FND-037]] writes the rules that police it.
+6. **Retarget the csproj** — `src/Pegasus.Desktop/Pegasus.Desktop.csproj`, to plan 02 § 3
+   decision 3 exactly: `<TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>`,
+   `<TargetPlatformMinVersion>10.0.22000.0</TargetPlatformMinVersion>`,
+   `<Platforms>x64</Platforms>`, `<RuntimeIdentifier>win-x64</RuntimeIdentifier>`,
+   `<SelfContained>true</SelfContained>`,
    `<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>`,
-   `<PublishReadyToRun>false</PublishReadyToRun>`, no `PublishTrimmed`, no `PublishAot`. Never
-   `<WindowsPackageType>None</WindowsPackageType>` and never `AnyCPU`
-   (`winui-dev-workflow` § Critical Rules) — the packaged identity is what
-   [[FND-035]] (plan handle `DSK-02-10`)'s `AppInstance` keys depend on.
-6. **Pin centrally.** Add to `Directory.Packages.props` (created by [[FND-027]], plan handle
-   `DSK-02-02`; confirmed absent today): `Microsoft.WindowsAppSDK` at the latest **stable** 2.x —
-   2.4.0, released 2026-08-13, per plan 02 § 2; re-confirm with `microsoft_docs_fetch` on
-   <https://learn.microsoft.com/windows/apps/windows-app-sdk/release-notes/windows-app-sdk-2-0> —
-   plus `Microsoft.Windows.SDK.BuildTools`, `Microsoft.Windows.SDK.BuildTools.WinApp`,
-   `Microsoft.WindowsAppSDK.Analyzers` and `CommunityToolkit.Mvvm`. Strip the version literals the
-   template wrote into the csproj. The floor is **2.1.3** because earlier 2.x builds fail `MSB3073`
-   with no XAML diagnostic (`winui-dev-workflow` § Common Errors). `global.json`'s
-   `allowPrerelease: false` means a preview version is not an option. Record the exact chosen version
-   and its release date here. If [[FND-027]] has not landed, record the sequencing rather than
-   leaving permanent version literals in the csproj.
-7. **Reference `Microsoft.WindowsAppSDK.Analyzers` explicitly** in
-   `src/Pegasus.Desktop/Pegasus.Desktop.csproj`. The ticket body's instruction stands; its stated
-   reason does not, and the corrected reason is stronger. Measured at `BuildAndRun.ps1:146-157`, the
-   script tests only for `src/Pegasus.Desktop/Directory.Build.props` and **injects one when it is
-   absent** — the repository-root props does not stop it. Because MSBuild's implicit
-   `Directory.Build.props` import stops at the first file found walking up, the injected file
-   *shadows* the root props for that build. So without the explicit package reference the `WUI*`
-   diagnostics come only from the script, and script builds silently lose `TreatWarningsAsErrors`.
-   Record this measured behaviour in the ticket so it is not rediscovered, and treat plain
-   `dotnet build` as the authoritative gate (§ Verification).
-8. **Set the identity** in `src/Pegasus.Desktop/Package.appxmanifest`: `Identity/@Name` and
-   `Identity/@Publisher` to the step-3 values; `Identity/@Version` to `0.1.0.0` as a placeholder
-   ([[REL-002]], plan handle `DSK-09-02`, wires the version from the CI run);
+   `<PublishReadyToRun>false</PublishReadyToRun>`, **no** `PublishTrimmed`, **no** `PublishAot`, and
+   `<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>` unless [[FND-027]] already sets
+   it globally. **Never** `<WindowsPackageType>None</WindowsPackageType>` and **never** `AnyCPU`
+   (`winui-dev-workflow` § Critical Rules `:97-100`; `:81` records `0x8007000B bad image format` as
+   the symptom of the `AnyCPU` mistake).
+7. **Pin centrally.** Add to `Directory.Packages.props`:
+   `<PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.4.0" />` — or the latest 2.x
+   **stable** confirmed at kickoff with `microsoft_docs_fetch` on
+   <https://learn.microsoft.com/windows/apps/windows-app-sdk/release-notes/windows-app-sdk-2-0>,
+   floor **2.1.3** — plus `Microsoft.Windows.SDK.BuildTools`,
+   `Microsoft.Windows.SDK.BuildTools.WinApp`, `Microsoft.WindowsAppSDK.Analyzers` and
+   `CommunityToolkit.Mvvm`. Then strip every `Version=` literal the template wrote into the csproj.
+   Record the exact chosen version **and its release date** in this plan. `allowPrerelease: false`
+   in `global.json` is why a preview build is not an option here.
+8. **Reference the analyzer explicitly** in `src/Pegasus.Desktop/Pegasus.Desktop.csproj`. The ticket
+   body's instruction stands unchanged; its stated *reason* does not — see § Risks. The correct
+   reason: `BuildAndRun.ps1` supplies the `WUI*` diagnostics only during its own builds, through a
+   props file it injects and then deletes in a `finally` block (`:198-205`), so CI's plain
+   `dotnet build` and every `dotnet build` a developer runs would carry no analyzer at all without
+   the package reference.
+9. **Set the manifest identity** in `src/Pegasus.Desktop/Package.appxmanifest`: `Identity/@Name`
+   and `Identity/@Publisher` to the step-4 values; `Identity/@Version` to `0.1.0.0` as a placeholder
+   — [[REL-002]] (plan handle `DSK-09-02`) wires the version from the CI run;
    `Properties/DisplayName` and `Application/uap:VisualElements/@DisplayName` to `Pegasus`. Add a
-   comment in the csproj or a project `README` recording which manifest fields are **permanent**
-   (`Name`, `Publisher`) and which are **placeholders** (`Version`).
-9. **Register the project.** Add `<Project Path="src/Pegasus.Desktop/Pegasus.Desktop.csproj" />` to
-   the `/src/` folder in `Pegasus.slnx`; keep it **out** of the server entry point from [[FND-028]]
-   (plan handle `DSK-02-03`); and extend the ordinal expected array in
-   `DependencyDirectionTests.ApplicationSolutionExcludesSourceWorkspaces`
-   (`tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs:137-149`), where the desktop path
-   sorts between the Core and Infrastructure entries. If [[FND-028]] has not landed, note in the proof
-   that this commit makes `dotnet build ./Pegasus.slnx` fail on Linux until it does.
-10. **Restore with the lock file.**
+   comment block in the csproj (or a short `src/Pegasus.Desktop/README.md`) stating plainly which
+   fields are **permanent** (`Name`, `Publisher`) and which are **placeholders** (`Version`), so the
+   next agent cannot mistake one for the other.
+10. **Register the project.** Add `<Project Path="src/Pegasus.Desktop/Pegasus.Desktop.csproj" />`
+    to the `/src/` folder in `Pegasus.slnx`. Keep it **out** of the server entry point created by
+    [[FND-028]] — that omission is the entire point of [[FND-028]]'s
+    `ServerSolutionFilterExcludesWindowsTargetedProjects` fact, which starts doing real work at this
+    moment instead of asserting a tautology. Then extend the ordinal expected array in
+    `DependencyDirectionTests.ApplicationSolutionExcludesSourceWorkspaces`
+    (`tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs:141-149`, the seven path literals
+    at `:142-148`) with `"src/Pegasus.Desktop/Pegasus.Desktop.csproj"`. Ordinal order puts it
+    **between** `src/Pegasus.Core/…` and `src/Pegasus.Infrastructure/…`, not at the end. Change
+    nothing else in that file; the desktop dependency **rules** are [[FND-037]]'s.
+11. **Restore and commit the lock file.**
     `dotnet restore ./src/Pegasus.Desktop/Pegasus.Desktop.csproj -r win-x64 --force-evaluate`, then
     commit the generated `src/Pegasus.Desktop/packages.lock.json`. Then
-    `dotnet restore ./Pegasus.slnx --locked-mode` must pass on Windows — the composite CI action runs
-    exactly that (`.github/actions/dotnet-build/action.yml:22`) on every lane, so a missing or stale
-    lock file breaks the whole workflow rather than one job.
-11. **Build and run.** `pwsh .codex/skills/winui-dev-workflow/BuildAndRun.ps1 src/Pegasus.Desktop/Pegasus.Desktop.csproj -SkipRun`
-    (safe synchronously), then the same command **without** `-SkipRun`, invoked **asynchronously** —
-    the script stays attached for the app's lifetime. Done looks like the line
-    `✅ <pkg> launched (PID: …)` and a visible window; capture a screenshot for the proof. On ARM64
-    add `/p:Platform=x64`. If the build fails with `MSB3073` / `XamlCompiler.exe … exited with code 1`
-    naming no `.xaml`, raise the `Microsoft.WindowsAppSDK` pin. Also run a **plain**
-    `dotnet build ./src/Pegasus.Desktop/Pegasus.Desktop.csproj -c Release -p:Platform=x64` and compare
-    the warning count with the script's — a difference is the props-shadowing effect from step 7 and
-    belongs in the proof.
-12. **Resolve analyzer noise honestly.** With `TreatWarningsAsErrors=true` and
-    `AnalysisLevel=latest-recommended` inherited from `Directory.Build.props`, template and
-    XAML-generated code will trip the build. Add narrowly-scoped `<NoWarn>` entries **in the desktop
-    csproj**, each with a comment naming the rule and why it is suppressed, or exclude generated files
-    by path. Never relax `Directory.Build.props`.
-13. **Test and close.** `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release`
-    — expected green with the extended solution list. Add the desktop client to
-    `docs/current-architecture.md` § System shape (`:27`) and § Components and dependency direction
-    (`:55`). Touch `docs/runbook.md` § Supported platform (`:19-40`) **only if** [[FND-039]] (plan
-    handle `DSK-02-14`) has not already added the prerequisites, and record which case applied. Run
-    the simplification pass, record it under a dated heading below, and open the PR into `dev`.
+    `dotnet restore ./Pegasus.slnx --locked-mode` must pass on Windows. This is not optional
+    housekeeping: `.github/actions/dotnet-build/action.yml:22-27` runs
+    `dotnet restore ./Pegasus.slnx --locked-mode` on **every** lane and its SDK cache key already
+    globs `src/**/packages.lock.json`, so a missing or stale desktop lock file fails all of CI, not
+    just a desktop job.
+12. **Build and launch.**
+    `pwsh .codex/skills/winui-dev-workflow/BuildAndRun.ps1 src/Pegasus.Desktop/Pegasus.Desktop.csproj -SkipRun`
+    first (safe synchronously), then the same command **without** `-SkipRun`, invoked
+    asynchronously — the script stays attached. Success is the literal line
+    `✅ <pkg> launched (PID: …)` (`winui-dev-workflow/SKILL.md:37`) **and** a visible window;
+    capture a screenshot for the proof. Never run the packaged `.exe` directly — "App silently
+    exits → use `winapp run`" (`SKILL.md:76`). On an ARM64 workstation pass `/p:Platform=x64`
+    explicitly: `BuildAndRun.ps1:89` auto-detects ARM64 and would append `/p:Platform=ARM64` into a
+    project declaring `<Platforms>x64</Platforms>`. Note the script also defaults to
+    `Configuration=Debug` (`:90`) and auto-adds `/restore` (`:104`), so its green result is a
+    **Debug** build unless you pass `/p:Configuration=Release`. If the build fails `MSB3073` /
+    `XamlCompiler.exe … exited with code 1` naming no `.xaml` file, raise the
+    `Microsoft.WindowsAppSDK` pin (`SKILL.md:79`).
+13. **Absorb analyzer noise honestly.** `Directory.Build.props` sets `TreatWarningsAsErrors=true`
+    and `AnalysisLevel=latest-recommended`. Add narrowly-scoped `<NoWarn>` entries in
+    `src/Pegasus.Desktop/Pegasus.Desktop.csproj`, each with a comment naming the rule and why it is
+    suppressed, or exclude generated files by path. **Do not** relax the repository-wide policy in
+    `Directory.Build.props` — it governs all seven existing projects. The gate for this step is a
+    plain `dotnet build ./Pegasus.slnx --configuration Release` reporting `0 Warning(s)`, not a
+    green `BuildAndRun.ps1`.
+14. **Documentation.** Add the desktop client to `docs/current-architecture.md` § System shape
+    (`:27`) and § Components and dependency direction (`:55`). For `docs/runbook.md` § Supported
+    platform (`:19-40`): add one line that the desktop build requires Windows **only if**
+    [[FND-039]] (plan handle `DSK-02-14`) has not already added the `winapp` CLI and Developer Mode
+    prerequisites there — that sentence is [[FND-039]]'s to own, cited here and never restated a
+    second time. Record in the proof which case applied. The section already lists
+    `scripts/email-eval-desktop` under "What Windows gives this project that Linux does not", so
+    there is a precedent line to sit beside.
+15. **Verify, simplify, open the PR.** Run the § Verification commands below. Run the
+    simplification pass over this branch's own diff, record it under a dated
+    `## Simplification pass` heading in this document, and open the PR into `dev`.
 
 ## Verification
 
 Evidence tier **1 — Static/build/architecture** (`docs/engineering.md` § Required evidence tiers,
-`:72`), as the ticket body states: a compiling, launching project and the enforced solution shape. It
-proves consistency, not any operator capability.
+`:76`), as the ticket body states: this obliges a compiling, launching project and the enforced
+solution shape, and **proves consistency only**. No operator capability is claimed — a launched
+empty shell is not a delivered feature, and the proof must not imply that it is.
 
-The `proof` document is produced from these:
+The `proof` document is produced from these five outputs.
 
-1. `pwsh .codex/skills/winui-dev-workflow/BuildAndRun.ps1 src/Pegasus.Desktop/Pegasus.Desktop.csproj -SkipRun`
-   — expected: `BUILD SUCCEEDED`, zero warnings. Note in the proof whether the script printed
-   `Microsoft.WindowsAppSDK.Analyzers: enabled` (it injected a props file) or `skipped (existing …)`,
-   because that single line tells the reader whether the root props applied to that build.
-2. `pwsh .codex/skills/winui-dev-workflow/BuildAndRun.ps1 src/Pegasus.Desktop/Pegasus.Desktop.csproj`
-   invoked **async** — expected: `✅ <pkg> launched (PID: …)` and a visible window. Attach the
-   screenshot. Never run the packaged `.exe` directly; it exits silently and misdiagnoses everything.
-3. **The authoritative zero-warning gate**: `dotnet restore ./Pegasus.slnx --locked-mode` then
-   `dotnet build ./Pegasus.slnx --configuration Release --no-restore` on Windows — expected exit 0
-   with `0 Warning(s)`. This is the command CI runs
-   (`.github/actions/dotnet-build/action.yml:22-27`) and it is not subject to the props-shadowing
-   effect. Paste the summary line.
-4. `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release`
-   — expected: all facts pass, including the extended solution list.
-5. **Measure and record the package size** (plan 02 § 7): the size of the produced package or of the
-   self-contained output directory, owed to [[REL-002]]'s release manifest. A number, in the proof.
-6. Record the resolved `Microsoft.WindowsAppSDK` version and its release date, the confirmed
-   `Identity.Name` and `Identity.Publisher` verbatim, and whether [[FND-028]] had landed.
+- **V1.** `dotnet restore ./Pegasus.slnx --locked-mode` on Windows — expected exit 0. Run it
+  *after* committing `src/Pegasus.Desktop/packages.lock.json`; this is the exact command the CI
+  composite action runs.
+- **V2.** `dotnet build ./Pegasus.slnx --configuration Release --no-restore` — expected exit 0 and
+  `0 Warning(s)`. **This is the authoritative gate**, because it is what
+  `.github/actions/dotnet-build/action.yml:22-27` runs and because it sees the repository-root
+  `Directory.Build.props` (see § Risks). Paste the warning summary line, not just the exit code.
+- **V3.** `pwsh .codex/skills/winui-dev-workflow/BuildAndRun.ps1 src/Pegasus.Desktop/Pegasus.Desktop.csproj -SkipRun`,
+  then the same command async without `-SkipRun` — expected output containing
+  `✅ <pkg> launched (PID: …)` and a visible window. Attach the **screenshot**; it is the only
+  evidence that package identity actually worked.
+- **V4.** `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release`
+  — expected: every fact green, including `ApplicationSolutionExcludesSourceWorkspaces` with the
+  extended eight-path array. Run it once *before* extending the array to show it red if that is
+  cheap; a demonstrated red-then-green is stronger evidence that the coupling is real than a green
+  alone.
+- **V5.** **Measure the package size.** Report the size of the produced MSIX (or of
+  `bin\x64\Release\net10.0-windows10.0.26100.0\win-x64\`) in MB. Plan 02 § 7 requires it
+  ("acceptable for ten users but measure and record in 09's release manifest") and [[REL-002]] is
+  owed the figure. If it is not captured here it will simply be re-measured later.
+
+**Honesty clauses for the proof.**
+
+- A green `BuildAndRun.ps1` is **not** the same claim as a green `dotnet build` — record both, and
+  where their warning counts differ, say so and treat V2 as authoritative.
+- No CI job builds a desktop project until [[FND-040]] lands, so a green `repository-check` run
+  proves only that the architecture test and the locked restore still pass — not that the desktop
+  builds. Say that, rather than letting a green badge imply it.
+- If [[FND-028]] has not landed, state plainly that `dotnet build ./Pegasus.slnx` now fails on Linux
+  and that the repository is Windows-only for developers until it does (`docs/runbook.md:38` —
+  "record the platform actually exercised").
 
 ## Risks / open questions
 
-- **Risk — `BuildAndRun.ps1` shadows the repository props.** Measured, not hypothetical:
-  `BuildAndRun.ps1:146-157` injects `src/Pegasus.Desktop/Directory.Build.props` whenever that exact
-  file is absent, and MSBuild stops at the first one it finds walking up, so
-  `TreatWarningsAsErrors`, `Nullable`, `ImplicitUsings`, `LangVersion` and `Version` do not apply to
-  that build. *Mitigation*: the explicit analyzer reference (step 7), and treating plain
-  `dotnet build` as the gate (§ Verification item 3). **This corrects the reason given in plan 02 § 7
-  and in this ticket's step 7 — the instruction is unchanged and is followed; only the stated
-  mechanism is wrong.** Do not "fix" it by committing a permanent
-  `src/Pegasus.Desktop/Directory.Build.props`: that would shadow the root props for *every* build,
-  which is strictly worse, and the root props is the single source of truth for those settings.
-- **Risk — package identity churn.** `Identity.Name` and `Identity.Publisher` are permanent, and the
-  certificate subject must equal `Publisher` exactly (D-002; plan 09 `:216`, `:329`). *Mitigation*:
-  step 3 is an operator step and its outputs are recorded verbatim before any other work.
-- **Risk — Windows App SDK / SDK band mismatch.** Plan 02 § 2 assumption A1.
-  `global.json`'s `allowPrerelease: false` narrows the choice to stable 2.x. *Mitigation*: step 6
-  re-confirms the version and step 11 proves the build; a `global.json` bump is its own ticket and is
-  recorded here rather than performed.
-- **Risk — ARM64 workstation.** `BuildAndRun.ps1:89` would pass `/p:Platform=ARM64` into a project
-  declaring `<Platforms>x64</Platforms>`. *Mitigation*: step 2 records the architecture and step 11
-  passes `/p:Platform=x64` where needed. Do **not** widen `<Platforms>` — x64-only is plan 02 § 3
-  decision 3.
-- **Risk — the lock file.** `dotnet restore ./Pegasus.slnx --locked-mode` runs on every CI lane and
-  the cache key already globs `src/**/packages.lock.json`, so a missing or stale desktop lock file
-  breaks all of CI. *Mitigation*: step 10 generates it with `-r win-x64 --force-evaluate` and commits
-  it before the solution restore.
-- **Sequencing, not an open question — [[FND-028]].** The plan's dependency arrow names only
-  [[FND-026]] and [[FND-027]], but adding a Windows-target project to `Pegasus.slnx` is exactly what
-  breaks Linux builds. If [[FND-028]] has not landed, this commit makes the repository Windows-only
-  for developers; say so in the proof rather than adding the server entry point here (it is
-  [[FND-028]]'s file).
+- **Risk — `BuildAndRun.ps1` shadows the repository-root `Directory.Build.props`, and the ticket
+  body's stated reason for step 8 is the inverse of the measured behaviour.** Plan 02 § 7 and the
+  body's step 7 say the script injects "only when none exists up the tree", concluding "it will skip
+  injection". Measured at `.codex/skills/winui-dev-workflow/BuildAndRun.ps1:142-172`: `:146-149`
+  builds `$tempBuildProps` from **the project directory only**; `:152-154` tests `Test-Path` against
+  that exact path; `:157` writes the file when it is absent. It does **not** look up the tree. With
+  `src/Pegasus.Desktop/Directory.Build.props` absent the script therefore *does* inject, and MSBuild
+  stops at the first `Directory.Build.props` it finds walking up — so the injected file shadows the
+  root one for that build, silently dropping `TreatWarningsAsErrors`, `Nullable`, `ImplicitUsings`,
+  `LangVersion` and `Version`. `:198-205` deletes only the file the script itself created.
+  *Mitigation*: the instruction is followed unchanged (step 8), and V2 rather than V3 is the
+  authoritative gate. The disagreement is **reported, not silently applied** — the body outranks
+  this plan on what to do; only the stated reason is corrected here. Committing a
+  `src/Pegasus.Desktop/Directory.Build.props` that imports the root one would make the script log
+  "skipped (existing Directory.Build.props)" (`:170`) and end the shadowing permanently — that is a
+  suggestion for [[FND-032]] or [[FND-040]], not a change this ticket takes on its own authority.
+- **Risk — A-FND030-1: Windows App SDK 2.4.x may not compile against SDK `10.0.302` with
+  `allowPrerelease: false`** (plan 02 § 2 assumption A1). *Settled by*: the first build at step 12.
+  *If wrong*: a `global.json` bump is needed, which this ticket's Guardrails put in **its own
+  ticket**. The scaffold then stalls, and that is recorded — never worked around by editing
+  `global.json` here.
+- **Risk — A-FND030-2: stripping the template's version literals may break its `x:Bind` /
+  source-generator wiring** (plan 02 § 2 assumption A2). *Settled by*: the build at step 12 after
+  step 7's strip. *If wrong*: the offending package keeps a literal version **with a comment naming
+  why**, and the deviation from "no version literal remains" is recorded in the ticket rather than
+  hidden.
+- **Risk — A-FND030-3: the template may not compile clean under `TreatWarningsAsErrors=true` plus
+  `AnalysisLevel=latest-recommended`.** *Settled by*: step 13's zero-warning build. *If wrong*: the
+  honest outcome is a longer, individually-commented `NoWarn` list — never a relaxation of the root
+  props.
+- **Risk — A-FND030-5: an ARM64 workstation.** `BuildAndRun.ps1:89` would append
+  `/p:Platform=ARM64` into a project declaring `<Platforms>x64</Platforms>`. *Settled by*:
+  `$env:PROCESSOR_ARCHITECTURE`. *Mitigation*: pass `/p:Platform=x64` explicitly and record it. Do
+  **not** widen `<Platforms>` — plan 02 § 3 decision 3 fixes x64 only.
+- **Risk — the desktop `packages.lock.json` breaks every CI lane if stale.** It is RID-specific
+  (plan 02 § 7: "CI must restore with the same RID") and the cache key in
+  `.github/actions/dotnet-build/action.yml` already globs `src/**/packages.lock.json`.
+  *Mitigation*: step 11 generates it with `-r win-x64 --force-evaluate`, and V1 proves the locked
+  restore before the PR opens.
+- **Risk — [[FND-027]] has not landed and `Directory.Packages.props` does not exist.** Confirmed
+  absent today. *Mitigation*: step 2 checks first. If it is still absent, record the sequencing and
+  wait; do not inline version literals that step 7 would then have to strip again.
+- **Scope boundary, not an open question — the package identity strings.** They are assigned to the
+  **operator** inside this ticket's own step 4, which is why the ticket carries the `needs-operator`
+  label. Blocking `leave-preparing` on them would stop the ticket ever reaching the step that asks.
+  No `open-questions` document is opened for them.
 - **Scope boundary, not an open question — the shell.** [[FND-033]] (plan handle `DSK-02-08`) owns
-  it, and it must be a `NavigationView`, never a port of
+  it, and it must be a `NavigationView`, not a port of
   `src/Pegasus.Web/Pages/Shared/_Layout.cshtml`.
-- **Scope boundary, not an open question — WebView2.** No reference is added; the only permitted use
-  is the isolated report renderer under ADR-0108, in area 07. [[FND-037]] (plan handle `DSK-02-12`)
-  adds the test that enforces this.
-- **Scope boundary, not an open question — the runbook prerequisites sentence.** Owned by
-  [[FND-039]]; cited here, never restated.
-- **No `open-questions` document is opened.** The two unfixed values are assigned to the operator
-  inside step 3 — a `needs-operator` step this ticket already carries as a label — and blocking
-  `leave-preparing` would prevent the ticket reaching the step that asks. Everything else is settled
-  by a command inside the ticket's own steps.
+- **Scope boundary, not an open question — the desktop dependency rules and the no-WebView test.**
+  [[FND-037]] owns them; this ticket only extends the *solution contents* array. No WebView2
+  reference is added here under any circumstances; the sole permitted WebView2 use is the isolated
+  report renderer under ADR-0108, which is area 07.
+- **Scope boundary, not an open question — the CI lane and the runbook prerequisite sentence.**
+  [[FND-040]] owns `.github/workflows/ci.yml`; [[FND-039]] owns the `winapp` CLI and Developer Mode
+  sentence in `docs/runbook.md` § Supported platform.
+- **No open question is opened on this ticket.** Nothing here is unsettled in a way that must be
+  answered before implementation begins. Every assumption above names the command inside the ticket
+  that settles it, and the two unfixed strings are an operator step, not a research gap.
 
 ## Simplification pass
 
