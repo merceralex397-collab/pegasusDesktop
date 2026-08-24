@@ -29,7 +29,7 @@ row was measured against the fork working tree on 2026-08-24 with `wc -l`,
 
 | Path | Measured now | Why not |
 | --- | --- | --- |
-| `docs/operations.md` | 1254-line file (`docs/runbook.md`); `docs/operations.md` is the production-environment record | Only if the minimum-version setting was applied **outside** the local stack — which under L-02 it will not be. Otherwise [[REL-016]]'s (plan handle `DSK-09-18`) desktop release table records it. Body § Documentation changes. |
+| `docs/operations.md` | The production-environment record | Edited **only** if the minimum-version setting was applied **outside** the local stack — which under L-02 it will not be. Otherwise [[REL-016]]'s (plan handle `DSK-09-18`) desktop release table records it. Body § Documentation changes. |
 | `src/`, `tests/` | — | **Read-only** (Guardrails). This ticket produces evidence; every finding becomes a new `fix` ticket in the owning area. |
 | `docs/desktop/04-auth-session-update-and-startup/README.md:214-224` § 4 | The six gate rows | The gate table is the standard being measured against; narrowing it to fit what shipped is the failure the body's *Concern to record* names. |
 
@@ -44,17 +44,16 @@ four scenarios are the human half of that evidence and live in this plan
 document; the automated half is re-run, not quoted from the tickets that wrote
 it.
 
-The alternative rejected is **assembling the proof from the fourteen
-dependency tickets' own proofs** — reading [[GWY-019]] through [[FND-049]]'s
-evidence and citing it. It is faster and it does not close the gate the phase
-exists for: each of those tickets proved its own slice against its own
-fixtures, and the risk Phase 2 is guarding against is precisely that the slices
-do not compose — a token that works in an integration test and not through an
-installed package, an update that blocks in a packaging test and not against
-the real gateway gate. `docs/desktop/00-governance-and-workflow/README.md:293`
-names area 04 as the Phase 2 exit-gate owner for that reason. Step 2 still
-*reads* those tickets, but to confirm they are `done`, not to inherit their
-conclusions.
+The alternative rejected is **assembling the proof from the fourteen dependency
+tickets' own proofs** — reading [[GWY-019]] through [[FND-049]]'s evidence and
+citing it. It is faster and it does not close the gate the phase exists for:
+each of those tickets proved its own slice against its own fixtures, and the
+risk Phase 2 guards against is precisely that the slices do not compose — a
+token that works in an integration test and not through an installed package,
+an update that blocks in a packaging test and not against the real gateway
+gate. `docs/desktop/00-governance-and-workflow/README.md:293` names area 04 as
+the Phase 2 exit-gate owner for that reason. Step 2 still *reads* those
+tickets, but to confirm they are `done`, not to inherit their conclusions.
 
 The second alternative rejected is **running the review against production**.
 ADR-0014 gives Pegasus two environments and no third; L-02 puts Test/UAT on the
@@ -70,7 +69,7 @@ operation approval matrix — a different ticket, as the Guardrails say.
 | Ref | Requirement | Meets |
 | --- | --- | --- |
 | `docs/frd/frd-12-operator-experience.md:20-22` | The operator-visible state vocabulary, with exact state labels mapped to Core decisions | **Meets** — scenarios A–D exercise the operator-visible states of the session-failure matrix (`04/README.md:224-231`) and record the label the operator actually read, not the one the code intended. |
-| `docs/frd/frd-12-operator-experience.md:112` | "The UI never infers state from colour alone" | **Meets** — the screenshots captured in scenarios B and C are the tier-7 record of that; a state legible only by colour is a finding. |
+| `docs/frd/frd-12-operator-experience.md:112` | "The UI never infers state from colour alone" | **Meets** — the screenshots captured in scenarios B, C and D are the tier-7 record of that; a state legible only by colour is a finding. |
 
 No FRD text is modified.
 
@@ -82,8 +81,8 @@ No FRD text is modified.
 > and **ADR-0105** (signed MSIX / App Installer distribution with a gateway
 > minimum-version gate). ADR-0102 is authored by [[FND-042]] (plan handle
 > `DSK-04-01`); [[FND-005]] (plan handle `DSK-00-05`) and [[FND-006]] (plan
-> handle `DSK-00-06`) also touch the 0100-block, so see [[FND-042]]'s plan for
-> the ownership reconciliation. ADR-0105 is authored by [[REL-001]] (plan
+> handle `DSK-00-06`) also claim the 0100-block ADRs, so see [[FND-042]]'s plan
+> for the ownership reconciliation. ADR-0105 is authored by [[REL-001]] (plan
 > handle `DSK-09-01`); [[FND-005]] and [[FND-042]] also claim it — see
 > [[REL-001]]'s plan for the ownership reconciliation.
 > This review is written to the decisions as recorded in
@@ -97,7 +96,7 @@ No FRD text is modified.
 | --- | --- | --- |
 | Proposal § 24 Phase 2 exit gate | The five conditions before any feature slice ships | The whole review; gate rows 1–5 |
 | Proposal § 27 items 3, 4, 13 (`00/README.md:304-322`) | 3 "Existing Pegasus credentials and permissions work; no Microsoft login"; 4 "Unsupported versions cannot proceed"; 13 "Install, mandatory update and rollback proven" | Steps 5–7; step 12 records which programme-exit items this review advances and which it does not |
-| `docs/desktop/00-governance-and-workflow/README.md:293` § Phase map | Phase 2's exit gate owner is area 04 | This ticket is that gate |
+| `docs/desktop/00-governance-and-workflow/README.md:293` § Phase map | Phase 2's exit-gate owner is area 04 | This ticket is that gate |
 | `docs/desktop/04-auth-session-update-and-startup/README.md:214-224` § 4 | The six gate rows and the evidence each demands | Steps 5–10, one step per row |
 | `docs/desktop/04-auth-session-update-and-startup/README.md:259-293` § 7 | The traps, in particular the fail-open feed and the side-loaded-MSIX trap | Scenario B's design; the Risks section |
 | `docs/desktop/08-testing/test-uat-stack.md:130` scenario 12 | "Obsolete desktop version blocked and updates successfully"; evidence "Update-required screen, `Get-AppxPackage` version after update" | Scenario B |
@@ -220,7 +219,8 @@ with the same ownership and the same file paths.
 10. **Gate row "Startup sequence observable".** Export a diagnostics bundle
     from the running app ([[FND-036]], plan handle `DSK-02-11`) and confirm it
     contains the ordered startup steps under **one** correlation id and **no**
-    token literal. Attach the redacted excerpt. `runbooks.md:333-352` § R10
+    token literal. Attach the redacted excerpt.
+    `docs/desktop/09-release-update-and-distribution/runbooks.md:333-352` § R10
     lists what the bundle is expected to contain; check against that list.
 11. **Independent review.** Run `winui-code-review` over the Phase 2 desktop
     diff. The agent doing it must have implemented **none** of the tickets
@@ -249,9 +249,10 @@ session, D needs a distinct account.
 
 **Preconditions for all four.** The stack is up (step 4) with its run id
 recorded. The package is installed **from the `teststack` `.appinstaller` on
-the feed share**, never side-loaded. Two staff accounts exist in the local
-Identity store: one ordinary, one that will be disabled; neither is
-`Bootstrap:VerificationAccount`. Capture every screenshot with
+the feed share**, never side-loaded. Three staff accounts exist in the local
+Identity store — one ordinary, one to be disabled, one with
+`MustChangePassword` set — and none is `Bootstrap:VerificationAccount`. Capture
+every screenshot with
 `winapp ui screenshot -a $AppPid -o "screenshots/<scenario>-<state>.png"`.
 
 ### Scenario A — Login with an existing Pegasus account
@@ -259,9 +260,9 @@ Identity store: one ordinary, one that will be disabled; neither is
 | | |
 | --- | --- |
 | **Steps** | 1. Launch the installed package. 2. Observe the startup sequence reach the login screen. 3. Enter the existing account's user name and password. 4. Submit. |
-| **Expected** | The shell appears. **No** Microsoft-account prompt and **no** browser window at any point. The status bar reads the connected form. The rail shows the items that account's role allows ([[FND-046]]). |
+| **Expected** | The shell appears. **No** Microsoft-account prompt and **no** browser window at any point. The status bar reads the connected form. The rail shows the items that account's role allows ([[FND-046]], plan handle `DSK-04-10`). |
 | **Evidence** | Shell screenshot; the rolling-log line carrying the startup correlation id; the gateway's `/connect/token` audit row. |
-| **Fails if** | A browser opens; the login screen offers a Microsoft option; the token is written anywhere on disk. |
+| **Fails if** | A browser opens; the login screen offers a Microsoft option; the access token is written anywhere on disk. |
 
 ### Scenario B — Obsolete client blocked, then updated
 
@@ -285,8 +286,8 @@ Identity store: one ordinary, one that will be disabled; neither is
 
 | | |
 | --- | --- |
-| **Steps** | 1. Set `MustChangePassword` on a third account. 2. Sign in from the desktop. 3. Observe the routing. 4. Complete the change. 5. Continue into the shell. |
-| **Expected** | Problem type `urn:pegasus:problem:password-change-required` (`04/README.md:228`) routes to the change-password screen and **blocks other work**. `screen-specs.md:108-114` fixes that screen: three fields, Save primary, minimum length shown **only** as a validation outcome and never as hint text. |
+| **Steps** | 1. Set `MustChangePassword` on the third account. 2. Sign in from the desktop. 3. Observe the routing. 4. Complete the change. 5. Continue into the shell. |
+| **Expected** | Problem type `urn:pegasus:problem:password-change-required` (`04/README.md:228`) routes to the change-password screen and **blocks other work**. `screen-specs.md:108-114` fixes that screen: Current password, New password, Confirm new password; Save primary; validation messages attach to the field; minimum length shown **only** as a validation outcome and never as hint text; AutomationIds `Password.Current`, `Password.New`, `Password.Confirm`, `Password.Save`. |
 | **Evidence** | Screenshot of the change-password screen; the problem-type value from the diagnostics log; a screenshot of the shell after the change. |
 | **Fails if** | Any other screen is reachable before the change; the minimum length appears as hint text; the state is shown by colour alone (`frd-12-operator-experience.md:112`). |
 
@@ -307,6 +308,7 @@ tier, and a tier with no row is a failed review.
 | 7 | Scenarios A–D executed once end to end | each scenario's Expected met; each Fails-if absent | `proof` (visual) — the screenshot set — plus the scenario table with verdicts |
 | 11 | `Get-AppxPackage CollisionEngineers.Pegasus \| Select-Object Version` before and after the forced update | the version increases, **and** the app reaches the shell only after the update | `proof` (command-log) |
 | 9 | The storage-review checklist from step 9 | recorded item by item — what was checked, not that checking happened | `proof` (command-log) |
+| — | `git diff --name-only` at PR time | exactly `docs/desktop/README.md`; **no** `src/`, **no** `tests/`, **no** `.github/` | `proof` (command-log) — this is what makes a review that started fixing things visible |
 | — | `get_doc_gates FND-050` after the proof is written | no unmet requirement for `enter-done` | the gate output itself |
 
 **Stated limit, required in the proof:** this review runs on the local Test/UAT
@@ -342,9 +344,8 @@ behaviour. Those are pilot-ring checks owned by [[REL-009]] (plan handle
   the Governing docs table.
 - **Risk — the review starts fixing things.** The diff estimate is four lines
   for a reason. Mitigation: Guardrails make `src/` and `tests/` read-only and
-  every finding a new `fix` ticket; the last Verification row (`git diff
-  --name-only` at PR time naming only `docs/desktop/README.md`) makes a
-  widened diff visible.
+  every finding a new `fix` ticket; the `git diff --name-only` row in
+  Verification makes a widened diff visible.
 - **Risk — the plaintext `Bootstrap:VerificationAccount` becomes the review's
   test login.** `04/README.md:288-291` records it in
   `src/Pegasus.Web/appsettings.json` and says it must never be the desktop test
@@ -357,9 +358,8 @@ behaviour. Those are pilot-ring checks owned by [[REL-009]] (plan handle
 - **Scope boundary, not an open question — anything the local stack cannot
   prove.** Azure SQL semantics, Blob and Key Vault behaviour, Container App
   probes, App Insights, the production certificate and the real share are
-  [[REL-009]]'s pilot-ring checks
-  (`test-uat-stack.md:173-186`). Recording the limit is this ticket's job;
-  closing it is not.
+  [[REL-009]]'s pilot-ring checks (`test-uat-stack.md:173-186`). Recording the
+  limit is this ticket's job; closing it is not.
 - **Scope boundary, not an open question — running against production.** A
   separate ticket with exact-target approval under `docs/runbook.md` § Live
   operation approval matrix, mirrored in

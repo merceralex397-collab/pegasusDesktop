@@ -1,87 +1,105 @@
 # Files — FND-034
 
-Surveyed 2026-08-24 against fork `main`. Existing paths were confirmed with `ls`/`sed`; new files are
-marked; files created by a named earlier ticket say so.
+Surveyed 2026-08-24 against fork `main`. Every existing path was confirmed with `ls`/`sed`/`grep`;
+paths created by an earlier ticket are marked with that ticket. Consistent with this ticket's
+`research` document, which measured the same tree.
 
 ## Where the change lands
 
+**This ticket is the single owner of `src/Pegasus.Desktop/Styles/`, its file set and load order, the
+`App.xaml` merge, and the `StylesAreTheOnlySourceOfColourAndType` guard test.** [[DUI-001]] (plan
+handle `DSK-06-01`) fills the token **values** into these dictionaries in place and creates no second
+file, no second merge and no second scanner. That split is settled in this ticket's body and is not
+re-opened here.
+
 | Path | Why |
 | --- | --- |
-| `src/Pegasus.Desktop/Styles/Tokens.Colors.xaml` | **New.** `ResourceDictionary.ThemeDictionaries` with keys `Light`, `Dark` and `HighContrast` — and **no `Default`**. Every key and value transcribed verbatim from `docs/desktop/06-ui-design/tokens-and-theme.md` § Colour tokens (24 rows), never paraphrased or re-derived. |
-| `src/Pegasus.Desktop/Styles/Tokens.Typography.xaml` | **New.** The eight text styles, each `BasedOn` its named built-in WinUI style, with `Typography.NumeralAlignment="Tabular"` on the numeric ones. No raw `FontSize` anywhere, here or in any view. |
-| `src/Pegasus.Desktop/Styles/Tokens.Spacing.xaml` | **New.** `PegasusSpace1`…`PegasusSpace9` as `x:Double` 4, 8, 12, 14, 18, 24, 32, 40, 64, plus `PegasusGutter` = 24. (The dictionary may also carry `PegasusTableRowHeight` 32, `PegasusFactRowHeight` 28, `PegasusContentMaxWidth` 1280 and `PegasusRailWidth` 236 from the same table — [[FND-033]] (plan handle `DSK-02-08`) and [[DUI-004]] (plan handle `DSK-06-04`) both reference the last two by key.) |
-| `src/Pegasus.Desktop/Styles/Tokens.Shape.xaml` | **New.** `ControlCornerRadius` and `OverlayCornerRadius` at `2`, and border thickness at `1`. `docs/design/README.md:268` — "There is no second approved radius"; the 6px/5px in `site.css` is a flagged discrepancy and is **not** adopted. |
-| `src/Pegasus.Desktop/Styles/Tokens.Focus.xaml` | **New.** The focus visual overridden to the `PegasusFocusBrush` 3 px ring (`docs/design/README.md:264`), with `FocusVisualPrimaryBrush` / `FocusVisualSecondaryBrush` set per `tokens-and-theme.md` § Shape, borders, focus, depth. |
-| `src/Pegasus.Desktop/Styles/Icons.Lucide.xaml` | **New (position reserved, contents not authored here).** [[DUI-003]] (plan handle `DSK-06-03`) converts the sixteen registered glyphs from the SHA-256-pinned sprite. This ticket creates its slot in the load order. |
-| `src/Pegasus.Desktop/Styles/Controls.*.xaml` | **New (positions reserved, contents not authored here).** StatusChip, ReasonDialog, ProblemInfoBar, DataTable header and field styles come from [[DUI-006]] (plan handle `DSK-06-06`), [[DUI-008]] (plan handle `DSK-06-08`), [[DUI-009]] (plan handle `DSK-06-09`) and [[DUI-010]] (plan handle `DSK-06-10`). |
-| `src/Pegasus.Desktop/Styles/Pegasus.Theme.xaml` | **New.** Merges the above **in the load order** of `tokens-and-theme.md` § Files and load order. Referenced exactly once in the whole application. |
-| `src/Pegasus.Desktop/App.xaml` (created by [[FND-030]], plan handle `DSK-02-05`) | Merge `XamlControlsResources` **first**, then `Pegasus.Theme.xaml`, so the project's overrides win. This merge is owned here; [[DUI-001]] (plan handle `DSK-06-01`) verifies it rather than adding a second one. |
-| The guard test — `tests/Pegasus.ArchitectureTests/StylesAreTheOnlySourceOfColourAndTypeTests.cs` **or** `tests/Pegasus.Desktop.ViewModelTests/…` | **New.** A fact named exactly `StylesAreTheOnlySourceOfColourAndType` that scans `src/Pegasus.Desktop/**/*.xaml` **excluding `Styles/`** and fails on a hex colour literal (`#` followed by 3, 4, 6 or 8 hex digits), a raw `FontSize=` attribute, or a numeric `CornerRadius=`. The body allows an architecture fact "if the check is pure text" — it is. There is **one** scanner in the repository and it is this one. |
+| `src/Pegasus.Desktop/Styles/Tokens.Colors.xaml` | **New.** A `ResourceDictionary.ThemeDictionaries` block with keys `Light`, `Dark` and `HighContrast` — and **no `Default`**. The 24 key rows come verbatim from `docs/desktop/06-ui-design/tokens-and-theme.md` § Colour tokens; every HighContrast entry is a `SystemColor*` resource so forced-colours mode governs. |
+| `src/Pegasus.Desktop/Styles/Tokens.Typography.xaml` | **New.** The eight text styles, each `BasedOn` its named built-in WinUI style, with `Typography.NumeralAlignment="Tabular"` on the numeric ones. No raw `FontSize` anywhere. |
+| `src/Pegasus.Desktop/Styles/Tokens.Spacing.xaml` | **New.** `PegasusSpace1`…`PegasusSpace9` as `x:Double` 4, 8, 12, 14, 18, 24, 32, 40, 64; `PegasusGutter` 24; plus `PegasusTableRowHeight` 32, `PegasusFactRowHeight` 28, `PegasusPanelPadding`, `PegasusContentMaxWidth` 1280, `PegasusRailWidth` 236, `PegasusMinimumTargetSize` 44, `PegasusMinimumWindowWidth` 1280. |
+| `src/Pegasus.Desktop/Styles/Tokens.Shape.xaml` | **New.** `ControlCornerRadius` and `OverlayCornerRadius` = `2` (there is no second approved radius — `docs/design/README.md:268`), `PegasusBorderThickness` = `1`. |
+| `src/Pegasus.Desktop/Styles/Tokens.Focus.xaml` | **New.** `FocusVisualPrimaryBrush` → `PegasusFocusBrush`, `FocusVisualSecondaryBrush` → `PegasusPanelBrush`, `PegasusFocusVisualThickness` = `3`. |
+| `src/Pegasus.Desktop/Styles/Icons.Lucide.xaml` | **New, position reserved.** [[DUI-003]] (plan handle `DSK-06-03`) supplies the sixteen `PathIcon` geometries from the checksum-pinned sprite. This ticket creates the file and its merge slot; it does not invent glyph data. |
+| `src/Pegasus.Desktop/Styles/Controls.*.xaml` | **New, positions reserved.** StatusChip, ReasonDialog, ProblemInfoBar, DataTable header, field — filled by [[DUI-006]] (plan handle `DSK-06-06`), [[DUI-008]] (`DSK-06-08`), [[DUI-009]] (`DSK-06-09`) and [[DUI-010]] (`DSK-06-10`). Same rule: the load order reserves their place, this ticket does not author their contents. |
+| `src/Pegasus.Desktop/Styles/Pegasus.Theme.xaml` | **New.** Merges the above **in the order above**. Referenced exactly once in the whole application. |
+| `src/Pegasus.Desktop/App.xaml` (created by [[FND-030]], plan handle `DSK-02-05`) | Merge `XamlControlsResources` **first**, then `Pegasus.Theme.xaml`, so the project's overrides win. This merge is owned here; [[DUI-001]] verifies it rather than adding a second. |
+| `tests/Pegasus.ArchitectureTests/StyleLiteralTests.cs` | **New — and this is the file the ticket really turns on.** Holds the fact `StylesAreTheOnlySourceOfColourAndType`, that exact name, scanning `src/Pegasus.Desktop/**/*.xaml` **excluding `Styles/`** and failing on a hex colour literal, a raw `FontSize=` attribute or a numeric `CornerRadius=`. The body permits either test project; the plan chooses this one because it already runs unfiltered on every PR. |
 
 ## Context files
 
-What the implementer must **read** and what each one tells them.
+What the implementer must **read**, and what each one tells them.
 
 | Path | What it tells the implementer |
 | --- | --- |
-| `docs/desktop/06-ui-design/tokens-and-theme.md` § Files and load order | The eight-entry tree and the merge rule verbatim: `Pegasus.Theme.xaml` "merges the above in order; referenced once from App.xaml", and `App.xaml` merges it **after** `XamlControlsResources` "so overrides win". Also the sentence that settles the `Default` question: theme dictionaries cover Light, Dark **and** HighContrast, "never `Default`". |
-| `docs/desktop/06-ui-design/tokens-and-theme.md` § Colour tokens | The 24-row key table with all three columns — the **only** place the desktop's values are written. Its preamble records the provenance split that governs step 11: Light values "are the authority's", Dark values are "an **assumption**", HighContrast maps to eight named `SystemColor*` resources "so forced-colours mode governs". |
-| `docs/desktop/06-ui-design/tokens-and-theme.md` § Typography | The eight style keys and their built-in bases, tabular numerals on the numeric ones, and the one flagged assumption: `PegasusSectionTextStyle` is "15/700 (assumption: 14 acceptable; confirm in review)". Also that Tw Cen MT and Futura are never UI fonts and no brand-font bundle is loaded. |
-| `docs/desktop/06-ui-design/tokens-and-theme.md` § Change rule | Why this ticket may not change a value: "Tokens here are derived, not owned. A proposed change (including the Dark values and the section-heading size) is raised against `docs/design/README.md` … reviewed on the gallery page in Light/Dark/HighContrast at 100% and 200%, and only then applied to `Styles/`." The gallery page belongs to [[DUI-002]] (plan handle `DSK-06-02`). |
-| `docs/design/README.md` § Tokens § Colour (`:258`ff) | The Light column's source of truth — `#DB0816`, `#8F1422`, `rgba(219,8,22,.07)`, `#2C2A27`, `#16191D`, `#F5F4F2`, `#E6E4E1`, `#6B6B6B`, `#16833B`, the amber trio and the navy trio — plus the two rules that are absolute: green is "reserved for confirmed completion" and never means progress or availability, and the excluded marketing tokens (WhatsApp green/pills, large display scales, CTA shadows, document red, brand-font declarations). |
-| `docs/design/README.md:260-268` § Shape, borders and focus | Radius `2px`, borders `1px`, focus ring `3px rgba(219,8,22,.38)`, depth "border-first; rare soft shadows", and the closing sentence "There is no second approved radius" — which is why the 6px/5px in `site.css` is not adopted. |
-| `docs/design/README.md:270-277` § Spacing and layout | The approved steps `4, 8, 12, 14, 18, 24, 32, 40, 64px`, "Use only steps exercised by the selected UI", and "Primary gutters are 24px". |
-| `.codex/skills/winui-design/SKILL.md:143` | The exact rule the acceptance criteria restate: "Custom theme dictionaries cover `Light`, `Dark`, **and** `HighContrast` explicitly — never `Default`." Two lines below it: "Light/Dark working ≠ High Contrast working. Test in a Contrast theme separately", and "Never set `HighContrastAdjustment="None"` unless your app already supplies system-aware brushes throughout." |
-| `.codex/skills/winui-design/references/theme-accessibility.md` | The vendored theming and accessibility reference this ticket's routing loads; read it before writing the `ThemeDictionaries` block. |
-| `.codex/skills/winui-design/references/brushes-and-icons.md` | Brush and icon conventions — relevant because the colour keys are named by **purpose, not hue** (`PegasusAccentBrush`, `PegasusDangerBrush`), which the skill states as a theming rule and the token table already follows. |
-| `.codex/skills/winui-code-review/references/quality-rules.md` | The checklist run at step 12: theming, no raw `FontSize`, no hex literals, AutomationIds present. It is the human counterpart of the scanner. |
-| `tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs:2`, `:509` | That the architecture-test project already imports `System.Text.RegularExpressions` and has `FindRepositoryRoot()` — a repository-rooted path with no configuration. A pure text scanner fits this project's existing shape, and this project already runs unfiltered on every PR (`.github/workflows/ci.yml:136-148`). |
-| `src/Pegasus.Web/wwwroot/css/site.css` | The web's implementation of the **same** authority. Read it to see the values in their other form; never copy from it, and note that `docs/design/README.md:268` records it as already reconciled to the 2px radius while `tokens-and-theme.md` still flags a 6px/5px discrepancy elsewhere. |
-| `src/Pegasus.Desktop/Shell/ShellPage.xaml` (created by [[FND-033]], plan handle `DSK-02-08`) | The first consumer of these keys and the surface the three theme screenshots capture. Its selection marker binds `PegasusAccentBrush`; if this ticket's keys are wrong, that is where it shows. |
+| `docs/desktop/06-ui-design/tokens-and-theme.md` | **Read it in full before anything else — it is the WinUI mapping, and every value this ticket writes is transcribed from it.** § Files and load order gives the eight-entry tree and the sentence "`App.xaml` merges `Pegasus.Theme.xaml` **after** the WinUI `XamlControlsResources` so overrides win. Theme dictionaries cover `Light`, `Dark` **and** `HighContrast` explicitly — never `Default`." § Colour tokens gives 24 key rows in three columns. § Typography gives eight styles with their built-in bases. § Spacing gives the nine steps. § Shape gives radius 2, border 1, focus 3. |
+| `docs/desktop/06-ui-design/tokens-and-theme.md` § Colour tokens preamble | **The provenance split, which decides what may be changed.** "Light values are the authority's. Dark values are an **assumption** (the authority is light-only)… HighContrast maps every key to a system colour so forced-colours mode governs." Its § Contrast paragraph closes it: the Dark values "are starting points to be adjusted by that review, **not authority**." If a contrast pair fails, adjust **Dark** or raise the question — never a Light value. |
+| `docs/desktop/06-ui-design/tokens-and-theme.md` § Change rule (`:197`ff) | Why this ticket may not invent a value: "Tokens here are derived, not owned. A proposed change (including the Dark values and the section-heading size) is raised against `docs/design/README.md` through its change and verification rule (`:982`), reviewed on the gallery page in Light/Dark/HighContrast at 100% and 200%, and only then applied to `Styles/`. **The desktop never carries a second token source**; `site.css` remains the web's implementation of the same authority." |
+| `docs/design/README.md` § Shape, borders and focus (`:258-268`) | The authority's own table — primary radius `2px`, borders `1px`, keyboard focus ring `3px rgba(219,8,22,.38)`, depth "Border-first; rare soft shadows" — closing with `:268`: "`site.css` now uses the approved 2px radius throughout. **There is no second approved radius.**" This is why the 6px/5px in `.design-sync/conventions.md` and `.stitch/DESIGN.md` is a flagged discrepancy and **not adopted**. |
+| `docs/design/README.md` § Spacing and layout (`:270-277`) | The nine approved steps `4, 8, 12, 14, 18, 24, 32, 40, 64px`, "Use only steps exercised by the selected UI. Primary gutters are 24px." The WinUI mapping matches exactly, so a mismatch means a transcription error, not a judgement call. |
+| `docs/design/README.md` § Tokens § Colour | The Light values traced to source — Collision red `#DB0816`, pressed `#8F1422`, warm charcoal `#2C2A27`, ink `#16191D`, light neutral `#F5F4F2`, border `#E6E4E1`, muted `#6B6B6B`, success `#16833B`, amber `#7A3E00`/`#FFF4D6`/`#A15C00`, Review navy `#143A5E`/`#EAF1F8`/`#365F87` — plus the two rules that are the authority's and not the plan's: green is reserved for **confirmed completion** and never means progress or availability, and the excluded marketing tokens (WhatsApp green/pills, large display scales, CTA shadows, gradients, brand-font declarations, pure black `#000000`, cool slate greys). |
+| `docs/design/README.md` § Change and verification rule (`:982`) | Where a value change actually starts. This ticket is downstream of it and edits nothing here. |
+| `.codex/skills/winui-design/SKILL.md:143` | The exact rule, verified to the line: "Custom theme dictionaries cover `Light`, `Dark`, **and** `HighContrast` explicitly — never `Default`." `:142` adds the binding rule (`{ThemeResource}` at usage sites; `{StaticResource}` inside `ThemeDictionaries`; `SystemAccentColor` / `SystemColor*` stay `{ThemeResource}`), and `:146` warns "Never set `HighContrastAdjustment="None"` unless your app already supplies system-aware brushes throughout." |
+| `.codex/skills/winui-design/references/theme-accessibility.md` and `references/brushes-and-icons.md` | The two vendored references this ticket's routing names. Read them for the brush/theme mechanics before writing `Tokens.Colors.xaml`. |
+| `.codex/skills/winui-code-review/references/quality-rules.md` | The theming checklist step 12 runs, and the source of "no raw `FontSize` in views". |
+| `tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs` (520 lines) | The **shape** the new scanner follows. `:2` already imports `System.Text.RegularExpressions`; `FindRepositoryRoot()` (`:509`) gives a repository-rooted path with no configuration; the `[Fact]` + `Assert` idiom is established. A file-globbing regex fact fits this project without adding a dependency. |
+| `.github/workflows/ci.yml` (nine jobs; `unit` at `:136`) | Why the scanner's home matters. The `unit` lane runs the architecture tests unfiltered on every PR **today**, while no lane runs a desktop test project until [[FND-040]] (plan handle `DSK-02-15`) adds one. A scanner in `tests/Pegasus.ArchitectureTests` starts guarding immediately; one in `tests/Pegasus.Desktop.ViewModelTests` waits. |
+| `docs/engineering.md` § Lessons from the predecessor (`:217`) | Why step 9's order — prove it **red** on a planted literal, then green — is not ceremony: a guard that has never fired is indistinguishable from a guard that does not work. |
+| `Directory.Build.props` (19 lines) | `TreatWarningsAsErrors=true` and `AnalysisLevel=latest-recommended` apply to a XAML resource dictionary like any other file. |
 
 ## Ripple effects
 
-- **[[DUI-001]] fills the values in place.** Its scope is the token *values* in the six files this
-  ticket creates (`Tokens.*.xaml` × 5 plus `Pegasus.Theme.xaml`); it creates no new file, performs no
-  second `App.xaml` merge and adds no second guard test. If it has already landed, its values stay
-  and no existing key is changed.
-- **[[DUI-003]], [[DUI-006]], [[DUI-008]], [[DUI-009]], [[DUI-010]]** fill `Icons.Lucide.xaml` and the
-  `Controls.*.xaml` set and are merged into `Pegasus.Theme.xaml` when they land. Their positions in
-  the load order are reserved here.
-- **Every desktop view becomes subject to the scanner.** From the moment
-  `StylesAreTheOnlySourceOfColourAndType` is green, any later ticket that writes a hex literal, a raw
-  `FontSize` or a numeric `CornerRadius` outside `Styles/` fails the build — including
-  [[FND-033]]'s shell, [[DUI-004]]'s dressing and every area-05 slice.
-- **CI.** If the guard lands in `tests/Pegasus.ArchitectureTests`, it runs on every PR immediately
-  (`.github/workflows/ci.yml:136-148`, the `unit` lane, chained and unfiltered). If it lands in
-  `tests/Pegasus.Desktop.ViewModelTests`, it runs only once [[FND-040]] (plan handle `DSK-02-15`) adds
-  the desktop lane.
-- **`App.xaml` changes once, permanently.** A second `Pegasus.Theme.xaml` reference anywhere is a
-  defect the acceptance criteria name.
-- **No solution, package, restore or documentation change.** This ticket adds no project and no
-  package; `Pegasus.slnx`, `DependencyDirectionTests.ApplicationSolutionExcludesSourceWorkspaces` and
-  every `packages.lock.json` are untouched. `docs/design/README.md` is the **authority** and is not
-  edited; `docs/desktop/06-ui-design/tokens-and-theme.md` is edited only if step 11 produces a
-  contrast finding, and then as an open question, not a silent value change.
+- **[[FND-033]] (plan handle `DSK-02-08`) becomes loadable or unloadable.** Every `{ThemeResource}`
+  key the shell references must exist in these dictionaries. A missing key is a **runtime** XAML
+  failure, not a compile error, so the shell either launches or dies — there is no partial state.
+  This ticket's step 10 uses that shell as its visual subject, so the two are proven together.
+- **The guard test starts failing other people's work, by design.** Once
+  `StylesAreTheOnlySourceOfColourAndType` is green, every area 05 slice and every area 06 control
+  ticket inherits the ban. If it lands in `tests/Pegasus.ArchitectureTests`, it fires in the CI
+  `unit` lane on the very next PR from any area — which is the point, and worth saying in the PR so
+  nobody is surprised.
+- **[[DUI-001]] is unblocked and constrained in the same act.** It fills values into these files in
+  place. If this ticket's file names or load order differ by even one entry from
+  `tokens-and-theme.md` § Files and load order, [[DUI-001]] will either create a second set or edit
+  the wrong file.
+- **[[DUI-003]], [[DUI-006]], [[DUI-008]], [[DUI-009]] and [[DUI-010]]** each merge their content into
+  the slots reserved here. Their tickets assume the slot exists and the merge order is fixed.
+- **[[DUI-002]] (plan handle `DSK-06-02`), the gallery page**, is the surface the change rule routes
+  token review through at Light/Dark/HighContrast, 100 % and 200 %. It reads every key defined here.
+- **[[FND-041]] (plan handle `DSK-02-16`), the Phase 1 exit review**, is the only ticket this one
+  blocks on the board. Its high-contrast evidence depends on step 5's `SystemColor*` mapping being
+  right.
+- **No OpenAPI, generated-client or contract ripple.** This ticket adds no type and calls no endpoint;
+  `openapi/pegasus-v1.json` and the generated client are untouched. Say so in the PR rather than
+  leaving the reviewer to check.
+- **No documentation ripple in this ticket.** `docs/design/README.md` is the authority and is not
+  edited; `docs/desktop/06-ui-design/tokens-and-theme.md` is the mapping and is not silently edited —
+  a contrast finding is recorded as an open question on this ticket instead.
 
 ## Out of scope
 
 Recorded so the reviewer sees each was a decision, matching the ticket's Guardrails.
 
-- **Token *values*** — [[DUI-001]] owns them. This ticket transcribes the table verbatim where
-  [[DUI-001]] has not landed, and changes nothing where it has.
-- **A second `Styles/` directory, a second `App.xaml` merge, or a second scanner** — refused. One
-  directory, one merge, one guard test. Duplicating them with [[DUI-001]] is the failure mode this
-  ticket exists to avoid.
-- **The shell's layout** — [[FND-033]]. This ticket restyles nothing structural.
-- **New tokens the authority does not define** — refused. A needed value starts in
-  `docs/design/README.md` through its change and verification rule, in its own ticket.
-- **Editing `docs/design/README.md`** — refused. It is the authority.
-- **Adjusting a Light value to make a contrast pair pass** — refused. The Light column is authority;
-  the Dark column is the assumption that may move, and a failing pair is recorded as an open question.
-- **`Icons.Lucide.xaml` and `Controls.*.xaml` contents** — owned by the area-06 tickets named above.
-- **The gallery page and the 100 %/200 % token review** — [[DUI-002]].
-- **A brand-font bundle, Tw Cen MT or Futura as UI fonts** — refused
-  (`tokens-and-theme.md` § Typography).
-- **Anything on the banned list** — WhatsApp green, large display scales, CTA shadows, gradients,
-  neon/glow, purple/blue "AI" aesthetics, pure black `#000000`, cool slate greys.
+- **The token values themselves** — [[DUI-001]] owns them and fills them in place. If [[DUI-001]] has
+  already landed, keep what it wrote and change no existing key; if it has not, transcribe
+  `tokens-and-theme.md` verbatim. **Do not produce two copies of the palette.**
+- **A second `Styles/` directory, a second `App.xaml` merge, or a second literal scanner** — refused.
+  One directory, one merge, one guard test; the Guardrails name this as the failure mode to avoid.
+- **The Lucide glyph geometries, the raster marks and the logo asset** — [[DUI-003]], with the
+  checksum pins on `src/Pegasus.Web/wwwroot/images/lucide-sprite.svg` and
+  `docs/design/brand/logos/logo_no_margin.png`.
+- **The `Controls.*.xaml` contents** — [[DUI-006]], [[DUI-008]], [[DUI-009]], [[DUI-010]].
+- **The shell's layout** — [[FND-033]]. This ticket restyles nothing structural; it supplies the
+  resources the shell already references.
+- **The gallery/debug page and the 100 %/200 % token review** — [[DUI-002]]. This ticket's visual
+  evidence is three screenshots of the shell, not a token gallery.
+- **Editing `docs/design/README.md` or `tokens-and-theme.md`** — refused. A value change starts in the
+  authority through its own change and verification rule (`:982`), in its own ticket.
+- **Adjusting a Light value to make a contrast pair pass** — refused explicitly. The Light column is
+  authority; the Dark column is the assumption that may move.
+- **Adopting the 6px/5px radius** from `site.css` / `.design-sync/conventions.md` / `.stitch/DESIGN.md` —
+  refused. `docs/design/README.md:268`: "There is no second approved radius." The discrepancy is
+  already flagged to the design owner.
+- **Setting `HighContrastAdjustment="None"`** — refused unless every brush is system-aware, per
+  `.codex/skills/winui-design/SKILL.md:146`.
+- **Loading a brand-font bundle** — refused. Tw Cen MT and Futura are never UI fonts; the report
+  renderer's fonts are area 07's concern.
