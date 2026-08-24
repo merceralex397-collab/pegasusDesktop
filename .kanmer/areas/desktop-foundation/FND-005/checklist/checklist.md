@@ -19,6 +19,7 @@ One box per implementation obligation. The original checklist's stale filenames 
 - [ ] Link each ADR to FND-005 and affected tickets, then clear only the corresponding `docs_todo` values. This must wait until the committed files are merged into the MCP repository root, where `link_doc` can validate them.
 - [ ] Re-probe one cleared ticket's gates after the links exist.
 - [x] Obtain an independent review, address its findings, and pass focused re-review.
+- [x] Correct the PR review finding: App Installer's update attributes are not universal activation enforcement for packaged desktop apps; record their documented shortcut/taskbar limit and make the gateway version gate authoritative.
 - [x] Opened [PR #1](https://github.com/merceralex397-collab/pegasusDesktop/pull/1) against `dev`; awaiting independent review and required CI before the Review move.
 - [ ] After merge, write Tier-1 proof against the merged result and close out the ticket.
 

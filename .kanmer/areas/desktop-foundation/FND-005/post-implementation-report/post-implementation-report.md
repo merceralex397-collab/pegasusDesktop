@@ -38,3 +38,10 @@ Live remote verification now finds `origin/fnd-005-foundation-adrs` at `d22c39dd
 - `origin/dev` now exists at the shared desktop-plan baseline `ecb9b7b4`.
 - Opened [PR #1](https://github.com/merceralex397-collab/pegasusDesktop/pull/1) from `fnd-005-foundation-adrs` to `dev`.
 - The PR contains the verified ten-file documentation diff; independent PR review and CI remain pending.
+
+
+## PR review correction — 2026-08-25
+
+- Independent PR review found that the former ADR-0105 wording overstated `ShowPrompt` / `UpdateBlocksActivation`: Microsoft Learn limits those attributes to supported Start-menu/tile launch paths and documents no effect for desktop-shortcut or taskbar launches; packaged desktop apps use silent-update behaviour.
+- Commit `3c8f623c` corrects the ADR, cites the fetched Microsoft Learn `s2:OnLaunch` remarks, and identifies the gateway minimum-version check as the unconditional fail-closed control.
+- Re-ran `Test-DocumentationLinks.ps1`, `Test-TestMarkdownPlacement.ps1`, and `git diff --check`; all passed. Focused independent re-review remains pending.

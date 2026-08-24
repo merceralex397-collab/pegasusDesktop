@@ -1,0 +1,1 @@
+2026-08-25 — independent PR review found a blocking ADR-0105 accuracy issue: App Installer `ShowPrompt` / `UpdateBlocksActivation` do not universally control packaged-desktop launches and have no effect for desktop-shortcut/taskbar launches. Disposition: fixed in 3c8f623c with the Microsoft Learn `s2:OnLaunch` remarks cited; re-review requested. CI is independently still absent.
