@@ -31,6 +31,38 @@ areas:
     name: Delivery and repository
     color: "#2f80ed"
     prefix: DELIV
+  - id: case-reference-workflow
+    name: Case and reference workflow
+    color: "#9b51e0"
+    prefix: CASE
+  - id: desktop-foundation
+    name: Desktop foundation
+    color: "#5b8cff"
+    prefix: FND
+  - id: gateway-api
+    name: Gateway API
+    color: "#27ae60"
+    prefix: GWY
+  - id: desktop-ui
+    name: Desktop UI
+    color: "#ff8fab"
+    prefix: DUI
+  - id: desktop-features
+    name: Desktop features
+    color: "#9fe870"
+    prefix: FEAT
+  - id: release-desktop
+    name: Desktop release
+    color: "#ffcf7a"
+    prefix: REL
+  - id: testing
+    name: Testing
+    color: "#5bd1c9"
+    prefix: TEST
+  - id: agent-tooling
+    name: Agent tooling
+    color: "#a0a0ff"
+    prefix: TOOL
 idPrefixes:
   ticket: TICK
   plan: PLAN
