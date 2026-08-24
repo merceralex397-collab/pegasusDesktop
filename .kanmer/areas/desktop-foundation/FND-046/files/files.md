@@ -31,8 +31,8 @@ a **named** earlier ticket; nothing in `src/Pegasus.Desktop*` or
 | `src/Pegasus.Web/Pages/Administration/Index.cshtml.cs:9, :27-33` | Both halves of the server side in seven lines: the `[Authorize(Policy = StaffRoleNames.Administrator)]` attribute *and* an explicit `StaffAuthorization.Require(actor, ManageStaffAccounts)` after a `TryGetActor` that `Forbid()`s on failure. Belt and braces on the server is the house style; the client gets neither. |
 | `docs/desktop/06-ui-design/screen-specs.md:27-30` | The absence rule, and its exception. "Absent, not disabled" applies to a capability the actor/deployment does not carry. The "visible and disabled with the condition named" form is only for an action the *record* will offer later ("Available in Review"). A missing right is the first case — remove it. |
 | `docs/desktop/06-ui-design/screen-specs.md:41-63, :80-82` | The shell wireframe, `NavigationView` settings (`PaneDisplayMode=Left`, `OpenPaneLength=236`, `IsPaneToggleButtonVisible=False`), the sentence "`Administration` is present only for the Administrator role", and the AutomationId list including `Shell.Rail.<Route>` and `Shell.Title.User`. |
-| `docs/desktop/06-ui-design/README.md:228` | Row `DSK-06-04` — the shell ticket's own acceptance already says "Administration absent (not disabled) for non-admins". If the two implementations disagree, [[DUI-004]]'s row is the one that governs the shell's shape and this ticket's is the right computation. |
-| `docs/desktop/04-auth-session-update-and-startup/README.md` § 3 decision 3 | "every `/api/v1` request re-checks `IsEnabled` and the security stamp … a disabled account therefore stops within one request". This is why the client may safely cache the actor for the session: staleness is bounded by the server, not by the client. |
+| `docs/desktop/06-ui-design/README.md:228` | Row `DSK-06-04`, owned by [[DUI-004]] (plan handle `DSK-06-04`) — the shell ticket's own acceptance already says "Administration absent (not disabled) for non-admins". If the two implementations disagree, [[DUI-004]]'s row governs the shell's *shape* and this ticket's steps govern the *right computation*. |
+| `docs/desktop/04-auth-session-update-and-startup/README.md` § 3 decision 3 | "every `/api/v1` request re-checks `IsEnabled` and the security stamp … a disabled account therefore stops within one request". This is why the client may safely hold the actor for the session: staleness is bounded by the server, not by the client. |
 | `docs/engineering.md:74, :78` | Tier 2 and tier 5 definitions. Tier 5 requires the *actual route*; a `WebApplicationFactory` call through the real endpoint qualifies, a handler unit test does not. |
 | `scripts/Invoke-TestShard.ps1:20, :35-36, :42` | The worked `-VerifyPartition` example, `-ShardCount` mandatory in **every** parameter set (no `ParameterSetName` on that attribute), and `-ArtifactRoot` defaulting to `artifacts/test-shards`. This is why the body's bare `-VerifyPartition` cannot run. |
 
@@ -43,17 +43,18 @@ a **named** earlier ticket; nothing in `src/Pegasus.Desktop*` or
   project is sharded — a new test class changes shard assignment, so
   `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3`
   must stay green and the class must land in exactly one shard
-  (`scripts/Invoke-TestShard.ps1` assigns whole classes together, `:8-10`).
+  (`scripts/Invoke-TestShard.ps1:8-10` assigns whole classes together).
 - **Architecture tests.** `tests/Pegasus.ArchitectureTests` holds the
   dependency-direction facts. [[FND-037]] (plan handle `DSK-02-12`) extends
   them for the desktop boundaries; if a fact forbids `Pegasus.Desktop` →
   `Pegasus.Core.Identity`, this ticket's approach breaks and the fact — not the
   approach — is what gets discussed with [[FND-037]].
-- **UI tests.** The non-administrator tree assertion belongs in the shared
-  harness `tests/Pegasus.Desktop.UITests/ui-tests.ps1`, whose file, signature
-  and `Test-UI` helper are owned by [[TEST-006]] (plan handle `DSK-08-06`).
-  This ticket's `winapp ui inspect` capture in step 11 is a manual proof
-  artefact; adding a permanent case is [[TEST-006]]'s or [[DUI-015]]'s call.
+- **UI tests.** The permanent non-administrator tree assertion belongs in the
+  shared harness `tests/Pegasus.Desktop.UITests/ui-tests.ps1`, whose file,
+  signature and `Test-UI` helper are owned by [[TEST-006]] (plan handle
+  `DSK-08-06`). This ticket's `winapp ui inspect` capture in step 11 is a
+  manual proof artefact; the standing case is [[TEST-006]]'s or the
+  AutomationId coverage audit in [[DUI-015]] (plan handle `DSK-06-15`).
 - **No contract ripple.** Nothing here changes a request or response shape, so
   `openapi/pegasus-v1.json` and the generated client are untouched. The
   integration test *consumes* an existing Administrator-only route; it does not
@@ -73,10 +74,11 @@ Recorded so the reviewer sees each was a decision, not an oversight.
 - **No role matrix in the desktop.** No `switch` on `StaffRole`, no
   `IsAdministrator` helper, no copy of the eight-right arm. One Core owner.
 - **No new gateway authorization code.** The endpoint filter is
-  [[GWY-021]] (plan handle `DSK-04-04`) and [[GWY-003]] (`DSK-03-03`); this
-  ticket only *proves* it refuses a forged call.
+  [[GWY-021]] (plan handle `DSK-04-04`) and [[GWY-003]] (plan handle
+  `DSK-03-03`); this ticket only *proves* it refuses a forged call.
 - **No Administration screens.** The rail item is hidden or shown; the screens
-  behind it are [[FEAT-020]]/[[GWY-015]] and area 05/06 work.
+  behind it are [[GWY-015]] (plan handle `DSK-03-15`) and
+  [[FEAT-020]] (plan handle `DSK-05-20`) with area 06.
 - **No `IsEnabled=false` fallback** anywhere on the rail, and no
   `Visibility.Collapsed` binding — both leave the node in the automation tree.
 - **No Azure write** of any kind.
