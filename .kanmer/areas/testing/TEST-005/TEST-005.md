@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-05 · View-model test catalogue: states, commands, cancellation, dirty
   state, validation, navigation, stale session, mandatory update
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:13.681Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:12.608Z'
-updated: '2026-08-24T07:46:12.608Z'
+updated: '2026-08-24T21:34:13.681Z'
 ---
 
 ## What

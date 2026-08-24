@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-13 · `ci.yml` lanes: `desktop-build`, `desktop-package`,
   `desktop-ui-smoke`, `packaging-tests`
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:15.384Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -24,7 +26,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:53:33.927Z'
-updated: '2026-08-24T11:04:39.098Z'
+updated: '2026-08-24T21:34:15.384Z'
 ---
 
 ## What

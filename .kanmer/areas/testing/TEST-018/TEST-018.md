@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-18 · Golden-file report parity lane: run area 07's fixtures on the
   stack and compare WebView2 output with the gateway renderer
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:16.453Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -22,7 +24,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:57:18.345Z'
-updated: '2026-08-24T11:13:07.901Z'
+updated: '2026-08-24T21:34:16.453Z'
 ---
 
 ## What

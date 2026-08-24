@@ -5,10 +5,12 @@ title: >-
   DSK-08-15 · Performance scripts on the Test/UAT workstation: startup,
   navigation, large list, heavy case, memory, slow network, provider timeout,
   ten users, report generation
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:15.839Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -22,7 +24,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T07:53:33.960Z'
-updated: '2026-08-24T07:53:33.960Z'
+updated: '2026-08-24T21:34:15.839Z'
 ---
 
 ## What

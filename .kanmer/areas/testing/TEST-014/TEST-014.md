@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-14 · Vulnerability and SBOM step (`dotnet list package --vulnerable
   --include-transitive`, optional Syft SBOM)
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:34:15.617Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -22,7 +24,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:53:33.944Z'
-updated: '2026-08-24T11:08:29.160Z'
+updated: '2026-08-24T21:34:15.617Z'
 ---
 
 ## What

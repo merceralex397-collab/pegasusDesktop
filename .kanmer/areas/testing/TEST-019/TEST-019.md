@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-19 · CI cost and runner plan for the private-repository era (C-01):
   measure, price the desktop lanes, decide, and record it
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: spike
+stageEntered:
+  preparing: '2026-08-24T21:34:16.644Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -21,7 +23,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T07:57:18.362Z'
-updated: '2026-08-24T07:57:18.362Z'
+updated: '2026-08-24T21:34:16.644Z'
 ---
 
 ## What

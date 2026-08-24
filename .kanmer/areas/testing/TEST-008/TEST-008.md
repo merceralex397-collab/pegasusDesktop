@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-08 · UI scripts: document upload, vehicle lookup, report preview and
   finalize
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:14.315Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T07:48:40.552Z'
-updated: '2026-08-24T07:48:40.552Z'
+updated: '2026-08-24T21:34:14.315Z'
 ---
 
 ## What

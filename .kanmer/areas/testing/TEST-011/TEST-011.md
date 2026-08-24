@@ -5,10 +5,12 @@ title: >-
   DSK-08-11 · Security test set: token lifecycle, disabled account, role bypass,
   direct-object access, malformed uploads, unsafe paths, manifest tampering,
   version spoofing, temp-file ACLs, secret and log scan
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:14.997Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -22,7 +24,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T07:51:10.298Z'
-updated: '2026-08-24T09:10:02.134Z'
+updated: '2026-08-24T21:34:14.997Z'
 ---
 
 ## What

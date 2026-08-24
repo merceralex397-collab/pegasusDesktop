@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-04 · Scaffold `tests/Pegasus.Desktop.ViewModelTests`
   (`net10.0-windows10.0.26100.0`, no UI thread)
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:13.457Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -22,7 +24,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:12.595Z'
-updated: '2026-08-24T08:51:09.383Z'
+updated: '2026-08-24T21:34:13.457Z'
 ---
 
 ## What

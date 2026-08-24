@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-12 · CI spike: can `windows-latest` install a dev-signed MSIX, run
   `winapp ui` and run `AxeWindowsCLI`?
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: spike
+stageEntered:
+  preparing: '2026-08-24T21:34:15.185Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -23,7 +25,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:51:10.314Z'
-updated: '2026-08-24T08:51:14.500Z'
+updated: '2026-08-24T21:34:15.185Z'
 ---
 
 ## What

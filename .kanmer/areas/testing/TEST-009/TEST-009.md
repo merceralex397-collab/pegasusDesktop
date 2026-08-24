@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-09 · Accessibility lane: `AxeWindowsCLI` scan script plus the ten
   recorded reviews checklist
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:14.534Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -23,7 +25,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:48:40.569Z'
-updated: '2026-08-24T07:48:40.569Z'
+updated: '2026-08-24T21:34:14.534Z'
 ---
 
 ## What

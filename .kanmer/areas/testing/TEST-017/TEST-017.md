@@ -5,10 +5,12 @@ title: >-
   DSK-08-17 · Build the Test/UAT stack lifecycle: `TestStack` mode in
   `Invoke-LocalDevelopment.ps1`, doctor prerequisites, local feed and
   `Publish-Feed`
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:16.263Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -33,7 +35,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:55:26.147Z'
-updated: '2026-08-24T10:32:55.464Z'
+updated: '2026-08-24T21:34:16.263Z'
 ---
 
 ## What

@@ -5,10 +5,12 @@ title: >-
   DSK-08-10 · `eng/packaging/Test-Package.ps1`: install, upgrade, mandatory
   update, blocked client, signature failure, interrupted update, rollback,
   uninstall, no-admin, cert trust
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:14.767Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -24,7 +26,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:51:10.280Z'
-updated: '2026-08-24T08:51:12.787Z'
+updated: '2026-08-24T21:34:14.767Z'
 ---
 
 ## What

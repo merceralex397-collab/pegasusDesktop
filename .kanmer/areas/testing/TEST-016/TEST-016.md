@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-16 · End-to-end business scenarios 1–14 as UAT scripts, each mapped to
   the Test/UAT stack or the pilot ring
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:16.050Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -21,7 +23,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T07:55:26.128Z'
-updated: '2026-08-24T07:55:26.128Z'
+updated: '2026-08-24T21:34:16.050Z'
 ---
 
 ## What

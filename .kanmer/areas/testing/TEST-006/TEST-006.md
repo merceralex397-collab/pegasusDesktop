@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-08-06 · `tests/Pegasus.Desktop.UITests`: `ui-tests.ps1` harness around
   `winapp ui` with the AutomationId contract
-status: backlog
+status: preparing
 area: testing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:34:13.886Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -27,7 +29,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:12.621Z'
-updated: '2026-08-24T09:33:30.877Z'
+updated: '2026-08-24T21:34:13.886Z'
 ---
 
 ## What
