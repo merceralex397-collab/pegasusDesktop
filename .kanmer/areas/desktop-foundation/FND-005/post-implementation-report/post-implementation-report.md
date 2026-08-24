@@ -45,3 +45,8 @@ Live remote verification now finds `origin/fnd-005-foundation-adrs` at `d22c39dd
 - Independent PR review found that the former ADR-0105 wording overstated `ShowPrompt` / `UpdateBlocksActivation`: Microsoft Learn limits those attributes to supported Start-menu/tile launch paths and documents no effect for desktop-shortcut or taskbar launches; packaged desktop apps use silent-update behaviour.
 - Commit `3c8f623c` corrects the ADR, cites the fetched Microsoft Learn `s2:OnLaunch` remarks, and identifies the gateway minimum-version check as the unconditional fail-closed control.
 - Re-ran `Test-DocumentationLinks.ps1`, `Test-TestMarkdownPlacement.ps1`, and `git diff --check`; all passed. Focused independent re-review remains pending.
+
+
+## Focused independent re-review — 2026-08-25
+
+PASS. The reviewer confirmed that `3c8f623c15c10c350999cc4d902eba9766eb94dc` accurately records the documented App Installer launch-path limitation and makes the gateway minimum-version check the unconditional fail-closed protection. No documentation or scope finding remains. GitHub reports no PR check runs, so CI evidence remains the only integration gate.

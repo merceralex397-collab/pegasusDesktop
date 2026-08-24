@@ -1,1 +1,3 @@
 2026-08-25 — independent PR review found a blocking ADR-0105 accuracy issue: App Installer `ShowPrompt` / `UpdateBlocksActivation` do not universally control packaged-desktop launches and have no effect for desktop-shortcut/taskbar launches. Disposition: fixed in 3c8f623c with the Microsoft Learn `s2:OnLaunch` remarks cited; re-review requested. CI is independently still absent.
+
+2026-08-25 — focused independent re-review PASS for 3c8f623c15c10c350999cc4d902eba9766eb94dc. The Microsoft Learn limitation is accurately recorded and the gateway gate is authoritative. No finding remains; GitHub has no PR check runs.
