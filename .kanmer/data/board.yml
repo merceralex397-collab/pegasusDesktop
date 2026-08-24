@@ -3,6 +3,34 @@ areas:
     name: PR Review
     color: "#b48cff"
     prefix: PR
+  - id: mail-communications
+    name: Mail and communications
+    color: "#f2994a"
+    prefix: MAIL
+  - id: automation-integrations
+    name: Automation and integrations
+    color: "#56ccf2"
+    prefix: AUTO
+  - id: documents-reports
+    name: Documents and reports
+    color: "#bb6bd9"
+    prefix: DOCS
+  - id: engineering-assessment
+    name: Engineering assessment
+    color: "#6fcf97"
+    prefix: ENG
+  - id: intake-processing
+    name: Intake processing
+    color: "#f2c94c"
+    prefix: INTK
+  - id: platform-operations
+    name: Platform and operations
+    color: "#eb5757"
+    prefix: PLAT
+  - id: delivery-repository
+    name: Delivery and repository
+    color: "#2f80ed"
+    prefix: DELIV
 idPrefixes:
   ticket: TICK
   plan: PLAN
