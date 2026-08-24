@@ -18,12 +18,18 @@ groups:
   - EPIC-008
   - HZN-008
 links: []
+blocks:
+  - FND-007
+  - FEAT-018
+  - FEAT-041
+  - FEAT-042
+  - TEST-018
 refs:
   - docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.634Z'
-updated: '2026-08-24T08:30:09.634Z'
+updated: '2026-08-24T08:52:16.358Z'
 ---
 
 ## What

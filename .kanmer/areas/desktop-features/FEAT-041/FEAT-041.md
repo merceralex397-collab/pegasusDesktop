@@ -17,12 +17,14 @@ groups:
   - EPIC-008
   - HZN-008
 links: []
+blocks:
+  - TEST-018
 refs:
   - docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.649Z'
-updated: '2026-08-24T08:30:09.649Z'
+updated: '2026-08-24T08:52:18.085Z'
 ---
 
 ## What

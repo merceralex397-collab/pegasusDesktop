@@ -17,12 +17,16 @@ groups:
   - EPIC-008
   - HZN-007
 links: []
+blocks:
+  - GWY-014
+  - FEAT-015
+  - FEAT-036
 refs:
   - docs/frd/frd-06-vehicle-and-engineering-evidence.md
 docs_todo: true
 archived: false
 created: '2026-08-24T08:24:13.912Z'
-updated: '2026-08-24T08:24:13.912Z'
+updated: '2026-08-24T08:52:11.448Z'
 ---
 
 ## What
