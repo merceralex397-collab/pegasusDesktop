@@ -33,7 +33,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:55:26.147Z'
-updated: '2026-08-24T08:51:19.428Z'
+updated: '2026-08-24T09:09:15.929Z'
 ---
 
 ## What
@@ -67,7 +67,7 @@ Locked decision L-02 replaces the proposal's "Test/UAT with production-like Azur
 
 - **Subagent**: `pegasus-test-engineer` — `.codex/agents/pegasus-test-engineer.toml`
 - **Skills**, loaded in this order: `pegasus-desktop` (`.agents/skills/project/pegasus-desktop/SKILL.md`) → `run-tests` (`dotnet/skills` `98f84851`, plugin `dotnet-test`) → `winui-packaging` (`.codex/skills/winui-packaging/SKILL.md`, `microsoft/win-dev-skills` v0.5.0 `f1028dd5`) for the feed and certificate steps
-- **MCP**: Microsoft Learn (`microsoft_docs_search`, `microsoft_docs_fetch`) for the MIME types and `Content-Length` an App Installer feed host must serve; Kanmer (`get_status`, `get_doc_gates`, `take_ticket`, `set_ticket_doc`, `append_scratch`, `move_item`)
+- **MCP**: Microsoft Learn (`microsoft_docs_search`, `microsoft_docs_fetch`) for the App Installer file overview, the page that evidences that App Installer downloads and updates support **https, http and smb**; Kanmer (`get_status`, `get_doc_gates`, `take_ticket`, `set_ticket_doc`, `append_scratch`, `move_item`)
 - **Kanmer pipeline** for profile `feature`: `kanmer-research` → `kanmer-plan` → `kanmer-execute` → `kanmer-review` → `kanmer-verify` → `kanmer-closeout` (call `get_doc_gates <id>` before every move; a move crosses at most one gated boundary)
 - **Reviewer**: `pegasus-desktop-reviewer` — an agent that did not implement (`AGENTS.md` § Repository task workflow step 5)
 
@@ -76,7 +76,7 @@ Locked decision L-02 replaces the proposal's "Test/UAT with production-like Azur
 1. Read `docs/desktop/08-testing/test-uat-stack.md` in full and `scripts/Invoke-LocalDevelopment.ps1` in full — 1,583 lines that already own the process lifecycle, the run manifest, ownership timestamps and failure injection. Call `get_doc_gates` on this ticket id, then `take_ticket`, and work in the ticket's own worktree and branch.
 2. Load `pegasus-desktop`, then `run-tests`. Add a `-Mode` parameter to `Invoke-LocalDevelopment.ps1` with `[ValidateSet('Development','TestStack')]` defaulting to `Development`, so every existing invocation behaves exactly as before. Extend the mode, do not fork the script — a sibling script would duplicate the manifest, ownership and failure-injection logic.
 3. Implement `Start -Mode TestStack`: start Azurite from `node_modules/azurite/dist/src/azurite.js`, ensure LocalDB and migrate with `dotnet run --project src/Pegasus.Web -- --migrate-development`, start the gateway with `Runtime:Profile=DevelopmentOffline`, `Features:LocalIntake=true`, `Features:LocalDocumentCustody=true`, `Features:DesktopGateway=true`, start the Worker under Functions Core Tools with `local.settings.json` copied from `src/Pegasus.Worker/local.settings.example.json`, start the local feed host, seed if the database is empty, and print the gateway URL and the feed `.appinstaller` link.
-4. Implement `Status -Mode TestStack`: report `/health/live`, `/health/ready`, `GET /api/v1/client-compatibility`, the Azurite ports, which Worker functions are enabled, and that the feed is reachable **with the correct MIME types** — `application/appinstaller` and `application/msix` — and a `Content-Length`. Confirm the required MIME behaviour with `microsoft_docs_fetch` on <https://learn.microsoft.com/windows/msix/msix-troubleshooting-guide> and cite it in the script comment.
+4. Implement `Status -Mode TestStack`: report `/health/live`, `/health/ready`, `GET /api/v1/client-compatibility`, the Azurite ports, which Worker functions are enabled, and the feed through the four SMB checks [[DSK-09-10]] defines for `eng/packaging/Test-FeedShare.ps1` — `Test-Path` resolves the channel path; `Select-Xml -Path <channel path>\Pegasus.appinstaller -XPath /*` shows the expected `Version` and `Uri`; `Get-FileHash` of the package equals `desktop-release-manifest.json`'s `packageSha256`; `Get-Acl` shows the staff group has no write permission. The feed is an SMB file share (D-003), so there are no MIME types, `Content-Length` or byte ranges to check — do not build header checks. Confirm the protocol support with `microsoft_docs_fetch` on <https://learn.microsoft.com/windows/msix/app-installer/app-installer-file-overview>, quoting the sentence that App Installer downloads and updates support **https, http and smb**, and cite it in the script comment.
 5. Implement `Smoke -Mode TestStack`: obtain a token from `/connect/token` with the seeded staff account, list cases, open one, and check the report-generation dependencies are present. Fail with a named repair line, following the `Get-RequiredApplication` pattern already in the script.
 6. Implement `Reset -Mode TestStack`: drop and recreate the database, clear the Azurite data and the artifact root, reseed, and optionally uninstall the desktop package. It is destructive by design; require an explicit confirmation switch and say so in the help.
 7. Implement `Stop -Mode TestStack`: stop every process the mode started, using the existing run-manifest ownership so it never kills a process another worktree owns.
@@ -90,7 +90,7 @@ Locked decision L-02 replaces the proposal's "Test/UAT with production-like Azur
 ## Acceptance criteria
 
 - [ ] `-Mode TestStack` brings up gateway, Worker, Azurite, database and feed from one command, and existing `Development` behaviour is unchanged.
-- [ ] `Status` reports every component including feed reachability with the correct MIME types and `Content-Length`.
+- [ ] `Status` reports every component including feed reachability by path, manifest `Version`/`Uri`, package hash and read-only ACL.
 - [ ] `Publish-Feed` bumps the `.appinstaller` version and leaves `Uri` equal to the served path.
 - [ ] `Invoke-Doctor.ps1 -Profile Offline` reports every desktop prerequisite with a real repair line.
 - [ ] No third `Runtime:Profile` value is introduced.
@@ -120,6 +120,7 @@ Tiers 6 and 12 — Functions/Azurite caller, and Integrated workflow. It obliges
 - **Azure**: no write, and no Azure resource of any kind. Asking for an Azure test resource is out of bounds under L-02 and ADR-0014.
 - **Scope boundary**: may edit `scripts/Invoke-LocalDevelopment.ps1`, `scripts/Invoke-Doctor.ps1`, the seed fixtures and the documentation named above. Must not add a `TestStack` value to `Runtime:Profile`, must not create a sibling lifecycle script, and must not change the composition root in `src/Pegasus.Web/Program.cs`.
 - **Traps**: the existing `Development` mode must behave identically after this change — it is used by every developer and by CI-adjacent scripts. `Invoke-Doctor.ps1` must never report Passed for something untrue; use `-Advisory` honestly. The local feed proves App Installer mechanics but not the production host's configuration or the production certificate — record that gap rather than hiding it. Never fabricate domain data; `corpus/` is never copied. `Reset` is destructive and must be explicit.
+- **Stale row wording**: the Update feed row of `docs/desktop/08-testing/test-uat-stack.md:32` predates D-003 and still requires "Correct MIME types (`application/appinstaller`, `application/msix`), `Content-Length`, byte ranges" — HTTP-only concerns that do not apply over SMB. Follow D-003 and correct the row's wording in the plan in the same task.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome

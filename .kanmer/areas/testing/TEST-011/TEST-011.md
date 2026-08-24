@@ -22,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T07:51:10.298Z'
-updated: '2026-08-24T07:51:10.298Z'
+updated: '2026-08-24T09:10:02.134Z'
 ---
 
 ## What
@@ -46,7 +46,7 @@ Proposal §22.2 ("Security tests") lists twelve items and §24 Phase 8 makes "no
 - Binding decisions:
   - D-002 — packages are signed with the self-managed certificate; a tampered manifest or package must fail the signature check, and the private key never appears in CI.
   - L-02 — all of this runs locally; no Azure resource is probed.
-- Depends on: `DSK-08-02` — the command coverage table. `DSK-04-02` and `DSK-04-04` — the OpenIddict public client and the `/api/v1` bearer authentication whose lifecycle these tests exercise.
+- Depends on: `DSK-08-02` — the command coverage table. `DSK-04-02` and `DSK-04-04` — the OpenIddict public client and the `/api/v1` bearer authentication whose lifecycle these tests exercise. `DSK-10-03` — owns `eng/packaging/Test-PackageSecrets.ps1` and the threat-register pattern list this ticket consumes.
 
 ## Routing
 
@@ -65,7 +65,7 @@ Proposal §22.2 ("Security tests") lists twelve items and §24 Phase 8 makes "no
 5. Add `Security/RoleBypassTests.cs` and `Security/DirectObjectAccessTests.cs` driven from the [[DSK-08-02]] command table: for every command, a token without the required right is refused, and a valid token cannot reach another operator's case, document or upload session by identifier. Assert no side effect occurred.
 6. Add `Security/MalformedUploadTests.cs` and `Security/UnsafePathTests.cs` on the upload-session endpoints: over-size single file, over-size multipart envelope, mismatched declared content type, path traversal in the supplied file name, and a name that normalises to a reserved Windows device name. Take the limits from the existing `IntakeEnvelopeLimits` rather than restating numbers.
 7. Add `Security/ClientVersionSpoofTests.cs`: an `X-Pegasus-Client-Version` header below the minimum is refused; a malformed or absent header is refused rather than defaulted; a header above the current release does not bypass the gate.
-8. Add `eng/security/Test-PackageSecrets.ps1`: unpack the built MSIX, and scan it plus the desktop configuration files and a captured log directory for connection strings, Key Vault URI values, API keys and bearer tokens using a pattern list kept in one file beside the script. Exit non-zero on any hit, printing the file and the matched pattern name (never the matched secret).
+8. Do not write a second secret scanner. Invoke the one [[DSK-10-03]] creates at `eng/packaging/Test-PackageSecrets.ps1` — it already unpacks the built MSIX and scans the payload against the threat-register pattern list, exiting non-zero on any hit and printing the file and the matched pattern name (never the matched secret). Cover the desktop configuration files and a captured log directory by passing them through its `-AdditionalPath` parameter (`-PackagePath <msix> -AdditionalPath <desktop configuration folder>,<captured log directory>`), and add only the scan fixtures that are missing — a desktop configuration fixture and a captured-log fixture, each carrying an obviously synthetic pattern. If a pattern the desktop needs is absent from the list, raise it against [[DSK-10-03]] and the threat register rather than starting a second list here.
 9. Add `eng/security/Test-ManifestTampering.ps1`: take a signed package and its `.appinstaller`, modify one manifest field, and assert the install is refused; then assert the validator from [[DSK-09-03]] also rejects the tampered `.appinstaller`.
 10. Add `eng/security/Test-TempFileAcl.ps1`: after a desktop session, enumerate the desktop's temporary, cache and credential-store paths and assert each grants access only to the current user — no `Everyone`, no `Users`, no inherited broad grant. Use `microsoft_docs_search` for the current DPAPI `CurrentUser` scope semantics before asserting what "bound to the user" means.
 11. Run `dotnet test ./tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj --configuration Release --no-build --filter "Category=Security"` and each script. Done when every check has been seen to fail against a deliberately weakened input and then pass against the real one — record both runs.
@@ -75,14 +75,14 @@ Proposal §22.2 ("Security tests") lists twelve items and §24 Phase 8 makes "no
 
 - [ ] Every item in proposal §22.2 "Security tests" that applies to the desktop has a failing-then-passing test or scripted check.
 - [ ] Role-bypass and direct-object tests are generated from the command table, so a new command is covered automatically.
-- [ ] The secret scan covers the package, the desktop configuration and the logs, and never prints a matched secret.
+- [ ] The secret scan runs [[DSK-10-03]]'s `eng/packaging/Test-PackageSecrets.ps1` over the package, the desktop configuration and the logs, and never prints a matched secret.
 - [ ] Manifest tampering is refused by both the installer and the `.appinstaller` validator.
 - [ ] Temporary, cache and credential-store paths grant access to the current user only.
 
 ## Verification
 
 - [ ] `dotnet test ./tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj --configuration Release --no-build --filter "Category=Security"` — expected: `Passed!` with a non-zero total.
-- [ ] `pwsh ./eng/security/Test-PackageSecrets.ps1 -PackagePath <msix>` — expected: exit 0 and a printed count of scanned files; planting a dummy connection string makes it exit 1 naming the file.
+- [ ] `pwsh ./eng/packaging/Test-PackageSecrets.ps1 -PackagePath <msix> -AdditionalPath <desktop configuration folder>,<captured log directory>` — expected: exit 0 and a printed count of scanned files; planting a dummy connection string makes it exit 1 naming the file.
 - [ ] `pwsh ./eng/security/Test-ManifestTampering.ps1` — expected: exit 0 with both refusals observed.
 - [ ] `pwsh ./eng/security/Test-TempFileAcl.ps1` — expected: exit 0, per-path ACL summary showing the current user only.
 
@@ -93,13 +93,13 @@ Tier 9 — Security/observability. It obliges the role matrix, transient authent
 ## Documentation changes
 
 - `docs/operations.md` § Evidence profiles — register the `Security` trait for the desktop era.
-- `docs/runbook.md` — add the three `eng/security/` scripts.
+- `docs/runbook.md` — add the two `eng/security/` scripts.
 - `docs/desktop/08-testing/README.md` § 4 — mark the security row as covered.
 
 ## Guardrails
 
 - **Azure**: no write, and no read of a production secret. The scan never prints a matched value.
-- **Scope boundary**: may create `tests/Pegasus.Api.ContractTests/Security/**` and `eng/security/**`. Must not change authentication or authorization code — a failing expectation is a finding for `pegasus-gateway-dev` and a ticket in area 10, never a relaxed test.
+- **Scope boundary**: may create `tests/Pegasus.Api.ContractTests/Security/**` and exactly two scripts under `eng/security/` — `Test-ManifestTampering.ps1` and `Test-TempFileAcl.ps1`. `eng/packaging/Test-PackageSecrets.ps1` belongs to [[DSK-10-03]] and is consumed through `-AdditionalPath`, never re-created here. Must not change authentication or authorization code — a failing expectation is a finding for `pegasus-gateway-dev` and a ticket in area 10, never a relaxed test.
 - **Traps**: the desktop security controls are owned by area 10 ([[DSK-10-03]]–[[DSK-10-07]]) and the token flow by [[DSK-04-14]] — agree the split first or two tickets will write the same tests. `TreatWarningsAsErrors=true` applies. Never fabricate domain data, and never commit a real or realistic secret as a scan fixture — use an obviously synthetic pattern.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
