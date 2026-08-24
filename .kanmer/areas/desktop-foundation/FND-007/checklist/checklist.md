@@ -50,3 +50,5 @@ Paused before the PR/reviewer/acceptance steps: this clone has `origin/main` and
 
 
 2026-08-25 — User-directed correction: Microsoft Learn explicitly documents `HWND_MESSAGE` as the valid invisible parent for `CoreWebView2Controller` on Windows 8+. ADR-0108 and the Phase 0/7 source plans now fix that host; Phase 7 retains only packaged-app/PDF validation and parity.
+
+2026-08-25 — User-directed Microsoft Learn correction committed as `f328076d`: ADR-0108 and the Phase 0/7 plans now use `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`; Phase 7 validates packaged integration rather than selecting a host. Documentation links, placement regression, committed-range placement and `git diff --check` passed. The commit is local only; no push was requested.

@@ -62,3 +62,12 @@ The branch is now published: `origin/fnd-007-webview2-adr` at `d376278098e773173
 ## User-directed correction — 2026-08-25
 
 Microsoft Learn's documented `HWND_MESSAGE` host invalidated the former two-host spike. This branch now also updates `docs/desktop/07-integrations/README.md` and `docs/desktop/00-governance-and-workflow/README.md`, and the related Kanmer artifacts, to make Phase 7 a packaged-controller validation rather than a host-selection exercise.
+
+
+### Correction validation
+
+- `pwsh -NoProfile -File scripts/Test-DocumentationLinks.ps1` — passed; 233 files checked.
+- `pwsh -NoProfile -File scripts/Test-TestMarkdownPlacement.ps1` — passed.
+- `git diff --check` — passed.
+
+2026-08-25 — User-directed Microsoft Learn correction committed as `f328076d`: ADR-0108 and the Phase 0/7 plans now use `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`; Phase 7 validates packaged integration rather than selecting a host. Documentation links, placement regression, committed-range placement and `git diff --check` passed. The commit is local only; no push was requested.
