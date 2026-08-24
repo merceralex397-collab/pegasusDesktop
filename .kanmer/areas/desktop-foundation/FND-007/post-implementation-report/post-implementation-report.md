@@ -28,7 +28,7 @@ Microsoft Learn search followed by fetch verified and cited, with fetch date 202
 - [[FEAT-040]] (`DSK-07-14`) must prove the off-screen host: collapsed WinUI `WebView2` with a XAML root versus `CoreWebView2Controller` on a hidden HWND. ADR-0108 names neither as selected.
 - [[FEAT-041]] (`DSK-07-15`) owns approved-fixture golden-file parity. Runtime absence, unclosable parity divergence, or neither host working off-screen triggers the stated reversal condition.
 - [[FEAT-038]] (`DSK-07-12`) owns the later acceptance change and accepted-index row after the evidence exists.
-- The ticket body requires `related_frd: [FRD-11]`, while existing ADRs use lowercase file stems. The implemented value follows the settled body; an independent reviewer should decide whether a normalisation change is needed.
+- The ticket body initially required `related_frd: [FRD-11]`, while existing ADRs use lowercase file stems. Reviewer-directed follow-up `d3762780` normalised ADR-0108 to `[frd-11]`, matching ADR-0025, ADR-0026, and ADR-0028.
 - `git branch -r` shows only `origin/main` and `origin/task/desktop-plan-segmentation`; `origin/dev` is absent. Therefore no push, PR, or move to Review was attempted.
 
 ## Verification hand-off
