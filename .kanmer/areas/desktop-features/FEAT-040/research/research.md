@@ -1,5 +1,10 @@
 # Research — FEAT-040: reproducing the gateway report renderer on the desktop through an isolated WebView2
 
+## 2026-08-25 correction — documented invisible host
+
+Microsoft Learn documents `HWND_MESSAGE` as the valid parent for an invisible `CoreWebView2Controller` on Windows 8 and later; the WebView will never become visible. The fixed design is `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`. This supersedes every earlier collapsed-XAML/hidden-HWND host-selection instruction below. Phase 7 validates packaged-app initialisation, PDF output and no-window behaviour; it does not select a host.
+
+
 ## Question
 
 What exactly must a desktop `IAssessmentReportRenderer` reproduce from
