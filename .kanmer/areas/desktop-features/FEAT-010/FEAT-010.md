@@ -25,7 +25,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:51:33.033Z'
-updated: '2026-08-24T09:11:45.802Z'
+updated: '2026-08-24T13:31:23.711Z'
 ---
 
 ## What
@@ -102,7 +102,7 @@ Tier 5 obliges route-level evidence per mail endpoint and command with authoriza
 
 - **Azure**: no write. Graph credentials never reach the desktop (ADR-0106); the desktop calls only the gateway.
 - **Scope boundary**: may touch `src/Pegasus.Desktop`, `src/Pegasus.Desktop.Infrastructure`, `src/Pegasus.Contracts`, the `/api/v1` mail group in `src/Pegasus.Web` and the test projects. Must not touch `src/Pegasus.Infrastructure/Email/`, `src/Pegasus.Worker`, or the Razor mail pages.
-- **Traps**: the two giants — `Message.cshtml.cs` is 1,025 lines and this slice is split into S10a/S10b/S10c and never landed as one PR; the unlink sentence is an approved consequence sentence and must appear verbatim; a control that is unavailable is absent, not explained; parity drift — MAIL-011 and MAIL-012 arrive by upstream sync, so re-read the page models after the latest sync and record the SHA; upstream AUTO-003 (expose the email-workspace actions through the Automation Actor) is gateway-side and shares the same Core use cases — do not build a second path; `Features:DesktopGateway` must be enabled in tests.
+- **Traps**: the two giants — `Message.cshtml.cs` is 1,025 lines and this slice is split into S10a/S10b/S10c and never landed as one PR; the unlink sentence is an approved consequence sentence and must appear verbatim; a control that is unavailable is absent, not explained; parity drift — upstream MAIL-011 and MAIL-012 arrive by the one-way sync, so re-read the page models after the latest sync and record the SHA; the Automation Actor half of this workspace is owned by board ticket [[AUTO-001]] — cite it as `upstream AUTO-003 (board [[AUTO-001]])` — which adds `pegasus_mail_move_to_recommended_folder`, `pegasus_mail_case_link` and `pegasus_mail_case_unlink` to `src/Pegasus.Web/Mcp/MailMcpTools.cs` over the same Core use cases this slice's endpoints call, so raise any overlap with [[AUTO-001]] rather than building a rival path here; [[AUTO-001]] quotes this trap verbatim and it still stands — "upstream AUTO-003 (expose the email-workspace actions through the Automation Actor) is gateway-side and shares the same Core use cases — do not build a second path"; the `vertical-slices.md` § S10 bullet that today reads "**Absorbs upstream**: AUTO-003 …" is [[AUTO-001]] step 11's correction to make and must not be corrected a second time here; `Features:DesktopGateway` must be enabled in tests.
 - **Simplification pass** (`AGENTS.md` step 4): required over each sub-slice branch diff before its PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome

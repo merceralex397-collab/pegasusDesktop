@@ -24,7 +24,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:44:22.475Z'
-updated: '2026-08-24T11:57:43.750Z'
+updated: '2026-08-24T13:31:36.217Z'
 ---
 
 ## What
@@ -33,7 +33,7 @@ Give `dispatched` intake work items a reconciliation path. An unleased row in `d
 
 ## Why
 
-The desktop conversion does not change one line of this pipeline — `docs/desktop/05-implementation-and-migration/reuse-map.md` marks `src/Pegasus.Worker` REUSE unchanged and names the upstream Worker tickets (INTK-003, INTK-027) as carried-over Worker tickets rather than desktop work — but it multiplies the number of places that lie about it. [[DSK-05-09]] renders the Received item's state, [[DSK-05-13]] renders upload status, and [[DSK-05-20]] with [[DSK-07-01]] render "whether a human retry is currently eligible". A stranded `dispatched` row is reported by all three as neither failed nor retryable: `RecoverExpiredLeasesAsync` only looks at leased `dispatching|processing` rows, and the dispatch scan only looks at `pending|retry_scheduled`, so nothing on the board or in the code ever sees it again. The operator is shown a truthful-looking "Received" for work that will never run.
+The desktop conversion does not change one line of this pipeline — `docs/desktop/05-implementation-and-migration/reuse-map.md` marks `src/Pegasus.Worker` REUSE unchanged and names the upstream Worker tickets (upstream INTK-003, this ticket; and upstream INTK-027, board [[INTK-004]]) as carried-over Worker tickets rather than desktop work — but it multiplies the number of places that lie about it. [[DSK-05-09]] renders the Received item's state, [[DSK-05-13]] renders upload status, and [[DSK-05-20]] with [[DSK-07-01]] render "whether a human retry is currently eligible". A stranded `dispatched` row is reported by all three as neither failed nor retryable: `RecoverExpiredLeasesAsync` only looks at leased `dispatching|processing` rows, and the dispatch scan only looks at `pending|retry_scheduled`, so nothing on the board or in the code ever sees it again. The operator is shown a truthful-looking "Received" for work that will never run.
 
 **No seeded ticket may make the fix.** [[DSK-07-01]] states "No Worker code is written or changed" and its scope boundary reads "Must not touch `src/Pegasus.Worker`"; [[DSK-05-09]]'s reads "Must not touch `src/Pegasus.Infrastructure` (readers stay central), `src/Pegasus.Worker`"; [[DSK-03-10]]'s reads "Must not touch `src/Pegasus.Core/Intake/**`, the Worker". Under **D-001** upstream is merged once more and then frozen, so if the fork does not own this it is never done.
 
@@ -41,8 +41,8 @@ It is resilience, not repair: the upstream ticket records a read-only production
 
 ## Source of truth
 
-- Import decision: `coverage-decision.md` § Import list — row `INTK-003`; § Plan gaps — "The 208-ticket set contains no owner for Worker and Core/Infrastructure intake defects"
-- Carry-over register: `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md:152` — `INTK-003 | intake-processing | backlog | fix | — | … | gateway-worker-ticket | 07 (Graph/queue intake) | intake-processing`
+- Import decision: `coverage-decision.md` § Import list — the row for upstream `INTK-003` (this ticket; board `INTK-002`); § Plan gaps — "The 208-ticket set contains no owner for Worker and Core/Infrastructure intake defects"
+- Carry-over register: `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md:152` — the row for upstream `INTK-003`, quoted as it stands (its first cell is an upstream id): `INTK-003 | intake-processing | backlog | fix | — | … | gateway-worker-ticket | 07 (Graph/queue intake) | intake-processing`
 - Reuse position: `docs/desktop/05-implementation-and-migration/reuse-map.md` § `Pegasus.Worker`
 - Governing document: `docs/frd/frd-02-intake-and-source-identity.md`
 - Repository evidence (fork `main`, read 2026-08-24):
@@ -93,7 +93,7 @@ Generalise `RecoverExpiredLeasesAsync` (or a sibling in the same reconciliation 
 
 ## Implementation steps
 
-1. Orient. Read the verbatim upstream body above, `coverage-decision.md` § Import list row `INTK-003`, and `docs/frd/frd-02-intake-and-source-identity.md`. Call `get_doc_gates <this ticket id>`, then `take_ticket` with branch `task/upstream-intk-003-recover-dispatched-work` and worktree `../pegasus-worktrees/upstream-intk-003-recover-dispatched-work` from `origin/dev`.
+1. Orient. Read the verbatim upstream body above, `coverage-decision.md` § Import list row for upstream `INTK-003`, and `docs/frd/frd-02-intake-and-source-identity.md`. Call `get_doc_gates <this ticket id>`, then `take_ticket` with branch `task/upstream-intk-003-recover-dispatched-work` and worktree `../pegasus-worktrees/upstream-intk-003-recover-dispatched-work` from `origin/dev`.
 2. Record the current lifecycle in the ticket `files` document: every state code in `src/Pegasus.Infrastructure/Persistence/EfIntakeWorkStore.cs:722`/`:734`, which states `FindExpiredLeaseCandidatesAsync` selects (`:416-455`), and which states the dispatch scan selects (`:214`, `:512`). Name the exact gap: `dispatched` with a null `LeaseToken` is selected by neither.
 3. **Choose the age against real numbers, not the upstream example.** The upstream Approach says "e.g. 1 h since `DueAtUtc`" and points at `docs/operations.md`. On this tree the numbers are: `src/Pegasus.Worker/host.json:12-18` — `visibilityTimeout` `00:05:00`, `maxDequeueCount` 5, `maxPollingInterval` `00:00:02`; and `src/Pegasus.Worker/AzureQueueIntakeWorkQueue.cs:19-24` sends with **no** `timeToLive`, so the Azure Queue Storage service default applies. Confirm that default with `microsoft_docs_search` for `QueueClient.SendMessageAsync` message time-to-live default, record the figure and its source in the `plan`, and pick a threshold safely above the visibility timeout and safely below the message TTL. Do not invent a latency threshold without recording the decision (`docs/engineering.md` § Required evidence tiers, tier 10).
 4. Extend the reconciliation path. Either generalise `IIntakeWorkStore.RecoverExpiredLeasesAsync` (`src/Pegasus.Core/Intake/DurableIntake.cs:216`, implemented at `src/Pegasus.Infrastructure/Persistence/EfIntakeWorkStore.cs:416`) to include unleased `dispatched` rows older than the threshold, or add a sibling method called from the same place. Whichever you choose, it is driven from `ReconcileStagedArtifacts.ExecuteAsync` (`src/Pegasus.Core/Intake/DurableIntake.cs:935-950`) — do **not** add a second timer.
@@ -129,14 +129,14 @@ Tier 4 obliges state/lease/concurrency evidence for the recovery update, includi
 
 - `docs/frd/frd-02-intake-and-source-identity.md` — one sentence on the recovery of dispatched work, **only if** FRD-02 already states the surrounding behaviour (step 9 decides)
 - `docs/operations.md` — record the chosen threshold beside the queue settings it was chosen against
-- `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` — annotate row `INTK-003` with this fork ticket id
+- `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` — annotate the upstream `INTK-003` row with this fork ticket id (`INTK-002`)
 
 ## Guardrails
 
 - **Azure**: no write. Read-only checks of the intake queue and Application Insights are permitted with no per-target approval (`docs/runbook.md` § Live-operation approval matrix; mirrored in `docs/desktop/11-azure-disposition/README.md`). The local run uses Azurite under **L-02**; asking for an Azure test resource is out of bounds (ADR-0014 stands).
 - **Scope boundary**: may touch `src/Pegasus.Core/Intake/DurableIntake.cs`, `src/Pegasus.Infrastructure/Persistence/EfIntakeWorkStore.cs`, `tests/Pegasus.IntegrationTests/RecoveryTests.cs`, `docs/frd/frd-02-intake-and-source-identity.md` and `docs/operations.md`. Must **not** touch `src/Pegasus.Web/Pages/**`, `src/Pegasus.Web/Api/**`, any desktop project, or add a database table.
 - **Unblocks / blocked by**: this ticket **blocks** [[DSK-05-09]], [[DSK-05-13]] and [[DSK-05-20]] — each renders a state that is dishonest while a `dispatched` row can strand, and [[DSK-07-01]]'s retry-eligibility field is computed over the same rows. It is **blocked by** [[DSK-01-10]], the first one-way upstream sync. [[DSK-08-17]]'s Test/UAT stack is where the tier-6 evidence is produced.
-- **Traps**: do not reset `AttemptCount` on recovery — that would make a poisoned item immortal. Do not add a second timer; the reconciliation timer already exists. A new table would need a runtime-role `Grant*` migration checked by `scripts/Test-MigrationGrants.ps1`; this ticket must not add one. `IntakeWorkItems` state strings are persisted values — changing one is a migration, not a rename.
+- **Traps**: **upstream ids and fork board ids do not match.** This ticket is board `INTK-002` and it is upstream INTK-003; upstream INTK-002 is the intake duplication chores, board [[INTK-001]]. The join table is `HZN-001/board-conventions.md` § Upstream ids versus board ids — read it, never compute the mapping, and write `upstream <ID>`, or `upstream <ID> (board [[<board-id>]])` where both are meant. Do not reset `AttemptCount` on recovery — that would make a poisoned item immortal. Do not add a second timer; the reconciliation timer already exists. A new table would need a runtime-role `Grant*` migration checked by `scripts/Test-MigrationGrants.ps1`; this ticket must not add one. `IntakeWorkItems` state strings are persisted values — changing one is a migration, not a rename.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the ticket `plan` document.
 
 ## Outcome
