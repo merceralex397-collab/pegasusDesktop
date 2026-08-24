@@ -24,7 +24,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:24:13.959Z'
-updated: '2026-08-24T09:32:40.500Z'
+updated: '2026-08-24T09:37:23.763Z'
 ---
 
 ## What
@@ -99,7 +99,7 @@ Tier 1 obliges consistency evidence only: the document exists in the allowed roo
 
 - **Azure**: no write.
 - **Scope boundary**: documentation only — `docs/adr/` and `docs/adr/README.md`. No source file, no project reference, no package addition. Adding the WebView2 dependency is [[DSK-07-14]].
-- **Co-claimant**: ADR-0108 is also claimed by [[DSK-00-07]]. One agreed path — `docs/adr/0108-desktop-webview2-report-rendering.md`, never `0108-isolated-webview2-report-rendering.md`. The rule: [[DSK-00-07]] authors and merges ADR-0108 as `status: proposed` in Phase 0; this ticket supplies the spike evidence from [[DSK-07-14]]/[[DSK-07-15]] and performs the frontmatter-only acceptance flip, adding the index row in that same PR. Two authors on one ADR ID is a stop condition: if the file already exists, edit it.
+- **Co-claimant**: ADR-0108 is also claimed by [[DSK-00-07]]. One agreed path — `docs/adr/0108-desktop-webview2-report-rendering.md` — and no other 0108 filename anywhere on the board. The rule: [[DSK-00-07]] authors and merges ADR-0108 as `status: proposed` in Phase 0; this ticket supplies the spike evidence from [[DSK-07-14]]/[[DSK-07-15]] and performs the frontmatter-only acceptance flip, adding the index row in that same PR. Two authors on one ADR ID is a stop condition: if the file already exists, edit it.
 - **Traps**: use the reserved block ADR-0100…ADR-0110 — taking the next free number collides with upstream, which keeps issuing ADRs; check `docs/adr/README.md` after every upstream sync; ADR bodies are immutable, so supersede rather than rewrite; ADR-0014 is **not** superseded (Test/UAT stays local, L-02); any `.md` outside `docs/(prd|frd|adr|design|desktop)` fails the CI `documentation` job; do not author a second ADR if [[DSK-00-07]] already created one.
 - **Simplification pass** (`AGENTS.md` step 4): `n/a — docs-only`.
 
