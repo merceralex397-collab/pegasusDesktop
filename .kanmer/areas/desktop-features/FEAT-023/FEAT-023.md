@@ -17,12 +17,14 @@ groups:
   - EPIC-006
   - HZN-004
 links: []
+blocks:
+  - DUI-005
 refs:
   - docs/frd/frd-12-operator-experience.md
 docs_todo: true
 archived: false
 created: '2026-08-24T08:02:19.029Z'
-updated: '2026-08-24T08:02:19.029Z'
+updated: '2026-08-24T08:51:46.384Z'
 ---
 
 ## What

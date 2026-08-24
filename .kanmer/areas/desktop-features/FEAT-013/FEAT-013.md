@@ -16,12 +16,15 @@ groups:
   - EPIC-006
   - HZN-006
 links: []
+blocks:
+  - FEAT-022
+  - FEAT-025
 refs:
   - docs/frd/frd-02-intake-and-source-identity.md
 docs_todo: true
 archived: false
 created: '2026-08-24T07:54:27.538Z'
-updated: '2026-08-24T07:54:27.538Z'
+updated: '2026-08-24T08:51:28.951Z'
 ---
 
 ## What

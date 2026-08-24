@@ -16,13 +16,19 @@ groups:
   - EPIC-006
   - HZN-007
 links: []
+blocks:
+  - FEAT-022
+  - FEAT-025
+  - FEAT-044
+  - TEST-008
+  - TEST-016
 refs:
   - docs/frd/frd-06-vehicle-and-engineering-evidence.md
   - docs/frd/frd-07-eva-and-external-engineering-handoff.md
 docs_todo: true
 archived: false
 created: '2026-08-24T07:54:27.572Z'
-updated: '2026-08-24T07:54:27.572Z'
+updated: '2026-08-24T08:51:32.094Z'
 ---
 
 ## What

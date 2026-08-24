@@ -16,12 +16,16 @@ groups:
   - EPIC-006
   - HZN-005
 links: []
+blocks:
+  - FEAT-019
+  - FEAT-022
+  - FEAT-025
 refs:
   - docs/frd/frd-04-parties-accounts-and-access.md
 docs_todo: true
 archived: false
 created: '2026-08-24T07:49:10.201Z'
-updated: '2026-08-24T07:49:10.201Z'
+updated: '2026-08-24T08:51:16.711Z'
 ---
 
 ## What

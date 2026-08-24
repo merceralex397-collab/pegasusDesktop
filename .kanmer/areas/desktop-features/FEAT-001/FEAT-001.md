@@ -17,12 +17,18 @@ groups:
   - EPIC-006
   - HZN-004
 links: []
+blocks:
+  - FEAT-002
+  - FEAT-020
+  - FEAT-022
+  - FEAT-025
+  - TEST-007
 refs:
   - docs/frd/frd-12-operator-experience.md
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:33.781Z'
-updated: '2026-08-24T07:46:33.781Z'
+updated: '2026-08-24T08:51:06.572Z'
 ---
 
 ## What

@@ -16,10 +16,12 @@ groups:
   - EPIC-006
   - HZN-004
 links: []
+blocks:
+  - FEAT-026
 docs_todo: true
 archived: false
 created: '2026-08-24T08:04:08.606Z'
-updated: '2026-08-24T08:04:08.606Z'
+updated: '2026-08-24T08:51:48.024Z'
 ---
 
 ## What

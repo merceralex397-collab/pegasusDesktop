@@ -17,13 +17,15 @@ groups:
   - EPIC-008
   - HZN-006
 links: []
+blocks:
+  - FEAT-030
 refs:
   - docs/frd/frd-05-documents-extraction-and-custody.md
   - docs/frd/frd-02-intake-and-source-identity.md
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.620Z'
-updated: '2026-08-24T08:18:48.620Z'
+updated: '2026-08-24T08:52:03.996Z'
 ---
 
 ## What

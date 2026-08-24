@@ -18,12 +18,15 @@ groups:
   - EPIC-006
   - HZN-006
 links: []
+blocks:
+  - FEAT-022
+  - FEAT-025
 refs:
   - docs/frd/frd-03-triage.md
 docs_todo: true
 archived: false
 created: '2026-08-24T07:51:33.051Z'
-updated: '2026-08-24T07:51:33.051Z'
+updated: '2026-08-24T08:51:26.060Z'
 ---
 
 ## What

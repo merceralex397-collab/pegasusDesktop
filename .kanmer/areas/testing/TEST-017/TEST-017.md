@@ -20,12 +20,20 @@ groups:
   - EPIC-009
   - HZN-003
 links: []
+blocks:
+  - FND-024
+  - TEST-006
+  - TEST-010
+  - TEST-015
+  - TEST-016
+  - TEST-018
+  - PLAT-013
 refs:
   - docs/adr/0014-local-to-production-deployment.md
 docs_todo: true
 archived: false
 created: '2026-08-24T07:55:26.147Z'
-updated: '2026-08-24T07:55:26.147Z'
+updated: '2026-08-24T08:51:19.428Z'
 ---
 
 ## What

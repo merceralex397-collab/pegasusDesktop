@@ -17,12 +17,19 @@ groups:
   - EPIC-006
   - HZN-007
 links: []
+blocks:
+  - FEAT-016
+  - FEAT-022
+  - FEAT-025
+  - FEAT-044
+  - TEST-008
+  - TEST-016
 refs:
   - docs/frd/frd-05-documents-extraction-and-custody.md
 docs_todo: true
 archived: false
 created: '2026-08-24T07:54:27.555Z'
-updated: '2026-08-24T07:54:27.555Z'
+updated: '2026-08-24T08:51:30.575Z'
 ---
 
 ## What

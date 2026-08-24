@@ -18,13 +18,18 @@ groups:
   - EPIC-006
   - HZN-008
 links: []
+blocks:
+  - FEAT-018
+  - FEAT-022
+  - FEAT-025
+  - TEST-016
 refs:
   - docs/frd/frd-06-vehicle-and-engineering-evidence.md
   - docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md
 docs_todo: true
 archived: false
 created: '2026-08-24T07:57:08.732Z'
-updated: '2026-08-24T07:57:08.732Z'
+updated: '2026-08-24T08:51:35.327Z'
 ---
 
 ## What

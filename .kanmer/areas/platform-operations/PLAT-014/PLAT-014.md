@@ -18,10 +18,13 @@ groups:
   - EPIC-011
   - HZN-009
 links: []
+blocks:
+  - PLAT-016
+  - PLAT-027
 docs_todo: true
 archived: false
 created: '2026-08-24T08:16:25.574Z'
-updated: '2026-08-24T08:16:25.574Z'
+updated: '2026-08-24T08:51:42.234Z'
 ---
 
 ## What

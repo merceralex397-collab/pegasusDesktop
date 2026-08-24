@@ -17,10 +17,12 @@ groups:
   - EPIC-009
   - HZN-003
 links: []
+blocks:
+  - TEST-002
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:12.549Z'
-updated: '2026-08-24T07:46:12.549Z'
+updated: '2026-08-24T08:51:05.947Z'
 ---
 
 ## What

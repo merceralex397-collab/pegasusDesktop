@@ -17,12 +17,20 @@ groups:
   - EPIC-006
   - HZN-004
 links: []
+blocks:
+  - FEAT-004
+  - FEAT-005
+  - FEAT-007
+  - FEAT-022
+  - FEAT-025
+  - TEST-007
+  - TEST-016
 refs:
   - docs/frd/frd-01-case-identity-and-lifecycle.md
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:33.815Z'
-updated: '2026-08-24T07:46:33.815Z'
+updated: '2026-08-24T08:51:09.966Z'
 ---
 
 ## What

@@ -17,12 +17,17 @@ groups:
   - EPIC-008
   - HZN-006
 links: []
+blocks:
+  - FEAT-020
+  - FEAT-028
+  - FEAT-030
+  - PLAT-015
 refs:
   - docs/frd/frd-08-email-mailbox-and-background-processing.md
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.602Z'
-updated: '2026-08-24T08:18:48.602Z'
+updated: '2026-08-24T08:52:02.738Z'
 ---
 
 ## What
