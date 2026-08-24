@@ -19,7 +19,8 @@ verified by tool output instead — see Verification.
 | `docs/capabilities.md` | **392 lines**. `EXT-08` `:248`; `RPT-01` `:263`, `RPT-02` `:264`, `RPT-03` `:265`, `RPT-04` `:266`, `RPT-05` `:267`; the `EXT-08` and `RPT-01`–`RPT-05` rendering mention at `:354` | `wc -l` → 392; `grep -n 'RPT-0\|EXT-08'` | **0 lines expected.** Body: "only if a capability's canonical owner changes as a consequence". Budget ~+2 if one does |
 | `docs/design/assets/report-renderer/templates/` | **seven governed files**: six `.scriban` (`advert_evidence_pack`, `assessment_fee_note`, `assessment_report`, `expert_report`, `fee_note`, `market_valuation_evidence`) plus `report.css` | `ls` | **read-only.** The scope table is written *about* them; Guardrails forbid editing one |
 | `src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj:42-53` | **five** embedded report assets: `assessment_report.scriban`, `assessment_fee_note.scriban`, `report.css`, `logo_no_margin.png` (linked to `Reports\Assets\brand\logo.png`), `andy_patterson.png` | `sed -n '42,53p'` | **read-only.** Guardrails forbid editing a `.csproj` |
-| `scripts/Test-DocumentationLinks.ps1`, `scripts/Test-MarkdownPlacement.ps1` | both present | `ls scripts/` | run, not edited |
+| `scripts/Test-DocumentationLinks.ps1` | present; **takes no parameters** (`param()`), and CI runs it bare at `.github/workflows/ci.yml:87` | `sed -n '1,12p'` | run, not edited |
+| `scripts/Test-MarkdownPlacement.ps1` | present, but it is the **validator** and its `-Base` and `-Head` parameters are **`[Parameter(Mandatory)]`** — a bare invocation prompts and fails non-interactively. CI does not call it directly; the `documentation` job runs its regression suite `./scripts/Test-TestMarkdownPlacement.ps1` at `.github/workflows/ci.yml:84` | `sed -n '1,10p'`; `grep -rn MarkdownPlacement .github/` | run **with** `-Base`/`-Head`; not edited |
 | Git remotes | **only `origin`** (`https://github.com/merceralex397-collab/pegasusDesktop.git`) — **there is no `upstream` remote in this working tree** | `git remote -v` | none; see step 2 |
 
 **Two measured findings that are *not* this ticket's to fix**, recorded so the implementer does not
@@ -86,7 +87,7 @@ satisfies each:
 | Carry-over register § Disposition categories `:64` | `report-decision` = renderer/report decisions folded into the ADR-0108 plan; lands in area 07 and fork area `documents-reports` | Steps 10–11 |
 | Carry-over register recreation rule `:67`–`:75`, **as corrected by [[FND-022]] step 15(b)** | Provenance lives in the title prefix and the `upstream-<ID>` label — **never in `refs`** | Step 10 |
 | `HZN-001` / `board-conventions.md` § Upstream ids versus board ids | Upstream ids are never written bare — and this set holds the board's worst collision | Every citation in this document |
-| `AGENTS.md` § New Markdown placement | Any new `.md` outside `docs/(prd\|frd\|adr\|design\|desktop)` fails the CI `documentation` job | Step 12; ticket-transient notes live in Kanmer |
+| `AGENTS.md` § New Markdown placement | A **new** `.md` outside the allowed roots fails the CI `documentation` job — the validator's own regex is `^((docs/(prd\|frd\|adr\|design\|desktop))\|workspaces/document-extraction\|\.agents/skills\|\.design-sync\|\.grok\|\.stitch\|design/planning-and-old-designs)/.+\.md$` and it checks only added, copied and renamed files | Step 12; ticket-transient notes live in Kanmer |
 | `docs/engineering.md:72-88` tier 1 | Static/documentation consistency only | Verification |
 | `docs/engineering.md:201-207` § Plan sizing | Diff estimate first, derived from a measured inventory | This plan's first line and the inventory above |
 | `AGENTS.md` § Repository task workflow step 5 | Review by an agent that did not implement | Routing |
@@ -255,11 +256,20 @@ Refines the body's twelve steps in the same order and with the same ownership.
       naming [[FEAT-039]] and [[FEAT-041]] as its owners. 286 lines today.
     - `docs/capabilities.md` only if a capability's canonical owner changes as a consequence;
       the expectation is no change.
-12. **Verify, record and open the PR.** Run `pwsh ./scripts/Test-DocumentationLinks.ps1` and
-    `pwsh ./scripts/Test-MarkdownPlacement.ps1`; both must pass. List every open question that
-    survived — realistically only step 6's, and only if the desktop-exposure difference needs a
-    fresh operator answer — in this ticket's `open-questions` document. **An unticked item blocks
-    the move, which is correct here.** Then open the PR into `dev`.
+    **Add no new `.md` file anywhere.** Both edits are to files that already exist inside
+    `docs/desktop/`, so the placement validator is satisfied either way; ticket-transient notes
+    belong in Kanmer, not in a new document.
+12. **Verify, record and open the PR.** Run `pwsh ./scripts/Test-DocumentationLinks.ps1` (it takes
+    **no** parameters — `param()` — and CI invokes it bare at `.github/workflows/ci.yml:87`) and
+    `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` (**both parameters are
+    `[Parameter(Mandatory)]`**; a bare invocation prompts and fails non-interactively — the body's
+    shorthand omits them). Both must pass. Note that CI's `documentation` job does **not** call the
+    validator directly; it runs the validator's own regression suite
+    `./scripts/Test-TestMarkdownPlacement.ps1` at `.github/workflows/ci.yml:84`, so the local
+    validator run is an extra check rather than a reproduction of the lane. List every open question
+    that survived — realistically only step 6's, and only if the desktop-exposure difference needs a
+    fresh operator answer — in this ticket's `open-questions` document. **An unticked item blocks the
+    move, which is correct here.** Then open the PR into `dev`.
 
 ## Verification
 
@@ -267,10 +277,12 @@ Evidence tier from the body: **Tier 1 — Static/build/architecture**
 (`docs/engineering.md:72-88` item 1: consistency only — the register is complete, links resolve,
 placement passes, and no source or governed asset changed). `proof` is the captured output of:
 
-- `pwsh ./scripts/Test-DocumentationLinks.ps1` — expected exit 0, no broken link.
-- `pwsh ./scripts/Test-MarkdownPlacement.ps1` — expected exit 0. Any `.md` outside
-  `docs/(prd|frd|adr|design|desktop)` fails the CI `documentation` job, which is why ticket-transient
-  notes live in Kanmer.
+- `pwsh ./scripts/Test-DocumentationLinks.ps1` — expected exit 0, no broken link. No parameters.
+- `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` — expected exit 0. The
+  `-Base`/`-Head` parameters are mandatory. Expected to be trivially green here, because this ticket
+  adds no `.md` file and the validator inspects only added, copied and renamed paths.
+- `pwsh ./scripts/Test-TestMarkdownPlacement.ps1` — expected exit 0. This is what the CI
+  `documentation` job actually runs (`.github/workflows/ci.yml:84`).
 - `grep -c '^| [A-Z].*report-decision' docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md`
   — expected **11** before and after, unless a step 4–9 disposition deliberately re-categorises a
   row, in which case the new number is stated in the proof and reported to [[FND-022]].
@@ -315,6 +327,8 @@ fixed, and nothing about the renderer.
   duplicate check reading hit **titles**, not counts, before any write.
 - **Risk — provenance written into `refs`.** It fails the whole entry. Mitigation: step 10 states
   the corrected rule inline rather than relying on the register, whose `:69`–`:70` is still stale.
+- **Risk — a new `.md` is added for the working notes and fails the placement lane.** Mitigation:
+  step 11's closing instruction, and the allowed-path regex recorded in the Governing docs table.
 - **Risk — "blocked" recorded without a condition.** Mitigation: step 9 makes the unblocking
   sentence an acceptance criterion.
 - **Scope boundary, not an open question** — the ADR-0108 text is [[FEAT-038]]'s; the template
