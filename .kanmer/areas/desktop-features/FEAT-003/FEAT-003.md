@@ -30,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:33.815Z'
-updated: '2026-08-24T08:51:09.966Z'
+updated: '2026-08-24T11:24:41.103Z'
 ---
 
 ## What
@@ -39,18 +39,19 @@ Deliver the read-only case workspace: a stable case header (reference, status, a
 
 ## Why
 
-Proposal §13.3 and §14.5 require a stable case header and lazily loaded sections so that a case opens fast and only populated sections render. Today everything lives in `src/Pegasus.Web/Pages/Cases/Details.cshtml.cs` (654 lines) whose `OnGetAsync` at `:110` loads query, edit-lease state and completeness in one pass, with partials under `src/Pegasus.Web/Pages/Cases/Shared/`. This slice closes the Phase 3 read path and is the shell every Phase 4–7 slice hangs its tabs on. Siblings: [[DSK-05-02]] selects the case, [[DSK-03-07]] supplies the header and per-section endpoints, [[DSK-05-05]] adds editing on top of this shell.
+Proposal §13.3 and §14.5 require a stable case header and lazily loaded sections so that a case opens fast and only populated sections render. Today everything lives in `src/Pegasus.Web/Pages/Cases/Details.cshtml.cs` (654 lines) whose `OnGetAsync` at `:110` loads query, edit-lease state and completeness in one pass, with partials under `src/Pegasus.Web/Pages/Cases/Shared/`. This slice closes the Phase 3 read path and is the shell every Phase 4–7 slice hangs its tabs on. Siblings: [[DSK-05-02]] selects the case, [[DSK-03-07]] supplies the header and per-section endpoints, [[DSK-05-05]] adds editing on top of this shell, [[DSK-07-11]] supplies the communications payload including each linked e-mail's canonical classification.
 
 ## Source of truth
 
 - Plan row: `docs/desktop/05-implementation-and-migration/README.md` § 5 — `DSK-05-03`
 - Plan detail: `docs/desktop/05-implementation-and-migration/vertical-slices.md` § `S3 · Case detail read-only and history (DSK-05-03)` and § `Common to every slice`
 - Endpoint map: `docs/desktop/03-gateway-api-and-data/endpoint-map.md` § `Cases` (`GET /cases/{id}`, `GET /cases/{id}/…` section endpoints, `GET /audit`)
-- Screen spec: `docs/desktop/06-ui-design/screen-specs.md` § `§13.3 Case lifecycle` → `Case workspace`
+- Screen spec: `docs/desktop/06-ui-design/screen-specs.md` § `§13.3 Case lifecycle` → `Case workspace`, and § `§13.8 Communications` for the Communications tab
 - Proposal: `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md` § 13.3 Case lifecycle, § 14.5 Case workspace
-- Repository evidence: `src/Pegasus.Web/Pages/Cases/Details.cshtml.cs:110` (`OnGetAsync`), `src/Pegasus.Web/Pages/Cases/Shared/` partials, `src/Pegasus.Core/Cases/` (`ICaseDataQueries`), `src/Pegasus.Core/Workflow/` (`ICaseWorkflowQueries`), `src/Pegasus.Core/Identity/` (`IActionHistoryWriter` and the history read ports), `tests/Pegasus.IntegrationTests/CaseDetailsWebTests.cs` (1,286 lines)
+- Repository evidence: `src/Pegasus.Web/Pages/Cases/Details.cshtml.cs:110` (`OnGetAsync`), `src/Pegasus.Web/Pages/Cases/Shared/` partials, `src/Pegasus.Core/Cases/` (`ICaseDataQueries`), `src/Pegasus.Core/Workflow/` (`ICaseWorkflowQueries`), `src/Pegasus.Core/Identity/` (`IActionHistoryWriter` and the history read ports), `src/Pegasus.Core/Intake/Classification/MailOperationalDestinationPolicy.cs:7-15` (`MailOperationalDestination.Queries`), `tests/Pegasus.IntegrationTests/CaseDetailsWebTests.cs` (1,286 lines)
+- Upstream evidence: `CASE-012` and `UICASE-001` (the read-only workspace shell this slice delivers); `CASE-009` — the section is **Queries**, not "Engineer Queries"; it is a read-only list of e-mails linked to the case whose classification is Query, with a truthful empty state, no **Raise a Query** control, and no create/reply/resolve/manual-association behaviour and no mailbox mutation
 - Binding decisions: L-01 gateway evolves inside `Pegasus.Web`; L-02 verification runs on the local Test/UAT stack; L-04 routing named on the ticket
-- Depends on: `DSK-05-02` the list that opens a case; `DSK-03-07` the case header, per-section and history/audit read endpoints with per-section `ETag`
+- Depends on: `DSK-05-02` the list that opens a case; `DSK-03-07` the case header, per-section and history/audit read endpoints with per-section `ETag`; `DSK-07-11` the communications payload carrying each linked e-mail's canonical classification
 
 ## Routing
 
@@ -68,26 +69,28 @@ Proposal §13.3 and §14.5 require a stable case header and lazily loaded sectio
 4. Implement `CaseWorkspaceViewModel` in `src/Pegasus.Desktop` holding the header state and a child view model per tab. A tab's data loads on first activation, not on case open; each child exposes its own Loading/Empty/Error/Loaded state and can be refreshed independently. Cache section payloads by `ETag` for the lifetime of the open case and revalidate with `If-None-Match` on manual refresh.
 5. Build the workspace XAML: a stable header showing reference, status, assignee, priority and save state with the command bar slot (commands themselves arrive in [[DSK-05-06]]), the eight-tab sub-navigation in the order given by the screen spec, and a collapsible right-side activity pane. Only populated sections render — a tab with nothing recorded and no available action shows no empty-state panel.
 6. Implement the History tab over `GET /api/v1/cases/{id}/history`: newest first, paged, each row rendering actor, action, timestamp (Europe/London through the shared vocabulary map) and reason where recorded. No GUID, hash or version integer reaches the screen.
-7. Ensure the whole workspace is reachable without horizontal scrolling at the minimum supported window size from `docs/desktop/06-ui-design/screen-specs.md` § `Shell`, and that focus order runs header → sub-navigation → content → activity pane.
-8. Write view-model tests in `tests/Pegasus.Desktop.ViewModelTests` covering lazy tab activation (a tab not visited issues no request), per-tab error isolation (one failing section does not blank the workspace), `ETag` revalidation on refresh, and history paging.
-9. Add contract tests in `tests/Pegasus.Api.ContractTests` for the header and every section endpoint: 200 with `version` and `ETag`, 304 on `If-None-Match`, 401 without a token, 403 without `PerformCasework`, 404 for an unknown case. Enable `Features:DesktopGateway` explicitly.
-10. Run the parity comparison against `tests/Pegasus.IntegrationTests/CaseDetailsWebTests.cs` scenarios: for three fixture cases, compare the web Details page against the desktop workspace field by field, and compare history rows one to one. Record the table in the ticket proof.
-11. Measure the navigation budget: first useful view ≤ 200 ms perceived after the header has loaded (cached navigation budget, proposal §15.1). Record the measurement method and figures in the proof.
-12. Add a `winapp ui` script under `tests/Pegasus.Desktop.UITests` that opens a case from the list, cycles every tab by keyboard and asserts the header stays stable; run the `axe-windows` scan and attach both artefacts.
-13. Update `docs/desktop/01-inventory-and-parity/parity-matrix.md` row `PAR-08` (read path only — the edit handlers stay with [[DSK-05-05]]), add the case-workspace section to `docs/frd/frd-13-desktop-operator-experience.md`, run the simplification pass and record it under a dated `## Simplification pass` heading, then open the PR into `dev`.
+7. Render query correspondence on the Communications tab as an identified group (upstream CASE-009). Read each linked e-mail's canonical classification from the communications payload [[DSK-07-11]] supplies, and render `Queries`-destination e-mails as their **own identified read-only group** within the tab — distinguishable from ordinary correspondence rather than mixed into one undifferentiated list, and headed with the settled word `Queries`, never "Engineer queries". The group is read-only: no manual query-creation control, no Raise a query button, no reply and no resolve — raising, replying to and resolving a query stay out of scope (upstream CASE-002), and the desktop mutates no mailbox. When the tab has linked e-mails but none is Query-classified, the group says so truthfully in one line rather than vanishing; that single line is the one stated exception to this ticket's only-populated-sections rule and it is CASE-009's requirement. Render nothing from the classification policy's key or version.
+8. Ensure the whole workspace is reachable without horizontal scrolling at the minimum supported window size from `docs/desktop/06-ui-design/screen-specs.md` § `Shell`, and that focus order runs header → sub-navigation → content → activity pane.
+9. Write view-model tests in `tests/Pegasus.Desktop.ViewModelTests` covering lazy tab activation (a tab not visited issues no request), per-tab error isolation (one failing section does not blank the workspace), `ETag` revalidation on refresh, history paging, and the Queries group — present and grouped when a Query-classified e-mail exists, truthful single line when linked e-mails exist but none is Query-classified, and no creation, reply or resolve command in either case.
+10. Add contract tests in `tests/Pegasus.Api.ContractTests` for the header and every section endpoint: 200 with `version` and `ETag`, 304 on `If-None-Match`, 401 without a token, 403 without `PerformCasework`, 404 for an unknown case. Enable `Features:DesktopGateway` explicitly.
+11. Run the parity comparison against `tests/Pegasus.IntegrationTests/CaseDetailsWebTests.cs` scenarios: for three fixture cases, compare the web Details page against the desktop workspace field by field, and compare history rows one to one. Record the table in the ticket proof.
+12. Measure the navigation budget: first useful view ≤ 200 ms perceived after the header has loaded (cached navigation budget, proposal §15.1). Record the measurement method and figures in the proof.
+13. Add a `winapp ui` script under `tests/Pegasus.Desktop.UITests` that opens a case from the list, cycles every tab by keyboard and asserts the header stays stable; run the `axe-windows` scan and attach both artefacts.
+14. Update `docs/desktop/01-inventory-and-parity/parity-matrix.md` row `PAR-08` (read path only — the edit handlers stay with [[DSK-05-05]]), add the case-workspace section to `docs/frd/frd-13-desktop-operator-experience.md`, run the simplification pass and record it under a dated `## Simplification pass` heading, then open the PR into `dev`.
 
 ## Acceptance criteria
 
 - [ ] The case header is stable across tab changes and shows reference, status, assignee, priority and save state.
 - [ ] Sections load lazily; an unvisited tab issues no request; a failing section does not blank the workspace.
-- [ ] Only populated, relevant sections render; no empty-state panels.
+- [ ] Only populated, relevant sections render; no empty-state panels, with the single stated Queries exception below.
+- [ ] The Communications tab renders Query-classified linked e-mails as an identified read-only group with a truthful empty state and no manual query-creation control; raising, replying to and resolving a query stay out of scope (upstream CASE-002).
 - [ ] History rows equal the web history for the same case, newest first.
 - [ ] The workspace is reachable without horizontal scrolling at the minimum supported window size and is fully keyboard traversable.
 - [ ] No GUID, hash, version integer or banned operator word reaches the screen.
 
 ## Verification
 
-- [ ] `dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-build` — expected: lazy-load, error-isolation, revalidation and paging facts pass.
+- [ ] `dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-build` — expected: lazy-load, error-isolation, revalidation, paging and Queries-group facts pass.
 - [ ] `dotnet test ./tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj --configuration Release --no-build` — expected: header and section 200/304/401/403/404 facts pass.
 - [ ] `pwsh ./tests/Pegasus.Desktop.UITests/ui-tests.ps1 -Script case-detail` — expected: tab cycle by keyboard passes; axe report attached.
 - [ ] Parity table in the ticket proof — expected: field-by-field and history-row equality against the web Details page for three fixture cases.
@@ -100,14 +103,15 @@ Tier 5 obliges observable evidence that the real section endpoints reach the sam
 ## Documentation changes
 
 - `docs/desktop/01-inventory-and-parity/parity-matrix.md` — row `PAR-08` read path and history evidence pointers
+- `docs/desktop/06-ui-design/screen-specs.md` § `§13.8 Communications` — record that Query-classified linked e-mails render as an identified read-only group with a truthful empty state, headed `Queries`, and that there is no manual query-creation, reply or resolve control (upstream CASE-009/CASE-002), so [[DSK-06-13]] carries it into FRD-13; [[DSK-07-11]] owns the payload half of the same change
 - `docs/frd/frd-13-desktop-operator-experience.md` — case workspace section
 - `docs/capabilities.md` — `DSK` row for the case workspace read path
 
 ## Guardrails
 
 - **Azure**: no write.
-- **Scope boundary**: may touch `src/Pegasus.Desktop`, `src/Pegasus.Desktop.Infrastructure`, `src/Pegasus.Contracts`, the `/api/v1` cases read group in `src/Pegasus.Web` and the test projects. Must not modify `Pages/Cases/Details.cshtml.cs`, its partials, or `CaseMutationPageModel.cs`.
-- **Traps**: only populated sections render — an empty-state panel is a defect under `docs/design/README.md`; do not carry over `TempData["CaseDetailsStatus"]`-style status passing (upstream CASE-001 is dropped for the desktop); `Features:DesktopGateway` must be enabled in tests; parity drift — record the SHA of `Details.cshtml.cs` characterized; upstream CASE-020 (read the case header from the case, not the instruction draft) must be true before this row can reach parity — raise it rather than working around it.
+- **Scope boundary**: may touch `src/Pegasus.Desktop`, `src/Pegasus.Desktop.Infrastructure`, `src/Pegasus.Contracts`, the `/api/v1` cases read group in `src/Pegasus.Web` and the test projects. Must not modify `Pages/Cases/Details.cshtml.cs`, its partials, or `CaseMutationPageModel.cs`. The communications payload and its classification field belong to [[DSK-07-11]]; this ticket renders them and adds no second read.
+- **Traps**: only populated sections render — an empty-state panel is a defect under `docs/design/README.md`, and the Queries one-line statement is the single sanctioned exception, recorded as such; do not carry over `TempData["CaseDetailsStatus"]`-style status passing (upstream CASE-001 is dropped for the desktop); a Raise a query control, a reply or a resolve on this tab is a stop condition — the query lifecycle is upstream CASE-002 and is not activated here; `Features:DesktopGateway` must be enabled in tests; parity drift — record the SHA of `Details.cshtml.cs` characterized; upstream CASE-020 (read the case header from the case, not the instruction draft) must be true before this row can reach parity — raise it rather than working around it.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome
