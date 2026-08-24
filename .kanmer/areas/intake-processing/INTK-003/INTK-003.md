@@ -16,12 +16,16 @@ labels:
 groups:
   - EPIC-014
 links: []
+blocks:
+  - FEAT-004
+  - FEAT-005
+  - FEAT-036
 refs:
   - docs/frd/frd-06-vehicle-and-engineering-evidence.md
 docs_todo: true
 archived: false
 created: '2026-08-24T11:47:12.089Z'
-updated: '2026-08-24T11:47:12.089Z'
+updated: '2026-08-24T11:57:44.902Z'
 ---
 
 ## What

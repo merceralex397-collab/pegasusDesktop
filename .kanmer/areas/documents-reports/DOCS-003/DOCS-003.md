@@ -17,12 +17,15 @@ labels:
 groups:
   - EPIC-014
 links: []
+blocks:
+  - FEAT-042
+  - FEAT-018
 refs:
   - docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:20.454Z'
-updated: '2026-08-24T11:41:20.454Z'
+updated: '2026-08-24T11:57:51.924Z'
 ---
 
 ## What

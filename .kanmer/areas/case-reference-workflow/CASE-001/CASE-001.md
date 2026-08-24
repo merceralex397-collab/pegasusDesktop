@@ -20,12 +20,17 @@ labels:
 groups:
   - EPIC-014
 links: []
+blocks:
+  - FEAT-005
+  - GWY-006
+  - FEAT-001
+  - DUI-006
 refs:
   - docs/frd/frd-01-case-identity-and-lifecycle.md
 docs_todo: true
 archived: false
 created: '2026-08-24T11:42:25.781Z'
-updated: '2026-08-24T11:42:25.781Z'
+updated: '2026-08-24T11:57:53.115Z'
 ---
 
 ## What

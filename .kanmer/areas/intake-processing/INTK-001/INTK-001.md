@@ -15,10 +15,12 @@ labels:
 groups:
   - EPIC-014
 links: []
+blocks:
+  - GWY-010
 docs_todo: true
 archived: false
 created: '2026-08-24T11:44:22.452Z'
-updated: '2026-08-24T11:44:22.452Z'
+updated: '2026-08-24T11:57:42.515Z'
 ---
 
 ## What

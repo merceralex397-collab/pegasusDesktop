@@ -18,10 +18,13 @@ labels:
 groups:
   - EPIC-014
 links: []
+blocks:
+  - FEAT-009
+  - GWY-010
 docs_todo: true
 archived: false
 created: '2026-08-24T11:50:33.940Z'
-updated: '2026-08-24T11:50:33.940Z'
+updated: '2026-08-24T11:57:47.252Z'
 ---
 
 ## What

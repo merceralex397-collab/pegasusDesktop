@@ -19,13 +19,15 @@ labels:
 groups:
   - EPIC-014
 links: []
+blocks:
+  - FEAT-026
 refs:
   - docs/frd/frd-08-email-mailbox-and-background-processing.md
   - docs/frd/frd-10-mcp-automation-and-actor-boundary.md
 docs_todo: true
 archived: false
 created: '2026-08-24T11:39:42.036Z'
-updated: '2026-08-24T11:39:42.036Z'
+updated: '2026-08-24T11:57:35.552Z'
 ---
 
 ## What

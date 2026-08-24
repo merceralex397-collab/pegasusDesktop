@@ -19,12 +19,15 @@ labels:
 groups:
   - EPIC-014
 links: []
+blocks:
+  - FEAT-009
+  - GWY-010
 refs:
   - docs/frd/frd-02-intake-and-source-identity.md
 docs_todo: true
 archived: false
 created: '2026-08-24T11:47:12.109Z'
-updated: '2026-08-24T11:47:12.109Z'
+updated: '2026-08-24T11:57:46.035Z'
 ---
 
 ## What

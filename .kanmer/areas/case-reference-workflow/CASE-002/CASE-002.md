@@ -19,12 +19,15 @@ labels:
 groups:
   - EPIC-014
 links: []
+blocks:
+  - GWY-011
+  - FEAT-014
 refs:
   - docs/frd/frd-05-documents-extraction-and-custody.md
 docs_todo: true
 archived: false
 created: '2026-08-24T11:42:25.804Z'
-updated: '2026-08-24T11:42:25.804Z'
+updated: '2026-08-24T11:57:54.256Z'
 ---
 
 ## What

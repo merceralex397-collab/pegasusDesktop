@@ -18,13 +18,17 @@ labels:
 groups:
   - EPIC-014
 links: []
+blocks:
+  - FEAT-042
+  - GWY-014
+  - FEAT-018
 refs:
   - docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md
   - docs/adr/0025-integrate-renderer-and-extractor-into-the-application.md
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:20.415Z'
-updated: '2026-08-24T11:41:20.415Z'
+updated: '2026-08-24T11:57:49.615Z'
 ---
 
 ## What

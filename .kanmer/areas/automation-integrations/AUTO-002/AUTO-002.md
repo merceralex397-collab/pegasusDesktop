@@ -17,12 +17,15 @@ labels:
 groups:
   - EPIC-014
 links: []
+blocks:
+  - FEAT-013
+  - PLAT-013
 refs:
   - docs/frd/frd-09-provider-and-intermediary-routes.md
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:25.722Z'
-updated: '2026-08-24T11:41:25.722Z'
+updated: '2026-08-24T11:57:36.700Z'
 ---
 
 ## What

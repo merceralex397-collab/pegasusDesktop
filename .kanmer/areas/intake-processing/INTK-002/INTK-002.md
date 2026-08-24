@@ -15,12 +15,16 @@ labels:
 groups:
   - EPIC-014
 links: []
+blocks:
+  - FEAT-009
+  - FEAT-013
+  - FEAT-020
 refs:
   - docs/frd/frd-02-intake-and-source-identity.md
 docs_todo: true
 archived: false
 created: '2026-08-24T11:44:22.475Z'
-updated: '2026-08-24T11:44:22.475Z'
+updated: '2026-08-24T11:57:43.750Z'
 ---
 
 ## What
