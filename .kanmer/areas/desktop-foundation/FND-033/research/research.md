@@ -178,3 +178,50 @@ security boundary. Nothing here places any responsibility in Azure, and no Azure
 - `docs/desktop/06-ui-design/screen-specs.md` is the source and must not be edited by this ticket.
   If a genuine ambiguity is found, the ticket body directs recording it in the ticket rather than
   amending the spec — that instruction is followed.
+
+---
+
+## Addendum (2026-08-24) — two spec reconciliations
+
+Added after this ticket's `open-questions` document was raised, so the cross-references in it resolve.
+Both were checked directly against the files.
+
+### The seven-route rail order — reconciled, not an open question
+
+The abbreviated restatement at `docs/design/README.md:474-475` reads "The approved route order is
+`Dashboard → Inbox → Upload → Queues → Cases → Administration (admin-only) + user controls` (operator
+decision 2026-08-04)" and **omits Operations**. It does not contradict the canonical list.
+
+- `docs/design/README.md:31-38` is the canonical enumeration and includes Operations as **route 6**:
+  "1. Dashboard 2. Inbox 3. Upload 4. Queues 5. Cases **6. Operations** 7. Administration, visible
+  only to authorised Administrators 8. authenticated user/sign-out controls", under the heading
+  "**Operations-first was selected on 2026-07-27** … This approves the route hierarchy and operating
+  model".
+- `docs/design/README.md:1089-1091` reconciles the two explicitly: "The routes shipped in releases 6
+  and 7 are Dashboard, Inbox, Upload, Queues, Cases and authorised Administration (operator decision
+  2026-08-04). **Operations is a scoped staff workspace in the implementation; its documentation does
+  not prove a deployed or released route.**" So `:474-475` is a list of *shipped* routes, not of
+  *approved* ones.
+- `src/Pegasus.Web/Pages/Operations/Index.cshtml` exists, and
+  `src/Pegasus.Web/Pages/Shared/_Layout.cshtml:89` renders its rail link conditionally.
+
+**Conclusion**: the desktop rail carries all seven, in the order `screen-specs.md:43-56` and the
+canonical list agree on. Recorded here so the next reader does not re-open it.
+
+### The environment-badge labels — a genuine ambiguity, and it *is* open
+
+`docs/desktop/06-ui-design/screen-specs.md:67-69` gives the badge three non-production labels —
+"Pilot", "Test/UAT", "Development" — while `docs/desktop/02-architecture-and-foundation/README.md`
+§ 3 decision 7 defines exactly three channels, `pilot` | `production` | `local`, and
+`docs/desktop/04-auth-session-update-and-startup/README.md:198-199` § 3 item 8 confirms the package
+carries only "the gateway base URL, feed URL, and channel name per channel". `pilot` → "Pilot" and
+`production` → hidden are unambiguous; **two labels then compete for the one remaining channel
+`local`, and one label has no channel at all.**
+
+This ticket's `## Documentation changes` binds the author to record a spec ambiguity "as an open
+question in the ticket, not as an edit", and this is one. It is written as an **unticked** item in
+this ticket's `open-questions` document, which correctly blocks `leave-preparing`, `enter-review` and
+`enter-done` — the badge's text is operator-facing copy and `docs/design/README.md` is the binding
+authority for it, so the resolution is the design authority's to give and not this plan's to assume.
+See `open-questions` for the three candidate resolutions and the default that would otherwise be
+taken.

@@ -93,9 +93,9 @@ Refines the body's twelve steps in the same order.
 1. **Orient and take.** Read the plan row (`docs/desktop/07-integrations/README.md` § 5,
    `DSK-07-12`), that area's § 3 deviation paragraph and its ADR-0108 row, `AGENTS.md`
    § ADR conventions (`:77` onward), `docs/desktop/00-governance-and-workflow/README.md` § 3
-   (`:124-180`, containing the reserved-block paragraph, the ADR table and the verbatim
-   cloud-justification table), and the Appendix A template. Call `get_doc_gates FEAT-038`, then
-   `take_ticket` on branch `task/dsk-07-12-adr-0108`.
+   (`:124-180`, containing the reserved-block paragraph at `:141-148`, the ADR table at `:152-164`
+   and the verbatim cloud-justification table at `:166-178`), and the Appendix A template. Call
+   `get_doc_gates FEAT-038`, then `take_ticket` on branch `task/dsk-07-12-adr-0108`.
 2. **Establish case A or case B first.** Run `ls docs/adr/0108*`. Today it returns **no match**
    (measured above), so case A applies and this ticket creates the file. If [[FND-007]] has landed
    it as `proposed`, case B applies and this ticket **edits that file**. Record the observed result
@@ -105,7 +105,9 @@ Refines the body's twelve steps in the same order.
    `docs/adr/0028-run-integrated-renderer-in-web-container-app.md:1-10`: `id`, `status`, `date`,
    `supersedes`, `superseded_by`, `related_capabilities`, `related_frd`, `tags`. `id: ADR-0108`,
    `status: proposed`, `related_frd: [frd-11]`, `related_capabilities` naming the RPT/EXT rows the
-   renderer carries, `supersedes: []` — ADR-0025 and ADR-0028 are **related**, not superseded.
+   renderer carries (ADR-0028 uses `[EXT-08, RPT-01, RPT-02]` at `:7` — the same set unless the
+   scope table from [[FEAT-043]] says otherwise), `supersedes: []` — ADR-0025 and ADR-0028 are
+   **related**, not superseded.
 4. **Write Context from measured evidence, not memory.** Every one of these was read on
    2026-08-24 and must be restated with its `path:line`:
    - `docs/design/assets/report-renderer/templates/` holds **six `.scriban` files**
@@ -113,10 +115,10 @@ Refines the body's twelve steps in the same order.
      `fee_note`, `market_valuation_evidence`) **plus `report.css`** — seven governed files
      (`ls docs/design/assets/report-renderer/templates/`). Where the plan set says "seven
      `.scriban` files" it names six; write the measured count and say which files.
-   - `src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj:42-53` embeds **five** report assets:
-     `assessment_report.scriban`, `assessment_fee_note.scriban`, `report.css`,
-     `logo_no_margin.png` (linked to `Reports\Assets\brand\logo.png`) and
-     `andy_patterson.png` — each with an explicit `LogicalName` under
+   - `src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj:42-53` embeds **five** report
+     assets: `assessment_report.scriban` (`:42-43`), `assessment_fee_note.scriban` (`:44-45`),
+     `report.css` (`:46-47`), `logo_no_margin.png` linked to `Reports\Assets\brand\logo.png`
+     (`:48-51`) and `andy_patterson.png` (`:52-53`) — each with an explicit `LogicalName` under
      `Pegasus.Infrastructure.Reports.Assets.*`.
    - `docs/design/brand/signatures/` holds **all three** governed signatures
      (`andy_patterson.png`, `ed_mawdsley.png`, `neil_oreilly.png`).
@@ -135,9 +137,12 @@ Refines the body's twelve steps in the same order.
      EngineVersion)` at `:272`, `IAssessmentReportRenderer` at `:284`, and
      `GenerateAssessmentReportDraft` at `:291` re-hashing both artifacts and throwing
      `ReportRenderRejectedException` on mismatch at `:305`.
-   - `src/Pegasus.Web/Pegasus.Web.csproj` `ContainerBaseImage` is the Playwright image, and the
-     container is sized cpu 1.0 / 2Gi for in-process Chromium
-     (`infra/modules/platform.bicep:354-478`, per the area plan's § 2).
+   - `src/Pegasus.Web/Pegasus.Web.csproj:28` —
+     `<ContainerBaseImage>mcr.microsoft.com/playwright/dotnet:v$(PlaywrightVersion)-noble</ContainerBaseImage>`;
+     and `infra/modules/platform.bicep:443-444` — `cpu: json('1.0')`, `memory: '2Gi'`, with the
+     comment at `:436-441` recording that headless Chromium shares the app's CPU and memory and
+     that the pair must stay a supported one. That sizing is the cost this decision removes from
+     the container.
 5. **Fetch the WebView2 printing documentation and record it with the fetch date.** Use
    `microsoft_docs_fetch` on <https://learn.microsoft.com/microsoft-edge/webview2/how-to/print> and
    the `CoreWebView2` WinRT reference. Record: `PrintToPdfAsync` and `PrintToPdfStreamAsync` exist
@@ -146,17 +151,18 @@ Refines the body's twelve steps in the same order.
    **one print operation per WebView at a time** is supported. Do not restate the area plan's
    2026-08-23 fetch as if it were this ticket's own — fetch again and date it.
 6. **Answer the six-question table verbatim.** Copy the table from
-   `docs/desktop/00-governance-and-workflow/README.md` § 3 (`:170-178`) — the six questions in
-   that order, one row each, with evidence. For interactive report rendering all six are **no**,
-   with canonical storage remaining central through the gateway
-   ([[FEAT-042]], plan handle `DSK-07-16`) — which is what puts rendering on the desktop. State the
-   evidence per row rather than a bare "no": no shared authority because a draft render is one
-   operator's view of one case; no unattended execution because rendering is operator-initiated
-   (the *storage* is not, and it stays central); no protected credential because the templates are
-   governed repository assets and no provider secret is involved; no public callback; no central
-   enforcement because readiness and finality stay Core-owned and server-enforced regardless of
-   where the bytes are produced; no measured operational advantage because the measurement
-   ([[FEAT-041]], plan handle `DSK-07-15`) is the parity gate rather than a placement argument.
+   `docs/desktop/00-governance-and-workflow/README.md:166-178` — heading at `:166-167`, the six
+   rows at `:171-176`, the "all six no" rule at `:178` — in that order, one row each, with
+   evidence. For interactive report rendering all six are **no**, with canonical storage remaining
+   central through the gateway ([[FEAT-042]], plan handle `DSK-07-16`) — which is what puts
+   rendering on the desktop. State the evidence per row rather than a bare "no": no shared
+   authority because a draft render is one operator's view of one case; no unattended execution
+   because rendering is operator-initiated (the *storage* is not, and it stays central); no
+   protected credential because the templates are governed repository assets and no provider secret
+   is involved; no public callback; no central enforcement because readiness and finality stay
+   Core-owned and server-enforced regardless of where the bytes are produced; no measured
+   operational advantage because the measurement ([[FEAT-041]], plan handle `DSK-07-15`) is the
+   parity gate rather than a placement argument.
 7. **State the never-UI rule as a testable constraint.** The WebView2 instance is off-screen,
    renders only a locally composed report document, is never navigated to a Pegasus URL, and never
    hosts application UI. Name the enforcement: [[FND-037]] (plan handle `DSK-02-12`)'s
@@ -170,9 +176,9 @@ Refines the body's twelve steps in the same order.
 9. **Record the retained fallback and the parity gate.** `AddPegasusReportRendering`
    (`DependencyInjection.cs:446`) keeps registering the gateway renderer, and the desktop path is
    not the only path until [[FEAT-041]]'s golden-file fixtures pass. State the flag or composition
-   switch that selects between them and **who may flip it** — the ADR records the authority, the
-   flag name is settled by [[FEAT-040]] (plan handle `DSK-07-14`) step 10 and [[FEAT-042]] step 9;
-   cite whichever has landed and name the ticket if neither has.
+   switch that selects between them and **who may flip it** — the ADR records the authority; the
+   flag name is settled by [[FEAT-040]] (plan handle `DSK-07-14`) step 10 and [[FEAT-042]] step 9,
+   so cite whichever has landed and name the ticket if neither has.
 10. **Record the reversal condition explicitly.** What evidence would make this decision wrong —
     for example golden-file drift that documented tolerances cannot absorb after a WebView2 runtime
     update, or a workstation where the runtime cannot be present — and what happens then: the
