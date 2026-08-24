@@ -25,7 +25,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:04:54.702Z'
-updated: '2026-08-24T08:51:46.986Z'
+updated: '2026-08-24T15:21:18.263Z'
 ---
 
 ## What
@@ -39,9 +39,9 @@ Proposal §20.2: "Do not let every agent clone the latest upstream skill at exec
 ## Source of truth
 
 - Plan row: `docs/desktop/12-agent-tooling/README.md` § 5 — `DSK-12-02`
-- Plan detail: `docs/desktop/12-agent-tooling/skills.lock.draft.json` — the complete draft: schema `version: 2`, a `policy` block, three `sources` with commits, and **35** skill entries each carrying `name`, `source`, `skillPath`, `destination`, `computedHash` (`"TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)"`), `reviewedOn`, `owner`, `reason`. Copy it; do not retype it.
+- Plan detail: `docs/desktop/12-agent-tooling/skills.lock.draft.json` — the complete draft: schema `version: 2`, a `policy` block, three `sources` with commits, and **35** skill entries each carrying `name`, `source`, `skillPath`, `destination`, `computedHash` (`"TBD - computed by eng/skills/sync-skills.ps1 (SHA-256 of SKILL.md)"`), `reviewedOn`, `owner`, `reason`. Copy it; do not retype it. The 35 split by source as **8 `win-dev-skills` + 19 `dotnet-skills` + 8 `azure-skills`** (counted from the draft, 2026-08-24).
 - Plan detail: `docs/desktop/12-agent-tooling/README.md` § 3 Decisions and assumptions (canonical vendored tree, lockfile fields, "agents never fetch a moving `main`")
-- Plan detail: `docs/desktop/12-agent-tooling/skill-routing.md` § Pinned sources and § Not applicable — do not load
+- Plan detail: `docs/desktop/12-agent-tooling/skill-routing.md` § Pinned sources and § Not applicable — do not load. **Read that second table with step 10 in front of you: it mixes two different rules under one heading, and only one of them is a lockfile invariant.**
 - Proposal: `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md` § 20.2 Pinning and vendoring, § 21.2 CI stages
 - Repository evidence:
   - `.codex/skills/` — `winui-code-review`, `winui-design`, `winui-dev-workflow`, `winui-packaging`, `winui-session-report`, `winui-setup`, `winui-ui-testing`, `winui-wpf-migration` (all untracked) plus the tracked `pegasus-release/SKILL.md`
@@ -74,15 +74,57 @@ Proposal §20.2: "Do not let every agent clone the latest upstream skill at exec
 7. Prove idempotency: run `pwsh ./eng/skills/sync-skills.ps1` a second time and confirm `git status --porcelain` is clean afterwards. A sync that rewrites hashes or line endings on every run cannot be a CI gate.
 8. Prove the verifier bites: append one character to a vendored `SKILL.md`, run `pwsh ./eng/skills/verify-skills.ps1` and confirm it exits non-zero and names that exact path; then `git checkout --` the file and confirm it exits 0.
 9. Confirm every entry in the lockfile has a real hash — no `computedHash` may still read `TBD`. Check with `grep -c '"computedHash"' eng/skills/skills.lock.json` (expect 35) and `grep -c 'TBD' eng/skills/skills.lock.json` (expect 0).
-10. Do not vendor a skill on the do-not-load table. `docs/desktop/12-agent-tooling/skill-routing.md` § Not applicable names `azure-deploy`, `azure-prepare`, `azure-app-onboard`, `azure-app-onboard-prereq`, `azure-cloud-migrate`, `azure-enterprise-infra-planner`, `python-appservice-deploy`, `entra-app-registration`, `entra-agent-id` and others; none of them appears in the draft lockfile — verify that is still true after the sync and record the count.
+10. **Verify that no *never-vendored* skill was vendored — and do not check this against the whole do-not-load table.** `docs/desktop/12-agent-tooling/skill-routing.md` § "Not applicable to this conversion (do not load)" (`skill-routing.md:56-70`) is a **loading** rule, not a vendoring rule, and it mixes two categories under one heading. Only the first is a lockfile invariant:
+
+    **(a) Never vendored — must be absent from the lockfile.** Nineteen named skills in four families, plus seven excluded upstream plugin families from which no skill may be sourced:
+
+    | Family | Expected set | Expected count in lockfile |
+    | --- | --- | --- |
+    | Entra identity | `entra-app-registration`, `entra-agent-id` | 0 of 2 |
+    | Azure deployment units | `azure-deploy`, `azure-prepare`, `azure-app-onboard`, `azure-app-onboard-prereq`, `azure-cloud-migrate`, `azure-enterprise-infra-planner`, `python-appservice-deploy` | 0 of 7 |
+    | Services not in the estate | `azure-kubernetes`, `airunway-aks-setup`, `azure-aigateway`, `microsoft-foundry`, `azure-ai`, `azure-messaging`, `azure-kusto` | 0 of 7 |
+    | Azure, only if a later approved change needs them | `azure-upgrade`, `azure-reliability`, `azure-quotas` | 0 of 3 |
+    | Excluded `dotnet/skills` plugin families — no skill may come from any of them | `dotnet-maui`, `dotnet-blazor`, `dotnet-template-engine`, `dotnet-test-migration`, `dotnet11`, `dotnet-ai`, `dotnet-advanced` | 0 skills from 7 families |
+
+    **(b) Vendored on purpose, but never auto-loaded — must be *present* in the lockfile.** Five skills, each carrying a `"reason"` that begins "Reference only" or names its user-invoked status. The table lists them so no agent loads them by default; it does **not** mean they should be missing from the tree:
+
+    | Skill | Source | Lockfile `reason` |
+    | --- | --- | --- |
+    | `winui-wpf-migration` | `win-dev-skills` | Reference only: control/namespace mapping tables; no WPF source to migrate |
+    | `winui-session-report` | `win-dev-skills` | User-invoked session analysis; carries a privacy warning |
+    | `dotnet-aot-compat` | `dotnet-skills` | Reference only; AOT/trimming deferred until startup is profiled |
+    | `configuring-opentelemetry-dotnet` | `dotnet-skills` | Reference only; App Insights SDK remains the default telemetry path |
+    | `create-custom-agent` | `dotnet-skills` | Reference only: VS Code `.agent.md` format, not Codex TOML |
+
+    **All five are present in the draft lockfile today (verified 2026-08-24) and all five must still be present after the sync. Their presence is correct; their absence is the defect.** A check phrased as "no skill from the do-not-load table appears in the lockfile" is false by five and produces a false stop — do not write that check.
+
+    Run this against `eng/skills/skills.lock.json` after the sync and record all four numbers in the post-implementation report:
+
+    ```powershell
+    $lock = Get-Content ./eng/skills/skills.lock.json -Raw | ConvertFrom-Json
+    $never = 'entra-app-registration','entra-agent-id','azure-deploy','azure-prepare','azure-app-onboard',
+             'azure-app-onboard-prereq','azure-cloud-migrate','azure-enterprise-infra-planner','python-appservice-deploy',
+             'azure-kubernetes','airunway-aks-setup','azure-aigateway','microsoft-foundry','azure-ai','azure-messaging',
+             'azure-kusto','azure-upgrade','azure-reliability','azure-quotas'
+    $badFamilies = 'dotnet-maui','dotnet-blazor','dotnet-template-engine','dotnet-test-migration','dotnet11','dotnet-ai','dotnet-advanced'
+    $referenceOnly = 'winui-wpf-migration','winui-session-report','dotnet-aot-compat','configuring-opentelemetry-dotnet','create-custom-agent'
+
+    @($lock.skills | Where-Object { $_.name -in $never }).Count                                    # expect 0
+    @($lock.skills | Where-Object { ($_.skillPath -split '/')[1] -in $badFamilies }).Count         # expect 0
+    @($lock.skills | Where-Object { $_.name -in $referenceOnly }).Count                            # expect 5
+    $lock.skills.Count                                                                             # expect 35
+    ```
+
+    If a never-vendored name has appeared, remove the entry and say in the plan how it got in. If one of the five reference-only skills is missing, that is a sync failure — restore it.
 11. **Decide and record** what happens to the root `skills-lock.json` (mattpocock, `version: 1`, four entries whose skill bodies are not in the tree). Plan § 3 permits leaving it as is or folding it into the new file. State the decision in the plan document; do not silently delete it.
 12. Run the two documentation gates that a new tree can break and record their output: `pwsh ./scripts/Test-DocumentationLinks.ps1` (expected: "All relative Markdown links resolve") and `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base <merge-base with dev> -Head HEAD` (expected: "Markdown placement passed"). Note that `.agents/skills` is an allowed root but `eng/` is not — **no `.md` file may be added under `eng/skills/`**; the procedure documentation belongs in `docs/runbook.md` and is [[DSK-12-10]]'s work.
-13. Record the Appendix C evidence in the post-implementation report: skills consulted with their pinned SHAs, the commands run verbatim, the two sync runs, the drift test, and the binary-payload decision from step 5.
+13. Record the Appendix C evidence in the post-implementation report: skills consulted with their pinned SHAs, the commands run verbatim, the two sync runs, the drift test, the four counts from step 10, and the binary-payload decision from step 5.
 
 ## Acceptance criteria
 
 - [ ] `.agents/skills/vendor/dotnet/`, `.agents/skills/vendor/windows/` and `.agents/skills/vendor/azure/` exist and hold every skill named in the lockfile at its `destination`.
 - [ ] `eng/skills/skills.lock.json` exists with schema `version: 2`, the three pinned commits, and 35 entries with real SHA-256 hashes and no `TBD`.
+- [ ] The four step-10 counts are recorded: **0** never-vendored names, **0** skills from the seven excluded plugin families, **5** reference-only skills still present, **35** entries in total.
 - [ ] `eng/skills/sync-skills.ps1` is idempotent: a second consecutive run leaves `git status --porcelain` clean.
 - [ ] `eng/skills/verify-skills.ps1` exits 0 on a clean tree and non-zero naming the file on a one-byte mutation.
 - [ ] The binary-payload decision and the root `skills-lock.json` decision are recorded in the plan document with their reasons.
@@ -93,6 +135,7 @@ Proposal §20.2: "Do not let every agent clone the latest upstream skill at exec
 - [ ] `pwsh ./eng/skills/verify-skills.ps1` — expected: exit code 0 and a line naming the number of skills verified.
 - [ ] `pwsh ./eng/skills/sync-skills.ps1; git status --porcelain` — expected: empty output.
 - [ ] `grep -c 'TBD' eng/skills/skills.lock.json` — expected: `0`.
+- [ ] The step-10 PowerShell block — expected: `0`, `0`, `5`, `35` in that order.
 - [ ] `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base <merge-base> -Head HEAD` — expected: `Markdown placement passed for <base>..<head>.`
 - [ ] `pwsh ./scripts/Test-DocumentationLinks.ps1` — expected: `All relative Markdown links resolve (<n> files checked).`
 
@@ -104,13 +147,14 @@ Tier 1 — Static/build/architecture. It obliges recorded command output showing
 
 - `docs/desktop/12-agent-tooling/README.md` § 3 — the sentence "today the WinUI skills live under `.codex/skills/`" becomes historical once the move lands; update it to name the vendored destination and keep the date.
 - `docs/desktop/12-agent-tooling/skill-routing.md` § Pinned sources — the parenthetical "today the WinUI skills sit under `.codex/skills/`" is updated to the vendored path.
+- `docs/desktop/12-agent-tooling/skill-routing.md` § "Not applicable to this conversion (do not load)" — split the single table into two sub-headings that name the rule each row obeys: **"Never vendored"** (the 19 names and the 7 excluded plugin families) and **"Vendored for reference; never auto-loaded"** (`winui-wpf-migration`, `winui-session-report`, `dotnet-aot-compat`, `configuring-opentelemetry-dotnet`, `create-custom-agent`). Presentational only — no row is added or removed, and no skill changes category. The heading as it stands invites the false check step 10 forbids, and this ticket is already editing this file.
 - `docs/runbook.md` — **not** in this ticket; the sync/verify procedure is [[DSK-12-10]].
 
 ## Guardrails
 
 - **Azure**: no write. `azure-*` skills are vendored as text only; nothing in this ticket calls an Azure tool.
 - **Scope boundary**: may create `eng/skills/` and `.agents/skills/vendor/**`, and edit the two `docs/desktop/12-agent-tooling/` files named above. Must not touch `src/`, `tests/`, `infra/`, `.github/workflows/ci.yml` (that is [[DSK-12-03]]) or delete anything under `.codex/skills/` (that is [[DSK-12-04]]).
-- **Traps**: `microsoft/win-dev-skills` is a 0.x preview whose README warns of breaking changes — pin by commit, never by branch, and never re-fetch at execution time. Skills are playbooks, not dependencies: never add a vendored folder to a `.csproj`, a project reference or a deployment. The CI `documentation` job fails on any new `.md` outside the allowed roots, and `eng/` is not one of them.
+- **Traps**: `microsoft/win-dev-skills` is a 0.x preview whose README warns of breaking changes — pin by commit, never by branch, and never re-fetch at execution time. Skills are playbooks, not dependencies: never add a vendored folder to a `.csproj`, a project reference or a deployment. The CI `documentation` job fails on any new `.md` outside the allowed roots, and `eng/` is not one of them. **And the sharpest trap in this ticket: "do not load" is not "do not vendor".** The routing table's do-not-load list holds both never-vendored skills and five deliberately vendored reference-only ones; checking the lockfile against the whole table stops the ticket on five entries that are supposed to be there. Step 10 gives the two checks that are actually true.
 - **Sizing concern**: this row carries a scripted sync, a verifier, a lockfile promotion and two recorded decisions. It is deliberately not split (seed rule: write the steps and note the concern) — if the binary-payload decision turns into design work, file it as a follow-up rather than widening this ticket.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
