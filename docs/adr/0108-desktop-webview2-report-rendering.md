@@ -14,8 +14,8 @@ tags: []
 ## Status
 
 Proposed on 2026-08-24. This proposal relates to ADR-0025 and ADR-0028 and
-supersedes neither. It becomes accepted only after the Phase 7 off-screen-host
-spike and the approved-fixture golden-file parity gate have both passed.
+supersedes neither. It becomes accepted only after Phase 7 packaged-controller
+validation and the approved-fixture golden-file parity gate have both passed.
 
 ## Context
 
@@ -72,20 +72,22 @@ registration, custody, authorisation, and audit remain gateway responsibilities
 under FRD-11. A missing or outdated WebView2 runtime must produce a named
 failure and use the retained gateway renderer while the workstation is fixed.
 
-**Off-screen host — unresolved pending Phase 7 spike:** [[FEAT-040]]
-(`DSK-07-14`) must prove whether a collapsed WinUI `WebView2` control with a
-XAML root or a `CoreWebView2Controller` attached to a hidden HWND is the
-reliable host. The acceptance change records the proven choice here. Microsoft
-Learn documents the controller's `ParentWindow` and visibility hosting APIs,
-including an HWND window reference; that API availability is not evidence that
-either candidate renders correctly in Pegasus without a visible window.
+**Off-screen host:** the renderer creates its
+`CoreWebView2Controller` with `HWND_MESSAGE` as `ParentWindow`.
+Microsoft Learn explicitly documents `HWND_MESSAGE` as a valid parent for an
+invisible WebView on Windows 8 and later: it will never become visible and
+cannot be reparented. The renderer therefore needs no XAML root, collapsed
+control, arbitrary hidden HWND, or host-selection abstraction. [[FEAT-040]]
+(`DSK-07-14`) validates this documented arrangement from the packaged desktop
+app by rendering a trivial document to PDF; it does not choose between hosts.
 
 ## Consequences
 
 - The gateway `PlaywrightAssessmentReportRenderer` remains the renderer in use
   until [[FEAT-041]] (`DSK-07-15`) passes golden-file parity on approved
-  fixtures in the local Test/UAT stack and the later acceptance change records
-  the host choice. This ADR does not claim that parity has passed.
+  fixtures in the local Test/UAT stack and [[FEAT-040]] proves packaged-app
+  integration of the documented controller. This ADR does not claim that
+  parity has passed.
 - Parity compares text, values, page count, and key positions within documented
   tolerances. It is not pixel equality: WebView2 Chromium updates independently
   while the current Playwright baseline is pinned.
@@ -102,11 +104,11 @@ either candidate renders correctly in Pegasus without a visible window.
 
 Rendering stays with, or returns to, the gateway if any of the following is
 true: the WebView2 runtime is absent or cannot be maintained across the target
-workstation fleet; approved fixtures have a golden-file divergence that cannot
-be closed within their documented tolerance; or neither candidate off-screen
-host initialises and renders without a visible window. Such evidence reopens
-L-03 for an operator decision; it is not a reason to expose a WebView2-based
-Pegasus UI.
+workstation fleet; the documented `HWND_MESSAGE` controller cannot initialise
+or print from the packaged desktop app; or approved fixtures have a golden-file
+divergence that cannot be closed within their documented tolerance. Such
+evidence reopens L-03 for an operator decision; it is not a reason to trial a
+collapsed XAML host or expose a WebView2-based Pegasus UI.
 
 ## Options considered
 
@@ -116,14 +118,18 @@ Pegasus UI.
 - **Use WebView2 as the desktop shell:** rejected because proposal section 2.1
   prohibits a WebView shell and section 23.2 allows only this isolated,
   document-rendering exception.
-- **Select the off-screen host now:** rejected because the host behaviour has
-  not been proven; choosing it before [[FEAT-040]] completes would turn an
-  evidence gap into an immutable assertion.
+- **Use a collapsed WinUI `WebView2` control or an arbitrary hidden HWND:**
+  rejected. Microsoft Learn documents `HWND_MESSAGE` as the invisible
+  controller parent, so an additional XAML or native-window path would add an
+  unsupported alternative without a second caller.
+- **Defer host selection to Phase 7:** rejected. The documented host is fixed;
+  [[FEAT-040]] validates packaged integration and output rather than selecting
+  a host.
 
 ## Links
 
 - [Conversion governance and ADR set](../desktop/00-governance-and-workflow/README.md)
-- [Integration plan: report rendering and the Phase 7 spike](../desktop/07-integrations/README.md)
+- [Integration plan: report rendering and Phase 7 validation](../desktop/07-integrations/README.md)
 - [Native desktop conversion proposal](../desktop/Pegasus_Native_Desktop_Design_Proposal.md)
 - [ADR-0025: integrate the renderer into Pegasus](0025-integrate-renderer-and-extractor-into-the-application.md)
 - [ADR-0028: current Web Container App renderer host](0028-run-integrated-renderer-in-web-container-app.md)
@@ -132,3 +138,4 @@ Pegasus UI.
 - [Microsoft Learn: printing from WebView2 apps](https://learn.microsoft.com/microsoft-edge/webview2/how-to/print) — fetched 2026-08-24.
 - [Microsoft Learn: `CoreWebView2Controller`](https://learn.microsoft.com/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/corewebview2controller) — fetched 2026-08-24.
 - [Microsoft Learn: `CoreWebView2ControllerWindowReference`](https://learn.microsoft.com/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/corewebview2controllerwindowreference) — fetched 2026-08-24.
+- [Microsoft Learn: `CreateCoreWebView2ControllerAsync`](https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2environment.createcorewebview2controllerasync) — fetched 2026-08-24; documents `HWND_MESSAGE` as the invisible WebView parent.
