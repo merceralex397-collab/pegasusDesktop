@@ -35,8 +35,8 @@ Parity matrix row: **`PAR-11`** (`docs/desktop/01-inventory-and-parity/parity-ma
 "13.3 Case lifecycle / FRD-01 / `Cases/Tasks.cshtml.cs` (248)", naming all eight handlers, with
 the intended API column `~POST /api/v1/cases/{id}/notes`, `~.../tasks`,
 `~.../tasks/{taskId}/assign|complete|cancel`, `~.../chases`, `~.../report-evidence`, status
-`inventoried`. The matrix holds 46 rows (`grep -c '^| PAR-' docs/desktop/01-inventory-and-parity/parity-matrix.md`
-→ `46`).
+`inventoried`. The matrix holds 46 rows
+(`grep -c '^| PAR-' docs/desktop/01-inventory-and-parity/parity-matrix.md` → `46`).
 
 The DOCS-012 half has no page handler at all — it is what the persistence layer does **after** an
 operator acts:
@@ -88,9 +88,10 @@ operator acts:
 - `CaseTaskRecord` (`CaseTaskContracts.cs:12-19`) returns `Version` **and** `CaseVersion`, so a
   successful task command can tell the desktop both new versions in one response without a re-read
   — which is what step 8 asks for.
-- Replay protection for the task family is `ICaseTaskStore.HasOperationAsync(caseId, operationKey, …)`
-  (`CaseTaskContracts.cs:117-120`) — keyed on the **case**, not the task. A replayed key on a
-  different task in the same case is therefore already a Core-level concern, not an endpoint one.
+- Replay protection for the task family is
+  `ICaseTaskStore.HasOperationAsync(caseId, operationKey, …)` (`CaseTaskContracts.cs:117-120`) —
+  keyed on the **case**, not the task. A replayed key on a different task in the same case is
+  therefore already a Core-level concern, not an endpoint one.
 - `EfCaseNoteStore` (`src/Pegasus.Infrastructure/Persistence/EfCaseNoteStore.cs`, 66 lines) is the
   exact template for step 9. Its class comment (`:13-18`) records the defect this ticket is
   preventing: "It must be `CaseWorkflowEventEntity` specifically: the Notes tab reads
@@ -118,6 +119,16 @@ operator acts:
   failed". Four of the five are unreachable today because the events they name are written into a
   table no surface projects. The ticket forbids rewording them; moving the writes is what makes
   them reachable.
+- **No `Grant*` migration is needed for the DOCS-012 half, and this is verified rather than
+  assumed.** `20260729199000_RuntimeRoleReconciliation.cs` grants
+  `("CaseWorkflowEvents", "SELECT, INSERT")` to the **Web** role in `WebGrants` (`:94` list, entry
+  at `:122`) and to the **Worker** role in `WorkerGrants` (`:166` list, entry at `:181`); the Web
+  grant originates in `20260729176000_AzureSqlRuntimeLeastPrivilege.cs:59`. The pinned census in
+  `tests/Pegasus.IntegrationTests/AzureSqlRuntimeRoleMigrationTests.cs` already records
+  `CaseWorkflowEvents:SELECT,INSERT` at `:119` and `:177`, so it needs no edit either. This closes
+  the area plan § 7 "runtime-role grants" trap for this ticket — the two Worker-side writers
+  (`EfQueuedCustodyProcessor`, `EfExternalWorkStore`) can insert into `CaseWorkflowEvents` under
+  the role they already run as.
 - Existing test fixtures to mirror: `tests/Pegasus.IntegrationTests/CaseTasksWebTests.cs` (181
   lines) for the web-side behaviour that must stay green; `CaseNotePersistenceTests.cs` (154 lines)
   for the note round trip; `CaseTaskArchivePersistenceTests.cs` (1,019 lines) for the task version
@@ -137,9 +148,12 @@ Everything under Findings above is read from the repository at the paths and lin
 - `wc -l src/Pegasus.Infrastructure/Persistence/EfCaseNoteStore.cs` → `66`
 - `grep -c '^| PAR-' docs/desktop/01-inventory-and-parity/parity-matrix.md` → `46`
 - `grep -n "custody_failed\|audit_custody_failed\|CaseHistory" src/Pegasus.Infrastructure/Persistence/EfExternalWorkStore.cs`
-  → writes at `:210`, `:450`, `:481`, `:608`, `:635`; the four this ticket owns are `:450`, `:481`,
+  → writes at `:210`, `:450`, `:481`, `:608`, `:635`. The four this ticket owns are `:450`, `:481`,
   `:608`, `:635`. **`:210` is a different event and is out of scope** — the guardrail names four
-  line ranges, not five.
+  line ranges in this file, not five.
+- `grep -n "CaseWorkflowEvents" src/Pegasus.Infrastructure/Persistence/Migrations/20260729199000_RuntimeRoleReconciliation.cs`
+  → `:47`, `:122`, `:181`, `:228`, `:276` (runtime-table list, Web grants, Worker grants, and the
+  two `Previous*` rollback lists).
 - `ls src` → four projects, none of them `Pegasus.Contracts`.
 - `grep -rn "RunDueChasers" src/Pegasus.Worker/` → `EmailEvidenceFunctions.cs:50`.
 
@@ -151,11 +165,11 @@ Concurrency, Problem details rows) and § 5 row `DSK-03-09`;
 ### Assumptions
 
 - **A-GWY-1** — the problem-details mapper created by [[GWY-002]] (plan handle `DSK-03-02`) is a
-  single file with one exception-to-problem switch, so adding the `CaseTaskVersionConflictException`
-  arm there is a one-place change. *Confirmed by:* reading that file once [[GWY-002]] has merged.
-  *If wrong:* step 6 becomes "add the arm wherever the mapping lives", and the plan's estimate for
-  that file grows by the number of places; the rule that no second catch block appears in the
-  endpoint file still holds.
+  single file with one exception-to-problem switch, so adding the
+  `CaseTaskVersionConflictException` arm there is a one-place change. *Confirmed by:* reading that
+  file once [[GWY-002]] has merged. *If wrong:* step 6 becomes "add the arm wherever the mapping
+  lives", and the estimate for that file grows by the number of places; the rule that no second
+  catch block appears in the endpoint file still holds.
 - **A-GWY-2** — the `cases` sub-group and the `/api/v1` write rate-limit policy from [[GWY-008]]
   (plan handle `DSK-03-08`) are exposed as an extension point this file can attach to, rather than
   a closed builder. *Confirmed by:* reading the group registration [[GWY-008]] adds.
@@ -164,17 +178,17 @@ Concurrency, Problem details rows) and § 5 row `DSK-03-09`;
 - **A-GWY-3** — moving `custody_confirmed` / `custody_failed` (and the two audit variants) off
   `CaseHistory` breaks no existing assertion, because nothing operator-facing reads that table.
   *Confirmed by:* `grep -rn "CaseHistory" tests/ src/Pegasus.Web/` before the move, which the plan
-  makes step 1 of the DOCS-012 half. *If wrong:* an existing test asserts the old table and must be
-  rewritten to assert the history projection instead — which is the same correction the ticket is
-  making, so the fix is aligned, not a scope change.
-- **A-GWY-4** — a workflow event written from `EfExternalWorkStore` and `EfQueuedCustodyProcessor`
-  can reuse `EfCaseNoteStore`'s field set without a new `Grant*` migration, because
-  `CaseWorkflowEvents` is an existing table already written to by the Web runtime role and read by
-  `EfCaseQueryStore`. *Confirmed by:* checking the **Worker** runtime role's grant on
-  `CaseWorkflowEvents` — these two writers run in the Worker, not the Web app.
-  *If wrong:* the ticket needs a `Grant*` migration, which is the PLAT-035 "works locally, fails
-  only in production" trap the area plan § 7 names first. **This is the single highest-value check
-  in the ticket and the plan makes it a step of its own.**
+  makes an explicit step. *If wrong:* an existing test asserts the old table and must be rewritten
+  to assert the history projection instead — which is the same correction the ticket is making, so
+  the fix is aligned, not a scope change.
+- **A-GWY-4** — the two Worker-side writers hold a live `CaseWorkflowEntity` (or can load one) at
+  each of the six write sites, so `BeforeVersion` / `AfterVersion` can be filled the way
+  `EfCaseNoteStore.cs:61-62` fills them. *Confirmed by:* the code already reads `workflow.Version`
+  into `beforeVersion` at every site — `EfQueuedCustodyProcessor.cs:594-605` and `:661`,
+  `EfExternalWorkStore.cs:450-456`, `:481-487`, `:608-614`, `:635-641` — so this is very likely
+  already true; the removal site (`EfDocumentCustodyStore.cs:419-461`) also loads the workflow at
+  `:446`. *If wrong at one site:* that site loads the workflow row it is already updating; no new
+  query shape.
 
 ## Execution placement
 
@@ -197,10 +211,10 @@ enforcement. No new placement, no Azure resource, no Azure write.
 
 ## Implications
 
-1. **The DTOs are not uniform and must not be made uniform.** Create takes `expectedVersion` +
-   `taskExpectedVersion`-absent; assign/complete/cancel take both; note takes neither. The ticket's
-   instruction to name the task field distinctly stands and is what prevents the confusion —
-   but four distinct DTO shapes, not one.
+1. **The DTOs are not uniform and must not be made uniform.** Create takes the case version only;
+   assign/complete/cancel take both; note takes neither. The ticket's instruction to name the task
+   field distinctly stands and is what prevents the confusion — but four distinct DTO shapes, not
+   one.
 2. **The notes endpoint is the thinnest of the eight and the easiest to over-build.** Core's
    `AddCaseNoteRequest` has four members. Adding `expectedVersion` or `editLeaseToken` to the
    DTO to "match the family" would reintroduce exactly the contention CASE-017 removed, and would
@@ -211,20 +225,24 @@ enforcement. No new placement, no Azure resource, no Azure write.
 4. **The DOCS-012 half is a persistence change with a guardrail that forbids a shared helper.**
    The guardrail permits changes to three named files "and nothing else in
    `src/Pegasus.Infrastructure`", so the obvious refactor — one `CaseWorkflowEventWriter` helper —
-   is out of scope. Each of the six write sites carries its own inline `CaseWorkflowEvents.Add`,
-   modelled on `EfCaseNoteStore.cs:48-63`. The plan says so explicitly so a reviewer does not read
-   the repetition as a defect.
-5. **Six write sites, not three.** `custody_confirmed` ×1, `audit_custody_confirmed` ×1,
-   `custody_failed` ×2, `audit_custody_failed` ×2, plus the removal, which today writes nothing —
-   seven events across three files. Counting them as "three files" is how one gets missed.
+   is out of scope. Each write site carries its own inline `CaseWorkflowEvents.Add`, modelled on
+   `EfCaseNoteStore.cs:48-63`. The plan says so explicitly so a reviewer does not read the
+   repetition as a defect.
+5. **Six relocated write sites plus one new one, not three files' worth.** `custody_confirmed` ×1,
+   `audit_custody_confirmed` ×1, `custody_failed` ×2, `audit_custody_failed` ×2 — six existing
+   sites to move — plus the document removal, which today writes nothing and gains a new event.
+   Counting them as "three files" is how one gets missed.
 6. **The proof must go through the projection.** A test that queries `CaseWorkflowEvents` directly
    passes while reproducing the Release 22 defect. Every DOCS-012 fact asserts through
-   `GET /cases/{id}/history` (from [[GWY-007]], backed by `EfCaseQueryStore.cs:181-196`) and adds
-   the negative that `CaseHistory` gained no row.
+   `GET /cases/{id}/history` (from [[GWY-007]], plan handle `DSK-03-07`, backed by
+   `EfCaseQueryStore.cs:181-196`) and adds the negative that `CaseHistory` gained no row.
 7. **Everything this ticket writes into is created by an earlier ticket.** Nothing under
    `src/Pegasus.Contracts`, `src/Pegasus.Web/Api` or `openapi/` exists on disk today, so the
    implementer must confirm those tickets have merged before starting rather than creating the
    projects themselves.
+8. **The grant trap does not bite here.** Verified above: both runtime roles already hold
+   `SELECT, INSERT` on `CaseWorkflowEvents` and the census test already pins it. No migration, no
+   `Invoke-AzureDatabaseBootstrap.ps1` change, no census edit.
 
 ## Open questions
 
@@ -236,6 +254,5 @@ enforcement. No new placement, no Azure resource, no Azure write.
   default rather than asked, per the authoring contract; recorded here and as a risk in the plan so
   the reviewer sees it was a decision. No `open-questions` document is created — the body does not
   instruct one and this is settled by the body itself.
-- Whether the **Worker** runtime role holds an INSERT grant on `CaseWorkflowEvents` is not yet
-  verified (assumption **A-GWY-4**). It is answerable by reading the migrations at implementation
-  time, not by an operator, so it is a plan step rather than an open question.
+- Nothing else is unresolved. The one question this research opened at the outset — whether the
+  DOCS-012 half needs a runtime-role grant — is answered under Facts and needs no operator.
