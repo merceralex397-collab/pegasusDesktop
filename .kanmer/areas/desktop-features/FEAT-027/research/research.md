@@ -21,6 +21,7 @@ because upstream PLAT-039 and the MAIL fixes arrive with it.
 | Retry external work | `…/Operations/Index.cshtml.cs:71` `OnPostRetryExternalAsync` | `RetryExternalWork` with `expectedAttemptCount` + `operationKey`; [[FEAT-028]] (plan handle `DSK-07-02`) owns the command half |
 | Revoke upload link | `…/Operations/Index.cshtml.cs:112` `OnPostRevokeLinkAsync` | Acquires and releases a case edit lease around `IRevokeRequestUploadLink` |
 | Mail freshness banner | `src/Pegasus.Web/Pages/Mail/Index.cshtml.cs:144` | `GetRetainedMailFreshness.ExecuteAsync`; `:253-258` `FreshnessStatus` maps the three states to `current` / `stale` / `unavailable` |
+| Email operations projection | **no Razor caller** | `GetEmailOperations` is registered (`src/Pegasus.Infrastructure/DependencyInjection.cs:240`) and implemented (`EfOperationsStore.cs:133-220`) but nothing under `src/Pegasus.Web/Pages/` calls it |
 
 Parity-matrix row: **`PAR-27`** — "13.10 Administration and operations · FRD-12 ·
 `Operations/Index.cshtml.cs` (236) … `~GET /api/v1/operations`", status
@@ -40,29 +41,53 @@ the mailbox half is only the Inbox freshness banner (`PAR-21`). The matrix holds
   (`src/Pegasus.Core/Operations/EmailOperations.cs:62`,
   `MaximumItemsPerDirection = 50` at `:66`) and
   `IRetainedMailQueries.ListPollHealthAsync`
-  (`src/Pegasus.Core/Intake/RetainedMail.cs:382`) — plus
-  `ListMailboxesAsync` (`:379`), see the join fact below. All three use cases
-  already require `StaffAccessRight.PerformCasework` inside Core
-  (`RequestOperations.cs:87`, `EmailOperations.cs:77`, `RetainedMail.cs:668`),
-  so the endpoint filter is defence in depth, not the only check.
-- **Poison is a failure *code*, not a state — and it is already queryable.**
-  `IntakeWorkState` (`src/Pegasus.Core/Intake/DurableIntake.cs:12-22`) has
-  seven members and **no** `Poisoned`. `EfIntakeWorkStore.MarkPoisonedAsync`
-  (`src/Pegasus.Infrastructure/Persistence/EfIntakeWorkStore.cs:393-414`) sets
-  `State = Failed`, `DueAtUtc = failedAtUtc` and
-  `FailureCode = "queue_poisoned"` at `:410`.
-  `EfExternalWorkStore.MarkPoisonedAsync`
-  (`src/Pegasus.Infrastructure/Persistence/EfExternalWorkStore.cs:400`) writes
-  the same literal at `:442`, `:475`, `:506`, `:524` and `:532`. The poison
-  count that ticket step 7 requires is therefore
-  `count(failureCode == "queue_poisoned")` over rows the two projections
-  already return — **no new table, no `Grant*` migration, no Worker change**.
-- **The operator sentence for that code already exists.**
-  `src/Pegasus.Web/Presentation/OperatorLabels.cs:340` maps
-  `"queue_poisoned"` → `"Processing was attempted repeatedly without
-  completing"`. That map is the one [[GWY-016]] (plan handle `DSK-03-16`) and
-  [[FEAT-023]] (plan handle `DSK-05-23`) relocate to `Pegasus.Contracts`; this
-  ticket consumes it and writes no second label list.
+  (`src/Pegasus.Core/Intake/RetainedMail.cs:382`) — plus `ListMailboxesAsync`
+  (`:379`), see the join fact below. All three use cases already require
+  `StaffAccessRight.PerformCasework` inside Core (`RequestOperations.cs:87`,
+  `EmailOperations.cs:77`, `RetainedMail.cs:668`), so the endpoint filter is
+  defence in depth, not the only check.
+- **`GetEmailOperations` has no caller in `src/Pegasus.Web` today.**
+  `grep -rn 'GetEmailOperations' --include=*.cs src tests` returns the Core
+  declaration, the DI registration (`DependencyInjection.cs:240`), the EF store
+  and `tests/Pegasus.Core.Tests/Operations/OperationsUseCaseTests.cs`. Nothing
+  in `Pages/`. This endpoint is therefore the **first shipped caller** of that
+  projection: there is no Razor baseline to compare against for the mail half,
+  which is why plan step 9's LocalDB facts, not a parity diff, are the evidence
+  for it. It also means every one of the projection's `InvalidDataException`
+  invariants (`EmailOperations.cs:91`, `:96`, `:101`) fires for the first time
+  against production-shaped data here.
+- **There are two different poison concepts, and summing them would be a
+  defect.**
+  1. **Queue poison** — a storage-queue message that exhausted
+     `maxDequeueCount`. `IntakeWorkState`
+     (`src/Pegasus.Core/Intake/DurableIntake.cs:12-22`) has seven members and
+     **no** `Poisoned`; `EfIntakeWorkStore.MarkPoisonedAsync`
+     (`src/Pegasus.Infrastructure/Persistence/EfIntakeWorkStore.cs:393-414`)
+     sets `State = Failed`, `DueAtUtc = failedAtUtc` and
+     `FailureCode = "queue_poisoned"` at `:410`.
+     `EfExternalWorkStore.MarkPoisonedAsync` (`:400`) writes the same literal at
+     `:442`, `:475`, `:506`, `:524` and `:532`, and calls
+     `CompletePoisonReplay` at `:435`, `:468`, `:499` where the effect already
+     landed — those rows **complete** and must not be counted as poison.
+  2. **Mailbox poison** — a message the mail provider or reader refused, held as
+     `ApprovedInboxPoisonMessage`
+     (`src/Pegasus.Core/Intake/MailboxIntake.cs:124-134`, carrying
+     `OccurrenceKey`, `ImmutableMessageId`, `FileName`, `SourceLength`,
+     `ReceivedAtUtc`, `FailureCode`). `EfOperationsStore` already projects those
+     rows into `EmailOperationProjection` with operation ids prefixed
+     `received-poison:` and `State = Failed`, `RetryMailboxId: null` — so
+     `CanRetry` is false for them (`EfOperationsStore.cs:136-149`).
+
+  Both are already queryable from the two projections; neither needs a new
+  table, a `Grant*` migration or a Worker change. Reporting them as one number
+  would tell an operator that a refused e-mail and an exhausted queue message
+  are the same failure, which they are not.
+- **The operator sentence for the queue code already exists.**
+  `src/Pegasus.Web/Presentation/OperatorLabels.cs:340` maps `"queue_poisoned"`
+  → `"Processing was attempted repeatedly without completing"`. That map is the
+  one [[GWY-016]] (plan handle `DSK-03-16`) and [[FEAT-023]] (plan handle
+  `DSK-05-23`) relocate to `Pegasus.Contracts`; this ticket consumes it and
+  writes no second label list.
 - **`maxDequeueCount` is 5.** `src/Pegasus.Worker/host.json` `extensions.queues`
   — `batchSize 4`, `newBatchThreshold 2`, `visibilityTimeout 00:05:00`,
   `maxDequeueCount 5`, `maxPollingInterval 00:00:02`. Exhaustion is what the
@@ -109,7 +134,7 @@ the mailbox half is only the Inbox freshness banner (`PAR-21`). The matrix holds
   and `unknown` to stay distinct and "unknown outcomes remain unknown".
 - **The projections are bounded and validated in Core.** `GetRequestOperations`
   throws `InvalidDataException` on an uninitialised collection
-  (`RequestOperations.cs:96`), on exceeding `MaximumItems` (`:100`) and on nine
+  (`RequestOperations.cs:96`), on exceeding `MaximumItems` (`:100`) and on
   further invariants (`:113`–`:149`); `GetEmailOperations.Validate` does the
   same at `EmailOperations.cs:91`, `:96` and `:101`. The endpoint surfaces
   `limitReached` rather than truncating a second time.
@@ -127,7 +152,8 @@ the mailbox half is only the Inbox freshness banner (`PAR-21`). The matrix holds
   `tests/Pegasus.IntegrationTests/OperationsWebTests.cs` (363 lines) — and
   `:345` already seeds `FailureCode: "queue_poisoned"` for a `Failed` row, so
   the fixture shape this ticket needs exists — plus
-  `OperationsPersistenceTests.cs` (144 lines).
+  `OperationsPersistenceTests.cs` (144 lines) and
+  `tests/Pegasus.Core.Tests/Operations/OperationsUseCaseTests.cs`.
 - **The projects this ticket writes into do not exist yet.** `ls src` returns
   `Pegasus.Core`, `Pegasus.Infrastructure`, `Pegasus.Web`, `Pegasus.Worker`;
   `ls tests` returns `Pegasus.ArchitectureTests`, `Pegasus.Core.Tests`,
@@ -153,19 +179,25 @@ the mailbox half is only the Inbox freshness banner (`PAR-21`). The matrix holds
   flags. Breaks if: production routinely exceeds them — the desktop would then
   show a truncated failure list while implying completeness, and raising a
   Core bound is a different ticket.
-- **A-07-01-3 — `queue_poisoned` is the only failure code a poison path
+- **A-07-01-3 — `queue_poisoned` is the only failure code a queue-poison path
   writes.** Confirmed by
   `grep -rn 'queue_poisoned' --include=*.cs src tests` → six write sites, all
   in the two poison stores, plus the label map and one test. Breaks if: an
   upstream sync adds a second poison code — the count would under-report, so
   the count is derived from a named constant in `Pegasus.Contracts` with a test
   asserting the constant matches the store literal.
-- **A-07-01-4 — [[GWY-002]] (plan handle `DSK-03-02`)'s route group returns
+- **A-07-01-4 — the `received-poison:` operation-id prefix
+  (`EfOperationsStore.cs:137`) is a stable way to count mailbox poison.**
+  Confirmed by: a LocalDB fact seeding one `ApprovedInboxPoisonMessage` and
+  asserting the count. Breaks if: the prefix changes — in which case count by
+  `State == Failed && RetryMailboxId is null` on the received direction, or
+  raise a Core projection field, which is a different ticket.
+- **A-07-01-5 — [[GWY-002]] (plan handle `DSK-03-02`)'s route group returns
   `404` for the whole group when `Features:DesktopGateway` is off.** Confirmed
   by: the gate test at plan step 8. Breaks if: it returns `503` or `401` —
   the "404 with the gate off" acceptance criterion then belongs to [[GWY-002]]
   and this ticket asserts whatever that ticket settled.
-- **A-07-01-5 — [[FEAT-045]] (plan handle `DSK-07-19`) has not fixed the wire
+- **A-07-01-6 — [[FEAT-045]] (plan handle `DSK-07-19`) has not fixed the wire
   vocabulary when this ticket lands.** Confirmed by: checking [[FEAT-045]]'s
   stage before step 6. Breaks if: it has landed — then this ticket consumes its
   taxonomy type rather than carrying `failureCode` as the Core string, and no
@@ -179,7 +211,7 @@ reported on is already placed by ADR-0106.
 
 | Question | Answer | Evidence, and where a "yes" lands |
 | --- | --- | --- |
-| Shared authority — must several users see and update the same state? | **yes** | Retryable external work and mailbox poll state are one shared queue every operator acts on; `RequestOperationProjection.CanRetry` (`RequestOperations.cs:51`) and the `expectedAttemptCount` guard (`:159`) exist because two staff can race a retry. **Lands in the gateway** — `Pegasus.Web` evolved in place (L-01), no new deployment unit. |
+| Shared authority — must several users see and update the same state? | **yes** | Retryable external work and mailbox poll state are one shared queue every operator acts on; `RequestOperationProjection.CanRetry` (`RequestOperations.cs:51`) and the `ExpectedAttemptCount` guard (`:159`) exist because two staff can race a retry. **Lands in the gateway** — `Pegasus.Web` evolved in place (L-01), no new deployment unit. |
 | Unattended execution — must it run with every desktop closed? | **yes** | The polling and queue work being reported on runs unattended: `InboxPollFunction` (`MailboxFunctions.cs:8-15`), `IntakeWorkFunction` / `IntakePoisonFunction` (`IntakeFunctions.cs:31`, `:48`), `ExternalWorkFunction` / `ExternalPoisonFunction` (`ExternalWorkFunctions.cs:7`, `:24`). **Lands in the existing `src/Pegasus.Worker`** (ADR-0106) — and this ticket writes no Worker code; it only reads what the Worker recorded. |
 | Protected credentials — long-lived secret that must not sit on workstations? | **yes** | The Microsoft Graph credential behind every mailbox cycle. **Lands behind the gateway and Worker** (ADR-0106, ADR-0107); the desktop holds none and receives none — hence step 8's assertion that no response field carries a mailbox credential, Graph token, connection string or storage key. |
 | Public callback — must an external service call a stable public endpoint? | **no** | Graph is polled on a timer, not called back. Nothing external calls this surface, and the ticket adds no subscription or change-notification path. |
@@ -200,11 +232,17 @@ plan handle `DSK-07-04`). **No new Azure resource and no Azure write.**
   keeps the freshness policy in its one Core owner and keeps the endpoint a
   thin argument-mapper, which is the projection style the gateway plan requires
   (`docs/desktop/03-gateway-api-and-data/README.md` § 3, "Projection style").
-- **The poison count is a filter, not a feature.** Because `queue_poisoned` is
-  a failure code on rows the projections already return, "report the count of
-  intake items that have exhausted `maxDequeueCount`" is a `Count(…)` over the
-  projection — so the guardrail "this ticket must not add a table" is
-  satisfiable without argument.
+- **The poison figures are two filters, not one feature.** Queue poison is
+  `failureCode == "queue_poisoned"` on rows the projections already return
+  (excluding the `CompletePoisonReplay` completions); mailbox poison is the
+  `received-poison:` rows of `GetEmailOperations`. Two named fields, never one
+  sum — so the guardrail "this ticket must not add a table" is satisfiable
+  without argument, and the trap "poison-queue visibility lost behind a friendly
+  status" is answered by naming both.
+- **This is the first shipped exposure of `GetEmailOperations`.** There is no
+  Razor parity baseline for the mail half, so its evidence is the seeded LocalDB
+  facts rather than a comparison, and its Core invariants should be expected to
+  fire during development against real-shaped data.
 - **`asOfUtc` is the whole honesty contract.** `Index.cshtml.cs:41-45` states
   it in the code's own words; the endpoint reproduces it by taking the
   timestamp *after* the last await, and a failed query returns a problem — never

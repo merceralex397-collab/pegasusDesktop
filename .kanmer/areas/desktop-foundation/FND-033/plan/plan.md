@@ -17,6 +17,11 @@ No file under `src/Pegasus.Core`, `src/Pegasus.Infrastructure`, `src/Pegasus.Web
 `src/Pegasus.Worker` is touched, and `docs/desktop/06-ui-design/screen-specs.md` is read, never
 edited.
 
+> **This ticket has one blocking open question.** See `open-questions`: which channel drives which
+> environment-badge label. It blocks `leave-preparing`, `enter-review` and `enter-done` — correctly,
+> because step 5 cannot write the badge without the answer. It does **not** block `leave-backlog`.
+> Everything else in this plan is ready to execute the moment it is answered.
+
 ## Approach
 
 Put every value the shell displays on a **`ShellViewModel`**, and put the three negative requirements
@@ -37,18 +42,24 @@ handle `DSK-02-07`) built the host in a separate file too.
 **The ownership reconciliation the Guardrails require, settled here before any XAML is written.**
 [[DUI-004]] (plan handle `DSK-06-04`) is titled "Shell: NavigationView rail (236px), route order,
 counts, title bar, environment badge, status bar" and names the same deliverable. It sits in area
-`desktop-ui`, group `EPIC-007`, and has **no documents yet** (`docs: {}`). The split recorded here:
+`desktop-ui`, group `EPIC-007`, and has no documents yet (`docs: {}`). The split recorded here:
 
-> **[[FND-033]] builds it; [[DUI-004]] verifies it against the design authority.** This ticket owns
+> **[[FND-033]] builds it; [[DUI-004]] verifies and dresses it.** This ticket owns
 > `src/Pegasus.Desktop/Shell/**` and `src/Pegasus.Desktop/Services/**` — the XAML, the view model and
 > the two services. [[DUI-004]] owns the design-side conformance pass over that same XAML against
-> `docs/desktop/06-ui-design/screen-specs.md` and `tokens-and-theme.md`, and any refinement it finds.
+> `docs/desktop/06-ui-design/screen-specs.md` and `tokens-and-theme.md`, and any refinement it finds;
+> its own § Source of truth casts it as dressing "the shell scaffold … this ticket dresses", which
+> agrees.
 >
 > The reason is the dependency direction already recorded in the plans, not a preference: plan 02 § 5
 > row `DSK-02-08` states the acceptance as "**Routes from 06 navigable**" — 06 specifies, 02
 > implements — and [[FND-041]] (plan handle `DSK-02-16`), the Phase 1 exit review, requires a
-> launching, navigable native shell as a Phase 1 gate row. A shell that arrives only in area 06 would
+> launching, navigable native shell as a Phase 1 gate row. A shell that arrived only in area 06 would
 > miss that gate.
+>
+> **The file path follows from that split**: this ticket creates the file, so it is
+> `src/Pegasus.Desktop/Shell/ShellPage.xaml`, not `src/Pegasus.Desktop/Views/ShellPage.xaml` as
+> [[DUI-004]] step 3 assumes. [[DUI-004]] dresses it where it is.
 >
 > **This is a two-sided agreement and one side is written here.** Before writing XAML, confirm
 > [[DUI-004]] has not been taken, and record the same split in [[DUI-004]]'s plan document. If
@@ -92,6 +103,7 @@ The programme-level authorities that also bind today:
 | Proposal § 14.8 Notifications and errors | Prompts go through one mechanism | Step 7 (`IDialogService`) |
 | Proposal § 14.9 Keyboard and accessibility | Keyboard reach and semantic labels | Steps 8, 9 |
 | Proposal § 11.3 Connectivity handling | Disconnected is shown, not hidden; existing content stays visible | Step 6, rendering only — [[FND-047]] (plan handle `DSK-04-11`) owns the state machine |
+| `docs/design/README.md:31-38` | The canonical authenticated route list, Operations as route 6, "Operations-first … selected on 2026-07-27" | Step 3 — see the research addendum for why `:474-475` omits Operations and does not contradict this |
 | `screen-specs.md:59-60` | `PaneDisplayMode=Left`, `OpenPaneLength=236`, `IsPaneToggleButtonVisible=False` — "the authority's rail never hides" | Step 3 |
 | `screen-specs.md:62-63` | Current item is a weight change **plus** a 2 px Collision-red left marker, never colour alone | Step 4 |
 | `screen-specs.md:64-66` | Counts absent until the query returns; **never a shell-level `0`** | Steps 6, 11 |
@@ -145,8 +157,11 @@ paths, adding the *how* the body leaves out.
 3. **Write the rail.** `src/Pegasus.Desktop/Shell/ShellPage.xaml` with a `NavigationView`:
    `PaneDisplayMode="Left"`, `OpenPaneLength="236"`, `IsPaneToggleButtonVisible="False"`, and seven
    `NavigationViewItem`s in exactly this order — Dashboard, Inbox, Upload, Queues, Cases, Operations,
-   Administration. Bind `Administration`'s and `Inbox`'s **visibility** to `ShellViewModel`
-   properties; do not hard-code them visible and do not render them **disabled**.
+   Administration. (The seven-route list is settled: `docs/design/README.md:31-38` is canonical and
+   includes Operations as route 6; the abbreviated restatement at `:474-475` lists *shipped* routes,
+   which `:1089-1091` reconciles. See the research addendum — do not re-open it.) Bind
+   `Administration`'s and `Inbox`'s **visibility** to `ShellViewModel` properties; do not hard-code
+   them visible and do not render them **disabled**.
    `src/Pegasus.Web/Pages/Shared/_Layout.cshtml:6` records why in the web application's own words:
    *"disabled nav span: a permanently inert item says the product is broken"*, and
    `screen-specs.md:27-28` agrees. The role signal behind the binding is placeholder state until
@@ -156,16 +171,21 @@ paths, adding the *how* the body leaves out.
    `screen-specs.md:62-63`, `docs/design/README.md`, and the `winui-code-review` theming checklist,
    three independent sources. Every colour and size comes from a `{ThemeResource}` key defined by
    [[FND-034]] and valued by [[DUI-001]] (plan handle `DSK-06-01`); **no hex literal and no raw
-   `FontSize`** may appear in any view in this ticket. Glyphs come from [[DUI-003]] (plan handle
-   `DSK-06-03`)'s `PathIcon` set — FRD-12 `:28` requires one consistent icon per semantic action
-   across Pegasus, so none is invented here.
-5. **Build the title bar**: logo asset, environment badge shown **only outside production**
-   ("Pilot", "Test/UAT", "Development", read from the channel option [[FND-032]] registered — one
-   read, bound to a view-model property, never a second literal read of `Channel`), connection glyph
-   **plus word**, version and channel, and a user menu with Change password, Sign out, Diagnostics.
-   Run `microsoft_docs_search` for `AppWindow TitleBar` drag-region semantics **before**
-   implementing: a custom title bar needs explicit drag rectangles or the operator cannot move the
-   window (A-FND033-2).
+   `FontSize`** may appear in any view in this ticket. Glyphs come from [[DUI-003]]'s `PathIcon` set —
+   FRD-12 `:28` requires one consistent icon per semantic action across Pegasus, so none is invented
+   here.
+5. **Build the title bar.** ⚠ **Blocked on the open question until it is answered** — see
+   `open-questions`. Everything except the badge's label mapping can be built: logo asset, connection
+   glyph **plus word**, version and channel, and a user menu with Change password, Sign out,
+   Diagnostics. The **environment badge** is shown only outside production and reads the channel from
+   the option [[FND-032]] registered (one read, bound to a view-model property, never a second literal
+   read of `Channel`) — but *which label each channel renders* is the open question:
+   `screen-specs.md:67-69` names three labels ("Pilot", "Test/UAT", "Development") while plan 02 § 3
+   decision 7 defines three channels (`pilot` | `production` | `local`), and with `production` hiding
+   the badge, two labels compete for `local`. Build the badge control and its binding; leave the
+   label map to the answer. Run `microsoft_docs_search` for `AppWindow TitleBar` drag-region semantics
+   **before** implementing the custom title bar: it needs explicit drag rectangles or the operator
+   cannot move the window (A-FND033-2).
 6. **Build the status bar**: connection state, last sync time rendered in **Europe/London**,
    background transfer summary that opens the transfer pane, and update availability. Rail counts are
    `int?` on the view model; when null the count element is **absent**, not `0`. This is FRD-12
@@ -193,8 +213,10 @@ paths, adding the *how* the body leaves out.
    `Alt+C`, `Alt+O`, `Alt+A`; `Ctrl+K` navigates to Cases search; `F5` refreshes the current screen.
    Verify tab order reaches every rail item **and** the user menu. That is the whole subset
    `screen-specs.md:78-79` assigns to the shell; `Ctrl+N`, `Ctrl+S`, `Ctrl+W`, `Esc` and the rest
-   belong to [[DUI-014]] (plan handle `DSK-06-14`). If two access keys collide, record it and raise
-   it with [[DUI-014]] — do not silently pick a different letter.
+   belong to [[DUI-014]] (plan handle `DSK-06-14`) and
+   `docs/desktop/06-ui-design/keyboard-and-accessibility.md`. A subset is not a conflict. If two
+   access keys collide, record it and raise it with [[DUI-014]] — do not silently pick a different
+   letter.
 10. **Implement the five shell states** as view-model states with placeholder content:
     authenticated; unauthenticated (login replaces the shell); update-required and blocked
     (full-window, **no rail**); disabled account; stale role. Area 04 owns the real screens
@@ -202,11 +224,13 @@ paths, adding the *how* the body leaves out.
     authentication here.** The value this step delivers is that the shell can *be* in each state and
     a test can assert it.
 11. **Write the view-model tests** in `tests/Pegasus.Desktop.ViewModelTests` ([[FND-038]], plan
-    handle `DSK-02-13`): rail visibility for administrator vs non-administrator; the environment
-    badge hidden in the production channel and shown otherwise; status-bar connection text for
-    connected and disconnected; the navigation service routing to each of the seven routes; and — the
-    one the negative requirement needs — a **null** rail count rendering nothing rather than `0`. If
-    [[FND-038]] has not landed, sequence it first and record the sequencing.
+    handle `DSK-02-13`): rail visibility for administrator vs non-administrator; status-bar
+    connection text for connected and disconnected; the navigation service routing to each of the
+    seven routes; and — the one the negative requirement needs — a **null** rail count rendering
+    nothing rather than `0`. The **environment-badge test** ("hidden in the production channel and
+    shown otherwise") can be written for the hidden/shown behaviour now, but its *label* assertions
+    wait on the open question. If [[FND-038]] has not landed, sequence it first and record the
+    sequencing.
 12. **Verify visually and by keyboard.** Run
     `pwsh .codex/skills/winui-dev-workflow/BuildAndRun.ps1 src/Pegasus.Desktop/Pegasus.Desktop.csproj`
     asynchronously, navigate every rail item, press each access key, drag the window by its custom
@@ -239,8 +263,8 @@ The `proof` document is produced from these five outputs.
   - **Rail visibility**: `Administration` absent for a non-administrator, present for an
     administrator; `Inbox` absent when its capability is not composed. Assert **absent**, not
     disabled.
-  - **Environment badge**: hidden when the channel is `production`, shown with the right text for
-    `pilot` and `local`.
+  - **Environment badge**: hidden when the channel is `production`, shown otherwise — with the label
+    assertions added once the open question is answered.
   - **Status bar**: connection text for connected and disconnected, the disconnected case matching
     the exact spec string.
   - **Counts**: a `null` count renders no count element; a count of `0` from the query is a separate
@@ -260,6 +284,8 @@ The `proof` document is produced from these five outputs.
 
 **Honesty clauses for the proof.**
 
+- Record the answer the open question received and which label map was implemented, so a reader can
+  see the badge text was decided rather than assumed.
 - Say plainly whether the keyboard evidence is manual or automated, and name [[TEST-006]] as the
   follow-up if manual. `docs/runbook.md:38` ("record the platform actually exercised") and tier 7's
   own sentence both require this.
@@ -274,11 +300,25 @@ The `proof` document is produced from these five outputs.
 
 ## Risks / open questions
 
+- **One blocking open question exists on this ticket, and it is recorded in `open-questions`:
+  which channel drives which environment-badge label.** `screen-specs.md:67-69` names three
+  non-production labels ("Pilot", "Test/UAT", "Development") while plan 02 § 3 decision 7 defines
+  three channels (`pilot` | `production` | `local`) and plan 04 § 3 item 8 (`:198-199`) confirms the
+  package carries only the channel name — so with `production` hiding the badge, **two labels compete
+  for `local` and one label has no channel at all**. This ticket's `## Documentation changes` binds
+  the author to record a spec ambiguity "as an open question in the ticket, not as an edit", and the
+  badge's text is operator-facing copy governed by `docs/design/README.md`, which the authority order
+  in `docs/desktop/00-governance-and-workflow/README.md` § 3 places above these plans. It is written
+  as an **unticked** item, which blocks `leave-preparing`, `enter-review` and `enter-done` — correctly,
+  because step 5 cannot write the badge without it. It never blocks `leave-backlog`. The default that
+  would otherwise be taken (`local` → "Test/UAT", "Development" retired) is recorded in
+  `open-questions` along with the three candidate resolutions, so answering it is a single decision.
 - **Risk — two shells get built.** [[DUI-004]] names the same deliverable and has no documents yet.
   *Mitigation*: the reconciliation in § Approach, applied at step 1 **before** any XAML, and recorded
   in [[DUI-004]]'s plan as well. If [[DUI-004]] is already taken and started, stop and reconcile with
   its holder. This is a scope boundary with a named sibling ticket that the ticket body directs to be
-  settled in this plan — it is settled here, not opened as a question.
+  settled in this plan — settled here, not opened as a question. The file path follows from it:
+  `Shell/ShellPage.xaml`, not `Views/ShellPage.xaml`.
 - **Risk — A-FND033-1: the selection indicator may not restyle without a full template override.**
   *Mitigation*: `winui-search.exe` on the template parts at step 2 settles it before XAML is written.
   *If wrong*: a larger override, its size recorded — but "weight change plus marker, never colour
@@ -305,17 +345,18 @@ The `proof` document is produced from these five outputs.
 - **Sequencing, recorded not resolved — [[FND-038]] must land before step 11.**
   `tests/Pegasus.Desktop.ViewModelTests` does not exist yet and `tests/Pegasus.ArchitectureTests`
   targets `net10.0`, so it cannot host these tests. Sequence it first; do not duplicate the scaffold.
-- **Sequencing, recorded not resolved — [[FND-030]] and [[FND-032]] must both have landed.** The plan
-  arrow names only [[FND-032]], but the project itself comes from [[FND-030]].
+- **Sequencing, recorded not resolved — [[FND-030]] (plan handle `DSK-02-05`) and [[FND-032]] must
+  both have landed.** The plan arrow names only [[FND-032]], but the project itself comes from
+  [[FND-030]].
+- **Scope boundary, not an open question — the rail-route list.** Settled on inspection and recorded
+  in the research addendum: `docs/design/README.md:31-38` is canonical and includes Operations as
+  route 6; `:474-475` lists *shipped* routes, which `:1089-1091` reconciles; and
+  `src/Pegasus.Web/Pages/Operations/Index.cshtml` exists. Do not re-open it.
 - **Scope boundary, not an open question — authentication, the real role, the real connectivity
   state, the full keyboard map, the counts query, and the token values.** [[FND-044]], [[FND-045]],
   [[FND-046]], [[FND-047]], [[DUI-014]], [[FEAT-001]], [[FND-034]] and [[DUI-001]] respectively.
-- **No `open-questions` document is opened on this ticket.** The ticket body does not instruct one,
-  and nothing here is unsettled in a way that must be answered from outside before implementation
-  begins. Every assumption names the command inside the ticket that settles it, and no settled
-  operator decision (D-002, D-003, D-004, the Send-to-AI exclusion) is reopened. Where the body says
-  to record a spec ambiguity, it says to record it **in the ticket** rather than by editing
-  `screen-specs.md` — that instruction is followed, and none has been found so far.
+- **No settled operator decision is reopened.** D-002, D-003, D-004 and the Send to AI (AI-09)
+  recorded exclusion all stand untouched by this ticket.
 
 ## Simplification pass
 
