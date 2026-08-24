@@ -301,8 +301,8 @@ area `desktop-foundation` (prefix `FND`) unless noted; horizon group
 
 ## 8. Documentation changes
 
-- `docs/adr/0100-native-winui3-desktop-client.md` and
-  `docs/adr/0104-online-required-no-offline-replication.md` (+ index rows).
+- `docs/adr/0100-native-winui-3-client-in-the-fork.md` and
+  `docs/adr/0104-online-required-bounded-local-cache.md` (+ index rows).
 - `docs/current-architecture.md`: system shape gains the desktop client and
   Contracts; dependency direction table extended; implementation map rows for
   `src/Pegasus.Desktop*`.
