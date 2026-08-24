@@ -1,33 +1,35 @@
 # Checklist — FND-008
 
-One box per plan step, in plan order. Every box is independently tickable.
+One box per plan step, in plan order. Tick with
+`set_ticket_doc(doc: "checklist")` as you go; append progress notes below rather
+than rewriting.
 
-- [ ] Read `docs/frd/README.md` in full, `docs/frd/frd-12-operator-experience.md`, `docs/design/README.md` and `docs/desktop/06-ui-design/README.md`; call `get_doc_gates FND-008` and `take_ticket`
-- [ ] Confirm [[FND-005]] has merged and that every ADR path FRD-13 will cite exists in the tree
-- [ ] Write the FRD-12 / FRD-13 boundary into `plan` — FRD-12 keeps the web operator experience until cutover; FRD-13 owns shell and navigation, session and first run, keyboard completion, accessibility baseline, error and empty states, update-required behaviour
-- [ ] Create `docs/frd/frd-13-desktop-operator-experience.md` using the template at `docs/frd/README.md:35-58`, with the owner line, `## Purpose`, `## Behaviour`, `## States and transitions`, `## Edge cases and fail-closed behaviour`, `## Acceptance evidence` and `## Links`
-- [ ] Record in `plan`, and flag in the PR description, that no existing FRD follows this template (measured `##` counts 2,1,2,1,1,2,1,2,2,3,1,1) and that the house owner line reads `· UI behaviour: docs/design/README.md`
-- [ ] Write `## Behaviour` as normative rules using "must" / "never" / "fails closed", including: an unsupported client version must not proceed; every critical workflow must be completable from the keyboard; no colour-only state
-- [ ] Confirm FRD-13 cites `docs/desktop/06-ui-design/screen-specs.md` for per-screen detail and copies none of it
-- [ ] Confirm FRD-13 cites `docs/design/README.md` as binding UI authority rather than restating it
-- [ ] Cite ADR-0100, ADR-0102, ADR-0104 and ADR-0105 by relative path in `## Links`
-- [ ] Cite ADR-0108 and mark it explicitly as still `status: proposed`
-- [ ] Add the FRD-13 row to the `## Documents` table in `docs/frd/README.md` with families `DSK` (and `UI` where it extends FRD-12's domain)
-- [ ] Add the `DSK` family rows to `docs/capabilities.md` under `## Capabilities`, one per durable desktop outcome, in the existing six-column order, each with a resolving `Canonical owner`
-- [ ] Add the family note row stating that a capability ID is `FAMILY-NN` and is not the plan handle `DSK-<area>-<nn>`
-- [ ] Recompute the horizon table at `docs/capabilities.md:31-36` so its column sums to the stated total
-- [ ] Recompute the `Total: **N capabilities; N unique IDs**.` line at `:38`
-- [ ] Recompute the target-release table at `:40-54` so its column sums to the same total
-- [ ] Confirm the `OPS-10` row at `docs/capabilities.md:73` is untouched (`git diff -- docs/capabilities.md | grep 'OPS-10'` is empty) — it belongs to [[REL-016]] under D-004
-- [ ] Add the native Windows desktop client to `docs/prd/pegasus-product.md` § Purpose, users, and outcomes
-- [ ] Record the web front end's post-cutover retirement in the PRD as scope, not as a schedule, in the section that fits after reading `## Permanent boundaries`
-- [ ] Add the FRD-13 question row to the question→file table in `docs/index.md` (`:7-30`), leaving § New Markdown files unedited
+- [ ] Read `docs/frd/README.md` in full (definition `:3-13`, documents table `:16-32`, template `:35-58`), `docs/frd/frd-12-operator-experience.md` in full, `docs/design/README.md`, and `docs/desktop/06-ui-design/README.md`
+- [ ] Call `get_doc_gates FND-008`, confirm `leave-backlog: [governing-doc]` is satisfied by `docs_todo`, then `take_ticket` with a real branch and worktree cut from `origin/dev`
+- [ ] **Gate:** run `ls docs/adr/010*` and confirm ADR-0100, ADR-0102, ADR-0104, ADR-0105 and ADR-0108 all exist — stop and wait for [[FND-005]], [[FND-006]] and [[FND-007]] if any is missing
+- [ ] Classify every bullet of `docs/frd/frd-12-operator-experience.md:4-20` as *web only until cutover* or *restated for the desktop*, and write the classification into the plan's step 2
+- [ ] Record the FRD-12 / FRD-13 boundary rule in the plan, including the shared-behaviour resolution (it stays in FRD-12 and FRD-13 cites it)
+- [ ] Create `docs/frd/frd-13-desktop-operator-experience.md` with the `docs/frd/README.md:35-58` owner line and the six template headings
+- [ ] Raise the template-versus-house-form divergence with `pegasus-desktop-reviewer` in the PR (no existing FRD follows the template; the house owner line reads "UI behaviour" with a bare design path) and record their answer
+- [ ] Write `## Behaviour` as normative rules: unsupported client version must not proceed; every critical workflow completable from the keyboard; a field is a label and a control and operator-facing explanation is a defect; no colour-only state; a disconnected client must not silently queue
+- [ ] Cite `docs/desktop/06-ui-design/screen-specs.md` for per-screen detail instead of copying it
+- [ ] Cite ADR-0100, ADR-0102, ADR-0104, ADR-0105 and ADR-0108 — and mark ADR-0108 as `status: proposed` wherever it is cited
+- [ ] Append the FRD-13 row to `docs/frd/README.md`'s documents table (`:16-32`), three cells, families `DSK` (plus `UI` where it extends FRD-12's domain)
+- [ ] Append the `DSK` rows to `docs/capabilities.md` under `## Capabilities` (`:69`) in the six-column order at `:71`, one row per **durable outcome** and not per screen, each with a `Canonical owner` link to FRD-13 or the owning ADR
+- [ ] Add the `DSK` family note row separating the three namespaces: capability `DSK-01`, plan handle `DSK-00-01`, board id [[FND-001]]
+- [ ] Recompute the horizon table at `docs/capabilities.md:31-36`
+- [ ] Recompute the `Total: **N capabilities; N unique IDs**.` line at `docs/capabilities.md:38`
+- [ ] Recompute the target-release table at `docs/capabilities.md:40-54`
+- [ ] Confirm all three totals reconcile with each other and with `grep -c '^| [A-Z]*-[0-9][0-9] |' docs/capabilities.md` (231 before this ticket)
+- [ ] Confirm no existing capabilities row was edited — in particular the `OPS-10` row at `docs/capabilities.md:73`, whose note change belongs to [[REL-016]] under D-004
+- [ ] Add the native Windows desktop client to `docs/prd/pegasus-product.md` `## Purpose, users, and outcomes` (`:4-18`) as an outcome, not a mechanism
+- [ ] Record the post-cutover web retirement in the PRD as **scope, not schedule**, and say in the plan which section carries it and why
+- [ ] Add one desktop-experience question row to `docs/index.md`'s question→file table (`:7-30`), leaving § New Markdown files (`:41-53`) unedited
 - [ ] Run `pwsh ./scripts/Test-DocumentationLinks.ps1` and `pwsh ./scripts/Test-TestMarkdownPlacement.ps1`; both exit 0
-- [ ] `link_doc` `docs/frd/frd-13-desktop-operator-experience.md` to the area 05 and area 06 tickets it now governs, including [[DUI-013]]
-- [ ] Clear `docs_todo` only where it was set for FRD-13 alone, and only after each `link_doc` exists
-- [ ] Open the PR against `dev` and take the independent review from `pegasus-desktop-reviewer`
-- [ ] Record the simplification pass under a dated `## Simplification pass` heading in `plan` (`n/a — docs-only`)
-- [ ] Verification run — the two gate scripts, `grep -c '^| DSK-' docs/capabilities.md`, the two allocation-summary column sums, `grep -n 'FRD-13' docs/frd/README.md docs/index.md`, the `DSK-` id-form grep, the `OPS-10` diff check, the ADR-0108 `proposed` grep and the FRD-13 heading count — all as the plan's Verification table states; **this box produces `proof`**
+- [ ] `link_doc` FRD-13 to the area 05 and area 06 tickets it now governs, including [[DUI-013]], and clear `docs_todo` **only** where it was set for FRD-13 alone
+- [ ] Re-probe `get_doc_gates` on at least one ticket whose `docs_todo` was cleared and record that its `leave-backlog` is still `passable: true`
+- [ ] Open the PR against `dev` with `gh pr create --base dev`, take the independent review from `pegasus-desktop-reviewer`, and record `n/a — docs-only` under a dated `## Simplification pass` heading in the plan
+- [ ] Verification run: after merge, capture the full command table from the plan's `## Verification` section as the `proof` `command-log` (tier 1 — static/build/architecture)
 
 ## Progress notes
 
