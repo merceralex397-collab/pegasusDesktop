@@ -13,7 +13,7 @@ Every current value below was measured at `bbd1c549` on 2026-08-24 with the comm
 | --- | --- | --- | --- |
 | `docs/adr/0100-native-winui3-desktop-client.md` | **does not exist** (`ls docs/adr/` returns `0001…0029` and `README.md`; no `01xx` file) | Text handed to the ADR's author for `## Consequences`; **zero diff on this branch** on the cheap path | 0 (or ~12 if this branch authors it) |
 | `docs/operations.md` | 920 lines (`wc -l`); `## Production environment` at `:280`; the `- **Deployed evidence:**` bullet runs `:295-299`; the release-history prose is an indented continuation of that bullet from `:301`; the release table header is `:311` | New `### Release source of truth` subsection inserted after `:299` and **before** the `:301` continuation | ~14 |
-| `docs/desktop/README.md` | 92 lines; the D-001 row is `:47` | That one row rewritten to point at the recorded location instead of carrying the decision | 1 replaced |
+| `docs/desktop/README.md` | 142 lines (`wc -l`); the D-001 row is `:47` | That one row rewritten to point at the recorded location instead of carrying the decision | 1 replaced |
 | `docs/open-decisions.md` | 35,922 bytes; `## Azure ownership and retirement targets` at `:333` | **Conditional only** — one line if the freeze date cannot be agreed (step 8) | 0 or ~2 |
 
 The `:301` boundary matters: the release-history prose is *inside* the `- **Deployed
