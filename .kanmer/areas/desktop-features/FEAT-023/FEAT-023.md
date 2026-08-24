@@ -24,7 +24,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:02:19.029Z'
-updated: '2026-08-24T11:18:06.920Z'
+updated: '2026-08-24T13:30:23.919Z'
 ---
 
 ## What
@@ -42,7 +42,7 @@ Move `OperatorLabels` out of `src/Pegasus.Web/Presentation/` into the shared ass
 - Endpoint map: `docs/desktop/03-gateway-api-and-data/endpoint-map.md` — [[DSK-03-16]] `OperatorLabels` relocation row in `docs/desktop/03-gateway-api-and-data/README.md` § 5
 - Proposal: `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md` § 5.4 Recommended solution structure, § 14.10 Theme system
 - Repository evidence: `src/Pegasus.Web/Presentation/OperatorLabels.cs` (685 lines; `using` list is `Pegasus.Core.Assessment`, `Cases`, `Documents`, `ImageIntake`, `Intake`, `Tasks`, `Workflow`, `Identity`, `Vehicle`, `Intake.Unidentified` plus `System.Globalization` and `System.Text` — no ASP.NET); 24 `.cshtml` consumers and 16 `.cs` consumers including `src/Pegasus.Web/Presentation/MailClassificationSelection.cs`, `UploadCaseDecision.cs`, `UploadOutcome.cs`; the two page-local maps at `src/Pegasus.Web/Pages/Intake/Details.cshtml.cs:349-360` (`DecisionLabel`, with `OcrRequired` → `"Document text required"` at `:356` and `TechnicalFailure` → `"Technical failure"` at `:357`) and `src/Pegasus.Web/Pages/Mail/Message.cshtml.cs:1019-1020` (the same two, copied); the binding table at `docs/design/README.md:541-542` (`OcrRequired` → `Needs text extraction`, `TechnicalFailure` → `Failed`) with its clarifying note at `:550`
-- Upstream evidence: `INTK-004` — "the design README binds"; the decision→label mapping exists twice in Web (Details / Message) and must become one table
+- Upstream evidence: upstream `INTK-004` — "the design README binds"; the decision→label mapping exists twice in Web (Details / Message) and must become one table
 - Binding decisions: L-01 the gateway is `Pegasus.Web` evolved in place, so the web keeps consuming the list from its new home; L-04 routing named on the ticket
 - Depends on: `DSK-02-04` the `src/Pegasus.Contracts` project the list moves into
 
@@ -101,7 +101,7 @@ Tier 1 obliges compiling the approved projects and enforcing dependency directio
 
 - **Azure**: no write.
 - **Scope boundary**: may touch `src/Pegasus.Contracts` (or `src/Pegasus.Core`, per the recorded decision), the `using` lines of the enumerated `src/Pegasus.Web` consumers, the two page-local map bodies named in step 4, the project references, and the test projects. It changes no page behaviour and no label text beyond the single recorded exception.
-- **Traps**: the settled status vocabulary must not drift — a changed string is a business-vocabulary regression, not a tidy-up, and the *only* sanctioned change is step 4's reconciliation against `docs/design/README.md:541-542`, recorded word by word; a second vocabulary list anywhere is a stop condition (`AGENTS.md` § Simplicity rails, one list per concept), and a page-local decision-to-label map is such a list; this ticket and [[DSK-03-16]] describe the same move and must not both perform it; if the move would drag ASP.NET or EF into the chosen home, the choice is wrong — record and re-decide rather than adding a reference; land this before [[DSK-03-10]] freezes the decision codes into the Intake detail DTO, or the mismatch is generated into every client.
+- **Traps**: the settled status vocabulary must not drift — a changed string is a business-vocabulary regression, not a tidy-up, and the *only* sanctioned change is step 4's reconciliation against `docs/design/README.md:541-542`, recorded word by word; a second vocabulary list anywhere is a stop condition (`AGENTS.md` § Simplicity rails, one list per concept), and a page-local decision-to-label map is such a list; this ticket and [[DSK-03-16]] describe the same move and must not both perform it; if the move would drag ASP.NET or EF into the chosen home, the choice is wrong — record and re-decide rather than adding a reference; land this before [[DSK-03-10]] freezes the decision codes into the Intake detail DTO, or the mismatch is generated into every client; **note the collision: upstream INTK-004 — whose label half this ticket carries — has no fork ticket, and the board's `INTK-004` is upstream INTK-027, a different ticket entirely** ([[DSK-05-09]] § Source of truth routes all four upstream intake ids, and the `HZN-001` group document `board-conventions.md` § Upstream ids versus board ids holds the join table).
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome

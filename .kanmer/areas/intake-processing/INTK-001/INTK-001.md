@@ -20,7 +20,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:44:22.452Z'
-updated: '2026-08-24T11:57:42.515Z'
+updated: '2026-08-24T13:30:21.517Z'
 ---
 
 ## What
@@ -35,8 +35,8 @@ The desktop conversion inherits all four defects unchanged and makes the second 
 
 ## Source of truth
 
-- Import decision: `coverage-decision.md` § Import list — row `INTK-002`; § Plan gaps — "The 208-ticket set contains no owner for Worker and Core/Infrastructure intake defects, yet the desktop inherits all of them unchanged"
-- Carry-over register: `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md:151` — `INTK-002 | intake-processing | backlog | chore | — | Intake duplication chores… | gateway-worker-ticket | 03, 10 | intake-processing`
+- Import decision: `coverage-decision.md` § Import list — the row for upstream `INTK-002` (this ticket; board `INTK-001`); § Plan gaps — "The 208-ticket set contains no owner for Worker and Core/Infrastructure intake defects, yet the desktop inherits all of them unchanged"
+- Carry-over register: `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md:151` — the row for upstream `INTK-002`, quoted as it stands (its first cell is an upstream id): `INTK-002 | intake-processing | backlog | chore | — | Intake duplication chores… | gateway-worker-ticket | 03, 10 | intake-processing`
 - Reuse position: `docs/desktop/05-implementation-and-migration/reuse-map.md` § `Pegasus.Worker` (Worker REUSE unchanged; Worker defects carried over as Worker tickets)
 - Repository evidence (fork `main`, read 2026-08-24):
   - `src/Pegasus.Core/Intake/IntakeContracts.cs:593-601` — `IntakeExceptionPolicy.IsTransientFailure`, which lists three BCL types (`IOException`, `TimeoutException`, `DbException`) plus the inner-exception walk
@@ -92,7 +92,7 @@ One place per taxonomy and per code table; adapters name faults, Core matches it
 
 ## Implementation steps
 
-1. Orient. Read the verbatim upstream body above, `coverage-decision.md` § Import list row `INTK-002`, and `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md:151`. Call `get_doc_gates <this ticket id>`, then `take_ticket` with branch `task/upstream-intk-002-intake-duplication` and worktree `../pegasus-worktrees/upstream-intk-002-intake-duplication` from `origin/dev`.
+1. Orient. Read the verbatim upstream body above, `coverage-decision.md` § Import list row for upstream `INTK-002`, and `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md:151`. Call `get_doc_gates <this ticket id>`, then `take_ticket` with branch `task/upstream-intk-002-intake-duplication` and worktree `../pegasus-worktrees/upstream-intk-002-intake-duplication` from `origin/dev`.
 2. **Re-expressed for this tree, not the upstream one.** The upstream body names `ProcessQueuedIntake.IsTransientProcessingFailure`. On the fork that predicate is `IntakeExceptionPolicy.IsTransientFailure` at `src/Pegasus.Core/Intake/IntakeContracts.cs:593-601`, consulted exactly once at `src/Pegasus.Core/Intake/DurableIntake.cs:573`. Record the current name, file and line in the ticket `plan` before changing anything, and use them throughout. Do the same for any other renamed symbol you meet.
 3. Sub-item (a), fault naming. Give `FileSystemIntakeArtifactStore` (`src/Pegasus.Infrastructure/Intake/FileSystemIntakeArtifactStore.cs`) the same fault translation `AzureBlobIntakeArtifactStore.DependencyUnavailable` (`:451`) performs, on **every** path rather than read/upload only, and replace the bare `InvalidOperationException` at `src/Pegasus.Infrastructure/Persistence/EfIntakeReceiptStore.cs:41` with a named concurrency-conflict exception from `src/Pegasus.Core/Intake/IntakeContracts.cs`. Done when `dotnet build --configuration Release` is clean and `tests/Pegasus.ArchitectureTests/AzureBlobIntakeArtifactStoreTests.cs` plus `tests/Pegasus.IntegrationTests/RecoveryTests.cs` are still green.
 4. Remove `IOException`, `TimeoutException` and `DbException` from `IntakeExceptionPolicy.IsTransientFailure` once step 3 covers every adapter on the processor's path. If one BCL type must remain, do **not** delete it — record in the `plan` which adapter still leaks it and why, exactly as the upstream verification line allows.
@@ -125,7 +125,7 @@ Tier 1 obliges the dependency-direction fact and a clean Release build of the fo
 
 ## Documentation changes
 
-- `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` — annotate row `INTK-002` with this fork ticket id, so the register joins to the board (`DSK-00-04` verifies the join)
+- `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` — annotate the upstream `INTK-002` row with this fork ticket id (`INTK-001`), so the register joins to the board (`DSK-00-04` verifies the join)
 - `docs/frd/frd-02-intake-and-source-identity.md` — only if the fail-closed decision in step 5 changes stated behaviour; otherwise `None.`
 
 ## Guardrails
@@ -133,7 +133,7 @@ Tier 1 obliges the dependency-direction fact and a clean Release build of the fo
 - **Azure**: no write. Read-only checks of the `transient-intake` container or Application Insights are permitted with no per-target approval (`docs/runbook.md` § Live-operation approval matrix; mirrored in `docs/desktop/11-azure-disposition/README.md`).
 - **Scope boundary**: may touch `src/Pegasus.Core/Intake/`, `src/Pegasus.Infrastructure/Intake/`, `src/Pegasus.Infrastructure/Persistence/`, `src/Pegasus.Web/Mcp/IntakeMcpTools.cs`, `src/Pegasus.Web/Program.cs` composition, `src/Pegasus.Worker/WorkerDependencyInjection.cs` and the three test projects. Must **not** touch `src/Pegasus.Web/Pages/Intake/**` (they die with the cut list, [[DSK-05-26]]), `src/Pegasus.Web/Api/**` (that is [[DSK-03-10]]'s), or any operator-facing label.
 - **Unblocks / blocked by**: this ticket **blocks** [[DSK-03-10]] — the gateway must not publish a fourth decision-code reader into `openapi/pegasus-v1.json` and the generated client. It is **blocked by** [[DSK-01-10]], the first one-way upstream sync, because upstream `main` is ahead of the fork on intake paths. It touches the same file as [[DSK-02-12]] (`DependencyDirectionTests`) — sequence, do not collide. Its cleaned vocabulary is what [[DSK-05-09]] and [[DSK-05-20]] render, and [[DSK-05-23]]/[[DSK-03-16]] carry the operator labels over that vocabulary unchanged.
-- **Traps**: this is a Worker/Core/Infrastructure chore, not desktop work — do not add a desktop project reference, a WinUI type or a `/api/v1` route here. A new table would need a runtime-role `Grant*` migration checked by `scripts/Test-MigrationGrants.ps1`; this ticket must not add one. Any new `.md` outside `docs/(prd|frd|adr|design|desktop)` fails the CI `documentation` job — ticket-transient notes live in Kanmer.
+- **Traps**: **upstream ids and fork board ids do not match.** This ticket is board `INTK-001` and it is upstream INTK-002. Upstream INTK-001 is a different ticket entirely — make the upload status honest for retry-scheduled work and auto-associated receipts — which was absorbed into [[DSK-05-13]] and [[DSK-03-11]] and has **no fork ticket**, so never read a bare `INTK-001` as it. The join table is `HZN-001/board-conventions.md` § Upstream ids versus board ids: read it, never compute the mapping, and write `upstream <ID>`, or `upstream <ID> (board [[<board-id>]])` where both are meant. This is a Worker/Core/Infrastructure chore, not desktop work — do not add a desktop project reference, a WinUI type or a `/api/v1` route here. A new table would need a runtime-role `Grant*` migration checked by `scripts/Test-MigrationGrants.ps1`; this ticket must not add one. Any new `.md` outside `docs/(prd|frd|adr|design|desktop)` fails the CI `documentation` job — ticket-transient notes live in Kanmer.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the ticket `plan` document.
 
 ## Outcome
