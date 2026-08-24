@@ -145,25 +145,19 @@ and the file paths are the body's. Measured values below were read on
    `docs/adr/0105-msix-app-installer-and-minimum-version-gate.md`, the only
    ADR-0105 path the plan set names
    (`docs/desktop/04-auth-session-update-and-startup/README.md:297`); for
-   ADR-0110 that is `docs/adr/0110-pin-agent-skills-and-invocation-protocol.md`;
-   for ADR-0100 that is `docs/adr/0100-native-winui3-desktop-client.md` — and
+   ADR-0110 that is `docs/adr/0110-agent-skill-pinning-and-invocation-protocol.md`;
+   for ADR-0100 that is `docs/adr/0100-native-winui-3-client-in-the-fork.md` — and
    **one rule**: whichever ticket is worked first authors the file, and the
    others verify that it covers their content and extend it in place.
-   **Which ticket authors ADR-0105 remains an ownership question for the
-   operator to settle before Phase 2.** It is recorded here, as the body directs,
-   and it blocks nothing: the path and the first-author-wins rule are already
-   identical across all three, so whoever runs first is correct under either
-   answer. Write the operator's answer into this section when it is given —
-   *decision, who took it, why, date* — and do not let an agent settle it by
-   starting first.
+   **ADR-0105 ownership is settled.** On 2026-08-24 the operator assigned authorship to FND-005. This ticket owns `docs/adr/0105-msix-app-installer-and-minimum-version-gate.md`; the other claimants link to or verify that canonical file and do not create another ADR-0105.
 3. **Create the six files** under `docs/adr/` using the existing
    `NNNN-kebab-title.md` pattern, in the order the Approach gives:
    `0101-local-execution-cloud-authority-split.md`,
    `0103-gateway-not-direct-database-access.md`,
-   `0104-online-required-no-offline-replication.md`,
+   `0104-online-required-bounded-local-cache.md`,
    `0105-msix-app-installer-and-minimum-version-gate.md`,
-   `0110-pin-agent-skills-and-invocation-protocol.md`, and last
-   `0100-native-winui3-desktop-client.md`.
+   `0110-agent-skill-pinning-and-invocation-protocol.md`, and last
+   `0100-native-winui-3-client-in-the-fork.md`.
 4. **Frontmatter, verbatim in shape** from `AGENTS.md:95-105` — eight keys, in
    this order, no tabs and no smart quotes:
    ```yaml
@@ -270,7 +264,7 @@ and the file paths are the body's. Measured values below were read on
    environment.
 10. **Add one row per ADR to `docs/adr/README.md`**, in ID order, appended after
     the ADR-0029 row at `:41` inside the accepted table. **Three cells**, matching
-    the header at `:18` — `| [0100](0100-native-winui3-desktop-client.md) | Native WinUI 3 desktop client in the fork | — |` —
+    the header at `:18` — `| [0100](0100-native-winui-3-client-in-the-fork.md) | Native WinUI 3 desktop client in the fork | — |` —
     linking by bare relative filename as every existing row does. Do not touch the
     `## Superseded and relocated` table at `:43-52`.
     **10a.** In the same PR, correct the two governance sentences this ticket
@@ -325,7 +319,7 @@ The `post-implementation-report` and then the `proof` (a `command-log`) carry:
 | `grep -n 'Owner capability' AGENTS.md` | no match after step 10a (exactly one match, at `:115`, before it) |
 | `grep -n 'superseded_by' docs/desktop/00-governance-and-workflow/README.md` | no match on the § 8 ADR row at `:423` after step 10a |
 | `git diff --stat -- docs/adr/0009-adopt-pegasus-monorepo-workspaces.md` | **empty** — ADR-0009 untouched, body and frontmatter |
-| `grep -n 'supersedes:' docs/adr/0100-native-winui3-desktop-client.md` | `supersedes: []` |
+| `grep -n 'supersedes:' docs/adr/0100-native-winui-3-client-in-the-fork.md` | `supersedes: []` |
 | `grep -c 'ADR-0014' docs/adr/0101-*.md docs/adr/0103-*.md` | at least one match in each — ADR-0014 explicitly not superseded |
 | `pwsh ./scripts/Test-DocumentationLinks.ps1` | exits 0, no broken relative link |
 | `pwsh ./scripts/Test-TestMarkdownPlacement.ps1` | exits 0 |
@@ -346,11 +340,7 @@ Proof is written on merged `main`, after review and merge — never before
   extend-in-place rule is already identical in every claimant's body. This is a
   scope boundary between named tickets — [[FND-026]], [[REL-001]], [[FND-042]],
   [[TOOL-008]] — not an unsettled question.
-- **Who authors ADR-0105** — an ownership question for the operator, recorded in
-  step 2 as the body directs. It blocks nothing (all three tickets name the same
-  path and the same first-author-wins rule), so it is held here rather than in an
-  `open-questions` document; it is a boundary between named tickets, not a design
-  gap.
+- **ADR-0105 ownership is settled.** The 2026-08-24 operator decision assigns authorship to FND-005; other claimants link to or verify its canonical file and do not create another ADR-0105.
 - **Writing `supersedes: [ADR-0009]` by reflex.** The likeliest single defect in
   this ticket, because the plan's own § 8 row at `:423` still asks for it.
   Mitigation: step 6 states the mechanism and its precedent, step 10a corrects

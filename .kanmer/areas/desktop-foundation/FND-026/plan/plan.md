@@ -13,8 +13,8 @@ Measured in `C:\Users\PC\Documents\GitHub\pegasusDesktop` at `bbd1c549`, 2026-08
 
 | Path | Measured current value | Change |
 | --- | --- | --- |
-| `docs/adr/0100-native-winui3-desktop-client.md` | **does not exist** — `ls docs/adr/` returns `0001`…`0029` (0017 never issued) plus `README.md`, 28 ADR files in all; the reserved block ADR-0100…ADR-0110 is entirely empty | new, ~140 lines |
-| `docs/adr/0104-online-required-no-offline-replication.md` | **does not exist** (same command) | new, ~95 lines |
+| `docs/adr/0100-native-winui-3-client-in-the-fork.md` | **does not exist** — `ls docs/adr/` returns `0001`…`0029` (0017 never issued) plus `README.md`, 28 ADR files in all; the reserved block ADR-0100…ADR-0110 is entirely empty | new, ~140 lines |
+| `docs/adr/0104-online-required-bounded-local-cache.md` | **does not exist** (same command) | new, ~95 lines |
 | `docs/adr/README.md` | 46 lines; `grep -c '^\| '` → **32**; accepted table header at `:18` (`\| ADR \| Title \| Related FRD \|`), separator `:19`, 22 data rows `:20-41` ending with the ADR-0029 row at **`:41`**; the "Superseded and relocated" table header at `:45` | +2 rows after `:41`; count becomes 34 |
 | `docs/desktop/README.md` | § Status table holds **one** row — `\| 00–12 \| Drafted 2026-08-23 \| Awaiting first ticket creation on the fork's Kanmer board (see 00) \|` — not one row per area | +1 row or an annotation; see Risks |
 
@@ -93,7 +93,7 @@ ticket meets are the two it creates.
 > no second file for either number.** Step 1's `ls docs/adr/0100-*.md docs/adr/0104-*.md`
 > is how that is detected — not prose. Two further points are already reconciled and
 > [[FND-005]] steps 2, 3 and 6 state them identically: **one filename**,
-> `docs/adr/0100-native-winui3-desktop-client.md` (one ADR ID, one file); and **one
+> `docs/adr/0100-native-winui-3-client-in-the-fork.md` (one ADR ID, one file); and **one
 > ADR-0009 rule**, `supersedes: []` with the deferral-clause supersession stated in
 > `## Context`, leaving ADR-0009's body *and* frontmatter untouched and its
 > `status: accepted` intact.
@@ -172,7 +172,7 @@ same file paths, with the measured current values a step must be checked against
    `related_frd`, `tags` — eight keys, that order. The key is **`superseded_by`**.
    Body headings: `Status · Context · Decision · Consequences · Options considered
    (optional) · Links`, Status first.
-3. **Create `docs/adr/0100-native-winui3-desktop-client.md`** with `id: ADR-0100`,
+3. **Create `docs/adr/0100-native-winui-3-client-in-the-fork.md`** with `id: ADR-0100`,
    `status: accepted`, today's date, and **`supersedes: []`**. Do **not** list ADR-0009
    in frontmatter: in this repository that key is the full-supersession relation
    (ADR-0029 / ADR-0013) and would take ADR-0009 out of the accepted table. Instead say
@@ -212,7 +212,7 @@ same file paths, with the measured current values a step must be checked against
    fill a yes/no **and** an evidence cell for each. Prose instead of six answers is a
    defect. Remember what a "yes" means on this programme: it names *where* the
    responsibility lands, not "in Azure".
-6. **Create `docs/adr/0104-online-required-no-offline-replication.md`** with
+6. **Create `docs/adr/0104-online-required-bounded-local-cache.md`** with
    `id: ADR-0104`, `status: accepted`. Decision: the desktop is online-required, and
    the only permitted local state is proposal §11.1's list — access token in memory;
    refresh/session token in the DPAPI store; window position, theme, grid columns and
@@ -235,7 +235,7 @@ same file paths, with the measured current values a step must be checked against
    into a three-column table. Correcting that `AGENTS.md` sentence is owned by
    [[FND-005]] (plan handle `DSK-00-05`), not by this ticket. Follow the existing rows
    exactly:
-   `| [0100](0100-native-winui3-desktop-client.md) | Native WinUI 3 desktop client | FRD-13 |`
+   `| [0100](0100-native-winui-3-client-in-the-fork.md) | Native WinUI 3 desktop client | FRD-13 |`
    and the same shape for `0104`, whose third cell is its `related_frd` as plain text or
    `—` where it has none, as the ADR-0002 row does. **Place both immediately after the
    ADR-0029 row, which is `docs/adr/README.md:41`.** Do not renumber anything and do not

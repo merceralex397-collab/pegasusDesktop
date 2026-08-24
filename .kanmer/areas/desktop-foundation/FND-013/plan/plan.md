@@ -12,7 +12,7 @@ Every current value was measured at `bbd1c549` on 2026-08-24 with the command sh
 
 | Path | Current size and the exact anchor | What this ticket does to it | Est. lines |
 | --- | --- | --- | --- |
-| `docs/adr/0100-native-winui3-desktop-client.md` | **does not exist.** `ls docs/adr/*.md \| wc -l` → `29`; `ls docs/adr/` returns `0001…0029` (0017 never issued: `ls docs/adr/ \| grep -c '^0017'` → `0`) plus `README.md`. There is no `01xx` file. | One paragraph supplied to the ADR's author for `## Context`; **zero diff on this branch** on the hand-off path | 0 here (~4 inside the authoring ticket's PR) |
+| `docs/adr/0100-native-winui-3-client-in-the-fork.md` | **does not exist.** `ls docs/adr/*.md \| wc -l` → `29`; `ls docs/adr/` returns `0001…0029` (0017 never issued: `ls docs/adr/ \| grep -c '^0017'` → `0`) plus `README.md`. There is no `01xx` file. | One paragraph supplied to the ADR's author for `## Context`; **zero diff on this branch** on the hand-off path | 0 here (~4 inside the authoring ticket's PR) |
 | `docs/index.md` | 59 lines (`wc -l`). `## Authority` at `:30`; its paragraph runs `:32-39`; `## New Markdown files` at `:41`. The paragraph names no prior documents at all today. | **Conditional only** — step 3 outcome C (ADR-0100 already `accepted`): one sentence appended to the `:32-39` paragraph | 0 or ~3 |
 | `docs/desktop/00-governance-and-workflow/README.md` | 431 lines (`wc -l`). The § 3 authority-order paragraph is `:131-139` and **already states the position** verbatim: "The proposal's three 'prior documents' (§2 item 5) are **not** in the repository; they are not an input to any ticket." (`grep -n 'prior document' docs/desktop/`) | **Read, not edited.** Step 6 cross-checks that the plan paragraph and the ADR sentence agree — they already do, so no edit is expected | 0 |
 | `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md` | 2 citation sites: § 2 item 5 at `:46-49`, and Appendix D — Research basis at `:2239-2241` | **Never edited** — the Guardrails forbid rewriting the proposal | 0 |
@@ -32,7 +32,7 @@ narrowed command is in Verification below.
 
 Deliver the sentence by **hand-off, not by editing**: ADR-0100 does not exist, its body is
 written by whichever of [[FND-005]] (plan handle `DSK-00-05`) or [[FND-026]] (plan handle
-`DSK-02-01`) reaches `docs/adr/0100-native-winui3-desktop-client.md` first, and `AGENTS.md:77-91`
+`DSK-02-01`) reaches `docs/adr/0100-native-winui-3-client-in-the-fork.md` first, and `AGENTS.md:77-91`
 makes an ADR body immutable once published. So this ticket verifies the premise, writes one
 paragraph, and gives it to that author before the `status: proposed → accepted` flip. The
 rejected alternative was to create a small ADR of its own for the note — rejected because
@@ -54,7 +54,7 @@ meet yet, so the New-ADR paragraph and the authority table below both apply.
 > fork, no WebView shell), authored by [[FND-005]] (plan handle `DSK-00-05`); ADR-0100 is
 > co-claimed with [[FND-026]] (plan handle `DSK-02-01`), so see [[FND-005]]'s plan for the
 > ownership reconciliation rather than assuming a single author. Both tickets resolve onto the
-> one filename `docs/adr/0100-native-winui3-desktop-client.md`.
+> one filename `docs/adr/0100-native-winui-3-client-in-the-fork.md`.
 > This plan is written to the position as recorded in
 > `docs/desktop/00-governance-and-workflow/README.md:131-139` (§ 3, authority order); if
 > ADR-0100 lands a different authority order this plan is revised before implementation.

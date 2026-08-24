@@ -11,7 +11,7 @@ Every current value below was measured at `bbd1c549` on 2026-08-24 with the comm
 
 | Path | Current size | What this ticket does to it | Est. lines |
 | --- | --- | --- | --- |
-| `docs/adr/0100-native-winui3-desktop-client.md` | **does not exist** (`ls docs/adr/` returns `0001…0029` and `README.md`; no `01xx` file) | Text handed to the ADR's author for `## Consequences`; **zero diff on this branch** on the cheap path | 0 (or ~12 if this branch authors it) |
+| `docs/adr/0100-native-winui-3-client-in-the-fork.md` | **does not exist** (`ls docs/adr/` returns `0001…0029` and `README.md`; no `01xx` file) | Text handed to the ADR's author for `## Consequences`; **zero diff on this branch** on the cheap path | 0 (or ~12 if this branch authors it) |
 | `docs/operations.md` | 920 lines (`wc -l`); `## Production environment` at `:280`; the `- **Deployed evidence:**` bullet runs `:295-299`; the release-history prose is an indented continuation of that bullet from `:301`; the release table header is `:311` | New `### Release source of truth` subsection inserted after `:299` and **before** the `:301` continuation | ~14 |
 | `docs/desktop/README.md` | 142 lines (`wc -l`); the D-001 row is `:47` | That one row rewritten to point at the recorded location instead of carrying the decision | 1 replaced |
 | `docs/open-decisions.md` | 35,922 bytes; `## Azure ownership and retirement targets` at `:333` | **Conditional only** — one line if the freeze date cannot be agreed (step 8) | 0 or ~2 |
@@ -27,7 +27,7 @@ different authority: ADR-0100 `## Consequences` (the durable decision record) an
 `docs/operations.md` (the current-state record of what is deployed and from where). The
 ADR half is delivered by **hand-off, not by editing**: ADR-0100 does not exist yet, its
 `## Consequences` section is written by whichever of [[FND-005]] (plan handle `DSK-00-05`) or
-[[FND-026]] (plan handle `DSK-02-01`) reaches `docs/adr/0100-native-winui3-desktop-client.md`
+[[FND-026]] (plan handle `DSK-02-01`) reaches `docs/adr/0100-native-winui-3-client-in-the-fork.md`
 first, and `AGENTS.md:81-90` makes an ADR body immutable once published. The rejected
 alternative was to let this ticket author or edit ADR-0100 itself — rejected because it either
 races the two claimants on one filename or, if ADR-0100 has already flipped to `accepted`,
@@ -46,7 +46,7 @@ meet yet, so the New-ADR paragraph and the authority table below both apply.
 > **New ADR** — ADR-0100 (native WinUI 3 desktop client in the fork), authored by
 > [[FND-005]] (plan handle `DSK-00-05`); see [[FND-005]]'s plan for the ownership
 > reconciliation with its co-claimant [[FND-026]] (plan handle `DSK-02-01`). Both tickets
-> resolve onto the single filename `docs/adr/0100-native-winui3-desktop-client.md`.
+> resolve onto the single filename `docs/adr/0100-native-winui-3-client-in-the-fork.md`.
 > This plan is written to the decision as recorded in
 > `docs/desktop/00-governance-and-workflow/README.md:212-224` (§ 3, "D-001 (decided
 > 2026-08-23) — release source of truth after Phase 2"); if ADR-0100 lands differently this

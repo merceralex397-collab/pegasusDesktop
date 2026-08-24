@@ -1,7 +1,7 @@
 # Plan — TOOL-008 (plan handle `DSK-12-08`): Author ADR-0110 — agent-skill pinning and the invocation protocol
 
 **Diff estimate: ~2 files, ~150 lines.** One new ADR
-(`docs/adr/0110-pin-agent-skills-and-invocation-protocol.md`, ~140 lines — comparable to
+(`docs/adr/0110-agent-skill-pinning-and-invocation-protocol.md`, ~140 lines — comparable to
 `docs/adr/0025-integrate-renderer-and-extractor-into-the-application.md`, whose body runs
 Context `:22` → Links `:105`) plus one index row in `docs/adr/README.md`. `docs/index.md` is
 almost certainly `None.` — its row at `docs/index.md:28` already points at the desktop plan
@@ -13,7 +13,7 @@ set — but verify rather than assume, as the body says.
 `DSK-00-05`, "Author ADR-0100, ADR-0101, ADR-0103, ADR-0104, ADR-0105 **and ADR-0110** in the
 reserved block", profile `feature`) claims the same number. Confirmed on the board
 2026-08-24. One filename, one rule: whichever ticket is worked first authors
-`docs/adr/0110-pin-agent-skills-and-invocation-protocol.md`; the other **verifies and
+`docs/adr/0110-agent-skill-pinning-and-invocation-protocol.md`; the other **verifies and
 extends it in place**, never a second file for the same number. That interlock, not the
 prose, is the main design decision in this ticket.
 
@@ -35,7 +35,7 @@ fixes that for the whole area.
 > **New ADR** — ADR-0110 (agent-skill pinning, the lockfile and vendored revisions, and the
 > invocation/review protocol), authored **by this ticket** (or by board [[FND-005]], plan
 > handle `DSK-00-05`, whichever is worked first), filename
-> `docs/adr/0110-pin-agent-skills-and-invocation-protocol.md`. Reserved in the ADR-0100…
+> `docs/adr/0110-agent-skill-pinning-and-invocation-protocol.md`. Reserved in the ADR-0100…
 > ADR-0110 block recorded at `docs/desktop/00-governance-and-workflow/README.md` § 3 and in
 > `AGENTS.md` § ADR conventions. Step 12 links it to this ticket with `link_doc`, which is
 > what clears `docs_todo`.
@@ -175,7 +175,7 @@ Refines the body's 13 steps in the same order.
     "## Current architecture decisions (`status: accepted`)", **in ADR-number order**,
     matching the existing three-column row format
     (`| ADR | Title | Related FRD |`), for example:
-    `| [0110](0110-pin-agent-skills-and-invocation-protocol.md) | Pin agent skills and the invocation protocol | — |`.
+    `| [0110](0110-agent-skill-pinning-and-invocation-protocol.md) | Pin agent skills and the invocation protocol | — |`.
     The table is currently ADR-0001…ADR-0029 with 0017 never issued, so 0110 sorts last.
 12. **`link_doc`** the ADR to this ticket so the governing-doc reference is real, then clear
     `docs_todo`.
