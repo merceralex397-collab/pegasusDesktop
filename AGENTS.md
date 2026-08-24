@@ -111,10 +111,9 @@ ADRs are an append-only decision log of durable technical/architectural choices.
 - **Keep ADRs durable.** No dated cost tables, retail prices, or historical
   runbooks in an ADR — those belong in `docs/operations.md`/`docs/runbook.md`;
   git history keeps the record. Feature behaviour belongs in an FRD.
-- **The index** (`docs/adr/README.md`) is a thin table derived from frontmatter:
-  `ID | Title | Status | Superseded-by | Owner capability`. The set of current
-  architecture decisions is that index filtered to `status: accepted` — a view,
-  not a renumbering.
+- **The index** (`docs/adr/README.md`) is a thin table derived from frontmatter.
+  Its current-decisions table is `ADR | Title | Related FRD`; the set is the
+  accepted ADRs — a view, not a renumbering.
 
 ### New Markdown placement
 
