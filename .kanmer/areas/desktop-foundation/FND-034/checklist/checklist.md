@@ -1,28 +1,30 @@
 # Checklist — FND-034
 
-One box per plan step, in plan order. Each is independently tickable: it names the file, value or
-command whose completion makes the box true.
+One box per plan step, in plan order. Each names the file, key or command whose completion makes it
+true, so it can be ticked independently and honestly.
 
-- [ ] Read `docs/desktop/06-ui-design/tokens-and-theme.md` in full and `docs/design/README.md` § Tokens (`:258-277`); run `get_doc_gates FND-034`; `take_ticket` on branch `task/desktop-theme` from `origin/dev`.
-- [ ] Check whether [[DUI-001]] (plan handle `DSK-06-01`) has landed and **record which case applied in the plan**: values preserved and no existing key changed, or dictionaries created with the `tokens-and-theme.md` § Colour tokens table transcribed verbatim.
-- [ ] Create the eight entries under `src/Pegasus.Desktop/Styles/` in load order: `Tokens.Colors.xaml`, `Tokens.Typography.xaml`, `Tokens.Spacing.xaml`, `Tokens.Shape.xaml`, `Tokens.Focus.xaml`, `Icons.Lucide.xaml`, the `Controls.*.xaml` set, and `Pegasus.Theme.xaml` merging them in that order.
-- [ ] Confirm `Icons.Lucide.xaml` and the `Controls.*.xaml` set were created as **empty** dictionaries reserving their load-order position, with their contents left to [[DUI-003]] (plan handle `DSK-06-03`), [[DUI-006]] (plan handle `DSK-06-06`), [[DUI-008]] (plan handle `DSK-06-08`), [[DUI-009]] (plan handle `DSK-06-09`) and [[DUI-010]] (plan handle `DSK-06-10`).
-- [ ] Declare `ResourceDictionary.ThemeDictionaries` in `Tokens.Colors.xaml` with keys `Light`, `Dark` and `HighContrast` — and confirm there is **no** `Default` key (`.codex/skills/winui-design/SKILL.md:143`).
-- [ ] Transcribe every key and value from the `tokens-and-theme.md` § Colour tokens table verbatim into the Light and Dark dictionaries; confirm no value was paraphrased or re-derived.
-- [ ] Map every HighContrast entry to one of the eight named system colour resources exactly as the table's HighContrast column specifies; confirm `HighContrastAdjustment="None"` was **not** set anywhere.
-- [ ] Write `Tokens.Typography.xaml` with the eight styles, each `BasedOn` its named built-in WinUI text style, and `Typography.NumeralAlignment="Tabular"` on the numeric styles; transcribe the `PegasusSectionTextStyle` assumption as written rather than resolving it.
-- [ ] Write `Tokens.Spacing.xaml` with `PegasusSpace1`…`PegasusSpace9` as `x:Double` 4, 8, 12, 14, 18, 24, 32, 40, 64 and `PegasusGutter` = 24.
-- [ ] Write `Tokens.Shape.xaml` with `ControlCornerRadius` and `OverlayCornerRadius` at `2` and border thickness `1`; confirm no second radius value was introduced.
-- [ ] Write `Tokens.Focus.xaml` overriding the focus visual to the `PegasusFocusBrush` 3 px ring.
-- [ ] Merge in `src/Pegasus.Desktop/App.xaml`: `XamlControlsResources` first, then `Pegasus.Theme.xaml`; confirm `Pegasus.Theme.xaml` is referenced exactly once in the whole application.
-- [ ] Add the fact named exactly `StylesAreTheOnlySourceOfColourAndType` to `tests/Pegasus.ArchitectureTests`, scanning `src/Pegasus.Desktop/**/*.xaml` excluding `Styles/` and failing on a hex colour literal (`#` + 3/4/6/8 hex digits), a raw `FontSize=` attribute or a numeric `CornerRadius=`; reuse `FindRepositoryRoot()` (`DependencyDirectionTests.cs:509`).
-- [ ] **Prove the guard red first** with a temporary planted literal, capture the failure output for the proof, then remove the literal and prove it green.
-- [ ] Run the app under Light, under Dark, and with Windows high contrast enabled, capturing one screenshot per theme of the shell from [[FND-033]] (plan handle `DSK-02-08`).
-- [ ] Run the contrast check on every foreground/background pair (4.5:1 body text, 3:1 large text and UI boundaries) in Light and Dark; record the results.
-- [ ] If any pair failed, create the `open-questions` document with one unticked box per failing pair naming the two keys and the measured ratio — and confirm **no Light value was adjusted** to make a pair pass.
-- [ ] Run the `winui-code-review` theming checklist over the new XAML.
+- [ ] Read `docs/desktop/06-ui-design/tokens-and-theme.md` in full, plus `docs/design/README.md` § Tokens § Colour, § Shape borders and focus (`:258-268`) and § Spacing and layout (`:270-277`); read this ticket's `research` and `files` documents.
+- [ ] Run `get_doc_gates FND-034` and `take_ticket` on branch `task/desktop-theme` from `origin/dev`.
+- [ ] Check whether [[DUI-001]] (plan handle `DSK-06-01`) has landed and record which case applied under a dated heading in the plan: if landed, keep its values and change no existing key; if not, transcribe `tokens-and-theme.md` § Colour tokens verbatim. Confirm exactly **one** copy of the palette exists.
+- [ ] Create the eight load-order entries under `src/Pegasus.Desktop/Styles/`: `Tokens.Colors.xaml`, `Tokens.Typography.xaml`, `Tokens.Spacing.xaml`, `Tokens.Shape.xaml`, `Tokens.Focus.xaml`, `Icons.Lucide.xaml`, the `Controls.*.xaml` set, and `Pegasus.Theme.xaml` merging them in that order.
+- [ ] Create `Icons.Lucide.xaml` and the `Controls.*.xaml` files **empty, reserving their slots** — [[DUI-003]] (plan handle `DSK-06-03`) supplies the glyphs and [[DUI-006]] (`DSK-06-06`), [[DUI-008]] (`DSK-06-08`), [[DUI-009]] (`DSK-06-09`), [[DUI-010]] (`DSK-06-10`) the control styles. Invent no contents.
+- [ ] In `Tokens.Colors.xaml` declare `ResourceDictionary.ThemeDictionaries` with keys `Light`, `Dark` and `HighContrast` and **no `Default`** (`.codex/skills/winui-design/SKILL.md:143`), transcribing all 24 key rows verbatim.
+- [ ] Map **every** HighContrast entry to its `SystemColor*` resource exactly as the table's HighContrast column specifies (`SystemColorWindowColor`, `SystemColorWindowTextColor`, `SystemColorHighlightColor`, `SystemColorHighlightTextColor`, `SystemColorButtonFaceColor`, `SystemColorButtonTextColor`, `SystemColorGrayTextColor`, `SystemColorHotlightColor`).
+- [ ] Write `Tokens.Typography.xaml` with the eight styles, each `BasedOn` its named built-in WinUI text style, and `Typography.NumeralAlignment="Tabular"` on the numeric styles.
+- [ ] Write `Tokens.Spacing.xaml`: `PegasusSpace1`…`PegasusSpace9` = 4, 8, 12, 14, 18, 24, 32, 40, 64; `PegasusGutter` = 24; plus `PegasusTableRowHeight` 32, `PegasusFactRowHeight` 28, `PegasusPanelPadding`, `PegasusContentMaxWidth` 1280, `PegasusRailWidth` 236, `PegasusMinimumTargetSize` 44, `PegasusMinimumWindowWidth` 1280.
+- [ ] Write `Tokens.Shape.xaml`: `ControlCornerRadius` and `OverlayCornerRadius` = `2`, `PegasusBorderThickness` = `1`. Do **not** adopt the 6px/5px from `site.css` / `.design-sync/conventions.md` / `.stitch/DESIGN.md` — `docs/design/README.md:268` says there is no second approved radius.
+- [ ] Write `Tokens.Focus.xaml`: focus visual overridden to the 3 px `PegasusFocusBrush` ring, `FocusVisualSecondaryBrush` → `PegasusPanelBrush`.
+- [ ] Edit `src/Pegasus.Desktop/App.xaml` to merge `XamlControlsResources` **first**, then `Pegasus.Theme.xaml`, referenced exactly once in the whole application.
+- [ ] Add the fact `StylesAreTheOnlySourceOfColourAndType` (that exact name) in `tests/Pegasus.ArchitectureTests/StyleLiteralTests.cs`, scanning `src/Pegasus.Desktop/**/*.xaml` excluding `Styles/` and failing on a hex colour literal, a raw `FontSize=` and a numeric `CornerRadius=`, reusing `FindRepositoryRoot()` (`DependencyDirectionTests.cs:509`).
+- [ ] Prove the guard **red** with a temporary planted literal, capture that run, then remove the literal and prove it green. Confirm it is the only such scanner in the repository.
+- [ ] Run the app under Light and capture a screenshot of the [[FND-033]] (plan handle `DSK-02-08`) shell.
+- [ ] Run the app under Dark and capture a screenshot of the same shell.
+- [ ] Enable Windows high contrast, run the app, and capture a screenshot — confirming forced colours are honoured throughout rather than half-applied.
+- [ ] Measure every foreground/background pair in Light and Dark against 4.5:1 (body text) and 3:1 (large text and UI boundaries), and record the table.
+- [ ] For any pair below threshold: convert the parked contrast entry in `open-questions` into an unticked `- [ ]` item above `## Parked`, naming the pair and its measured ratio, for the design authority. Adjust the **Dark** value or wait for the answer — **never** adjust a Light value and never silently edit `tokens-and-theme.md`.
+- [ ] Run the `winui-code-review` theming checklist (`.codex/skills/winui-code-review/references/quality-rules.md`) over the new XAML.
 - [ ] Run the simplification pass over this branch's diff and record it under a dated `## Simplification pass` heading in the plan document.
-- [ ] Verification run (this box produces `proof`): `dotnet test --filter "FullyQualifiedName~StylesAreTheOnlySourceOfColourAndType"` (green, with the earlier red output attached); the three theme screenshots; `pwsh .codex/skills/winui-dev-workflow/BuildAndRun.ps1 src/Pegasus.Desktop/Pegasus.Desktop.csproj -SkipRun` (exit 0, zero warnings); confirmation that `Tokens.Colors.xaml` has no `Default` theme-dictionary key; `grep -rn 'Pegasus.Theme.xaml' src/Pegasus.Desktop/` (exactly one reference, in `App.xaml`); `ls src/Pegasus.Desktop/Styles/` (the eight load-order entries and no others); and the recorded [[DUI-001]] landing case. Capture every output as tier-7 evidence.
+- [ ] Verification run (this box produces `proof`, evidence tier 7): `dotnet build ./Pegasus.slnx --configuration Release` (exit 0, `0 Warning(s)` — the authoritative gate); `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --filter "FullyQualifiedName~StylesAreTheOnlySourceOfColourAndType"` with **both** the red and green runs pasted; the three theme screenshots; the contrast table; and `grep -rniE '#[0-9a-f]{3,8}\b|FontSize="[0-9]|CornerRadius="[0-9]' src/Pegasus.Desktop --include=*.xaml | grep -v '/Styles/'` returning no matches. Write the honesty clauses into the proof: which [[DUI-001]] case applied and that one palette copy exists; that the theme evidence is a **manual** sweep and what was not exercised (200 % zoom belongs to [[DUI-002]], plan handle `DSK-06-02`); that `BuildAndRun.ps1` green ≠ `dotnet build` green; and which load-order entries are reserved-but-empty with their owning tickets.
 
 ## Progress notes
 
