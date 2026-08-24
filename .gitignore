@@ -65,7 +65,6 @@ Thumbs.db
 /workspaces/ai-centre/skills/tools/__pycache__/
 .kanmer/
 /.worktrees/
-
 # design-sync (Claude Design converter): staged scripts, build output, machine state
 .ds-sync/
 ds-bundle/
@@ -75,3 +74,4 @@ ds-bundle/
 docs/design/system/node_modules/
 docs/design/system/dist/
 ~$*
+.worktrees/
