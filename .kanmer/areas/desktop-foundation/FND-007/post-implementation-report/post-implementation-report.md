@@ -42,3 +42,9 @@ Completed on the branch after staging the new ADR:
 - The commit contains exactly `docs/adr/0108-desktop-webview2-report-rendering.md`, with 134 insertions and no deletions.
 
 Before any PR or later acceptance, confirm the ADR remains `status: proposed`, `supersedes: []`, `superseded_by: []`, has no `docs/adr/README.md` row, retains the Microsoft Learn URLs/fetch date, and still contains the non-UI, gateway-parity, and reversal clauses. On merged main, `kanmer-verify` must write proof only after the Phase 7 acceptance evidence exists.
+
+## Reviewer-driven normalization
+
+The reviewer-directed follow-up normalised ADR-0108's `related_frd` value from `[FRD-11]` to `[frd-11]`, matching ADR-0025, ADR-0026, and ADR-0028. Commit `d3762780` changes that frontmatter token only; it does not alter status, body, index, scope, or the proposed/acceptance boundary.
+
+`git diff --check 39c704dc..HEAD`, `Test-DocumentationLinks.ps1` (233 files), `Test-TestMarkdownPlacement.ps1`, and `Test-MarkdownPlacement.ps1 -Base 39c704dc -Head HEAD` all passed. The `origin/dev` delivery blocker remains unchanged; no push, PR, or stage move occurred.
