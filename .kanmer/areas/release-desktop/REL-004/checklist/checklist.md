@@ -5,6 +5,7 @@ Derived from `plan`, one box per step, in plan order. Tick with
 rather than rewriting.
 
 - [ ] Read the area plan § 5 row `DSK-09-04`, `runbooks.md` § R1 steps 1–4 and area plan § 3; run `get_doc_gates REL-004` and `take_ticket REL-004`
+- [ ] Read this ticket's `open-questions` document and confirm every entry is below `## Parked (explicitly deferred)` — none of them blocks a move, and none of them is to be re-decided here
 - [ ] Read `scripts/Build-ReleaseArtifacts.ps1` end to end (130 lines) and note the five patterns to reuse: exact-HEAD guard `:16-19`, clean-tree guard `:20-23`, output-root escape guard `:25-33`, per-step `throw` on `$LASTEXITCODE`, single stdout result `:126`
 - [ ] Create `scripts/Build-DesktopRelease.ps1` with the repository header (`Set-StrictMode -Version Latest`, `$ErrorActionPreference = 'Stop'`, `Push-Location $repositoryRoot` / `finally { Pop-Location }`)
 - [ ] Add the parameter block: `-Channel` (`ValidateSet 'pilot','prod'`), `-Version` (`ValidatePattern '^1\.\d+\.\d+\.0$'`), `-SourceRevision` (`ValidatePattern '^[0-9a-f]{40}$'`), `-Sign`, `-CertificatePath`, `-TimestampUrl`, `-FeedRoot`, `-SbomPath`
@@ -19,7 +20,7 @@ rather than rewriting.
 - [ ] Add `signtool verify /pa /v <releaseRoot>/Pegasus_<Version>_x64.msix` after signing, throwing unless the output reports **both** a valid chain and a timestamp, and extract the signer subject and thumbprint from that output
 - [ ] Confirm by ordering that a failed signature verification leaves no manifest, no `.appinstaller` and no hash list on disk
 - [ ] Add the vulnerability report `dotnet list ./src/Pegasus.Desktop/Pegasus.Desktop.csproj package --vulnerable --include-transitive > <releaseRoot>/vulnerability-report.txt`, throwing when the **text** contains `Critical` or `High` (never trusting the exit code, which is `0` even with findings)
-- [ ] Record in the `plan` document that the SBOM generator choice belongs to `DSK-09-16` (board `REL-014`) and that `-SbomPath` is the pass-through, with no `open-questions` document created
+- [ ] Confirm the SBOM generator question is recorded in `open-questions/` below `## Parked (explicitly deferred)`, naming [[REL-014]] (plan handle `DSK-09-16`) as its owner and `-SbomPath` as the pass-through — the ticket body's step 8 instructs this document in as many words, and `REL-014` step 1 reads it. Record the same in the `plan`. **Do not delete it and do not invent a generator here.**
 - [ ] Call `eng/packaging/New-DesktopReleaseManifest.ps1` with version, channel, source revision, package path, signer subject, signer thumbprint and the gateway compatibility range
 - [ ] Call `eng/packaging/New-AppInstaller.ps1` then `eng/packaging/Test-AppInstaller.ps1` for the requested channel, throwing on a non-zero validator exit
 - [ ] Write `build-log.txt` and a `Get-FileHash -Algorithm SHA256` hash list over the `.msix`, the `.appinstaller` and the manifest into `$releaseRoot`
