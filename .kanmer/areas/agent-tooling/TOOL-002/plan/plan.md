@@ -1,17 +1,20 @@
 # Plan — TOOL-002 (plan handle `DSK-12-02`): Vendor the pinned skills and promote `skills.lock.json` with real hashes
 
-**Diff estimate: ~5 hand-authored files, ~700 hand-written lines — plus ~60–90 vendored
+**Diff estimate: ~5 hand-authored files, ~730 hand-written lines — plus ~60–90 vendored
 files (~12,000–18,000 lines) copied verbatim by the sync script and never typed.**
 
 Derived from the surface area below. Hand-authored: `eng/skills/sync-skills.ps1` (~180
 lines), `eng/skills/verify-skills.ps1` (~90), `eng/skills/skills.lock.json` (382 lines,
-copied from the 382-line draft with 35 `computedHash` values substituted), and two
-sentence-level edits in `docs/desktop/12-agent-tooling/README.md` and
-`docs/desktop/12-agent-tooling/skill-routing.md`. Vendored: 35 skill folders — 19 from
-`dotnet/skills`, 8 from `win-dev-skills`, 8 from `azure-skills`. The measured shape of the
-existing `.codex/skills/` tree is 18 files for 8 WinUI skills (2.25 files per skill), so
-~80 files is the honest projection; the binary decision in step 5 moves that by 8 MiB, not
-by file count.
+copied from the 382-line draft with 35 `computedHash` values substituted), and three
+documentation edits — two sentence-level ones in
+`docs/desktop/12-agent-tooling/README.md` § 3 and
+`docs/desktop/12-agent-tooling/skill-routing.md` § Pinned sources, plus a ~25-line
+presentational split of `skill-routing.md` § "Not applicable to this conversion (do not
+load)" into its two real categories (body **Documentation changes**). Vendored: 35 skill
+folders — 19 from `dotnet/skills`, 8 from `win-dev-skills`, 8 from `azure-skills`. The
+measured shape of the existing `.codex/skills/` tree is 18 files for 8 WinUI skills (2.25
+files per skill), so ~80 files is the honest projection; the binary decision in step 5 moves
+that by 8 MiB, not by file count.
 
 ## Approach
 
@@ -57,6 +60,7 @@ Programme-level authorities this plan does meet, and which step satisfies each:
 | Proposal §20.2 (pinning and vendoring) | Skills are vendored at a pinned commit; no execution-time fetch | Steps 3–4, 6 |
 | `docs/desktop/12-agent-tooling/README.md` § 3 | Lockfile at `eng/skills/skills.lock.json` records source, commit, skill path, destination, hash, date reviewed, owner, reason | Steps 2, 9 |
 | `docs/desktop/12-agent-tooling/README.md` § 4 (exit gate) | `verify-skills.ps1` green locally | Steps 4, 8 |
+| `docs/desktop/12-agent-tooling/skill-routing.md` § Not applicable | Nothing on the never-vendored list is vendored; the five reference-only skills stay vendored and unloaded | Step 10 |
 | L-04 (locked, `docs/desktop/README.md`) | Every ticket names its subagent, skills and MCP tools — verifiably | The lockfile is what makes the names resolvable |
 | C-01 (2026-08-23) | Repository weight and CI minutes are live costs | Step 5 (binary payload is a recorded decision, not a default) |
 | `AGENTS.md` § New Markdown placement | No `.md` outside `docs/(prd\|frd\|adr\|design\|desktop)` and the other allowed roots | Step 12; `eng/` is **not** an allowed root |
@@ -109,8 +113,9 @@ default and its reason; the implementer still records the final choice.
    three sources — `dotnet/skills` `98f848512e9ee4877e399a0ae367bb5e4a193144` (2026-08-21),
    `microsoft/win-dev-skills` `f1028dd5bb19af59df400cb4a2ab867e40a40a4a` (v0.5.0,
    2026-07-22), `microsoft/azure-skills` `1a03acfb9ac1a1a05518bf7420d4618cc41847be`
-   (2026-08-21); **35 entries split 19 / 8 / 8** across those three sources. Copy the file
-   to `eng/skills/skills.lock.json` and change only the `computedHash` values and the
+   (2026-08-21); **35 entries split 19 `dotnet-skills` / 8 `win-dev-skills` /
+   8 `azure-skills`** — the same split the body's **Source of truth** now states. Copy the
+   file to `eng/skills/skills.lock.json` and change only the `computedHash` values and the
    `generatedBy` string. Never substitute a branch name for a commit SHA.
 3. **Write `eng/skills/sync-skills.ps1`.** Per lockfile `source`, once (not once per
    entry — 35 clones of three repositories is the naive shape and it is slow):
@@ -164,28 +169,39 @@ default and its reason; the implementer still records the final choice.
    that exact path**; `git checkout --` the file and confirm exit 0.
 9. **No `TBD` may survive.** `grep -c '"computedHash"' eng/skills/skills.lock.json` → `35`;
    `grep -c 'TBD' eng/skills/skills.lock.json` → `0`.
-10. **Check the do-not-load table correctly — the body's wording here is too strong.**
-    Body step 10 says of the do-not-load list "none of them appears in the draft lockfile".
-    Verified 2026-08-24, that is true only of the *not-vendored* subset. The draft lockfile
-    **does** contain five entries that `skill-routing.md` § Not applicable also lists:
-    `winui-wpf-migration`, `winui-session-report`, `dotnet-aot-compat`,
-    `configuring-opentelemetry-dotnet` and `create-custom-agent`. That is not a defect —
-    that table mixes "never vendor" with "vendored but do not load" (its own reasons say
-    "tables are reference only", "user-invoked only", "deferred until startup is profiled",
-    "reference only"). So assert the checkable thing: **no skill from the never-vendored
-    group is present.** Concretely, `ls .agents/skills/vendor/azure/` must be exactly the
-    eight lockfile entries (`azure-resource-lookup`, `azure-resource-visualizer`,
-    `azure-cost`, `azure-diagnostics`, `azure-compliance`, `azure-validate`,
-    `azure-storage`, `appinsights-instrumentation`) with no `azure-deploy`,
-    `azure-prepare`, `azure-app-onboard*`, `azure-cloud-migrate`,
-    `azure-enterprise-infra-planner`, `python-appservice-deploy`, `entra-*`,
-    `azure-kubernetes`, `airunway-aks-setup`, `azure-aigateway`, `microsoft-foundry`,
-    `azure-ai`, `azure-messaging`, `azure-kusto`, `azure-upgrade`, `azure-reliability` or
-    `azure-quotas`; and `ls .agents/skills/vendor/dotnet/` must not contain a
+10. **Check the never-vendored group, not the whole do-not-load table.** The body's step 10
+    now states this distinction in full and gives the authoritative PowerShell block; this
+    plan adds only the on-disk form of the same check and the reason it matters.
+
+    `docs/desktop/12-agent-tooling/skill-routing.md` § "Not applicable to this conversion
+    (do not load)" (`skill-routing.md:56-70`) is a **loading** rule, not a vendoring rule.
+    Verified against the draft lockfile on 2026-08-24: five of its entries are in the
+    lockfile **on purpose** — `winui-wpf-migration`, `winui-session-report`,
+    `dotnet-aot-compat`, `configuring-opentelemetry-dotnet` and `create-custom-agent`, whose
+    own `reason` fields say "reference only", "user-invoked only", "deferred until startup
+    is profiled". A check phrased against the whole table is false by exactly five and stops
+    the ticket for no reason. Run the body's block and expect `0`, `0`, `5`, `35`.
+
+    The on-disk complement, which also catches a sync that wrote somewhere unexpected:
+    `ls .agents/skills/vendor/azure/` must be exactly the eight lockfile entries
+    (`azure-resource-lookup`, `azure-resource-visualizer`, `azure-cost`,
+    `azure-diagnostics`, `azure-compliance`, `azure-validate`, `azure-storage`,
+    `appinsights-instrumentation`) with no `azure-deploy`, `azure-prepare`,
+    `azure-app-onboard*`, `azure-cloud-migrate`, `azure-enterprise-infra-planner`,
+    `python-appservice-deploy`, `entra-*`, `azure-kubernetes`, `airunway-aks-setup`,
+    `azure-aigateway`, `microsoft-foundry`, `azure-ai`, `azure-messaging`, `azure-kusto`,
+    `azure-upgrade`, `azure-reliability` or `azure-quotas`; and
+    `ls .agents/skills/vendor/dotnet/` must hold 19 entries with no skill from the
     `dotnet-maui`, `dotnet-blazor`, `dotnet-template-engine`, `dotnet-test-migration`,
-    `dotnet11`, `dotnet-ai` or `dotnet-advanced` skill. Record the counts (19 / 8 / 8 = 35).
-    `EPIC-013/context.md` already resolves the one live contradiction: `create-custom-agent`
-    is vendored but **the do-not-load table wins — never load it**.
+    `dotnet11`, `dotnet-ai` or `dotnet-advanced` plugin families. Record the counts
+    (19 / 8 / 8 = 35) alongside the body's four numbers.
+
+    `EPIC-013/context.md` already resolves the one live contradiction the routing matrix
+    creates: `create-custom-agent` appears both in the area-12 routing row as "(reference
+    only)" and on the do-not-load table. It is vendored, and **the do-not-load table wins —
+    never load it.** The body's **Documentation changes** entry splitting that table into
+    its two categories is what stops this recurring; it is presentational and moves no row
+    between categories.
 11. **Decide and record the fate of the root `skills-lock.json`.** It is a different file:
     `version: 1`, four `mattpocock/skills` entries (`domain-modeling`, `grill-me`,
     `grill-with-docs`, `grilling`) with real `computedHash` values and **no skill bodies in
@@ -205,13 +221,15 @@ default and its reason; the implementer still records the final choice.
     expect `Markdown placement passed for <base>..<head>.` The allowed-root regex at
     `scripts/Test-MarkdownPlacement.ps1:31` is
     `^((docs/(prd|frd|adr|design|desktop))|workspaces/document-extraction|\.agents/skills|\.design-sync|\.grok|\.stitch|design/planning-and-old-designs)/.+\.md$`.
-    `.agents/skills` is allowed — so the 35 vendored `SKILL.md` files pass. **`eng/` is
-    not** — so no `.md` may be added under `eng/skills/`, not even a README. The procedure
-    text belongs in `docs/runbook.md` and is [[TOOL-010]]'s (`DSK-12-10`) work.
+    `.agents/skills` is allowed — so the 35 vendored `SKILL.md` files pass, and so does the
+    `skill-routing.md` edit under `docs/desktop/`. **`eng/` is not** — so no `.md` may be
+    added under `eng/skills/`, not even a README. The procedure text belongs in
+    `docs/runbook.md` and is [[TOOL-010]]'s (`DSK-12-10`) work.
 13. **Record the Appendix C evidence** in the post-implementation report: skills consulted
     with their pinned SHAs; the commands run verbatim; both sync runs; the drift test's red
     and green output; the step 5 binary decision with its byte count; the step 11 decision;
-    and the three source counts from step 10.
+    and from step 10 both the body's four counts (`0`, `0`, `5`, `35`) and the three
+    per-source directory counts (19 / 8 / 8).
 
 ## Verification
 
@@ -230,12 +248,14 @@ Run and capture verbatim:
    run alone does not prove a gate exists.
 4. `grep -c 'TBD' eng/skills/skills.lock.json` → `0`;
    `grep -c '"computedHash"' eng/skills/skills.lock.json` → `35`.
-5. `ls .agents/skills/vendor/windows/ | wc -l` → `8`;
+5. The body's step-10 PowerShell block → `0` never-vendored names, `0` skills from the seven
+   excluded plugin families, `5` reference-only skills present, `35` entries in total.
+6. `ls .agents/skills/vendor/windows/ | wc -l` → `8`;
    `ls .agents/skills/vendor/azure/ | wc -l` → `8`;
    `ls .agents/skills/vendor/dotnet/ | wc -l` → `19`.
-6. `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base <merge-base> -Head HEAD` →
+7. `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base <merge-base> -Head HEAD` →
    `Markdown placement passed for <base>..<head>.`
-7. `pwsh ./scripts/Test-DocumentationLinks.ps1` →
+8. `pwsh ./scripts/Test-DocumentationLinks.ps1` →
    `All relative Markdown links resolve (<n> files checked).`
 
 ## Risks / open questions
@@ -243,16 +263,21 @@ Run and capture verbatim:
 | Risk | Mitigation |
 | --- | --- |
 | The upstream repositories may not actually carry the binaries. `winui-search.exe` (7.9 MiB) exists in the local `.codex/skills/` copy, but whether `microsoft/win-dev-skills` ships it in-tree at `f1028dd5` — as opposed to a release asset or Git LFS — is **unverified**. If it is LFS, `--filter=blob:none` plus a plain checkout yields a pointer file and the hash is wrong. | Step 3: after the first checkout, list the copied files and compare against the local `.codex/skills/` tree (18 files across the 8 WinUI skills, sizes recorded in the body). If a file is an LFS pointer (starts `version https://git-lfs`), that is the finding — record it and take the fetch-on-demand branch of step 5. |
+| A check written against the whole do-not-load table stops the ticket on five entries that belong in the lockfile. | Body step 10 and plan step 10 both state the two categories and give the exact expected counts; the body's **Documentation changes** entry splits the table so the ambiguity does not survive this ticket. |
 | A rename or removal upstream breaks routing names, and the hash verifier cannot see it. | Out of scope here (pins do not move in this ticket); it is exactly what [[TOOL-010]]'s rename rule exists for. Named so the reviewer sees it was a decision. |
 | Line-ending normalisation makes the sync non-idempotent on Windows. | Step 7 is the detector. Copy bytes, do not round-trip text; check `.gitattributes` before assuming. |
 | The 5-minute `changes` job budget. | Not this ticket's gate, but time the verifier locally and record the number so [[TOOL-003]] step 5 has it. |
 | Deleting a stale `destination` could delete something else if a `destination` is wrong. | Constrain deletion to paths under `policy.vendorRoot` and refuse anything outside it. |
 
-Open questions: **none opened as a blocking `open-questions` document.** The two "decide
-and record" items (binary payload, root `skills-lock.json`) both have a recommended default
-with its reason in steps 5 and 11, which is what the authoring contract asks for — take the
-default and say you took it, rather than blocking the board. The one genuine unknown (LFS
-vs in-tree binaries) is answered by a read-only check inside step 3, not by asking anyone.
+Open questions: **none opened as a blocking `open-questions` document**, and not because
+opening one would be costly — an unticked box would block `leave-preparing`, `enter-review`
+and `enter-done` (never `leave-backlog`), which is a perfectly acceptable price for a real
+question. There simply is no real question here. The two "decide and record" items (binary
+payload, root `skills-lock.json`) both have a recommended default with its reason in steps 5
+and 11, and the authoring contract says to take a trivial default and say you took it. The
+one genuine unknown (LFS vs in-tree binaries) is answered by a read-only check inside step 3,
+not by asking anyone. Nothing in this ticket's body instructs that a question be recorded in
+`open-questions/`.
 
 ## Simplification pass
 
