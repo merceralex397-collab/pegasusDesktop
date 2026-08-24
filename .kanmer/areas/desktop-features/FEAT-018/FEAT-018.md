@@ -29,7 +29,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:57:08.747Z'
-updated: '2026-08-24T08:51:37.041Z'
+updated: '2026-08-24T10:37:15.602Z'
 ---
 
 ## What
@@ -68,14 +68,14 @@ Proposal §12.5 and §13.9 and locked decision L-03 move report rendering to the
 4. Use `microsoft_code_sample_search` and `microsoft_docs_fetch` to confirm the current WebView2 print-to-PDF API surface and its exact method name before calling it (the plan set cites both `PrintToPdfAsync` and `PrintToPdfStreamAsync` — verify against official documentation rather than choosing one). Record the verified signature in the plan.
 5. Confirm the endpoints from [[DSK-03-14]] and [[DSK-07-16]]: `POST /api/v1/cases/{id}/reports/draft` returns the **projection** for local rendering (and the gateway-rendered bytes while the flag selects the retained renderer), `POST /api/v1/cases/{id}/reports` registers the finalised PDF, `GET /api/v1/cases/{id}/reports/{rid}/content` serves it back, and `POST /api/v1/cases/{id}/assessment/send` carries an idempotency key and audits the provider message id.
 6. Implement `ReportViewModel` in `src/Pegasus.Desktop`: fetch the projection, render locally through the injected `IAssessmentReportRenderer`, show a preview, and offer Finalise and Send as separate deliberate commands. Long rendering shows progress and stays cancellable (proposal §14.5).
-7. Implement the renderer selection flag: while golden-file parity is unproven the gateway renderer remains selectable, and the flag — not a code change — chooses which path a given deployment uses. Record the flag name and its default in the plan and in ADR-0108's consequences.
+7. Implement the renderer selection flag: while golden-file parity is unproven the gateway renderer remains selectable, and the flag — not a code change — chooses which path a given deployment uses. Record the flag name and its default in the plan document and hand them to [[DSK-07-12]] for ADR-0108's Consequences **before** the acceptance flip; this ticket makes no edit to ADR-0108.
 8. Implement the WebView2-absent path: when the runtime is missing, show the guided message from [[DSK-04-09]]'s startup check and fall back to the gateway renderer rather than failing the workflow.
 9. Implement Finalise: upload the rendered PDF through the transfer service from [[DSK-05-14]] and register it with `POST /api/v1/cases/{id}/reports`, so the canonical copy is stored once and its registration is audited. Regeneration follows the FRD-11 finality rules — a finalised report is never silently replaced.
 10. Implement Send with a stable idempotency key generated once per user-initiated send and reused on retry; an uncertain outcome is resolved by re-querying the send status, never by resending.
 11. Run the golden-file suite from [[DSK-07-15]]: for every approved fixture, compare the WebView2 output against the Playwright output on text, values, page count and key element positions within the documented tolerances. A failure blocks the parity claim, not the ticket's honesty — record the diff.
 12. Add contract tests in `tests/Pegasus.Api.ContractTests` for draft, register, content and send: success, 401, 403, 409 stale version, replay of the send idempotency key returning the original outcome, and a finalised report refusing a silent overwrite. Enable `Features:DesktopGateway` explicitly.
 13. **Operator step** — measure report generation on the baseline Test/UAT workstation and confirm the target from `docs/desktop/10-security-observability-performance/README.md`; have the operator confirm the final document and its audit trail are correct. Record figures, the workstation specification and the sign-off in the ticket proof.
-14. Update `docs/desktop/01-inventory-and-parity/parity-matrix.md` row `PAR-15` (report portion), record the outcome in ADR-0108, cross-reference FRD-11 from `docs/frd/frd-13-desktop-operator-experience.md`, run the simplification pass over the branch diff under a dated `## Simplification pass` heading, then open the PR into `dev`.
+14. Update `docs/desktop/01-inventory-and-parity/parity-matrix.md` row `PAR-15` (report portion), cross-reference FRD-11 from `docs/frd/frd-13-desktop-operator-experience.md`, run the simplification pass over the branch diff under a dated `## Simplification pass` heading, then open the PR into `dev`.
 
 ## Acceptance criteria
 
@@ -102,7 +102,7 @@ Tier 2 obliges deterministic evidence for the report projection fixtures; tier 5
 
 ## Documentation changes
 
-- `docs/adr/0108-*.md` — record the parity outcome and the renderer-selection flag in Consequences and Verification
+- `docs/adr/0108-desktop-webview2-report-rendering.md` — nothing is written by this ticket. The renderer-selection flag and the parity outcome are supplied to [[DSK-07-12]] while the ADR still reads `status: proposed`; after acceptance the body is immutable and a change would need a superseding ADR.
 - `docs/desktop/01-inventory-and-parity/parity-matrix.md` — row `PAR-15` report portion
 - `docs/frd/frd-13-desktop-operator-experience.md` — report section cross-referencing FRD-11
 - `docs/capabilities.md` — `DSK` rows for report generation, finalise and send
@@ -110,8 +110,8 @@ Tier 2 obliges deterministic evidence for the report projection fixtures; tier 5
 ## Guardrails
 
 - **Azure**: no write. Retiring the Playwright renderer from the Web container and its Container App CPU/memory uplift (ADR-0028) is an ⚠ Azure setting change owned by plan 11 — out of scope here.
-- **Scope boundary**: the renderer implementation lives in `src/Pegasus.Desktop.Infrastructure` ([[DSK-07-14]]); this slice owns the desktop workflow, the `/api/v1` report endpoints and the tests. Must not modify `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs` — it is retained until parity is signed off.
-- **Traps**: WebView2 never hosts Pegasus UI (architecture test from [[DSK-02-12]]); templates come from one source and are hash-checked ([[DSK-07-13]]) — never copy a `.scriban` file; verify the WebView2 print API against official documentation before calling it rather than trusting either name in the plan set; a finalised report is governed by FRD-11 finality and regeneration rules; upstream DOCS-001 and TICK-206/208/216 and TICK-081/096/097/100 are report-decision inputs owned by [[DSK-07-17]] — do not resolve them here; `Features:DesktopGateway` must be enabled in tests.
+- **Scope boundary**: the renderer implementation lives in `src/Pegasus.Desktop.Infrastructure` ([[DSK-07-14]]); this slice owns the desktop workflow, the `/api/v1` report endpoints and the tests. Must not modify `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs` — it is retained until parity is signed off. Must not edit `docs/adr/0108-desktop-webview2-report-rendering.md`; [[DSK-07-12]] owns that file.
+- **Traps**: WebView2 never hosts Pegasus UI (architecture test from [[DSK-02-12]]); templates come from one source and are hash-checked ([[DSK-07-13]]) — never copy a `.scriban` file; verify the WebView2 print API against official documentation before calling it rather than trusting either name in the plan set; a finalised report is governed by FRD-11 finality and regeneration rules; upstream DOCS-001 and TICK-206/208/216 and TICK-081/096/097/100 are report-decision inputs owned by [[DSK-07-17]] — do not resolve them here; `Features:DesktopGateway` must be enabled in tests. ADR bodies are immutable once accepted — this ticket depends on an already-accepted ADR-0108 and must never edit it.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome
