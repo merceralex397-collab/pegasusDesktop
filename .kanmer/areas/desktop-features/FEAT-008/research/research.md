@@ -152,7 +152,7 @@ Each verified by reading the repository at `bbd1c549`.
   must **not** copy that: `lease-expired` and `lease-conflict` are separate problem
   types with different operator meanings, and the design authority's Case state row
   lists "lease held/expired/lost/stale" as four distinct states
-  (`docs/design/README.md:775`).
+  (`docs/design/README.md:772`).
 - **A stale version also drops the client's held lease, and the reason is
   written down.** `RequiresReacquisition` (`:296-304`) is lease loss **or**
   `CaseVersionConflictException`, with the remark: "a stale version, because the
@@ -185,7 +185,7 @@ Each verified by reading the repository at `bbd1c549`.
     FRD-01 (`docs/frd/frd-01-case-identity-and-lifecycle.md:86`) — "The rejected
     editor keeps proposed values for comparison and must reload and reacquire
     rather than **merge or force the save**. There is no Administrator bypass,
-    forced takeover, **collaborative merge**…"; `docs/design/README.md:721` —
+    forced takeover, **collaborative merge**…"; `docs/design/README.md:722` —
     "reload/compare, and reacquire are the only recovery interactions… never
     overwrites the newer Case. There is no forced Administrator takeover… or
     collaborative merge control"; `screen-specs.md:193-197` — the same, adding
@@ -252,7 +252,7 @@ Labelled per `docs/engineering.md` § plan sizing.
     that follows is an **ordinary** save carrying the **new** `expectedVersion` and
     the **new** lease token. That is not a merge and not a force — the write passes
     the normal `CaseEditAuthority` guard at the current version — and it is the only
-    reading compatible with FRD-01 `:86`, `docs/design/README.md:721` and
+    reading compatible with FRD-01 `:86`, `docs/design/README.md:722` and
     `screen-specs.md:193-197`. It improves on the web only by sparing the retype
     that `Details.cshtml.cs:76` describes, which is a TempData limitation rather
     than a rule.
@@ -348,7 +348,7 @@ no Azure write occurs.**
   machinery** — the 8000/2000 budgets, the chunking, the drop/shorten flags. It
   does **not** mean discarding the operator's typing: `screen-specs.md:195` requires
   the pattern to "preserve proposed values **in memory** for comparison", and
-  `docs/design/README.md:624` requires that returning "never silently discards or
+  `docs/design/README.md:622` requires that returning "never silently discards or
   replaces the operator's proposed values". Read carelessly, that trap becomes a
   data-loss defect. The plan states both halves in one sentence.
 - **The comparison's field-selection rule travels even though its storage does
