@@ -27,7 +27,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:12.621Z'
-updated: '2026-08-24T08:51:11.072Z'
+updated: '2026-08-24T09:33:30.877Z'
 ---
 
 ## What
@@ -65,7 +65,7 @@ Proposal §22.2 ("WinUI UI automation") asks for a small, high-value suite cover
 
 1. Read `docs/desktop/08-testing/README.md` § 5 row `DSK-08-06`, § 7 and `docs/desktop/08-testing/test-uat-stack.md` in full, then `docs/desktop/06-ui-design/keyboard-and-accessibility.md`. Call `get_doc_gates` on this ticket id, then `take_ticket`, and work in the ticket's own worktree and branch.
 2. **Operator step**: on the dedicated Windows 11 Test/UAT workstation (never a developer machine holding a pilot install), install the CLI with `winget install Microsoft.WinAppCLI` and confirm `winapp ui status` responds; trust the development certificate into `Cert:\LocalMachine\TrustedPeople` per [[DSK-09-06]]. Evidence to hand back: the `winapp --version` output and `Get-ChildItem Cert:\LocalMachine\TrustedPeople` showing the subject.
-3. Load `pegasus-desktop`, then `winui-ui-testing`, and follow its "Write the Test Script" section. Create `tests/Pegasus.Desktop.UITests/ui-tests.ps1` from the skill's template: `param([Parameter(Mandatory)][int]$AppPid)` — do **not** name it `$Pid`, it is read-only in PowerShell — the `Test-UI` helper that counts pass/fail and records a `$results` array, and the main-window HWND lookup that filters out the window titled `PopupHost`.
+3. Load `pegasus-desktop`, then `winui-ui-testing`, and follow its "Write the Test Script" section. Create `tests/Pegasus.Desktop.UITests/ui-tests.ps1` from the skill's template: `param([Parameter(Mandatory)][int]$AppPid)` — do **not** name it `$Pid`, it is read-only in PowerShell — the `Test-UI` helper that counts pass/fail and records a `$results` array, and the main-window HWND lookup that filters out the window titled `PopupHost`. If [[DSK-04-08]] has already created that file — its step 10 creates it from the same `winui-ui-testing` template, with exactly that signature and that helper, carrying its seven session-failure cases — adopt and extend it rather than recreating it: the file, the `param([Parameter(Mandatory)][int]$AppPid)` signature and the `Test-UI` helper are this ticket's contract and are already pinned to it, so take ownership of the skeleton and keep those seven cases passing.
 4. Extend the template with: a `-ResultsPath` parameter defaulting to `artifacts/ui-tests/results.json`, a `-ScreenshotPath` defaulting to `artifacts/ui-tests/screenshots`, a non-zero exit code when any test fails, and a JSON result object per test carrying name, status, duration and the failure detail.
 5. Add `tests/Pegasus.Desktop.UITests/Invoke-UiSuite.ps1`: resolve the installed package with `Get-AppxPackage CollisionEngineers.Pegasus`, launch it through its application user model id, capture the PID, wait for the shell root element with `winapp ui wait-for`, then invoke `ui-tests.ps1` with that PID. Never relaunch a running app, and never launch the packaged exe directly (`winui-dev-workflow` rule).
 6. Add `tests/Pegasus.Desktop.UITests/AutomationIdAudit.ps1`: walk the UI tree with `winapp ui inspect -a <PID>` and fail listing any element with an interactive control type (Button, ListItem, Edit, ComboBox, CheckBox, Tab) that has no AutomationId, or whose AutomationId is not in the convention agreed by [[DSK-06-15]]. Done when removing an AutomationId in XAML makes this audit fail with the control's name.
