@@ -27,7 +27,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:47:12.109Z'
-updated: '2026-08-24T11:57:46.035Z'
+updated: '2026-08-24T13:34:01.177Z'
 ---
 
 ## What
@@ -44,8 +44,8 @@ The desktop conversion inherits it whole and hands it to more operators. `docs/d
 
 ## Source of truth
 
-- Import decision: `coverage-decision.md` § Import list — row `INTK-027`; § Plan gaps — "The 208-ticket set contains no owner for Worker and Core/Infrastructure intake defects… INTK-027 in particular is a confirmed live production defect affecting every processed receipt"
-- Carry-over register: `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md:156` — `INTK-027 | intake-processing | backlog | fix | defect, intake, reevaluation, live-found | … | gateway-worker-ticket | 07 | intake-processing`
+- Import decision: `coverage-decision.md` § Import list — the row for upstream `INTK-027` (this ticket; board `INTK-004`); § Plan gaps — "The 208-ticket set contains no owner for Worker and Core/Infrastructure intake defects… INTK-027 in particular is a confirmed live production defect affecting every processed receipt"
+- Carry-over register: `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md:156` — the row for upstream `INTK-027`, quoted as it stands (its first cell is an upstream id): `INTK-027 | intake-processing | backlog | fix | defect, intake, reevaluation, live-found | … | gateway-worker-ticket | 07 | intake-processing`
 - Governing document: `docs/frd/frd-02-intake-and-source-identity.md` (the upstream ticket's own `refs`)
 - Endpoint the desktop publishes: `docs/desktop/03-gateway-api-and-data/endpoint-map.md:87` — `POST /received/{id}/reevaluate`, `receipt expectedVersion`, `operationKey`, `reason`
 - Repository evidence (fork `main`, read 2026-08-24):
@@ -131,7 +131,7 @@ Tier 2 obliges positive, contradictory and failure cases for the re-evaluation p
 ## Documentation changes
 
 - `docs/frd/frd-02-intake-and-source-identity.md` — state what re-evaluation requires of the source and what happens when it is unavailable
-- `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` — annotate row `INTK-027` with this fork ticket id and correct the claim, repeated in `vertical-slices.md` § S9 and `screen-specs.md:284`, that S9 absorbs INTK-027
+- `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` — annotate the upstream `INTK-027` row with this fork ticket id (`INTK-004`) and correct the claim, repeated in `vertical-slices.md` § S9 and `screen-specs.md:284`, that S9 absorbs upstream INTK-027
 - `docs/operations.md` — record the live finding and its resolution beside the release-16 verification notes
 
 ## Guardrails
@@ -139,7 +139,7 @@ Tier 2 obliges positive, contradictory and failure cases for the re-evaluation p
 - **Azure**: no write. Reading the `transient-intake` container to confirm the empty `staging/` prefix is a read and is fully permitted with no per-target approval (`docs/runbook.md` § Live-operation approval matrix; mirrored in `docs/desktop/11-azure-disposition/README.md`). Re-staging a blob **in production** would be a write and is explicitly **not** part of this ticket — the code change is; any live remediation of already-stranded receipts is a separate approved operation.
 - **Scope boundary**: may touch `src/Pegasus.Core/Intake/DurableIntake.cs`, `src/Pegasus.Core/Intake/IntakeContracts.cs`, `src/Pegasus.Infrastructure/Persistence/EfIntakeMutationStore.cs`, `src/Pegasus.Web/Presentation/OperatorLabels.cs`, the three test projects and the named documents. Must **not** touch `src/Pegasus.Web/Api/**` (that is [[DSK-03-10]]'s), any desktop project, or `src/Pegasus.Web/Pages/Intake/**` beyond reading it.
 - **Unblocks / blocked by**: this ticket **blocks** [[DSK-05-09]] and [[DSK-03-10]] — they publish and render a command that cannot succeed today, and both are forbidden by their own scope boundaries from repairing it. It is **blocked by** [[DSK-01-10]], the first one-way upstream sync. [[DSK-05-23]] and [[DSK-03-16]] carry the operator label vocabulary any new refusal reason joins.
-- **Traps**: the fix is in `Pegasus.Infrastructure`, which [[DSK-05-09]] may not touch and [[DSK-03-10]] may not touch — that is precisely why this ticket exists; do not let it drift into either. Do not weaken `IntakeArtifactIntegrityException`: a genuinely corrupt source must still fail closed. Do not delete or change `DeleteCompletedStagedAsync` — deleting the staged copy on completion is deliberate and the retained source is the durable one. `IntakeWorkItems` state strings are persisted values.
+- **Traps**: **upstream ids and fork board ids do not match.** This ticket is board `INTK-004` and it is upstream INTK-027; upstream INTK-004 is a different ticket again — the received-intake Case-link and label defect absorbed into [[DSK-05-20]] and [[DSK-05-23]] — and it has **no fork ticket**, so never read a bare `INTK-004` as it. The join table is `HZN-001/board-conventions.md` § Upstream ids versus board ids: read it, never compute the mapping, and write `upstream <ID>`, or `upstream <ID> (board [[<board-id>]])` where both are meant. The fix is in `Pegasus.Infrastructure`, which [[DSK-05-09]] may not touch and [[DSK-03-10]] may not touch — that is precisely why this ticket exists; do not let it drift into either. Do not weaken `IntakeArtifactIntegrityException`: a genuinely corrupt source must still fail closed. Do not delete or change `DeleteCompletedStagedAsync` — deleting the staged copy on completion is deliberate and the retained source is the durable one. `IntakeWorkItems` state strings are persisted values.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the ticket `plan` document.
 
 ## Outcome
