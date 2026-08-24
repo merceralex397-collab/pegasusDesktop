@@ -78,7 +78,7 @@ Load `pegasus-desktop` (`.agents/skills/project/pegasus-desktop/SKILL.md`) befor
 
 ## Traps (plan § 7) that apply across the epic
 
-WebView2 off-screen hosting must be proven, not assumed; one print operation per WebView at a
+WebView2 uses the documented `HWND_MESSAGE` parent for its invisible `CoreWebView2Controller`; prove that fixed controller's packaged-app integration rather than trialling a collapsed XAML host; one print operation per WebView at a
 time, so serialise renders; a missing WebView2 runtime needs a named failure and the gateway
 fallback; golden files drift because WebView2 self-updates while Playwright is pinned —
 compare with tolerances, never pixels, and never re-baseline silently; a second copy of the

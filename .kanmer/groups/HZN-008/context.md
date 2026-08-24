@@ -9,7 +9,7 @@ Valuation and reporting on the desktop (proposal §24 Phase 7): the assessment a
 - `docs/desktop/05-implementation-and-migration/` slices S17–S18 — DSK-05-17…DSK-05-18 → `desktop-features` (FEAT)
 - `docs/desktop/07-integrations/` WebView2 renderer — DSK-07-01…DSK-07-19 → `desktop-features` (FEAT)
 
-`DSK-00-07` authors ADR-0108 as `proposed`; it is accepted after this phase's renderer spike. `DSK-05-25` parity evidence continues.
+`DSK-00-07` authors ADR-0108 as `proposed`; it is accepted after this phase's packaged-controller validation and parity evidence. `DSK-05-25` parity evidence continues.
 
 ## Entry condition and exit gate
 
