@@ -28,7 +28,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:54:27.572Z'
-updated: '2026-08-24T08:51:32.094Z'
+updated: '2026-08-24T10:35:24.842Z'
 ---
 
 ## What
@@ -37,7 +37,7 @@ Deliver the case Vehicle tab: request a DVLA/DVSA lookup on a normalized registr
 
 ## Why
 
-Proposal §12.3 and §13.5 require vehicle identity, lookups, mileage history and the source and timestamp of external data, with provider secrets absent from the client. Today it is `src/Pegasus.Web/Pages/Cases/Vehicle.cshtml.cs` (149 lines, three handlers at `:24`, `:46`, `:87`) and `Pages/Cases/Eva/Download.cshtml.cs` (99 lines) over Core `src/Pegasus.Core/Vehicle/` and `src/Pegasus.Core/Eva/EvaBundleSchema.cs`, with the provider adapters and their replay variant in `src/Pegasus.Infrastructure/Vehicle/`. The Phase 6 exit gate requires provider rate and error handling to pass with no secret in the package. Siblings: [[DSK-05-05]] supplies the case session, [[DSK-07-09]] the gateway endpoints, [[DSK-07-19]] the provider error taxonomy.
+Proposal §12.3 and §13.5 require vehicle identity, lookups, mileage history and the source and timestamp of external data, with provider secrets absent from the client. Today it is `src/Pegasus.Web/Pages/Cases/Vehicle.cshtml.cs` (149 lines, three handlers at `:24`, `:46`, `:87`) and `Pages/Cases/Eva/Download.cshtml.cs` (99 lines) over Core `src/Pegasus.Core/Vehicle/` and `src/Pegasus.Core/Eva/EvaBundleSchema.cs`, with the provider adapters and their replay variant in `src/Pegasus.Infrastructure/Vehicle/`. The Phase 6 exit gate requires provider rate and error handling to pass with no secret in the package. Siblings: [[DSK-05-05]] supplies the case session, [[DSK-07-09]] the gateway endpoints, [[DSK-07-19]] the provider error taxonomy, and [[DSK-07-10]] owns the Vehicle tab itself — `CaseVehicleViewModel` and `CaseVehicleView.xaml`.
 
 ## Source of truth
 
@@ -48,7 +48,7 @@ Proposal §12.3 and §13.5 require vehicle identity, lookups, mileage history an
 - Proposal: `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md` § 12.3 DVLA/DVSA, § 13.5 Vehicle and inspection information, § 16.2 External provider resilience
 - Repository evidence: `src/Pegasus.Web/Pages/Cases/Vehicle.cshtml.cs:24` (`OnPostRequestVehicleLookupAsync`), `:46` (`OnPostAcceptVehicleSuggestionAsync`), `:87` (`OnPostGenerateEvaHandoffAsync`); `src/Pegasus.Web/Pages/Cases/Eva/Download.cshtml.cs`; `src/Pegasus.Core/Vehicle/` (lookup contracts, work items, mileage policy, request→accept workflow), `src/Pegasus.Core/Eva/EvaBundleSchema.cs` (916 lines), `CaseEvaMapping`; `src/Pegasus.Infrastructure/Vehicle/DvlaDvsaProductionAdapter.cs` (412 lines) and `DvlaDvsaAdapters.cs` (222 lines, includes the replay adapter used by the Test/UAT stack)
 - Binding decisions: L-01 the gateway holds the provider keys and the shared lookup cache; L-02 the Test/UAT stack uses the replay adapter, never a live provider call; L-04 routing named on the ticket; ADR-0107 consumed
-- Depends on: `DSK-05-05` the case lease and version session; `DSK-07-09` the DVLA/DVSA request, accept and status endpoints with cache lifetime and provenance fields
+- Depends on: `DSK-05-05` the case lease and version session; `DSK-07-09` the DVLA/DVSA request, accept and status endpoints with cache lifetime and provenance fields; `DSK-07-10` — owns `CaseVehicleViewModel` and `CaseVehicleView.xaml`; this slice adds the lookup-status refresh and the EVA handoff generate and download commands to them
 
 ## Routing
 
@@ -66,13 +66,13 @@ Proposal §12.3 and §13.5 require vehicle identity, lookups, mileage history an
 4. Confirm the provider error taxonomy from [[DSK-07-19]] is on these endpoints: `terminal` / `transient` / `unknown` alongside `not-found`, `invalid-request`, `not-authorized`, `rate-limited`, `unavailable`. A provider failure must be distinguishable from a genuine not-found in the contract, not inferred by the client.
 5. Add the vehicle and EVA DTOs to `src/Pegasus.Contracts`, including the suggestion with its source and timestamp and the handoff revision identifier.
 6. Implement registration normalization in the desktop by calling the **existing** Core rule from `src/Pegasus.Core/Vehicle/` — the boundary note in `reuse-map.md` permits a direct `Pegasus.Core` reference for deterministic validation. Do not write a second normalizer; the gateway re-checks on write.
-7. Implement `CaseVehicleViewModel` in `src/Pegasus.Desktop`: request lookup, poll or refresh status, accept a suggestion (showing source and obtained-at beside the value), and render each provider state distinctly using the shared vocabulary — never one generic "failed".
+7. Check whether `CaseVehicleViewModel` already exists from [[DSK-07-10]], which owns that type and its view. If it does, add the lookup-status refresh and the EVA handoff generate and download commands to it in place and change no existing member; if it has not landed, create it with exactly the members [[DSK-07-10]] step 5 pins (`ObservableObject`, `[ObservableProperty]` partial properties, `[RelayCommand]`, and the shared Core normalisation rule reused rather than a second copy) and record in the plan document which case applied. Either way this slice's own surface is the same: request lookup, poll or refresh status, accept a suggestion (showing source and obtained-at beside the value), and render each provider state distinctly using the shared vocabulary — never one generic "failed". Never a second view model for the Vehicle tab.
 8. Show cached-lookup freshness explicitly using the header control from [[DSK-06-12]], so an operator can tell a fresh answer from a cached one without hovering.
 9. Implement EVA handoff generate and download as explicit commands; the download is a streamed transfer reusing the service from [[DSK-05-14]] and carries the reason the Core download requires.
 10. Add contract tests in `tests/Pegasus.Api.ContractTests` using the replay adapter from `src/Pegasus.Infrastructure/Vehicle/DvlaDvsaAdapters.cs`: success, not-found, each provider failure class, rate-limited, 401, 403, 409 stale version, replay of the same `operationKey`, and an assertion that no provider key appears in any response. Enable `Features:DesktopGateway` explicitly.
 11. Add view-model tests in `tests/Pegasus.Desktop.ViewModelTests` for normalization, each provider state rendering distinctly, freshness display, accept updating the case version, and EVA generate-then-download.
 12. Run the replay-adapter integration check on the local Test/UAT stack per `docs/desktop/08-testing/test-uat-stack.md` and record in the proof that no live provider call was made.
-13. Update `docs/desktop/01-inventory-and-parity/parity-matrix.md` row `PAR-14`, add the vehicle and EVA sections to `docs/frd/frd-13-desktop-operator-experience.md`, run the simplification pass over the branch diff, record it under a dated `## Simplification pass` heading, then open the PR into `dev`.
+13. Update `docs/desktop/01-inventory-and-parity/parity-matrix.md` row `PAR-14`, add the EVA handoff behaviour inside the Vehicle tab section [[DSK-07-10]] creates in `docs/frd/frd-13-desktop-operator-experience.md` (a sub-heading under that section, not a second vehicle section), run the simplification pass over the branch diff, record it under a dated `## Simplification pass` heading, then open the PR into `dev`.
 
 ## Acceptance criteria
 
@@ -98,14 +98,14 @@ Tier 5 obliges route-level evidence that the lookup and handoff endpoints reach 
 ## Documentation changes
 
 - `docs/desktop/01-inventory-and-parity/parity-matrix.md` — row `PAR-14`
-- `docs/frd/frd-13-desktop-operator-experience.md` — vehicle and EVA sections, citing FRD-06 and FRD-07
+- `docs/frd/frd-13-desktop-operator-experience.md` — the EVA handoff behaviour inside the Vehicle tab section [[DSK-07-10]] creates, citing FRD-06 and FRD-07; this ticket adds no second vehicle section
 - `docs/capabilities.md` — `DSK` rows for vehicle lookup and EVA handoff
 
 ## Guardrails
 
 - **Azure**: no write.
-- **Scope boundary**: may touch `src/Pegasus.Desktop`, `src/Pegasus.Desktop.Infrastructure`, `src/Pegasus.Contracts`, the `/api/v1` vehicle and EVA groups in `src/Pegasus.Web` and the test projects. Must not reference `src/Pegasus.Infrastructure/Vehicle/` from the desktop; the desktop never calls a provider directly.
-- **Traps**: DVLA/DVSA keys stay behind the gateway (ADR-0107); the Test/UAT stack uses the replay adapter and asking for a live provider or an Azure test resource is out of bounds (L-02, ADR-0014); one normalization rule only — a second implementation is a stop condition; upstream ENG-013 arrives via upstream sync and ENG-009 (Cazana valuation) stays backlog and must not be pulled in; `Features:DesktopGateway` must be enabled in tests.
+- **Scope boundary**: may extend `CaseVehicleViewModel` and `CaseVehicleView.xaml` in `src/Pegasus.Desktop` — [[DSK-07-10]] owns both and this slice adds members to them rather than creating its own — and may touch `src/Pegasus.Desktop.Infrastructure`, `src/Pegasus.Contracts`, the `/api/v1` vehicle and EVA groups in `src/Pegasus.Web` and the test projects. Must not reference `src/Pegasus.Infrastructure/Vehicle/` from the desktop; the desktop never calls a provider directly.
+- **Traps**: DVLA/DVSA keys stay behind the gateway (ADR-0107); the Test/UAT stack uses the replay adapter and asking for a live provider or an Azure test resource is out of bounds (L-02, ADR-0014); one normalization rule only — a second implementation is a stop condition; upstream ENG-013 arrives via upstream sync and ENG-009 (Cazana valuation) stays backlog and must not be pulled in; `Features:DesktopGateway` must be enabled in tests. One view model per screen: [[DSK-07-10]] owns `CaseVehicleViewModel`, this ticket extends it; a second view model for the same screen is a stop condition.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome
