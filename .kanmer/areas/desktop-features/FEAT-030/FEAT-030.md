@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-04 · Desktop Operations screen: intake status, integration health and
   retry bound to the gateway
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:40.467Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -22,7 +24,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.657Z'
-updated: '2026-08-24T10:32:35.782Z'
+updated: '2026-08-24T21:31:40.467Z'
 ---
 
 ## What

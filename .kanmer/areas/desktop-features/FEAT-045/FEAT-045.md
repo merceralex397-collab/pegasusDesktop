@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-19 · Provider error taxonomy in contracts: one list for
   terminal/transient/unknown and the five provider problem types
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:47.154Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -22,7 +24,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:31:27.017Z'
-updated: '2026-08-24T08:52:20.227Z'
+updated: '2026-08-24T21:31:47.154Z'
 ---
 
 ## What

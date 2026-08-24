@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-17 · Reconcile the eleven upstream report-decision tickets against L-03
   and record each disposition
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:31:46.170Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.678Z'
-updated: '2026-08-24T12:43:15.752Z'
+updated: '2026-08-24T21:31:46.170Z'
 ---
 
 ## What

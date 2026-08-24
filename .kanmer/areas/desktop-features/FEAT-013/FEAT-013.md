@@ -2,10 +2,12 @@
 id: FEAT-013
 type: ticket
 title: 'DSK-05-13 · S13 Uploads (manual, status, groups)'
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:35.295Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -24,7 +26,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:54:27.538Z'
-updated: '2026-08-24T12:25:56.385Z'
+updated: '2026-08-24T21:31:35.295Z'
 ---
 
 ## What

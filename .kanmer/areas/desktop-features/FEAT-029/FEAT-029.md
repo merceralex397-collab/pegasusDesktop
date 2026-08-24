@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-03 · Mail endpoints reuse: list, preview, detail, link/unlink,
   classify, move-to-recommended
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:40.214Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -22,7 +24,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.639Z'
-updated: '2026-08-24T08:18:48.639Z'
+updated: '2026-08-24T21:31:40.214Z'
 ---
 
 ## What

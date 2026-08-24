@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-02 · Human retry commands through the gateway with operation keys and
   audit
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:39.944Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -25,7 +27,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.620Z'
-updated: '2026-08-24T08:52:03.996Z'
+updated: '2026-08-24T21:31:39.944Z'
 ---
 
 ## What

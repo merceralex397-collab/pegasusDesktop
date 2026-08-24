@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-10 · Desktop vehicle workflow: VRM validation, request, accept,
   provenance display and the provider-contract check
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:43.045Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -23,7 +25,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:24:13.928Z'
-updated: '2026-08-24T10:36:11.442Z'
+updated: '2026-08-24T21:31:43.045Z'
 ---
 
 ## What

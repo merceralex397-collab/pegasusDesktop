@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-11 · Outbound command pattern: desktop confirms, gateway authorises and
   executes with an idempotency key
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:43.432Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -23,7 +25,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:24:13.944Z'
-updated: '2026-08-24T13:35:28.874Z'
+updated: '2026-08-24T21:31:43.432Z'
 ---
 
 ## What

@@ -2,10 +2,12 @@
 id: FEAT-004
 type: ticket
 title: DSK-05-04 · S4 Case create
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:33.144Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -29,7 +31,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:33.829Z'
-updated: '2026-08-24T08:51:11.612Z'
+updated: '2026-08-24T21:31:33.144Z'
 ---
 
 ## What

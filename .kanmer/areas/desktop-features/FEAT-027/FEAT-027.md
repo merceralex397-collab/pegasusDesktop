@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-01 · Gateway intake-status endpoints: per-mailbox cycles, failures,
   poison counts, retry eligibility
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:39.549Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -27,7 +29,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.602Z'
-updated: '2026-08-24T08:52:02.738Z'
+updated: '2026-08-24T21:31:39.549Z'
 ---
 
 ## What

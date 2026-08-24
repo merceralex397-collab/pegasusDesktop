@@ -2,10 +2,12 @@
 id: FEAT-006
 type: ticket
 title: 'DSK-05-06 · S6 Workflow, closure and tasks commands'
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:33.535Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -25,7 +27,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:33.876Z'
-updated: '2026-08-24T08:51:14.991Z'
+updated: '2026-08-24T21:31:33.535Z'
 ---
 
 ## What

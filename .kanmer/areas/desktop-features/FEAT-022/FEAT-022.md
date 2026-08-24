@@ -2,10 +2,12 @@
 id: FEAT-022
 type: ticket
 title: DSK-05-22 · S22 Hardening sweep
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:31:38.416Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -23,7 +25,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:02:19.010Z'
-updated: '2026-08-24T13:34:28.156Z'
+updated: '2026-08-24T21:31:38.416Z'
 ---
 
 ## What

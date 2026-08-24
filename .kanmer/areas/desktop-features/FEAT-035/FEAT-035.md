@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-09 · DVLA/DVSA gateway endpoints: request lookup, accept suggestion,
   status, cache lifetime and provenance
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:42.711Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -26,7 +28,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:24:13.912Z'
-updated: '2026-08-24T08:52:11.448Z'
+updated: '2026-08-24T21:31:42.711Z'
 ---
 
 ## What

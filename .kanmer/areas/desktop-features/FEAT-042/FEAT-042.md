@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-16 · Report finalise endpoint: register the desktop-rendered PDF into
   custody with the report record and audit
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:45.963Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -22,7 +24,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.663Z'
-updated: '2026-08-24T12:45:59.809Z'
+updated: '2026-08-24T21:31:45.963Z'
 ---
 
 ## What

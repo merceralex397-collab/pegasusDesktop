@@ -2,10 +2,12 @@
 id: FEAT-005
 type: ticket
 title: 'DSK-05-05 · S5 Case edit with lease, version and completeness'
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:33.332Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -36,7 +38,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:33.843Z'
-updated: '2026-08-24T08:51:13.290Z'
+updated: '2026-08-24T21:31:33.332Z'
 ---
 
 ## What

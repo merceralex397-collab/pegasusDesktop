@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-08 · Box conflict and version handling: detect a newer canonical
   version before overwrite and surface it
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:42.378Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -22,7 +24,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:24:13.897Z'
-updated: '2026-08-24T08:24:13.897Z'
+updated: '2026-08-24T21:31:42.378Z'
 ---
 
 ## What

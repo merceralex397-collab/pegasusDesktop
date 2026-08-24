@@ -2,10 +2,12 @@
 id: FEAT-023
 type: ticket
 title: DSK-05-23 · Extract `OperatorLabels` to the shared assembly
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:31:38.615Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -24,7 +26,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:02:19.029Z'
-updated: '2026-08-24T13:30:23.919Z'
+updated: '2026-08-24T21:31:38.615Z'
 ---
 
 ## What

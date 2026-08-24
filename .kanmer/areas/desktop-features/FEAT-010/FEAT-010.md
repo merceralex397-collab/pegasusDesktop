@@ -2,10 +2,12 @@
 id: FEAT-010
 type: ticket
 title: 'DSK-05-10 · S10 Mail workspace (list, message, link/unlink, classify, move)'
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:34.351Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -25,7 +27,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:51:33.033Z'
-updated: '2026-08-24T13:31:23.711Z'
+updated: '2026-08-24T21:31:34.351Z'
 ---
 
 ## What

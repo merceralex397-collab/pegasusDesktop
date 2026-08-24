@@ -2,10 +2,12 @@
 id: FEAT-014
 type: ticket
 title: 'DSK-05-14 · S14 Documents and custody (Box browser, transfer queue, preview)'
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:35.693Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -29,7 +31,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:54:27.555Z'
-updated: '2026-08-24T12:32:29.392Z'
+updated: '2026-08-24T21:31:35.693Z'
 ---
 
 ## What

@@ -2,10 +2,12 @@
 id: FEAT-015
 type: ticket
 title: DSK-05-15 · S15 Vehicle lookup and EVA handoff
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:35.921Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -28,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:54:27.572Z'
-updated: '2026-08-24T12:44:39.778Z'
+updated: '2026-08-24T21:31:35.921Z'
 ---
 
 ## What

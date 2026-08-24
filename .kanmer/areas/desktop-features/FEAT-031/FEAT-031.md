@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-05 · Box broker endpoints: list, metadata, download session, upload
   session, remove, confirm evidence
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:41.111Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -28,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.673Z'
-updated: '2026-08-24T11:21:03.947Z'
+updated: '2026-08-24T21:31:41.111Z'
 ---
 
 ## What

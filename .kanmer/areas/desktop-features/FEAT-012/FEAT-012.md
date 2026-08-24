@@ -2,10 +2,12 @@
 id: FEAT-012
 type: ticket
 title: DSK-05-12 · S12 Unidentified and vehicle images
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:35.096Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -24,7 +26,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:51:33.066Z'
-updated: '2026-08-24T12:30:49.482Z'
+updated: '2026-08-24T21:31:35.096Z'
 ---
 
 ## What

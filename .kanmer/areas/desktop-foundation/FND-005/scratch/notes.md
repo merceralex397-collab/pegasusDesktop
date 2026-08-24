@@ -1,0 +1,1 @@
+2026-08-24 — independent review found ADR-0105 cloud-table placement and canonical filename propagation defects. Fixed in local commit `d22c39dd`; documentation/link/placement checks passed. Focused independent re-review requested. Integration remains blocked by absent `origin/dev` and GitHub HTTP 403 when pushing `fnd-005-foundation-adrs`.

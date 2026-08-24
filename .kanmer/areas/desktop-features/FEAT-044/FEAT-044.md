@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-18 · Spike: should ONNX VRM/image preprocessing move to the desktop?
   Engine size, accuracy parity, fleet CPU
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: spike
+stageEntered:
+  preparing: '2026-08-24T21:31:46.726Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -22,7 +24,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.694Z'
-updated: '2026-08-24T08:30:09.694Z'
+updated: '2026-08-24T21:31:46.726Z'
 ---
 
 ## What

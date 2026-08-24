@@ -2,10 +2,12 @@
 id: FEAT-025
 type: ticket
 title: DSK-05-25 · Parity evidence per slice (matrix maintenance)
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:31:39.116Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -21,7 +23,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:04:08.606Z'
-updated: '2026-08-24T08:51:48.024Z'
+updated: '2026-08-24T21:31:39.116Z'
 ---
 
 ## What

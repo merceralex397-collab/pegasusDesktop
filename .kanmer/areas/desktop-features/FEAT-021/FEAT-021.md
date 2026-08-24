@@ -2,10 +2,12 @@
 id: FEAT-021
 type: ticket
 title: DSK-05-21 · S21 Password change and account lifecycle
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:38.115Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -24,7 +26,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:59:40.227Z'
-updated: '2026-08-24T08:51:44.837Z'
+updated: '2026-08-24T21:31:38.115Z'
 ---
 
 ## What

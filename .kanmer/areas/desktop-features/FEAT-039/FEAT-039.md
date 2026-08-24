@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-13 · Share the report templates once: embed the governed source into
   both renderer assemblies, hash-checked
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:44.441Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -24,7 +26,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.616Z'
-updated: '2026-08-24T11:26:07.049Z'
+updated: '2026-08-24T21:31:44.441Z'
 ---
 
 ## What

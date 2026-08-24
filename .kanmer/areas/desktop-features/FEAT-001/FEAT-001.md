@@ -2,10 +2,12 @@
 id: FEAT-001
 type: ticket
 title: DSK-05-01 · S1 Dashboard and work queue
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:32.542Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -28,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:33.781Z'
-updated: '2026-08-24T08:51:06.572Z'
+updated: '2026-08-24T21:31:32.542Z'
 ---
 
 ## What

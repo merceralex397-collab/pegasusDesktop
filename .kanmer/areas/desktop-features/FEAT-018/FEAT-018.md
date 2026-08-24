@@ -2,10 +2,12 @@
 id: FEAT-018
 type: ticket
 title: 'DSK-05-18 · S18 Report generation, preview, finalise, send'
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:37.169Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -29,7 +31,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:57:08.747Z'
-updated: '2026-08-24T10:37:15.602Z'
+updated: '2026-08-24T21:31:37.169Z'
 ---
 
 ## What

@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-15 · Golden-file parity suite: gateway-renderer fixtures compared with
   WebView2 output within documented tolerances
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:45.187Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -24,7 +26,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.649Z'
-updated: '2026-08-24T09:36:30.212Z'
+updated: '2026-08-24T21:31:45.187Z'
 ---
 
 ## What

@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-14 · Desktop report renderer: Scriban + isolated WebView2
   PrintToPdfStreamAsync + PDFsharp post-processing
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:44.660Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -29,7 +31,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.634Z'
-updated: '2026-08-24T11:27:22.025Z'
+updated: '2026-08-24T21:31:44.660Z'
 ---
 
 ## What

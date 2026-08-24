@@ -2,10 +2,12 @@
 id: FEAT-002
 type: ticket
 title: DSK-05-02 · S2 Case list and search
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:32.730Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -29,7 +31,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:33.800Z'
-updated: '2026-08-24T08:51:08.250Z'
+updated: '2026-08-24T21:31:32.730Z'
 ---
 
 ## What

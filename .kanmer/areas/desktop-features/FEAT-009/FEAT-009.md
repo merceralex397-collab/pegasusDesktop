@@ -2,10 +2,12 @@
 id: FEAT-009
 type: ticket
 title: 'DSK-05-09 · S9 Received items (intake detail, actions, bytes)'
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:34.159Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -31,7 +33,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:49:10.235Z'
-updated: '2026-08-24T12:39:45.569Z'
+updated: '2026-08-24T21:31:34.159Z'
 ---
 
 ## What

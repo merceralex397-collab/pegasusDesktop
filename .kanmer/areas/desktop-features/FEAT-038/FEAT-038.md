@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-12 · Author ADR-0108: isolated WebView2 HTML→PDF rendering, never-UI
   rule, fallback and parity gate
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:31:44.222Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -24,7 +26,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:24:13.959Z'
-updated: '2026-08-24T09:37:23.763Z'
+updated: '2026-08-24T21:31:44.222Z'
 ---
 
 ## What

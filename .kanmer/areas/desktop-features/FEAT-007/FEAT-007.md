@@ -2,10 +2,12 @@
 id: FEAT-007
 type: ticket
 title: 'DSK-05-07 · S7 Parties and reference data (organizations, principals)'
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:33.746Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -25,7 +27,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:49:10.201Z'
-updated: '2026-08-24T13:32:23.674Z'
+updated: '2026-08-24T21:31:33.746Z'
 ---
 
 ## What

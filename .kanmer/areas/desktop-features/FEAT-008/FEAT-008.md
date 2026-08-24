@@ -2,10 +2,12 @@
 id: FEAT-008
 type: ticket
 title: 'DSK-05-08 · S8 Concurrency UX (conflict, lease lost, replay)'
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:33.945Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -28,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:49:10.219Z'
-updated: '2026-08-24T12:33:53.569Z'
+updated: '2026-08-24T21:31:33.945Z'
 ---
 
 ## What

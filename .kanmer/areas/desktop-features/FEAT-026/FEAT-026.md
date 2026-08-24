@@ -2,10 +2,12 @@
 id: FEAT-026
 type: ticket
 title: DSK-05-26 · Cut-list execution after cutover
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:31:39.339Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:04:08.622Z'
-updated: '2026-08-24T08:04:08.622Z'
+updated: '2026-08-24T21:31:39.339Z'
 ---
 
 ## What

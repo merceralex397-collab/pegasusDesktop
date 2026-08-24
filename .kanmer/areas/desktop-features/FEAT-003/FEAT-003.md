@@ -2,10 +2,12 @@
 id: FEAT-003
 type: ticket
 title: DSK-05-03 · S3 Case detail read-only and history
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:32.948Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -30,7 +32,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:33.815Z'
-updated: '2026-08-24T11:24:41.103Z'
+updated: '2026-08-24T21:31:32.948Z'
 ---
 
 ## What

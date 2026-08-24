@@ -2,10 +2,12 @@
 id: FEAT-017
 type: ticket
 title: DSK-05-17 · S17 Assessment workbench
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:36.956Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -29,7 +31,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:57:08.732Z'
-updated: '2026-08-24T08:51:35.327Z'
+updated: '2026-08-24T21:31:36.956Z'
 ---
 
 ## What

@@ -2,10 +2,12 @@
 id: FEAT-016
 type: ticket
 title: DSK-05-16 · S16 Images and gallery
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:36.437Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -26,7 +28,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:57:08.715Z'
-updated: '2026-08-24T12:53:45.417Z'
+updated: '2026-08-24T21:31:36.437Z'
 ---
 
 ## What

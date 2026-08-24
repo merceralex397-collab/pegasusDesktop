@@ -2,10 +2,12 @@
 id: FEAT-011
 type: ticket
 title: 'DSK-05-11 · S11 Triage list, detail and actions'
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:34.546Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -26,7 +28,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:51:33.051Z'
-updated: '2026-08-24T11:10:08.393Z'
+updated: '2026-08-24T21:31:34.546Z'
 ---
 
 ## What

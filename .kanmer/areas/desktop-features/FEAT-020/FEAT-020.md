@@ -2,10 +2,12 @@
 id: FEAT-020
 type: ticket
 title: DSK-05-20 · S20 Operations and integration health
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:37.896Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -25,7 +27,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:59:40.211Z'
-updated: '2026-08-24T13:33:25.980Z'
+updated: '2026-08-24T21:31:37.896Z'
 ---
 
 ## What

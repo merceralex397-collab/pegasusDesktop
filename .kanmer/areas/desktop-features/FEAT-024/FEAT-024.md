@@ -2,10 +2,12 @@
 id: FEAT-024
 type: ticket
 title: DSK-05-24 · Retire `CaseMutationPageModel` state machine for desktop paths
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:31:38.832Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -21,7 +23,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:02:19.044Z'
-updated: '2026-08-24T08:02:19.044Z'
+updated: '2026-08-24T21:31:38.832Z'
 ---
 
 ## What

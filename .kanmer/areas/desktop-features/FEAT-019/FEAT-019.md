@@ -2,10 +2,12 @@
 id: FEAT-019
 type: ticket
 title: DSK-05-19 · S19 Administration
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:37.432Z'
 labels:
   - desktop-conversion
   - plan-05
@@ -25,7 +27,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:59:40.195Z'
-updated: '2026-08-24T08:51:38.749Z'
+updated: '2026-08-24T21:31:37.432Z'
 ---
 
 ## What

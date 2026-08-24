@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-07 · Spike: can Box.Sdk.Gen 1.12 issue a short-lived, file-scoped
   downscoped token for direct desktop transfer?
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: spike
+stageEntered:
+  preparing: '2026-08-24T21:31:42.109Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -25,7 +27,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:24:13.878Z'
-updated: '2026-08-24T08:52:09.296Z'
+updated: '2026-08-24T21:31:42.109Z'
 ---
 
 ## What

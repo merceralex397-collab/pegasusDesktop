@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-07-06 · Desktop document browser, transfer queue, preview pane and bounded
   working cache
-status: backlog
+status: preparing
 area: desktop-features
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:31:41.309Z'
 labels:
   - desktop-conversion
   - plan-07
@@ -24,7 +26,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.690Z'
-updated: '2026-08-24T12:37:23.172Z'
+updated: '2026-08-24T21:31:41.309Z'
 ---
 
 ## What
