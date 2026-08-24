@@ -12,8 +12,8 @@ tickets that name an overlapping desktop lane owns which piece?
 `.github/workflows/ci.yml` is 234 lines and is called `repository-check`:
 
 - `:3-6` — triggers are `pull_request:` (all branches) and `push: branches: [main]`.
-  **There is no tag trigger today**, which is why `DSK-09-17` (board `REL-015`) puts its
-  lane in a separate workflow rather than extending this one.
+  **There is no tag trigger today**, which is why [[REL-015]] (plan handle `DSK-09-17`) puts
+  its lane in a separate workflow rather than extending this one.
 - `:8-9` — `permissions: contents: read` at workflow level.
 - `:12` `changes` — `runs-on: ubuntu-latest`, `timeout-minutes: 5`, with a leading comment
   saying it is path detection only and therefore not Linux-development evidence. It
@@ -52,9 +52,12 @@ Windows multiplier a real cost rather than a theoretical one.
 says sharing one definition "keeps the cache key from drifting between lanes" — which is
 why step 5 of this ticket must use it rather than pinning the SDK inline.
 
-**No parity-matrix row covers this.** CI is repository infrastructure, not an observable
-web capability; `docs/desktop/01-inventory-and-parity/parity-matrix.md` `PAR-01`…`PAR-46`
-are all Razor page models.
+**No parity-matrix row covers this, and none should.** CI is repository infrastructure, not
+an observable web capability; `docs/desktop/01-inventory-and-parity/parity-matrix.md` holds
+46 rows, `PAR-01`…`PAR-46`, all Razor page models — counted, not copied
+(`grep -c '^| PAR-' docs/desktop/01-inventory-and-parity/parity-matrix.md` → `46`, verified
+2026-08-24). The closest existing repository mechanism is `.github/workflows/ci.yml` itself,
+read above.
 
 ## Findings
 
@@ -69,13 +72,13 @@ are all Razor page models.
   `-Build` and `-Infrastructure` as mandatory `[bool]`s and compares both; `:23-30` are
   eight existing cases. A `Desktop` output means changing the helper signature and every
   existing call. That cost is a concrete argument for the body's preferred branch:
-  gate on `DSK-08-13`'s (board `TEST-013`) `desktop` flag when it has landed and change
-  nothing.
+  gate on [[TEST-013]]'s (plan handle `DSK-08-13`) `desktop` flag when it has landed and
+  change nothing.
 - **Three tickets name an overlapping desktop lane**, and the body settles the split on
-  the evidence: `DSK-02-15` (board `FND-040`, "CI lane `desktop-build` on
+  the evidence: [[FND-040]] (plan handle `DSK-02-15`, "CI lane `desktop-build` on
   `windows-latest`: locked restore, x64 Release build, desktop tests") proves build and
-  tests and **packages nothing**; this ticket owns `desktop-package`; `DSK-08-13` (board
-  `TEST-013`, "`ci.yml` lanes: `desktop-build`, `desktop-package`, `desktop-ui-smoke`,
+  tests and **packages nothing**; this ticket owns `desktop-package`; [[TEST-013]]
+  ("`ci.yml` lanes: `desktop-build`, `desktop-package`, `desktop-ui-smoke`,
   `packaging-tests`") **owns the `desktop` change flag and the `changes` job output that
   carries it** and extends this one job with `desktop-ui-smoke` and `packaging-tests`.
 - **The CI runner has no production certificate, by decision.** D-002 confines the `.pfx`
@@ -93,7 +96,7 @@ are all Razor page models.
 - **`--manifest` auto-matches the certificate subject to `Package.appxmanifest`'s
   `Publisher`** — the skill's step 2 — which is the fix for the Publisher-mismatch
   packaging failure (`0x8007000B`).
-- **The artifact name is a cross-ticket literal.** `DSK-08-13`'s `desktop-ui-smoke`
+- **The artifact name is a cross-ticket literal.** [[TEST-013]]'s `desktop-ui-smoke`
   downloads the MSIX by exactly the name `desktop-msix-unsigned`, so renaming it breaks a
   sibling lane silently.
 - **`actions/upload-artifact@v6` is the version already in use** at `ci.yml:179`; matching
@@ -113,8 +116,9 @@ Verified by reading this repository on 2026-08-24.
 | `Assert-Flags` takes exactly `-Build` and `-Infrastructure`; eight existing cases | `scripts/Test-CiChangeFlags.ps1:9-30` |
 | `winapp cert install` writes to machine Trusted Root; `--manifest` auto-matches Publisher; `--if-exists skip --quiet` in the CI sample; `setup-WinAppCli@v0.1` | `.codex/skills/winui-packaging/SKILL.md` |
 | GitHub Actions Azure deployment is recorded as `Not planned` | `docs/runbook.md:903` |
-| C-01: private-repository Windows runners bill at a 2× multiplier; the cost plan is `DSK-08-19` (board `TEST-019`) | `docs/desktop/README.md` § Constraints recorded after planning began |
+| C-01: private-repository Windows runners bill at a 2× multiplier; the cost plan is [[TEST-019]] (plan handle `DSK-08-19`) | `docs/desktop/README.md` § Constraints recorded after planning began |
 | The desktop test project this lane runs, `tests/Pegasus.Desktop.ViewModelTests`, does not exist yet | `ls tests/` → `Pegasus.ArchitectureTests`, `Pegasus.Core.Tests`, `Pegasus.IntegrationTests` only |
+| The parity matrix holds 46 rows, `PAR-01`…`PAR-46`, and none covers CI | `grep -c '^\| PAR-' docs/desktop/01-inventory-and-parity/parity-matrix.md` → `46` |
 
 ### Assumptions
 
@@ -127,7 +131,7 @@ Verified by reading this repository on 2026-08-24.
   invented: `winget install Microsoft.WinAppCLI` on the runner, which
   `docs/desktop/08-testing/test-uat-stack.md` § Machine prerequisites already names as
   the install route for the Test/UAT machine.
-- **A-09-10 — `Test-Package.ps1` (`DSK-08-10`, board `TEST-010`) can run at least
+- **A-09-10 — `Test-Package.ps1` ([[TEST-010]], plan handle `DSK-08-10`) can run at least
   partially on a hosted runner.** Some of its scenarios install a package, which needs a
   trusted certificate on the machine — and the body forbids `winapp cert install` on a
   shared runner.
@@ -137,14 +141,14 @@ Verified by reading this repository on 2026-08-24.
   **record which are skipped in the job summary** — do not silently drop them.
 - **A-09-11 — the desktop build output path contains a single target framework
   directory.** The packaging step needs
-  `./src/Pegasus.Desktop/bin/x64/Release/<tfm>/`, and `<tfm>` is fixed by `DSK-02-05`
-  (board `FND-030`).
+  `./src/Pegasus.Desktop/bin/x64/Release/<tfm>/`, and `<tfm>` is fixed by
+  [[FND-030]] (plan handle `DSK-02-05`).
   *Confirmed by*: reading `src/Pegasus.Desktop/Pegasus.Desktop.csproj`'s
   `TargetFramework` once it exists.
   *Breaks if wrong*: a hard-coded `<tfm>` breaks on the next Windows App SDK bump.
   Mitigation: resolve the directory with a glob and fail with a named message if it does
   not match exactly one directory.
-- **A-09-12 — `DSK-08-13` (board `TEST-013`) has not landed when this ticket is worked.**
+- **A-09-12 — [[TEST-013]] has not landed when this ticket is worked.**
   Both the phase labels (this ticket is `phase-2`, `TEST-013` is a testing-area lane) and
   the body's conditional wording assume it may go either way.
   *Confirmed by*: `grep -n "desktop-package\|outputs.desktop" .github/workflows/ci.yml`
@@ -158,10 +162,17 @@ Verified by reading this repository on 2026-08-24.
 **This ticket places no product responsibility anywhere — it is CI work**, so the
 six-question cloud-justification test of
 `docs/desktop/00-governance-and-workflow/README.md` § 3 does not apply to it, and the
-heading is kept rather than dropped to say so. The one placement decision the lane
-touches is already made and is not this ticket's to re-open: the production signing key
-stays on the in-house signing host (**D-002**), which is why the lane uses a generated
-development certificate and why no `secrets.` reference may appear in the workflow.
+heading is kept rather than dropped to say so. This is the case the authoring contract
+carves out explicitly: *a PR lane using a generated development certificate places nothing*.
+That is exactly this lane — the certificate is generated on the runner by
+`winapp cert generate`, is never trusted or installed, and no `secrets.` reference may
+appear in the workflow. The artefact it uploads (`desktop-msix-unsigned`) is an unsigned
+intermediate consumed by a sibling lane inside the same PR run, not a published release; the
+tag lane that *does* place a real credential responsibility is [[REL-015]], and it answers
+all six there.
+
+The one placement decision this lane touches is already made and is not this ticket's to
+re-open: the production signing key stays on the in-house signing host (**D-002**).
 
 ## Implications
 
@@ -169,7 +180,7 @@ development certificate and why no `secrets.` reference may appear in the workfl
   `scripts/Get-CiChangeFlags.ps1` and `.github/workflows/ci.yml` on the branch, not
   questions for anyone. Their outcome is recorded in the plan document, which is what
   makes the three-way lane overlap auditable rather than accidental.
-- **Prefer gating on `DSK-08-13`'s flag.** Beyond the ownership rule, the classifier's
+- **Prefer gating on [[TEST-013]]'s flag.** Beyond the ownership rule, the classifier's
   test helper makes a third output a multi-file change (`Test-CiChangeFlags.ps1:9-30`), so
   the fallback branch is genuinely more expensive as well as less correct.
 - **Use the composite action; never re-pin the SDK inline.** The action exists precisely
@@ -179,17 +190,39 @@ development certificate and why no `secrets.` reference may appear in the workfl
 - **Never `winapp cert install` on a hosted runner.** Packaging needs the certificate, not
   its trust; trust is only needed to *install*, and installing on a shared runner is what
   the body forbids.
-- **The artifact name `desktop-msix-unsigned` is a contract**, consumed by `DSK-08-13`'s
+- **The artifact name `desktop-msix-unsigned` is a contract**, consumed by [[TEST-013]]'s
   `desktop-ui-smoke`. One name, one artifact.
 - **Cost is a first-class constraint here.** C-01 makes a duplicate Windows lane bill
-  twice; if `DSK-02-15`'s `desktop-build` lane has landed, take its result through
+  twice; if [[FND-040]]'s `desktop-build` lane has landed, take its result through
   `needs:` and drop the duplicate test step rather than paying for the same minutes.
 
 ## Open questions
 
-- None that block. Every branch this ticket has is resolved by looking at the branch:
-  whether `DSK-08-13`'s `desktop` flag has landed, whether a `desktop-package` job already
-  exists, and whether `DSK-02-15`'s `desktop-build` lane is available to take `needs:`
-  from. `A-09-9`, `A-09-10` and `A-09-11` are settled by the first CI run and each has a
-  recorded fallback. No `open-questions` document is created — an unticked item would
-  block every stage move for a state check the implementer performs in step 3.
+**None opened — and the reason is not that opening one would be expensive.**
+
+The earlier draft of this section said "an unticked item would block every stage move". That
+is false and is withdrawn: an unticked `- [ ]` line above `## Parked` blocks exactly
+`leave-preparing`, `enter-review` and `enter-done`, and never `leave-backlog`. This ticket is
+a `feature`, so `questions-resolved` sits at three of its four boundaries and `leave-backlog`
+carries only `governing-doc`. Blocking Preparing would have been affordable if there were a
+real question.
+
+There is not, and the sound half of the earlier reasoning is why: **every branch this ticket
+has is resolved by looking at the branch, by the implementer, in a step the ticket already
+owns.** Specifically —
+
+- whether [[TEST-013]]'s `desktop` flag has landed, whether a `desktop-package` job already
+  exists, and whether [[FND-040]]'s `desktop-build` lane is available to take `needs:` from
+  (A-09-12) — all three are the state checks in steps 3 and 4, and their outcome is recorded
+  in the plan;
+- `A-09-9` (is `setup-WinAppCli` usable?), `A-09-10` (can `Test-Package.ps1` run on a hosted
+  runner?) and `A-09-11` (is there exactly one `<tfm>` directory?) are each settled by the
+  first CI run, and each has a recorded fallback that does not need an answer first — a
+  `winget install` route, a run-what-you-can-and-report-the-skips rule, and a glob that fails
+  with a named message rather than a hard-coded framework moniker.
+
+Nothing in this ticket's body instructs that a question be recorded in `open-questions/`, and
+the two decisions that are genuinely not this ticket's — the `desktop` change flag
+([[TEST-013]]) and the Windows-runner cost plan ([[TEST-019]]) — are scope boundaries owned by
+named sibling tickets, which the authoring contract keeps in this section rather than in an
+`open-questions` document.
