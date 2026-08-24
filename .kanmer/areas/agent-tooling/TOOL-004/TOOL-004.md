@@ -21,7 +21,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:07:44.135Z'
-updated: '2026-08-24T08:07:44.135Z'
+updated: '2026-08-24T15:24:52.359Z'
 ---
 
 ## What
@@ -42,15 +42,28 @@ After the vendored tree exists, delete the second copies under `.codex/skills/` 
   - `git status --porcelain` — the eight `.codex/skills/winui-*` folders are untracked (`??`), so they are deleted from disk, not from git
   - `.agents/skills/pegasus-release/SKILL.md` — the copy that survives
   - `.codex/skills/winui-design/winui-search.exe` (7,911,936 bytes) and `.codex/skills/winui-dev-workflow/analyzer/Microsoft.WindowsAppSDK.Analyzers.dll` — payload that must exist at the vendored destination before anything here is deleted
-  - `docs/desktop/README.md` § Routing legend — the WinUI row still reads "vendored under `.codex/skills/` today"
-  - `docs/desktop/12-agent-tooling/skill-routing.md` § Pinned sources — "today the WinUI skills sit under `.codex/skills/`"
+  - **The stale-pointer surface, measured 2026-08-24 with `grep -rIn '\.codex/skills'` over the repository excluding `.codex/skills/` itself, `.git/`, `.worktrees/` and `artifacts/`: 23 references across nine files, every one of them a Markdown file under `docs/desktop/`. No `.codex/agents/*.toml` contains the string at all (0 hits); the TOMLs name skills by bare name.** The nine files and their reference counts:
+
+    | File | References |
+    | --- | --- |
+    | `docs/desktop/12-agent-tooling/README.md` (`:43`, `:46`, `:47`, `:53`, `:104`, `:115`, `:117`, `:118`, `:170`, `:228`) | 10 |
+    | `docs/desktop/02-architecture-and-foundation/README.md` (`:87`, `:88`, `:274`) | 3 |
+    | `docs/desktop/09-release-update-and-distribution/README.md` (`:46`, `:81`, `:309`) | 3 |
+    | `docs/desktop/08-testing/README.md` (`:125`, `:277`) | 2 |
+    | `docs/desktop/README.md` (`:101`) | 1 |
+    | `docs/desktop/06-ui-design/README.md` (`:87`) | 1 |
+    | `docs/desktop/06-ui-design/keyboard-and-accessibility.md` (`:103`) | 1 |
+    | `docs/desktop/10-security-observability-performance/README.md` (`:88`) | 1 |
+    | `docs/desktop/12-agent-tooling/skill-routing.md` (`:14`) | 1 |
+    | **Total** | **23 across 9 files** |
+
   - `scripts/Test-DocumentationLinks.ps1:14` — `.codex` and `.agents` are excluded from link checking, so a stale sentence inside those trees is not caught by CI; the `docs/` sentences are
 - Binding decisions:
   - **L-04** — every ticket names its skills; a name must resolve to one file.
   - **L-05** — the board is seeded from these plans; the plan requires one list.
 - Depends on:
   - `DSK-12-01` — its verdict says whether Codex discovers `.codex/skills` at all; deleting a tree the toolchain actually uses without the replacement proven is how guidance disappears mid-conversion.
-  - `DSK-12-02` — the vendored destinations and the lockfile must exist and verify green before anything is removed.
+  - `DSK-12-02` — the vendored destinations and the lockfile must exist and verify green before anything is removed. It also lands the first two of the nine files' edits (`docs/desktop/12-agent-tooling/README.md` § 3 and `skill-routing.md` § Pinned sources), so re-measure the 23 at step 8 rather than assuming the number is unchanged.
 
 ## Routing
 
@@ -69,11 +82,23 @@ After the vendored tree exists, delete the second copies under `.codex/skills/` 
 5. Remove the tracked duplicate from git: `git rm .codex/skills/pegasus-release/SKILL.md`. `.agents/skills/pegasus-release/SKILL.md` is the surviving copy — do not delete that one.
 6. Remove the eight untracked WinUI folders from disk (`rm -r .codex/skills/winui-*`). They are working-tree only, so this produces no git diff; record the `git status --porcelain` before and after so the proof shows the `??` entries disappearing.
 7. Assert one list: `find .codex/skills -name 'SKILL.md'` must return nothing, and `.codex/skills/` should be empty or gone. Then `find .agents/skills -name 'SKILL.md' | sort` must list each skill exactly once — no name may appear twice.
-8. Find and fix every stale pointer: `grep -rn '\.codex/skills' --include='*.md' --include='*.toml' .` and update each hit. Expected hits are `docs/desktop/README.md` § Routing legend, `docs/desktop/12-agent-tooling/README.md` § 2 and § 3, `docs/desktop/12-agent-tooling/skill-routing.md` § Pinned sources, and possibly an agent TOML under `.codex/agents/`. Rewrite each to the vendored path and keep the historical note dated, rather than erasing the fact that the skills once lived there.
-9. Re-read each of the eight `.codex/agents/*.toml` and confirm none of them names a `.codex/skills/...` path in its `developer_instructions`; they should name skills by name and the project skill by its `.agents/skills/project/pegasus-desktop/SKILL.md` path only.
+8. **Find and fix every stale pointer, across the whole measured set — not only the headline three.** Re-measure first, because [[DSK-12-02]] may already have fixed two of them:
+
+    ```bash
+    grep -rIn '\.codex/skills' --include='*.md' --include='*.toml' . \
+      | grep -v '^\./\.codex/skills/'
+    ```
+
+    The 2026-08-24 baseline is **23 references across the nine files listed under Source of truth**, all Markdown under `docs/desktop/`, and **0 in any `.codex/agents/*.toml`**. Work the list file by file and account for every hit — a number that does not reconcile against the baseline means either [[DSK-12-02]] moved it or a new one has appeared, and either way say which in the plan.
+
+    Not every hit becomes a vendored path. Classify each one and record the disposition:
+    - **Live routing instruction** — "the vendored `winui-design` skill (`.codex/skills/winui-design/SKILL.md`)" and its kind. Rewrite to `.agents/skills/vendor/windows/<name>/SKILL.md`.
+    - **Dated historical note** — sentences recording where the skills used to live, such as `docs/desktop/12-agent-tooling/README.md:115` ("today the WinUI skills live under `.codex/skills/`"). Keep the fact, date it, and mark it as history rather than erasing it.
+    - **Plan-row title text** — `docs/desktop/12-agent-tooling/README.md:170` is this ticket's own § 5 row, "Remove duplicate skill copies under `.codex/skills/`". **Leave it exactly as it is**; renaming a plan row to hide the path it names would make the plan set stop describing the work that was done.
+9. Re-read each of the eight `.codex/agents/*.toml` and confirm none of them names a `.codex/skills/...` path in its `developer_instructions`. Measured 2026-08-24: none does — the grep returns 0 hits across `.codex/agents/`, and the TOMLs name skills by bare name and the project skill by its `.agents/skills/project/pegasus-desktop/SKILL.md` path only. This step is therefore a re-confirmation, and the acceptance criterion about agent TOMLs is satisfied by evidence rather than by an edit. If a TOML has gained such a path since, correcting that one line is in scope.
 10. **Operator step** — restart Codex and run `/skills`; hand back the listing. Expected: every skill in the lockfile appears **once**, and no `winui-*` entry resolves from `.codex/skills`. If a skill vanished entirely, revert the deletion and reopen [[DSK-12-01]]'s verdict.
 11. Run the documentation gates and record their output: `pwsh ./scripts/Test-DocumentationLinks.ps1` (expected `All relative Markdown links resolve`) and `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base <merge-base with dev> -Head HEAD` (expected `Markdown placement passed`; deletions are not checked by the placement gate, only additions and renames).
-12. Record the Appendix C evidence: the before/after `find` output, the hash comparison from step 4, the `/skills` listing, and the list of documents edited.
+12. Record the Appendix C evidence: the before/after `find` output, the hash comparison from step 4, the `/skills` listing, the before/after grep counts from step 8, and the list of documents edited with the disposition of each of the 23 references.
 
 ## Acceptance criteria
 
@@ -81,14 +106,16 @@ After the vendored tree exists, delete the second copies under `.codex/skills/` 
 - [ ] `.agents/skills/pegasus-release/SKILL.md` remains and is the only copy of that skill.
 - [ ] Every skill named in `eng/skills/skills.lock.json` resolves from exactly one path under `.agents/skills/`.
 - [ ] `/skills` in a fresh Codex session lists each skill once (operator evidence attached).
-- [ ] No document or agent TOML still points at `.codex/skills`.
+- [ ] All 23 baseline references across the nine files are accounted for, each classified as rewritten, dated-historical or the plan row that stays; no document carries a live routing instruction pointing at `.codex/skills`.
+- [ ] No agent TOML points at `.codex/skills` — evidenced by the grep returning 0 hits across `.codex/agents/`, as it already does today.
 - [ ] `pwsh ./eng/skills/verify-skills.ps1` still exits 0 after the deletions.
 
 ## Verification
 
 - [ ] `find .codex/skills -name 'SKILL.md' | wc -l` — expected: `0`.
 - [ ] `git ls-files .codex` — expected: the eight `.codex/agents/*.toml` files and `.codex/config.toml`, and nothing under `.codex/skills`.
-- [ ] `grep -rn '\.codex/skills' --include='*.md' docs/` — expected: only dated historical sentences, no live routing instruction.
+- [ ] `grep -rIn '\.codex/skills' --include='*.md' docs/` — expected: only dated historical sentences and the § 5 plan row at `docs/desktop/12-agent-tooling/README.md:170`; no live routing instruction. Report the count and compare it against the 23-reference baseline.
+- [ ] `grep -rIn '\.codex/skills' --include='*.toml' .codex/agents/ | wc -l` — expected: `0`, as measured on 2026-08-24.
 - [ ] `pwsh ./eng/skills/verify-skills.ps1` — expected: exit 0.
 - [ ] `pwsh ./scripts/Test-DocumentationLinks.ps1` — expected: `All relative Markdown links resolve (<n> files checked).`
 
@@ -98,15 +125,23 @@ Tier 1 — Static/build/architecture. It obliges recorded filesystem and tool-li
 
 ## Documentation changes
 
-- `docs/desktop/README.md` § Routing legend — the WinUI skills row stops saying "vendored under `.codex/skills/` today" and names `.agents/skills/vendor/windows/`.
-- `docs/desktop/12-agent-tooling/README.md` § 2 and § 3 — the `.codex/skills` sentences become dated historical notes.
-- `docs/desktop/12-agent-tooling/skill-routing.md` § Pinned sources — the parenthetical about `.codex/skills` is replaced by the vendored path.
+All nine files are in the measured set; the first three carry the live routing instructions and the rest are mostly dated historical notes.
+
+- `docs/desktop/README.md` § Routing legend (`:101`) — the WinUI skills row stops saying "vendored under `.codex/skills/` today" and names `.agents/skills/vendor/windows/`.
+- `docs/desktop/12-agent-tooling/README.md` (`:43`, `:46`, `:47`, `:53`, `:104`, `:115`, `:117`, `:118`, `:228`) — § 2 and § 3 sentences become dated historical notes; § 7's "Discovery mismatch" trap is rewritten past tense. **`:170` — the § 5 plan row for this ticket — is left as it stands.**
+- `docs/desktop/12-agent-tooling/skill-routing.md` § Pinned sources (`:14`) — the parenthetical about `.codex/skills` is replaced by the vendored path.
+- `docs/desktop/02-architecture-and-foundation/README.md` (`:87`, `:88`, `:274`) — the `winui-dev-workflow` / `winui-setup` / `BuildAndRun.ps1` pointers move to `.agents/skills/vendor/windows/`.
+- `docs/desktop/06-ui-design/README.md` (`:87`) and `docs/desktop/06-ui-design/keyboard-and-accessibility.md` (`:103`) — the `winui-design` and `winui-ui-testing` pointers move to the vendored paths.
+- `docs/desktop/08-testing/README.md` (`:125`, `:277`) — the `winui-ui-testing` pointers move to the vendored path.
+- `docs/desktop/09-release-update-and-distribution/README.md` (`:46`, `:81`, `:309`) — the `pegasus-release` "byte-identical copy at `.codex/skills/pegasus-release/SKILL.md`" sentence becomes a dated note that the duplicate was removed by this ticket; the `winui-packaging` pointers move to the vendored path.
+- `docs/desktop/10-security-observability-performance/README.md` (`:88`) — the `winui-ui-testing` pointer moves to the vendored path.
 
 ## Guardrails
 
 - **Azure**: no write.
-- **Scope boundary**: may delete under `.codex/skills/` and edit the three documents named above. Must not touch `.codex/agents/*.toml` beyond correcting a stale path, must not touch `eng/skills/**` (that is [[DSK-12-02]]), and must not delete anything under `.agents/skills/`.
-- **Traps**: deleting a tree the installed toolchain actually reads is irreversible in effect if the vendored copy is incomplete — steps 2 and 3 are the interlock, not paperwork. `.codex` and `.agents` are excluded from `scripts/Test-DocumentationLinks.ps1`, so a stale link inside those trees will **not** be caught by CI; grep for it by hand. `winui-session-report` reads session transcripts and carries a privacy warning — do not run it while checking discovery.
+- **Scope boundary**: may delete under `.codex/skills/`, and may edit **the nine Markdown files that hold the 23 measured `.codex/skills` references**, all under `docs/desktop/`: `README.md`; `02-architecture-and-foundation/README.md`; `06-ui-design/README.md`; `06-ui-design/keyboard-and-accessibility.md`; `08-testing/README.md`; `09-release-update-and-distribution/README.md`; `10-security-observability-performance/README.md`; `12-agent-tooling/README.md`; `12-agent-tooling/skill-routing.md`. That set is the boundary because step 8 and the acceptance criteria require every stale pointer fixed, and three files cannot satisfy a nine-file measurement — re-run the step-8 grep and, if it names a tenth file, record the addition in the plan and fix it there too rather than leaving a live pointer behind. **Edits are confined to `.codex/skills` pointers and the sentences that carry them**; nothing else in those documents is rewritten, and `12-agent-tooling/README.md:170` is left alone. Must not touch `.codex/agents/*.toml` beyond correcting a stale `.codex/skills` path (measured 0 such paths today, so expect no TOML edit at all), must not touch `eng/skills/**` (that is [[DSK-12-02]]), must not touch `src/`, `tests/` or `scripts/`, and must not delete anything under `.agents/skills/`.
+- **Traps**: deleting a tree the installed toolchain actually reads is irreversible in effect if the vendored copy is incomplete — steps 2 and 3 are the interlock, not paperwork. `.codex` and `.agents` are excluded from `scripts/Test-DocumentationLinks.ps1`, so a stale link inside those trees will **not** be caught by CI; grep for it by hand. `winui-session-report` reads session transcripts and carries a privacy warning — do not run it while checking discovery. And the count is not three: a scope written to "the three documents named above" quietly leaves 20 of the 23 references pointing at a directory this ticket deleted.
+- **Sizing concern**: nine files rather than three roughly triples the documentation half of this row. It is still one mechanical sweep with a measured baseline and is deliberately not split — but if reclassifying a hit turns into rewriting a section, file that as a follow-up rather than widening this ticket further.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome
