@@ -1,0 +1,1 @@
+2026-08-24 — implementation was not started. The required `docs/desktop/01-inventory-and-parity/flow-records.md` still contains unresolved Q1.x, Q3.x, Q4.x, and Q5.x entries, so FND-006 cannot honestly author accepted ADR-0102/0106/0107/0109. Temporary `.worktrees/fnd-006` is clean and will be removed; resume after the flow-record owners close the evidence.
