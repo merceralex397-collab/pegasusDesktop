@@ -25,7 +25,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:51:33.033Z'
-updated: '2026-08-24T08:51:21.610Z'
+updated: '2026-08-24T09:11:45.802Z'
 ---
 
 ## What
@@ -34,7 +34,7 @@ Deliver the native mail workspace in three sub-slices — S10a list and preview,
 
 ## Why
 
-Proposal §13.4 and §13.8 require source emails, attachments, communication history and an explicit draft/queued/sent/failed distinction, correlated to a case. Today this is the largest page model in the repository: `src/Pegasus.Web/Pages/Mail/Message.cshtml.cs` (1,025 lines, seven handlers at `:199`, `:260`, `:318`, `:383`, `:448`, `:511` plus `OnGetAsync` at `:157`) with `Pages/Mail/Index.cshtml.cs` (428 lines, `OnGetAsync` and a JSON `OnGetPreviewAsync` at `:176`). The plan's "two giants" trap says it is never landed as one PR. Graph credentials stay in the Worker and gateway (ADR-0106) — no desktop holds them. Siblings: [[DSK-05-09]] supplies the received-item link/reverse-link plumbing, [[DSK-03-12]] and [[DSK-07-03]] supply the endpoints.
+Proposal §13.4 and §13.8 require source emails, attachments, communication history and an explicit draft/queued/sent/failed distinction, correlated to a case. Today this is the largest page model in the repository: `src/Pegasus.Web/Pages/Mail/Message.cshtml.cs` (1,025 lines, seven handlers at `:199`, `:260`, `:318`, `:383`, `:448`, `:511` plus `OnGetAsync` at `:157`) with `Pages/Mail/Index.cshtml.cs` (428 lines, `OnGetAsync` and a JSON `OnGetPreviewAsync` at `:158`). The plan's "two giants" trap says it is never landed as one PR. Graph credentials stay in the Worker and gateway (ADR-0106) — no desktop holds them. Siblings: [[DSK-05-09]] supplies the received-item link/reverse-link plumbing, [[DSK-03-12]] and [[DSK-07-03]] supply the endpoints.
 
 ## Source of truth
 
@@ -43,7 +43,7 @@ Proposal §13.4 and §13.8 require source emails, attachments, communication his
 - Endpoint map: `docs/desktop/03-gateway-api-and-data/endpoint-map.md` § `Mail workspace`
 - Screen spec: `docs/desktop/06-ui-design/screen-specs.md` § `§13.4 Intake` → `Inbox` (approved mockups under `docs/design/references/mockups/inbox-message-page/`)
 - Proposal: `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md` § 13.4 Intake, § 13.8 Communications, § 12.1 Microsoft Graph intake
-- Repository evidence: `src/Pegasus.Web/Pages/Mail/Index.cshtml.cs:176` (`OnGetPreviewAsync`), `src/Pegasus.Web/Pages/Mail/Message.cshtml.cs:157-560`, `src/Pegasus.Core/Intake/RetainedMail.cs` (`ListRetainedMail`, `GetRetainedMail`, `GetRetainedMailFreshness`, `SearchDeletedMail`), `src/Pegasus.Web/Presentation/MailBodyPresentation.cs` (43 lines), `MailClassificationSelection.cs` (102 lines); `tests/Pegasus.IntegrationTests/MailWorkspaceWebTests.cs` (2,045 lines), `RetainedMailPersistenceTests.cs` (1,696 lines), `tests/Pegasus.IntegrationTests/Browser/MailWorkspaceBrowserTests.cs`
+- Repository evidence: `src/Pegasus.Web/Pages/Mail/Index.cshtml.cs:158` (`OnGetPreviewAsync`), `src/Pegasus.Web/Pages/Mail/Message.cshtml.cs:157-560`, `src/Pegasus.Core/Intake/RetainedMail.cs` (`ListRetainedMail`, `GetRetainedMail`, `GetRetainedMailFreshness`, `SearchDeletedMail`), `src/Pegasus.Web/Presentation/MailBodyPresentation.cs` (43 lines), `MailClassificationSelection.cs` (102 lines); `tests/Pegasus.IntegrationTests/MailWorkspaceWebTests.cs` (2,045 lines), `RetainedMailPersistenceTests.cs` (1,696 lines), `tests/Pegasus.IntegrationTests/Browser/MailWorkspaceBrowserTests.cs`
 - Binding decisions: L-01 the gateway and Worker own Graph; L-02 verification runs on the local Test/UAT stack with the replay/absent provider; L-04 routing named on the ticket
 - Depends on: `DSK-05-09` the received-item surface and the shared link/reverse-link commands; `DSK-03-12` the mail list, preview, message and command endpoints
 
