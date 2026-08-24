@@ -26,7 +26,7 @@ Does the current report/Sent-evidence model preserve the original issued report 
 - A current-report projection may remain a convenience, but cannot be the only persisted relationship. History must expose every version and its evidence without implying an earlier send issued a correction.
 - A new artifact, Box upload, queue result, or staff assertion must not inherit the previous version’s Sent status. It remains unsent until its own exact Sent item is linked.
 - Existing exact-evidence retention, identity/hashes, chronology, idempotency, and auto-link policy should be reused. The link request must also identify the immutable report version and reject mismatches, ambiguity, duplicates, and evidence predating approval.
-- Reasoned unlink/relink remains necessary for incorrect association, but must append association history rather than erase former metadata. A correction is not an unlink.
+- Reasoned unlink/relink remains necessary for incorrect association, but must append association history rather than erase former metadata. A correction is not an unlink; it adds a version.
 - Implementation must not settle CASE-23. It can add the version/evidence ledger and leave lifecycle activation separately governed.
 - No mailbox/Graph or cloud write is required.
 
