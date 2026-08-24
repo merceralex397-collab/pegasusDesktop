@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-12-02 · Vendor the pinned skills and promote `skills.lock.json` with real
   hashes
-status: backlog
+status: preparing
 area: agent-tooling
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:29.419Z'
 labels:
   - desktop-conversion
   - plan-12
@@ -25,7 +27,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:04:54.702Z'
-updated: '2026-08-24T15:21:18.263Z'
+updated: '2026-08-24T21:21:29.419Z'
 ---
 
 ## What

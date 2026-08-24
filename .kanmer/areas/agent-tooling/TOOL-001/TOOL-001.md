@@ -2,10 +2,12 @@
 id: TOOL-001
 type: ticket
 title: DSK-12-01 · Verify Codex skill and agent discovery on the workstation
-status: backlog
+status: preparing
 area: agent-tooling
 assignee: ''
 profile: spike
+stageEntered:
+  preparing: '2026-08-24T21:21:29.439Z'
 labels:
   - desktop-conversion
   - plan-12
@@ -23,7 +25,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:04:54.684Z'
-updated: '2026-08-24T08:51:45.303Z'
+updated: '2026-08-24T21:21:29.439Z'
 ---
 
 ## What

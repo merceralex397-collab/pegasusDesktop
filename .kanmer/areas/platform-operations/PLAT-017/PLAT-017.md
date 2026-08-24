@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-17 · Reliability: the desktop operation model and crash recovery for
   approved long forms
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:21:15.746Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:16:25.627Z'
-updated: '2026-08-24T08:16:25.627Z'
+updated: '2026-08-24T21:21:15.746Z'
 ---
 
 ## What

@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-12-10 · Write the skill-update procedure and the §20.6 review checklist,
   and rehearse one bump
-status: backlog
+status: preparing
 area: agent-tooling
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:30.511Z'
 labels:
   - desktop-conversion
   - plan-12
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:12:34.585Z'
-updated: '2026-08-24T08:12:34.585Z'
+updated: '2026-08-24T21:21:30.511Z'
 ---
 
 ## What

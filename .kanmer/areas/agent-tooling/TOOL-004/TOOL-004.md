@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-12-04 · Remove the duplicate skill copies under `.codex/skills/` so there
   is one list
-status: backlog
+status: preparing
 area: agent-tooling
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:29.789Z'
 labels:
   - desktop-conversion
   - plan-12
@@ -21,7 +23,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:07:44.135Z'
-updated: '2026-08-24T15:24:52.359Z'
+updated: '2026-08-24T21:21:29.789Z'
 ---
 
 ## What

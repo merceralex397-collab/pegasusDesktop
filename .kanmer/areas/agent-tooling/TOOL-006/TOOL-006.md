@@ -2,10 +2,12 @@
 id: TOOL-006
 type: ticket
 title: DSK-12-06 · Wire the Azure MCP server for the read-only auditor agent
-status: backlog
+status: preparing
 area: agent-tooling
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:30.191Z'
 labels:
   - desktop-conversion
   - plan-12
@@ -19,7 +21,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:07:44.168Z'
-updated: '2026-08-24T08:07:44.168Z'
+updated: '2026-08-24T21:21:30.191Z'
 ---
 
 ## What

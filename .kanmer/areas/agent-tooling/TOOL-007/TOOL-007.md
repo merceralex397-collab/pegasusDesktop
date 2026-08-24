@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-12-07 · Put the `## Routing` block and the Appendix C evidence shape into
   the Kanmer ticket documents
-status: backlog
+status: preparing
 area: agent-tooling
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:30.147Z'
 labels:
   - desktop-conversion
   - plan-12
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:10:38.208Z'
-updated: '2026-08-24T08:10:38.208Z'
+updated: '2026-08-24T21:21:30.147Z'
 ---
 
 ## What

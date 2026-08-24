@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-18 · PLAT-035 carry-over: gate that every table a composition root
   writes has its runtime-role grant
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: fix
+stageEntered:
+  preparing: '2026-08-24T21:21:15.725Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:16:25.644Z'
-updated: '2026-08-24T08:16:25.644Z'
+updated: '2026-08-24T21:21:15.725Z'
 ---
 
 ## What

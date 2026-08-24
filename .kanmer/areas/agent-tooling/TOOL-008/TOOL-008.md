@@ -2,10 +2,12 @@
 id: TOOL-008
 type: ticket
 title: DSK-12-08 · Author ADR-0110 — agent-skill pinning and the invocation protocol
-status: backlog
+status: preparing
 area: agent-tooling
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:30.169Z'
 labels:
   - desktop-conversion
   - plan-12
@@ -18,7 +20,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:10:38.229Z'
-updated: '2026-08-24T09:58:43.104Z'
+updated: '2026-08-24T21:21:30.169Z'
 ---
 
 ## What

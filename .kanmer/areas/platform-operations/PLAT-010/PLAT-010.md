@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-10 · Performance baseline: record the lowest-spec workstation, the data
   sizes, the web timings and the budget table
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:15.010Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -24,7 +26,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:10:26.604Z'
-updated: '2026-08-24T08:51:39.069Z'
+updated: '2026-08-24T21:21:15.010Z'
 ---
 
 ## What

@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:CASE-022 · Deliver public upload links (INT-31) to the operator's
   accepted limits
-status: backlog
+status: preparing
 area: case-reference-workflow
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:22:05.101Z'
 labels:
   - found-during-qa
   - ui
@@ -27,7 +29,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:42:25.804Z'
-updated: '2026-08-24T11:57:54.256Z'
+updated: '2026-08-24T21:22:05.101Z'
 ---
 
 ## What

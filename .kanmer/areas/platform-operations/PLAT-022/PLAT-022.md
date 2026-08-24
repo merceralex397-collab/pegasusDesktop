@@ -2,10 +2,12 @@
 id: PLAT-022
 type: ticket
 title: DSK-11-04 · Cost baseline and forecast for the desktop-era estate
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:16.483Z'
 labels:
   - desktop-conversion
   - plan-11
@@ -19,7 +21,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:10.916Z'
-updated: '2026-08-24T08:30:10.916Z'
+updated: '2026-08-24T21:21:16.483Z'
 ---
 
 ## What

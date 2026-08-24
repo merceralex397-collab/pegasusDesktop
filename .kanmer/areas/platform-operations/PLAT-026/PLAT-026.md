@@ -2,10 +2,12 @@
 id: PLAT-026
 type: ticket
 title: 'DSK-11-08 · Post-cutover deprovision checklist, prepared and not executed'
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:16.819Z'
 labels:
   - desktop-conversion
   - plan-11
@@ -20,7 +22,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:33:11.197Z'
-updated: '2026-08-24T08:51:46.023Z'
+updated: '2026-08-24T21:21:16.819Z'
 ---
 
 ## What

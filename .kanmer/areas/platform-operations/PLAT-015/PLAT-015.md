@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-15 · Administrator health surface: authenticated /api/v1/admin/health
   and the desktop Operations view
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:21:15.367Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:16:25.592Z'
-updated: '2026-08-24T08:16:25.592Z'
+updated: '2026-08-24T21:21:15.367Z'
 ---
 
 ## What

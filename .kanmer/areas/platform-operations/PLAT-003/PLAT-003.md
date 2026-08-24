@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-03 · Package secret scan: fail the build when the MSIX, desktop config
   or logs carry a secret
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:21:13.893Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:05:04.702Z'
-updated: '2026-08-24T08:05:04.702Z'
+updated: '2026-08-24T21:21:13.893Z'
 ---
 
 ## What

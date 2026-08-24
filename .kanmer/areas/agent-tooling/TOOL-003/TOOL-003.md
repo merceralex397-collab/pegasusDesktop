@@ -2,10 +2,12 @@
 id: TOOL-003
 type: ticket
 title: DSK-12-03 · Add the vendored-skill hash check to the CI `changes` job
-status: backlog
+status: preparing
 area: agent-tooling
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:29.769Z'
 labels:
   - desktop-conversion
   - plan-12
@@ -18,7 +20,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:04:54.717Z'
-updated: '2026-08-24T08:04:54.717Z'
+updated: '2026-08-24T21:21:29.769Z'
 ---
 
 ## What

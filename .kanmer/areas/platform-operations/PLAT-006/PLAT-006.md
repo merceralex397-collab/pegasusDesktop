@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-06 · Malformed upload and unsafe path tests on the upload-session
   endpoints
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:21:14.270Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:05:04.748Z'
-updated: '2026-08-24T08:05:04.748Z'
+updated: '2026-08-24T21:21:14.270Z'
 ---
 
 ## What

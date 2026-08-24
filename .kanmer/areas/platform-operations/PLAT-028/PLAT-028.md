@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:PLAT-032 · Simplification and duplicate-route sweep across the
   codebase
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:17.135Z'
 labels:
   - simplification
   - upstream-carryover
@@ -23,7 +25,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:47:25.327Z'
-updated: '2026-08-24T11:57:40.253Z'
+updated: '2026-08-24T21:21:17.135Z'
 ---
 
 ## What

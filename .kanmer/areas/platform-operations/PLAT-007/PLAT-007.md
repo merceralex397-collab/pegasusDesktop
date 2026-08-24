@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-07 · Desktop temp files and cache: per-user ACLs, bounded retention,
   secure delete, no PII in file names
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:21:14.655Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -23,7 +25,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:10:26.538Z'
-updated: '2026-08-24T08:51:37.248Z'
+updated: '2026-08-24T21:21:14.655Z'
 ---
 
 ## What

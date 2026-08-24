@@ -2,10 +2,12 @@
 id: PLAT-019
 type: ticket
 title: DSK-11-01 · Populate the Azure resource register by read-only inventory
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:16.134Z'
 labels:
   - desktop-conversion
   - plan-11
@@ -24,7 +26,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:26:57.600Z'
-updated: '2026-08-24T08:51:43.348Z'
+updated: '2026-08-24T21:21:16.134Z'
 ---
 
 ## What

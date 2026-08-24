@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-12-11 · Decide and record Claude Code parity for the agent roster
   (`.claude/agents` mirror or not needed)
-status: backlog
+status: preparing
 area: agent-tooling
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:30.533Z'
 labels:
   - desktop-conversion
   - plan-12
@@ -21,7 +23,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:12:34.603Z'
-updated: '2026-08-24T08:12:34.603Z'
+updated: '2026-08-24T21:21:30.533Z'
 ---
 
 ## What

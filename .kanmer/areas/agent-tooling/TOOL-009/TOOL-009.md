@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-12-09 · Dry run: take one foundation ticket end to end through the
   subagent protocol
-status: backlog
+status: preparing
 area: agent-tooling
 assignee: ''
 profile: spike
+stageEntered:
+  preparing: '2026-08-24T21:21:30.551Z'
 labels:
   - desktop-conversion
   - plan-12
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:10:38.266Z'
-updated: '2026-08-24T08:10:38.266Z'
+updated: '2026-08-24T21:21:30.551Z'
 ---
 
 ## What

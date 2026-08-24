@@ -2,10 +2,12 @@
 id: PLAT-025
 type: ticket
 title: DSK-11-07 · Register refresh rule in the gateway and desktop release routes
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:16.849Z'
 labels:
   - desktop-conversion
   - plan-11
@@ -18,7 +20,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:33:11.179Z'
-updated: '2026-08-24T08:33:11.179Z'
+updated: '2026-08-24T21:21:16.849Z'
 ---
 
 ## What

@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-11-06 · ⚠ Azure write: enable Features:DesktopGateway on the Web Container
   App
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:16.450Z'
 labels:
   - desktop-conversion
   - plan-11
@@ -22,7 +24,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:10.950Z'
-updated: '2026-08-24T08:30:10.950Z'
+updated: '2026-08-24T21:21:16.450Z'
 ---
 
 ## What

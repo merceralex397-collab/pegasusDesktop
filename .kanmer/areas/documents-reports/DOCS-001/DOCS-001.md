@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:DOCS-001 · Trigger report generation from complete accepted
   assessments and retain immutable report references
-status: backlog
+status: preparing
 area: documents-reports
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:22:05.347Z'
 labels:
   - now
   - renderer-integration
@@ -28,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:20.415Z'
-updated: '2026-08-24T11:57:49.615Z'
+updated: '2026-08-24T21:22:05.347Z'
 ---
 
 ## What

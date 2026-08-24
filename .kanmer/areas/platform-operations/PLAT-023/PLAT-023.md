@@ -2,10 +2,12 @@
 id: PLAT-023
 type: ticket
 title: 'DSK-11-05 · Resource-health, advisor and compliance read of the estate'
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:16.511Z'
 labels:
   - desktop-conversion
   - plan-11
@@ -19,7 +21,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:10.934Z'
-updated: '2026-08-24T08:30:10.934Z'
+updated: '2026-08-24T21:21:16.511Z'
 ---
 
 ## What

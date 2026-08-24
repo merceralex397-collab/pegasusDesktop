@@ -2,10 +2,12 @@
 id: PLAT-001
 type: ticket
 title: DSK-10-01 · Threat → control → test register for the desktop conversion
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:13.874Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -18,7 +20,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:05:04.668Z'
-updated: '2026-08-24T08:05:04.668Z'
+updated: '2026-08-24T21:21:13.874Z'
 ---
 
 ## What

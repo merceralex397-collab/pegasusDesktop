@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-12-05 · Reconcile the `pegasus-desktop` project skill and add the
   `[agents]` table to `.codex/config.toml`
-status: backlog
+status: preparing
 area: agent-tooling
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:29.823Z'
 labels:
   - desktop-conversion
   - plan-12
@@ -24,7 +26,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:07:44.152Z'
-updated: '2026-08-24T08:51:48.546Z'
+updated: '2026-08-24T21:21:29.823Z'
 ---
 
 ## What

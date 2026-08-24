@@ -2,10 +2,12 @@
 id: PLAT-027
 type: ticket
 title: DSK-11-09 · Telemetry cap decision input (PLAT-036) after the desktop pilot
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: spike
+stageEntered:
+  preparing: '2026-08-24T21:21:16.872Z'
 labels:
   - desktop-conversion
   - plan-11
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:33:11.212Z'
-updated: '2026-08-24T08:33:11.212Z'
+updated: '2026-08-24T21:21:16.872Z'
 ---
 
 ## What

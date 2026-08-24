@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-11-03 · Conditional Azure writes catalogue with approval templates and
   rollback
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:16.112Z'
 labels:
   - desktop-conversion
   - plan-11
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:26:57.634Z'
-updated: '2026-08-24T08:26:57.634Z'
+updated: '2026-08-24T21:21:16.112Z'
 ---
 
 ## What

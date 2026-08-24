@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-08 · Dependency and vulnerability scanning in CI, with an SBOM
   published beside each package
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:14.608Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:10:26.559Z'
-updated: '2026-08-24T13:24:43.250Z'
+updated: '2026-08-24T21:21:14.608Z'
 ---
 
 ## What

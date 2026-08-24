@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:AUTO-003 · Expose the completed email-workspace actions through the
   Automation Actor
-status: backlog
+status: preparing
 area: automation-integrations
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:22:04.863Z'
 labels:
   - follow-up
   - MCP-05
@@ -27,7 +29,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:39:42.036Z'
-updated: '2026-08-24T12:36:47.335Z'
+updated: '2026-08-24T21:22:04.863Z'
 ---
 
 ## What

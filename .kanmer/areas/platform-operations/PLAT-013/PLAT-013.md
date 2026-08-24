@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-13 · Release-candidate performance regression report: template, job,
   and the budget gate
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:21:15.344Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -21,7 +23,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:16:25.556Z'
-updated: '2026-08-24T08:16:25.556Z'
+updated: '2026-08-24T21:21:15.344Z'
 ---
 
 ## What

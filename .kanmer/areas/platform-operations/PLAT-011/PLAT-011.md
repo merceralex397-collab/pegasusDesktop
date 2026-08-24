@@ -2,10 +2,12 @@
 id: PLAT-011
 type: ticket
 title: DSK-10-11 · Profiling procedure and tooling for the desktop client
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:14.988Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -21,7 +23,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:10:26.626Z'
-updated: '2026-08-24T08:51:40.714Z'
+updated: '2026-08-24T21:21:14.988Z'
 ---
 
 ## What

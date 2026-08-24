@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-14 · Gateway telemetry dimensions for the desktop era, and the volume
   measurement behind any quota request
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:21:15.390Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -24,7 +26,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:16:25.574Z'
-updated: '2026-08-24T08:51:42.234Z'
+updated: '2026-08-24T21:21:15.390Z'
 ---
 
 ## What

@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-16 · Alerting and quota follow-ups: blocked-client rule and the Log
   Analytics cap decision
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:15.703Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -22,7 +24,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:16:25.610Z'
-updated: '2026-08-24T08:16:25.610Z'
+updated: '2026-08-24T21:21:15.703Z'
 ---
 
 ## What

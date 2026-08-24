@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:PLAT-038 · Serve intake-retained document content in the local
   profile
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: fix
+stageEntered:
+  preparing: '2026-08-24T21:21:17.158Z'
 labels:
   - found-during-qa
   - developer-experience
@@ -28,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:49:22.980Z'
-updated: '2026-08-24T11:57:41.361Z'
+updated: '2026-08-24T21:21:17.158Z'
 ---
 
 ## What

@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-09 · Desktop diagnostics: bounded redacted rolling logs, session and
   correlation ids, exportable bundle
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:21:14.634Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:10:26.581Z'
-updated: '2026-08-24T08:10:26.581Z'
+updated: '2026-08-24T21:21:14.634Z'
 ---
 
 ## What

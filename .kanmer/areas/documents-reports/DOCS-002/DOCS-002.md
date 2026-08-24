@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:TICK-018 · DOC-02 — Store source emails, instruction documents,
   images, correspondence, and reports in Box
-status: backlog
+status: preparing
 area: documents-reports
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:22:05.562Z'
 labels:
   - capability
   - DOC-02
@@ -28,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:20.436Z'
-updated: '2026-08-24T11:57:50.778Z'
+updated: '2026-08-24T21:22:05.562Z'
 ---
 
 ## What

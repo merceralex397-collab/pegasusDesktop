@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-02 · Retire the committed bootstrap verification account before desktop
   go-live
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: fix
+stageEntered:
+  preparing: '2026-08-24T21:21:13.849Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -21,7 +23,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:05:04.687Z'
-updated: '2026-08-24T08:05:04.687Z'
+updated: '2026-08-24T21:21:13.849Z'
 ---
 
 ## What

@@ -4,10 +4,12 @@ type: ticket
 title: >-
   DSK-10-12 · Performance review checklist wired into the reviewer agent and the
   PR template
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:15.032Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -20,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:10:26.646Z'
-updated: '2026-08-24T08:10:26.646Z'
+updated: '2026-08-24T21:21:15.032Z'
 ---
 
 ## What

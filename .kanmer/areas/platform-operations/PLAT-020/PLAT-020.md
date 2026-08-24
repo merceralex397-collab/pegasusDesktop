@@ -2,10 +2,12 @@
 id: PLAT-020
 type: ticket
 title: DSK-11-02 · Cloud-dependency records (Appendix B) for every capability
-status: backlog
+status: preparing
 area: platform-operations
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:21:16.154Z'
 labels:
   - desktop-conversion
   - plan-11
@@ -20,7 +22,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:26:57.618Z'
-updated: '2026-08-24T08:51:44.512Z'
+updated: '2026-08-24T21:21:16.154Z'
 ---
 
 ## What
