@@ -29,7 +29,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:54:27.555Z'
-updated: '2026-08-24T10:33:36.495Z'
+updated: '2026-08-24T11:22:15.592Z'
 ---
 
 ## What
@@ -38,7 +38,7 @@ Deliver the case Documents tab over the Box-backed custody store: folder and fil
 
 ## Why
 
-Proposal §12.2, §13.7 and §14.6 require native document handling with a transfer queue, no hidden overwrite and visible evidence that the canonical copy was saved. Today it is `src/Pegasus.Web/Pages/Cases/Custody.cshtml.cs` (270 lines, six handlers at `:28`, `:74`, `:138`, `:162`, `:186`, `:237`), `Pages/Cases/Documents/Download.cshtml.cs` (112 lines) and `Documents/Export.cshtml.cs` (160 lines) over Core `src/Pegasus.Core/Custody/` and `src/Pegasus.Core/Documents/`, with the Box adapter in `src/Pegasus.Infrastructure/Custody/BoxCaseCustody.cs`. Box tokens stay central under ADR-0107 — no long-lived provider secret ships in the package. The Phase 6 exit gate requires large and interrupted transfers to recover safely. Siblings: [[DSK-05-05]] supplies the case session, [[DSK-07-05]] the broker endpoints, [[DSK-07-07]] decides whether the desktop may move bytes directly, and [[DSK-07-06]] owns the document browser itself — `CaseDocumentsViewModel`, `CaseDocumentsView.xaml` and `TransferQueueService`.
+Proposal §12.2, §13.7 and §14.6 require native document handling with a transfer queue, no hidden overwrite and visible evidence that the canonical copy was saved. Today it is `src/Pegasus.Web/Pages/Cases/Custody.cshtml.cs` (270 lines, six handlers at `:28`, `:74`, `:138`, `:162`, `:186`, `:237`), `Pages/Cases/Documents/Download.cshtml.cs` (112 lines) and `Documents/Export.cshtml.cs` (160 lines) over Core `src/Pegasus.Core/Custody/` and `src/Pegasus.Core/Documents/`, with the Box adapter in `src/Pegasus.Infrastructure/Custody/BoxCaseCustody.cs`. Box tokens stay central under ADR-0107 — no long-lived provider secret ships in the package. The Phase 6 exit gate requires large and interrupted transfers to recover safely. Siblings: [[DSK-05-05]] supplies the case session, [[DSK-07-05]] the broker endpoints, [[DSK-07-07]] decides whether the desktop may move bytes directly, [[DSK-05-16]] owns the gallery and its viewer, and [[DSK-07-06]] owns the document browser itself — `CaseDocumentsViewModel`, `CaseDocumentsView.xaml` and `TransferQueueService`.
 
 ## Source of truth
 
@@ -108,7 +108,7 @@ Tier 5 obliges route-level evidence that the document endpoints reach Core and t
 
 - **Azure**: no write.
 - **Scope boundary**: may extend `CaseDocumentsViewModel` and `CaseDocumentsView.xaml` in `src/Pegasus.Desktop` and `TransferQueueService` in `src/Pegasus.Desktop.Infrastructure` — [[DSK-07-06]] owns all three and this slice adds members to them rather than creating its own — and may touch `src/Pegasus.Contracts`, the `/api/v1` documents and custody groups in `src/Pegasus.Web` and the test projects. Must not reference `src/Pegasus.Infrastructure/Custody/` or any Box SDK from the desktop — the architecture test from [[DSK-02-12]] enforces it.
-- **Traps**: Box tokens stay central (ADR-0107); temporary working copies need per-user ACLs and bounded retention; no hidden overwrite — a collision is a decision, and version conflict handling is [[DSK-07-08]]; upstream DOCS-011 and DOCS-012 are absorbed by this screen spec while PLAT-039 and PLAT-041 arrive by upstream sync — check `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` before fixing forward; a new table would need a runtime role GRANT migration and `scripts/Test-MigrationGrants.ps1` (PLAT-035) — avoid adding one in this slice; `Features:DesktopGateway` must be enabled in tests. One view model per screen and one transfer service: [[DSK-07-06]] owns `CaseDocumentsViewModel` and `TransferQueueService`, this ticket extends them; a second view model for the same screen, or a second transfer service, is a stop condition.
+- **Traps**: Box tokens stay central (ADR-0107); temporary working copies need per-user ACLs and bounded retention; no hidden overwrite — a collision is a decision, and version conflict handling is [[DSK-07-08]]; upstream DOCS-012 is absorbed by this screen spec, while DOCS-011's viewer half is owned by [[DSK-05-16]] and is not rebuilt here; PLAT-039 and PLAT-041 arrive by upstream sync — check `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` before fixing forward, and note that **the export and evidence-gallery paths must resolve the case folder once per request and issue O(1) + N Box calls, not roughly nine per image; the export and gallery endpoints are not exposed until upstream PLAT-041 has landed via a sync (flow record Q4.3)** — [[DSK-07-05]] owns that budget and its measurement, this tab consumes it; a new table would need a runtime role GRANT migration and `scripts/Test-MigrationGrants.ps1` (PLAT-035) — avoid adding one in this slice; `Features:DesktopGateway` must be enabled in tests. One view model per screen and one transfer service: [[DSK-07-06]] owns `CaseDocumentsViewModel` and `TransferQueueService`, this ticket extends them; a second view model for the same screen, or a second transfer service, is a stop condition.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome
