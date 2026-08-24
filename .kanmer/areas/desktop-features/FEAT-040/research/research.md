@@ -8,8 +8,8 @@ Microsoft Learn documents `HWND_MESSAGE` as the valid parent for an invisible `C
 ## Question
 
 What exactly must a desktop `IAssessmentReportRenderer` reproduce from
-`PlaywrightAssessmentReportRenderer` to produce the same two PDFs from one snapshot, and which of
-the two candidate off-screen WebView2 hosts can be proven to initialise with no visible window?
+`PlaywrightAssessmentReportRenderer` to produce the same two PDFs from one snapshot, and can the
+documented `HWND_MESSAGE` controller initialise and print from the packaged app with no visible window?
 
 ## Current behaviour
 
@@ -100,16 +100,13 @@ Measured on 2026-08-24 at fork `main`, unless a fetch date is given.
 
 ### Assumptions
 
-- **`A-07-14-1` — one of the two candidate off-screen hosts initialises reliably with no visible
-  window.** The two candidates are (a) a zero-size, `Visibility.Collapsed` WinUI `WebView2` control
-  inside a XAML root, and (b) a `CoreWebView2Controller` created on a hidden HWND via
-  `CoreWebView2Environment.CreateAsync`. This is **unverified**, and the area plan's § 7 says so in
-  as many words ("a zero-size collapsed control may still initialise, but behaviour must be
-  proven"). Confirmed by step 2's timeboxed probe, which renders a trivial HTML document to PDF
-  through both. If **neither** works, the ticket stops and the `IAssessmentReportRenderer` seam —
-  which ADR-0108 records precisely as this mitigation — lets the host change without touching
-  callers; the gateway renderer remains registered, so nothing is broken while the question is
-  reopened.
+- **`A-07-14-1` — `HWND_MESSAGE` is the fixed supported invisible host.** Microsoft Learn
+  documents it as a valid `ParentWindow` for
+  `CoreWebView2Environment.CreateCoreWebView2ControllerAsync` on Windows 8 and later; the
+  WebView will never become visible and cannot be reparented. This is **verified documentation**,
+  while Pegasus integration remains unverified until step 2 renders a trivial document twice from
+  the packaged app. If that fails, retain the gateway renderer and record the failure against
+  ADR-0108's reversal condition; do not trial a collapsed-XAML alternative.
 - **`A-07-14-2` — `CoreWebView2PrintSettings`' margin units can express 8 / 12 / 22 / 12 mm
   exactly.** The WinRT settings expose margins as doubles in inches rather than a CSS-style string,
   so the conversion is arithmetic and must be recorded in a comment (body step 6 requires exactly
@@ -124,8 +121,8 @@ Measured on 2026-08-24 at fork `main`, unless a fetch date is given.
   a default — which is the correct behaviour, and the finding is then raised against
   [[FEAT-043]]'s record rather than patched here.
 - **`A-07-14-4` — the WebView2 runtime version is readable at composition time** (so the failure at
-  step 9 can name it and the `EngineVersion` string at step 8 can carry it). Confirmed during
-  step 2's probe.
+  step 9 can name it and the `EngineVersion` string at step 8 can carry it). Observe and record it
+  during step 2's packaged-app smoke.
 
 ## Execution placement
 
@@ -154,9 +151,9 @@ No Azure write; the placement change *removes* a central cost rather than adding
 2. **The provenance check makes sloppiness fatal in a useful way.** `GenerateAssessmentReportDraft`
    re-hashes; a renderer that hashes anything other than the exact returned bytes fails at once.
    That is a feature — use it as the first test.
-3. **The host question must be answered before any other work.** It changes the file layout, the
-   disposal story and whether a XAML root is required at all, and it is the one thing the area plan
-   explicitly refuses to assume.
+3. **The host is settled; integration is the first check.** The documented controller needs no XAML
+   root and the renderer owns its non-reparentable lifetime. Step 2 proves packaged-app
+   initialization, printing and no-window behaviour before renderer work expands.
 4. **Fail-closed engineer identity is a professional-attribution rule, not a validation nicety.**
    Upstream `TICK-216`'s accepted contract requires name, qualification and signature to match as
    one tuple; a valid signature paired with another engineer's name is the defect, and moving the
@@ -170,9 +167,8 @@ No Azure write; the placement change *removes* a central cost rather than adding
 
 ## Open questions
 
-- None recorded here. The off-screen host (`A-07-14-1`) and the margin-unit conversion
-  (`A-07-14-2`) are resolved by this ticket's own timeboxed probe in step 2 — they are work items,
-  not questions for anyone else. The operator render on baseline hardware (body step 13) is an
+- None recorded here. The host is fixed by the documented `HWND_MESSAGE` API; the margin-unit
+  conversion and packaged-app smoke are implementation evidence, not questions for anyone else. The operator render on baseline hardware (body step 13) is an
   operator **action** during implementation whose output becomes proof, not an unresolved decision.
   Which engineer identities are authorised is [[FEAT-043]]'s recorded disposition of an
   already-accepted upstream contract, and which signature assets are embedded is [[FEAT-039]]'s —
