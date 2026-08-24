@@ -24,7 +24,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:53:33.927Z'
-updated: '2026-08-24T08:51:16.125Z'
+updated: '2026-08-24T10:33:55.402Z'
 ---
 
 ## What
@@ -61,7 +61,7 @@ Proposal §21.2 lists fifteen CI stages; the repository implements the first sev
 ## Implementation steps
 
 1. Read `docs/desktop/08-testing/README.md` § 5 row `DSK-08-13`, § 4 and § 7, the research document of [[DSK-08-12]] (the runner decision), and `.github/workflows/ci.yml` in full. Call `get_doc_gates` on this ticket id, then `take_ticket`, and work in the ticket's own worktree and branch.
-2. Check with [[DSK-02-15]] and [[DSK-09-05]] whether either has already added a `desktop-build` or packaging lane. If one exists, extend it rather than adding a second, and record that in the post-implementation report — three plans name overlapping lanes and only one may exist.
+2. `desktop-package` has exactly one owner: [[DSK-09-05]] adds the single `desktop-package` job, and this ticket extends that job and never adds a second. `desktop-build` is owned by [[DSK-02-15]], which proves build and tests only and packages nothing. Check whether either job already exists from its owner. If it does, extend it in place and change no existing step; if it has not landed, create it with exactly the shape its owner pins ([[DSK-09-05]] step 4 for `desktop-package`) and record in the plan document and the post-implementation report which case applied — three plans name overlapping lanes and only one of each may exist.
 3. Load `pegasus-desktop`, then `authoring-github-workflows`. Extend `scripts/Get-CiChangeFlags.ps1` with a `desktop` flag covering `src/Pegasus.Desktop/**`, `src/Pegasus.Desktop.Infrastructure/**`, `src/Pegasus.Contracts/**`, `tests/Pegasus.Desktop.*/**`, `tests/Pegasus.Api.ContractTests/**` and `eng/packaging/**`, and add the matching output to the `changes` job. Update `scripts/Test-CiChangeFlags.ps1` so the classifier's own regression tests cover the new flag — that script is already a CI step.
 4. Add job `desktop-build` on `windows-latest`, `needs: changes`, `if: needs.changes.outputs.desktop == 'true'`: checkout, `./.github/actions/dotnet-build`, then `dotnet test` for `tests/Pegasus.Desktop.ViewModelTests` and `tests/Pegasus.Api.ContractTests` chained with `&&` on one line — `pwsh` reports only the last command's exit code, which is why the existing `unit` job chains its two projects.
 5. Add job `desktop-package` on `windows-latest`, `needs: desktop-build`: generate a development certificate with `winapp cert generate --if-exists skip --quiet`, package with `winapp package ./bin/x64/Release/ --cert ./devcert.pfx --quiet --self-contained`, and upload the `.msix` with `actions/upload-artifact@v6` and `if-no-files-found: error` (the existing shard job uses exactly that guard).
@@ -103,7 +103,7 @@ Tier 1 — Static/build/architecture. It obliges a compiling, packaging, artifac
 
 - **Azure**: no write. No lane authenticates to Azure or reads Azure state.
 - **Scope boundary**: may edit `.github/workflows/ci.yml`, `scripts/Get-CiChangeFlags.ps1`, `scripts/Test-CiChangeFlags.ps1` and documentation. Must not change test code, must not add a second workflow file, and must not sign with anything other than a development certificate generated inside the run.
-- **Traps**: three plans name an overlapping desktop CI lane ([[DSK-02-15]], [[DSK-09-05]], this ticket) — exactly one lane may exist; reconcile before adding. Every added Windows lane costs 2× once the repositories are private (C-01). `pwsh` reports only the last command's exit code — chain multi-command steps with `&&`. Shallow checkout everywhere except the history guard. LocalDB is Windows-only, so no desktop or integration lane can move to Linux to save minutes.
+- **Traps**: three plans name an overlapping desktop CI lane ([[DSK-02-15]], [[DSK-09-05]], this ticket) — exactly one `desktop-package` job may exist and [[DSK-09-05]] owns it, and [[DSK-02-15]] owns `desktop-build` and packages nothing; this ticket extends those lanes and adds neither a second time. Every added Windows lane costs 2× once the repositories are private (C-01). `pwsh` reports only the last command's exit code — chain multi-command steps with `&&`. Shallow checkout everywhere except the history guard. LocalDB is Windows-only, so no desktop or integration lane can move to Linux to save minutes.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome
