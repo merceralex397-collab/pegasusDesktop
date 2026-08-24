@@ -1,16 +1,16 @@
 # Plan — FEAT-027: DSK-07-01 Gateway intake-status endpoints
 
-**Diff estimate: ~9 files, ~740 lines.**
+**Diff estimate: ~9 files, ~760 lines.**
 
 Derived from the `files` document, not asserted. `src/Pegasus.Contracts`: 3 files
-~135 (`IntakeStatusResponse` + `MailboxIntakeStatus` ~55; `ExternalWorkResponse`
-+ its row ~65; the `queue_poisoned` constant ~15). `src/Pegasus.Web`: 1 new
-endpoint file ~180 plus ~5 lines of registration in [[GWY-002]]'s group file.
-`tests/Pegasus.Api.ContractTests`: 1 file ~230 (six gate/authorization facts,
-three freshness facts, the poison-count fact, the no-credential fact).
-`tests/Pegasus.IntegrationTests`: 1 file ~180 seeded against the LocalDB
-fixtures. Documentation: ~4 lines in `endpoint-map.md` (two rows) and ~2 in
-`docs/capabilities.md`.
+~140 (`IntakeStatusResponse` + `MailboxIntakeStatus` ~60; `ExternalWorkResponse`
++ its row ~65; the `queue_poisoned` and `received-poison:` constants ~15).
+`src/Pegasus.Web`: 1 new endpoint file ~190 plus ~5 lines of registration in
+[[GWY-002]]'s group file. `tests/Pegasus.Api.ContractTests`: 1 file ~240 (six
+gate/authorization facts, three freshness facts, two poison-count facts, the
+no-credential fact). `tests/Pegasus.IntegrationTests`: 1 file ~180 seeded
+against the LocalDB fixtures. Documentation: ~4 lines in `endpoint-map.md` (two
+rows) and ~2 in `docs/capabilities.md`.
 
 ## Approach
 
@@ -18,18 +18,21 @@ Compose both endpoints as thin argument-mappers over four existing Core read
 ports — `GetRequestOperations`, `GetEmailOperations`,
 `IRetainedMailQueries.ListPollHealthAsync` and `ListMailboxesAsync` — and reuse
 `GetRetainedMailFreshness.Evaluate` **per mailbox** by calling the existing
-`public static` method with a one-element list. That is the whole design
+`public static` method with a one-element list. That is the central design
 decision: the alternative considered was computing the per-mailbox freshness
-state in the endpoint from `LastFailureCode` and `DueAtUtc` directly, which
-looks simpler and is a duplicate of a policy Core already owns
+state in the endpoint from `LastFailureCode` and `DueAtUtc` directly, which looks
+simpler and is a duplicate of a policy Core already owns
 (`src/Pegasus.Core/Intake/RetainedMail.cs:356-364` says so in its own remark:
 "turning them into a freshness state is policy and belongs to
 `GetRetainedMailFreshness`"), so it was rejected under `AGENTS.md` § Simplicity
 rails. The second alternative — adding a poison-count column or table — was
-rejected once the measurement showed poison is already recorded as the failure
-code `queue_poisoned` on rows the projections return
-(`EfIntakeWorkStore.cs:410`, `EfExternalWorkStore.cs:442`), so the count is a
-filter and needs no `Grant*` migration.
+rejected once measurement showed **both** poison concepts are already carried on
+rows the projections return: queue poison as the failure code `queue_poisoned`
+(`EfIntakeWorkStore.cs:410`, `EfExternalWorkStore.cs:442`) and mailbox poison as
+the `received-poison:` rows of `GetEmailOperations`
+(`EfOperationsStore.cs:136-149`). They are counted as **two named fields**, never
+summed: a refused e-mail and an exhausted queue message are different failures
+and an operator who cannot tell them apart cannot act.
 
 ## Governing docs
 
@@ -43,9 +46,9 @@ The ticket carries
 identity and the mailbox address to be kept as *separate, explicitly named*
 identities and forbids one substituting for the other: step 4's DTO therefore
 carries `mailboxId` **and** `mailboxAddress` as distinct fields, and step 3's
-join is what supplies the second without conflating them. Steps 5–6 report
-poll state without changing what retention means; no FRD text is modified by
-this ticket.
+join is what supplies the second without conflating them. Steps 5–7 report poll
+state and both poison figures without changing what retention means; no FRD text
+is modified by this ticket.
 
 > **New ADR** — ADR-0106 (Graph intake worker stays central: unattended
 > execution, protected credentials), authored by [[FND-005]] (plan handle
@@ -59,7 +62,7 @@ this ticket.
 
 > **New ADR** — ADR-0107 (Box and DVLA/DVSA credentials stay behind the
 > gateway; no long-lived provider secret in the package), authored by
-> [[FND-005]]. Same condition. It is cited here for the step-8 no-credential
+> [[FND-005]]. Same condition. Cited here for the step-8 no-credential
 > assertion, which applies the same rule to the Graph credential.
 
 `refs` names one FRD and no ADR, so the programme-level authorities that bind
@@ -78,7 +81,7 @@ today are tabulated for `kanmer-review` to check against the diff:
 | `docs/current-architecture.md:104` | `GET /Operations` has no approval controls, receipt ledger or Box request caller | § Out of scope in `files` |
 | `docs/desktop/03-gateway-api-and-data/README.md` § 3 "Projection style" | Endpoints are thin argument-mappers over Core ports; no business rule in Web | Steps 5–6 |
 | `docs/desktop/03-gateway-api-and-data/README.md:167` | Only the thirteen catalogued problem types; `correlationId` always present | Step 8 |
-| `docs/desktop/07-integrations/README.md` § 7 (trap row) | "Poison-queue visibility lost behind a friendly status" | Step 7 |
+| `docs/desktop/07-integrations/README.md` § 7 (trap row) | "Poison-queue visibility lost behind a friendly status" | Step 7, and the two-fields-never-summed rule |
 | `docs/engineering.md` § Plan sizing | Diff estimate first; facts split from assumptions | This heading; `research` § Facts / Assumptions |
 | `AGENTS.md` § Simplicity rails | One list per concept — one freshness policy, one label map | Steps 6–7 and the § Approach rejection |
 | `AGENTS.md` § Repository task workflow step 4 | Simplification pass over this branch's own diff before the PR | Step 12 |
@@ -128,17 +131,20 @@ with the same ownership.
    `IRetainedMailQueries.ListPollHealthAsync` (`RetainedMail.cs:382`) and
    `ListMailboxesAsync` (`:379`). The fourth is required because `MailPollHealth`
    (`:360-364`) carries no mailbox address and step 4's DTO does; join on
-   `MailboxId`. Record the exact type names in `files` (done) and the join in
-   this plan (done).
+   `MailboxId`. Note that `GetEmailOperations` has **no Razor caller today**
+   (`research` § Facts), so this endpoint is its first shipped exposure and its
+   Core invariants (`EmailOperations.cs:91`, `:96`, `:101`) are being met for the
+   first time against production-shaped data.
 4. **Add the DTOs to `src/Pegasus.Contracts`** *(created by [[FND-029]], plan
-   handle `DSK-02-04`)*. `IntakeStatusResponse` carries `asOfUtc`, a
-   `mailboxes` list of `MailboxIntakeStatus(mailboxId, mailboxAddress,
-   isPolled, lastCompletedAtUtc, lastFailureCode, dueAtUtc, freshness)` and the
-   poison and failure counts from step 7. `ExternalWorkResponse` carries
-   `asOfUtc`, `limitReached` and rows of `(kind, caseReference, attemptCount,
-   failureCode, failureReason, canRetry, lastActivityAtUtc)`. Every DTO is a
-   plain record with no EF, ASP.NET or Core type — the architecture test from
-   [[GWY-001]] (plan handle `DSK-03-01`) enforces it. `isPolled` is added
+   handle `DSK-02-04`)*. `IntakeStatusResponse` carries `asOfUtc`, a `mailboxes`
+   list of `MailboxIntakeStatus(mailboxId, mailboxAddress, isPolled,
+   lastCompletedAtUtc, lastFailureCode, dueAtUtc, freshness)`, and the two poison
+   figures from step 7 as separate fields — `queuePoisonCount` and
+   `mailboxPoisonCount` — beside the failure counts. `ExternalWorkResponse`
+   carries `asOfUtc`, `limitReached` and rows of `(kind, caseReference,
+   attemptCount, failureCode, failureReason, canRetry, lastActivityAtUtc)`. Every
+   DTO is a plain record with no EF, ASP.NET or Core type — the architecture test
+   from [[GWY-001]] (plan handle `DSK-03-01`) enforces it. `isPolled` is added
    beyond the body's list because `RetainedMailMailbox.IsPolled`
    (`RetainedMail.cs:341`) is the only way to tell a configured-but-unpolled
    mailbox from a failing one; without it the surface reports a lie.
@@ -162,32 +168,39 @@ with the same ownership.
    (`EmailOperations.cs:17`) into success — `docs/current-architecture.md:86-90`
    makes the three distinct and [[FEAT-045]] (plan handle `DSK-07-19`) fixes the
    wire vocabulary later.
-7. **Report poison as its own named figure.** Count rows whose `failureCode`
-   equals the `queue_poisoned` constant added in step 4 — the literal written by
+7. **Report poison as two named figures, never one.**
+   **(a) Queue poison** — count rows whose `failureCode` equals the
+   `queue_poisoned` constant added in step 4, the literal written by
    `EfIntakeWorkStore.MarkPoisonedAsync` (`:410`) and
    `EfExternalWorkStore.MarkPoisonedAsync` (`:442`, `:475`, `:506`, `:524`,
-   `:532`). Add a test asserting the constant equals the store literal, so an
-   upstream sync that renames it fails the build rather than silently
-   zeroing the count. Note that `CompletePoisonReplay`
-   (`EfExternalWorkStore.cs:435`, `:468`, `:499`) **completes** a poisoned
-   message whose effect already landed, so those rows are not counted. Add no
-   column and no table.
+   `:532`). Rows completed by `CompletePoisonReplay`
+   (`EfExternalWorkStore.cs:435`, `:468`, `:499`) are **not** counted — their
+   effect landed.
+   **(b) Mailbox poison** — count the `GetEmailOperations` received rows whose
+   operation id carries the `received-poison:` prefix
+   (`EfOperationsStore.cs:137`), projected from `ApprovedInboxPoisonMessage`
+   (`src/Pegasus.Core/Intake/MailboxIntake.cs:124-134`).
+   Add a test asserting the `queue_poisoned` constant equals the store literal,
+   so an upstream sync that renames it fails the build rather than silently
+   zeroing the count. Add no column and no table.
 8. **Contract tests** in `tests/Pegasus.Api.ContractTests` *(created by
    [[TEST-001]], plan handle `DSK-08-01`)*: gate off → 404; unauthenticated →
    401; wrong right → 403 with `urn:pegasus:problem:not-authorized`; a healthy
    mailbox → `current`; a mailbox with a failure code and a future `dueAtUtc` →
    `unavailable`; a never-polled mailbox → `unavailable` with `isPolled` false;
-   the poison count present as its own field; and an assertion that no response
-   field contains a mailbox credential, Graph token, connection string or
-   storage key. Enable `Features:DesktopGateway` explicitly in the positive
-   tests, or a gated endpoint returns 404 and the test lies.
+   both poison counts present as their own fields and **not** summed; and an
+   assertion that no response field contains a mailbox credential, Graph token,
+   connection string or storage key. Enable `Features:DesktopGateway` explicitly
+   in the positive tests, or a gated endpoint returns 404 and the test lies.
 9. **LocalDB integration test** in `tests/Pegasus.IntegrationTests`, seeded with
-   a failed external work item and a failed mailbox poll, following the fixture
-   patterns in `OperationsWebTests.cs` (which already seeds
-   `FailureCode: "queue_poisoned"` at `:345`) and `OperationsPersistenceTests.cs`.
-   Expected: `canRetry` is true only where `RequestOperationProjection.CanRetry`
-   (`:51`) / `EmailOperationProjection.CanRetry` (`:45`) are true for the same
-   data, and `limitReached` surfaces rather than a second truncation.
+   a failed external work item, a failed mailbox poll and one
+   `ApprovedInboxPoisonMessage`, following the fixture patterns in
+   `OperationsWebTests.cs` (which already seeds `FailureCode: "queue_poisoned"`
+   at `:345`) and `OperationsPersistenceTests.cs`. Expected: `canRetry` is true
+   only where `RequestOperationProjection.CanRetry` (`:51`) /
+   `EmailOperationProjection.CanRetry` (`:45`) are true for the same data;
+   `limitReached` surfaces rather than a second truncation; the two poison
+   counts are 1 and 1, not 2 in one field.
 10. **Build and run.** `dotnet build ./src/Pegasus.Web/Pegasus.Web.csproj -c Release`
     and the two test commands under Verification. Confirm the existing
     `OperationsWebTests` and `OperationsPersistenceTests` stay green — the Razor
@@ -210,7 +223,7 @@ exception translation and correlation ids observable; a registration or a green
 build does not satisfy it.
 
 - `dotnet test ./tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj --configuration Release`
-  — expected: the gate, authorization, freshness, poison-count and
+  — expected: the gate, authorization, freshness, two-poison-count and
   no-credential facts pass. This output is the tier-5 evidence.
 - `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "Category!=Corpus&Category!=Browser"`
   — expected: the new seeded-failure facts pass and every existing
@@ -227,9 +240,20 @@ build does not satisfy it.
   (assumption A-07-01-1). Mitigation: build the list from `ListMailboxesAsync`
   and left-join poll health onto it, so a missing row renders `unavailable` with
   `isPolled` false rather than vanishing. Asserted at step 8.
+- **Summing the two poison figures would hide a failure kind.** Mitigation:
+  two named fields, asserted separately at steps 8 and 9. This is the trap row
+  "Poison-queue visibility lost behind a friendly status" in the area plan's § 7.
+- **The `received-poison:` prefix is a projection detail, not a contract**
+  (assumption A-07-01-4). Mitigation: a LocalDB fact pins it; if it moves, count
+  by `State == Failed && RetryMailboxId is null` on the received direction and
+  raise a Core projection field as a separate ticket.
 - **Truncation could imply completeness.** `GetRequestOperations` bounds at 100
   (`:76`) and `GetEmailOperations` at 50 per direction (`:66`). Mitigation:
   surface `limitReached`; raising a Core bound is a different ticket.
+- **This is `GetEmailOperations`' first shipped exposure.** Expect its Core
+  invariants (`EmailOperations.cs:91`, `:96`, `:101`) to fire during
+  development. A firing invariant is a Core statement about the data, not a
+  reason to relax the check — stop and raise it.
 - **The wire vocabulary is not settled.** [[FEAT-045]] (plan handle
   `DSK-07-19`) owns `terminal` / `transient` / `unknown` and the five provider
   problem types. This ticket carries the Core failure codes verbatim and defines
