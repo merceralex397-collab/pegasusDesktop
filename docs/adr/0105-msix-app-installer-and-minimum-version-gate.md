@@ -45,17 +45,21 @@ Use two complementary enforcement layers:
 
 1. Signed self-contained MSIX packages distributed through an App Installer feed
    on the approved UNC share. The App Installer configuration performs an
-   on-launch check and, where the supported schema permits, uses a prompt with
-   `UpdateBlocksActivation="true"` to prevent launch without the mandatory update.
+   on-launch update check and configures `ShowPrompt="true"` with
+   `UpdateBlocksActivation="true"` where the supported schema and launch path
+   permit it. This is not universal activation enforcement: for packaged desktop
+   applications `ShowPrompt` uses silent-update behaviour, and both attributes
+   have no effect for desktop-shortcut or taskbar launches.
 2. The gateway exposes a pre-session client-compatibility result and requires a
    client version on authenticated requests. It fails closed with a specific
    problem response when the client is below the centrally configured minimum.
 
-The package mechanism performs trusted installation; the gateway minimum-version
-gate protects the shared system against missed, misconfigured, or deliberately
-bypassed package updates. The gateway's existing authorized release route is
-unchanged. The decision does not add a new Azure feed, Microsoft Store channel,
-or GitHub-based distribution channel.
+The package mechanism performs trusted installation and best-effort on-launch
+update delivery. The gateway minimum-version gate is the unconditional,
+fail-closed protection for every launched obsolete client, including one reached
+through a desktop shortcut or taskbar. The gateway's existing authorized release
+route is unchanged. The decision does not add a new Azure feed, Microsoft Store
+channel, or GitHub-based distribution channel.
 
 Before an internally signed package is installed, the approved signing
 certificate is trusted on the target workstation in `LocalMachine\TrustedPeople`.
@@ -64,8 +68,10 @@ never bundled with the desktop application or committed to the repository.
 
 ## Consequences
 
-- A package may be mandatory at launch, but a compatible gateway must still
-  reject obsolete clients independently of App Installer behavior.
+- App Installer update behaviour is limited by the supported schema, platform,
+  and launch path; desktop-shortcut and taskbar launches are outside
+  `ShowPrompt`/`UpdateBlocksActivation` enforcement. The compatible gateway
+  still rejects obsolete clients independently of App Installer behavior.
 - The client-compatibility response is a narrow contract: minimum version,
   current version, channel, and maintenance state. It is not a general update
   service.
@@ -90,4 +96,5 @@ never bundled with the desktop application or committed to the repository.
 - [Conversion governance and ADR set](../desktop/00-governance-and-workflow/README.md)
 - [ADR-0007: Direct authorised-terminal Azure deployment](0007-direct-terminal-azure-deployment.md)
 - [Microsoft Learn: Configure update settings in the App Installer file](https://learn.microsoft.com/windows/msix/app-installer/update-settings)
+- [Microsoft Learn: s2:OnLaunch remarks](https://learn.microsoft.com/uwp/schemas/appinstallerschema/element-s2-onlaunch#remarks) (fetched 2026-08-25)
 - [Microsoft Learn: Create a certificate for package signing](https://learn.microsoft.com/windows/msix/package/create-certificate-package-signing)
