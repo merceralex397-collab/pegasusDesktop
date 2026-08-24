@@ -1,63 +1,93 @@
 # Plan — FND-035: Single instance per Windows user — `AppInstance.FindOrRegisterForKey` and activation redirection
 
-**Diff estimate: ~7 files, ~230 lines.**
+**Diff estimate: ~6 files, ~230 lines.**
 
-`docs/engineering.md` § Plan sizing (`:201`) requires the estimate first. Derived from the files
-document: `Program.cs` ~70 (the entry point plus the non-blocking redirect pattern, which is longer
-than the four-line sample); `Services/IActivationRouter.cs` + implementation ~85;
-`App.xaml.cs` +25 (the `AppInstance.Activated` subscription and window activation);
-`Pegasus.Desktop.csproj` +2 (`DefineConstants`); `Hosting/PegasusHost.cs` +2 (one registration);
-`docs/current-architecture.md` +2. The three routing tests land in
-`tests/Pegasus.Desktop.ViewModelTests` and are counted against that project.
+`docs/engineering.md` § Plan sizing (`:201`) requires the estimate first. Derived from the `files`
+document, file by file, measured 2026-08-24:
+`src/Pegasus.Desktop/Program.cs` ~75 (the entry point, the key test, the non-blocking redirect,
+`Application.Start`);
+`src/Pegasus.Desktop/Services/IActivationRouter.cs` ~15 and its implementation ~70;
+`src/Pegasus.Desktop/App.xaml.cs` ~+25 (the `AppInstance.Activated` subscription and forwarding);
+`src/Pegasus.Desktop/Pegasus.Desktop.csproj` +1 (`DISABLE_XAML_GENERATED_MAIN`);
+`src/Pegasus.Desktop/Hosting/PegasusHost.cs` +3 (one registration);
+`docs/current-architecture.md` ~+3 at § Failure and recovery boundaries (`:565`).
+The routing tests land in `tests/Pegasus.Desktop.ViewModelTests` (~70 lines) and are counted against
+that project. Nothing under `src/Pegasus.Core`, `src/Pegasus.Infrastructure`, `src/Pegasus.Web` or
+`src/Pegasus.Worker` is touched.
 
 ## Approach
 
-Put the whole decision in an explicit `Program.Main` and let the redirected process do **nothing** —
-no host, no window, no log sink beyond one line. That is not a stylistic preference: Windows App SDK
-1.0 release notes § 3.3 states that a WinUI app wanting to redirect "must do so as early as possible,
-and **before initializing any windows**… the app must define `DISABLE_XAML_GENERATED_MAIN`, and write
-a custom `Main` (C#)". So the ticket body's step 3 conditional — explicit `Main` versus
-`App.OnLaunched` — is already answered by documentation, and this plan is written to the first branch
-while step 2 still re-confirms it at kickoff, because the SDK moves.
+Take the **explicit entry point** branch of the ticket body's step 3, and write the redirect with the
+documented **non-blocking** pattern rather than an `await`.
 
-The one thing this plan adds that the body does not name is **how** the redirect is awaited.
-`RedirectActivationToAsync` is asynchronous; release notes § 3.4 says plainly "you should not wait on
-an async call if your app is running in an STA", and the body specifies a non-async
-`[STAThread] static void Main(string[] args)`. The documented fit for that signature is the
-instancing guide's *Redirection without blocking* pattern — call it on another thread, set an event,
-wait on that event with non-blocking APIs. A blocked STA does not error; the second process **hangs**,
-which is indistinguishable from a broken build and will be blamed on the `winapp run` trap. That
-pattern is therefore in step 5, not left to discovery.
+The first half is not a choice this plan is making — the research already settled it from official
+documentation. Windows App SDK 1.0 release notes § 3.3: a WinUI app that wants to "detect other
+instances and redirect an activation … must do so as early as possible, and **before initializing any
+windows** … To enable this, the app **must define `DISABLE_XAML_GENERATED_MAIN`, and write a custom
+`Main` (C#)**". The body's `App.OnLaunched` alternative is therefore not available for this purpose,
+and step 2 re-confirms rather than decides. The rejected alternative — redirecting from `OnLaunched` —
+is rejected because by the time `OnLaunched` runs, XAML has already initialised, which is exactly what
+the documentation forbids.
+
+The second half is the part the ticket body does not name, and it is the failure this ticket is most
+likely to hit. Release notes § 3.4: "**`RedirectActivationToAsync` is an async call, and you should not
+wait on an async call if your app is running in an STA.**" The body specifies
+`[STAThread] static void Main(string[] args)` — a **non-async** signature — so the documented
+non-blocking pattern applies: call `RedirectActivationToAsync` on another thread, set an event when it
+completes, and wait on that event with non-blocking APIs
+(*applifecycle-instancing* § Redirection without blocking). Blocking the STA here does **not** fail
+loudly; it hangs, and a hung second process looks exactly like a broken build — which the "never run
+the `.exe` directly" trap will then be blamed for. The documented alternative, `async Task Main`, is
+permitted by the same release notes for C# WinUI apps; whichever is used must be recorded with its
+reason.
+
+**One honest framing carried from the research, because it changes what the proof may claim.** The
+ticket's § Why says two windows editing the same case is "the silent-overwrite failure the concurrency
+design exists to prevent". The actual prevention already exists and is server-side:
+`src/Pegasus.Core/Workflow/CaseWorkflowContracts.cs:182-188` —
+`CaseMutationRequest(Guid CaseId, long ExpectedVersion, ActionActor Actor, string OperationKey, string Reason, string EditLeaseToken)`
+— with `CaseEditAuthority` validating the lease and three refusals in
+`src/Pegasus.Web/Mcp/AutomationMcpErrors.cs:35-53` each returning the current version and saying
+"reload and reacquire rather than retrying". Two *machines* can always edit the same case, so
+single-instancing could never be the invariant. It reduces how often an operator meets the conflict on
+one machine. The plan is written to that scope and the proof must not overclaim it.
 
 ## Governing docs
 
 The ticket's `refs` array is empty and `get_doc_gates FND-035` reports `docs_todo: true`, so there is
 no linked PRD/FRD/ADR to meet today.
 
-> **New ADR** — ADR-0100 (native WinUI 3 client in the fork), which fixes the packaged single-project
-> MSIX with **package identity** — the thing that makes `AppInstance` keys per-user meaningful and
-> the reason `<WindowsPackageType>None</WindowsPackageType>` is forbidden here. Authored by
-> [[FND-026]] (plan handle `DSK-02-01`); [[FND-005]] (plan handle `DSK-00-05`) also claims ADR-0100 in
-> the reserved block — see [[FND-026]]'s plan for the ownership reconciliation.
-> This plan is written to the decision as recorded in
+> **New ADR** — ADR-0100 (native WinUI 3 / Windows 11 desktop client converted inside this fork) is
+> what fixes the **packaged single-project MSIX with package identity**, and package identity is what
+> makes `AppInstance` keys meaningful at all — remove it and the mechanism does not exist. ADR-0100 is
+> authored by [[FND-026]] (plan handle `DSK-02-01`); [[FND-005]] (plan handle `DSK-00-05`) also claims
+> it in the reserved block ADR-0100…ADR-0110 — see [[FND-026]]'s plan for the ownership
+> reconciliation. **ADR-0103** (gateway, never direct database access from workstations) is the ADR
+> that actually owns the concurrency invariant this ticket is often mistaken for enforcing; it is
+> claimed by [[FND-005]].
+> This plan is written to the decisions as recorded in
 > `docs/desktop/00-governance-and-workflow/README.md` § 3 (ADR set table) and
-> `docs/desktop/02-architecture-and-foundation/README.md` § 3 decision 8; if the ADR lands differently
+> `docs/desktop/02-architecture-and-foundation/README.md` § 3 decision 8; if either lands differently
 > this plan is revised before implementation.
 
-Because `refs` is empty, these are the authorities that actually bind today:
+Because `refs` is empty, the authorities that actually bind today are these:
 
 | Authority | Requirement | Met by |
 | --- | --- | --- |
 | Proposal § 7.3 Single-instance behaviour | A second launch activates the existing window; deep links and file activations are redirected to the active process; unsaved work is never duplicated across processes | Steps 4–7 |
-| Plan 02 § 3 decision 8 | `AppInstance.FindOrRegisterForKey` + `RedirectActivationToAsync` **before any window is created**; redirected activations carry deep-link/file arguments; **no multi-window in Phase 1** | Steps 3–6, 11 |
-| Plan 02 § 4 exit-gate table | "Single instance — second launch activates the first window (UI test)" | Step 10, § Verification |
-| Windows App SDK 1.0 release notes § 3.3 | `DISABLE_XAML_GENERATED_MAIN` plus a custom `Main` is **required** for a redirecting WinUI app | Steps 2, 3 |
-| Windows App SDK 1.0 release notes § 3.4 and the instancing guide § Redirection without blocking | Do not await an async call on the STA; use another thread plus an event, waited with non-blocking APIs | Step 5 |
-| Windows App SDK migration guide § Single-instanced apps (*Important*) | The sample code requires targeting **x64** | Already satisfied by [[FND-030]]'s `<Platforms>x64</Platforms>`; verified, not re-decided |
-| `.codex/skills/winui-dev-workflow/SKILL.md` § Critical Rules / § Common Errors | Never run the packaged `.exe` directly — always `winapp run` | Step 10, § Verification |
-| ADR-0103 / L-01 (via `src/Pegasus.Core/Workflow/CaseEditAuthority.cs`) | Concurrency is enforced server-side; the client does not own the invariant | § Approach and the research's placement table — this ticket claims a convenience, not a control |
-| `docs/engineering.md` § Abstractions (`:113`) | An interface needs a real caller | Step 6 — `IActivationRouter` is registered and called in the same commit |
-| `docs/engineering.md` § Required evidence tiers (`:72`), tier 7 | The two-launch scenario is **demonstrated on a real session**, not asserted from code | § Verification |
+| Plan 02 § 3 decision 8 | `AppInstance.FindOrRegisterForKey` + `RedirectActivationToAsync` **before any window is created**; redirected activations carry deep-link/file arguments; **no multi-window in Phase 1** | Steps 3–6, and step 11's explicit check |
+| Plan 02 § 4 exit-gate table | "Single instance — second launch activates the first window (UI test)" | Step 10; [[FND-041]] (plan handle `DSK-02-16`) consumes the evidence |
+| Windows App SDK 1.0 release notes § 3.3 (fetched 2026-08-24) | Redirect before initialising any windows; requires `DISABLE_XAML_GENERATED_MAIN` and a custom `Main` | Steps 2, 3 |
+| Windows App SDK 1.0 release notes § 3.4 + *applifecycle-instancing* § Redirection without blocking | Do not wait on the async redirect from an STA; use the other-thread-plus-event pattern or `async Task Main` | Step 5 |
+| *migrate-to-windows-app-sdk/guides/applifecycle* § Single-instanced apps | The sample code requires targeting **x64** | Already satisfied by [[FND-030]] (plan handle `DSK-02-05`)'s `<Platforms>x64</Platforms>`; corroborated, not re-decided |
+| Windows App SDK 1.0 release notes § 2.2 | For packaged apps, file and protocol activation is declared in the MSIX manifest, not in code | § Out of scope — `Package.appxmanifest` is [[FND-030]]'s file |
+| `.codex/skills/winui-dev-workflow/SKILL.md:98` | Never `<WindowsPackageType>None</WindowsPackageType>` | § Out of scope — it removes the package identity the API depends on |
+| `.codex/skills/winui-dev-workflow/SKILL.md:76` | "App silently exits → Use `winapp run`, never run the .exe directly" | Step 10 and § Verification |
+| **L-01** (locked) | The desktop talks only to the evolved `Pegasus.Web` gateway | Nothing here changes where mutation authority lives; § Approach records that explicitly |
+| **L-04** (locked) | Every ticket names its subagent, skills and MCP tools | § Routing below |
+| `docs/engineering.md` § Plan sizing (`:201`) | Diff estimate first, from a measured inventory | The estimate above |
+| `docs/engineering.md` § Required evidence tiers (`:72`), tier 7 | Behaviour demonstrated on a real session, not asserted from code | § Verification V3 |
+| **C-01** (constraint) | The repositories become private; Actions minutes stop being free | This ticket adds no CI job — [[FND-040]] (plan handle `DSK-02-15`) owns the lane |
 
 ## Routing
 
@@ -65,7 +95,7 @@ Copied from the ticket body's `## Routing` block, as
 `docs/desktop/00-governance-and-workflow/README.md` § Ticket template requires of the plan document
 specifically.
 
-- **Subagent**: `winui-dev` — `.codex/agents/winui-dev.toml` (verified present).
+- **Subagent**: `winui-dev` — `.codex/agents/winui-dev.toml`.
 - **Skills**, loaded in this order: `pegasus-desktop`
   (`.agents/skills/project/pegasus-desktop/SKILL.md`) → `winui-dev-workflow`
   (`.codex/skills/winui-dev-workflow/SKILL.md`) → `winui-design`
@@ -77,141 +107,174 @@ specifically.
 - **Kanmer pipeline** for profile `feature`: `kanmer-research` → `kanmer-plan` → `kanmer-execute` →
   `kanmer-review` → `kanmer-verify` → `kanmer-closeout`. Call `get_doc_gates <id>` before every move;
   a move crosses at most one gated boundary.
-- **Reviewer**: `pegasus-desktop-reviewer` — an agent that did not implement
-  (`AGENTS.md` § Repository task workflow step 5).
+- **Reviewer**: `pegasus-desktop-reviewer` — an agent that did not implement (`AGENTS.md`
+  § Repository task workflow step 5).
 
 ## Steps
 
-These refine the ticket body's eleven steps: same order, same ownership, same paths.
+These refine the ticket body's eleven implementation steps: same order, same ownership, same file
+paths, adding the *how* the body leaves out.
 
-1. **Orient.** Read `docs/desktop/02-architecture-and-foundation/README.md` § 3 decision 8 and § 4's
-   exit-gate table, then `get_doc_gates FND-035` and `take_ticket` on branch
+1. **Orient.** Read plan 02 § 3 decision 8 and § 4's exit-gate table, and **this ticket's `research`
+   document**, which already answers step 2. Confirm [[FND-030]], [[FND-032]] (plan handle
+   `DSK-02-07`) and [[FND-033]] (plan handle `DSK-02-08`) have landed — the project, the host, and
+   `INavigationService` respectively. Then `get_doc_gates FND-035` and `take_ticket` on branch
    `task/desktop-single-instance` from `origin/dev`.
-2. **Re-confirm the mechanism from official documentation before writing code.**
-   `microsoft_docs_search` for `AppInstance.FindOrRegisterForKey` redirection semantics and for the
-   Windows App SDK app-lifecycle single-instancing sample. The two facts the body asks for are already
-   established in this ticket's `research` document with their URLs and a 2026-08-24 fetch date —
-   **(a)** the redirect must run before `Application.Start` and **(b)** that requires
-   `DISABLE_XAML_GENERATED_MAIN` and an explicit `Program.Main` (release notes § 3.3). Re-fetch to
-   confirm they have not moved and record the fetch date in the research document. Do not spend the
-   ticket re-deciding a settled point; do spend it confirming the version you are on.
-3. **Define the symbol and add the entry point.** In `src/Pegasus.Desktop/Pegasus.Desktop.csproj` add
-   `<DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>` — **appending**
-   to `$(DefineConstants)`, which Microsoft Learn calls out explicitly, so nothing the template or
-   `Directory.Build.props` set is dropped. Create `src/Pegasus.Desktop/Program.cs` with
-   `[STAThread] static void Main(string[] args)`. Note that from this commit the project will not
-   build without `Program.cs`, because the generated entry point is gone.
-4. **Register the key.** `AppInstance.GetCurrent().GetActivatedEventArgs()`, then
-   `AppInstance.FindOrRegisterForKey(<key>)`. The key is a **fixed application string** — the
-   instancing store already maintains "separate lists … for … instances of apps launched by different
-   users", so per-user scoping is free and the key must not embed a user, a window title, a version or
-   any other mutable value. Test `IsCurrent` on the returned instance; a key collision is the
-   mechanism, not an error ("Attempting to register an existing key will result in
-   `FindOrRegisterForKey` returning the app instance that has already registered that key").
-5. **Redirect without blocking, then exit.** When the returned instance is not current, call
-   `RedirectActivationToAsync(args)` **off the STA** — the documented pattern for a non-async `Main`
-   is to call it on another thread, signal an event on completion, and wait on that event with a
-   non-blocking API (instancing guide § Redirection without blocking; release notes § 3.4). Then
-   terminate immediately: **no window, no host, no log sink beyond a single redirect line**. If the
-   team prefers `async Task Main`, the release notes permit it for C# WinUI apps — record whichever
-   was used and why. Do not `await` on the STA: it hangs rather than failing, and the symptom is
-   indistinguishable from a broken build.
-6. **Route the activation in the owning instance.** Subscribe to `AppInstance.Activated` in
-   `App.xaml.cs` and forward the redirected `AppActivationArguments` — note the type: `OnLaunched`
-   receives `Microsoft.UI.Xaml.LaunchActivatedEventArgs`, while `GetActivatedEventArgs` returns
-   `Microsoft.Windows.AppLifecycle.AppActivationArguments` (release notes 1.3), and the router must be
-   written against the latter — to an `IActivationRouter` registered in `Hosting/PegasusHost.cs`
-   ([[FND-032]], plan handle `DSK-02-07`). The router parses deep-link and file arguments and asks
-   `INavigationService` ([[FND-033]], plan handle `DSK-02-08`) to navigate; **`INavigationService` is
-   the only navigation mechanism**, so no direct `Frame.Navigate` from the router. An argument it does
-   not understand is **logged and ignored**, never crashed on. Resolve the router *through* the host
-   when the event fires rather than capturing services at subscription time — `AppInstance.Activated`
-   can fire after `OnLaunched` has built the host.
-7. **Bring the window forward.** Restore it if minimised and activate it. Use `winui-design` /
+2. **Re-confirm the mechanism, do not re-decide it.** Run `microsoft_docs_search` for
+   `AppInstance.FindOrRegisterForKey` redirection semantics and for the Windows App SDK app-lifecycle
+   single-instancing sample, and check the two facts the research recorded on 2026-08-24 have not
+   moved: (a) the redirect must run before any window, and (b) that requires
+   `DISABLE_XAML_GENERATED_MAIN` plus a custom `Main`. Record the re-confirmation date and URLs in the
+   proof. The SDK moves; the answer is not expected to.
+3. **Add the explicit entry point.** Put
+   `<DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>` in
+   `src/Pegasus.Desktop/Pegasus.Desktop.csproj` — the exact XML from the Learn how-to — and create
+   `src/Pegasus.Desktop/Program.cs` with `[STAThread] static void Main(string[] args)`. Note in the PR
+   that this file now owns application startup: every future pre-window change lands here rather than
+   in generated code, including [[FND-036]] (plan handle `DSK-02-11`)'s crash path.
+4. **Register the key.** Call `AppInstance.GetCurrent().GetActivatedEventArgs()`, then
+   `AppInstance.FindOrRegisterForKey(<key>)` with a **constant application key string**. Do not build
+   it from a mutable value — no window title, no version number, no timestamp. A constant is
+   sufficient because the instancing API already maintains "separate lists … for … instances of apps
+   launched by different users" (*applifecycle-instancing*), which is exactly the per-user scoping
+   this ticket's title claims. Note the same sentence also scopes lists **per app version**, which is
+   the untested upgrade case in § Risks.
+5. **Redirect without blocking the STA.** When `FindOrRegisterForKey` returns an instance whose
+   `IsCurrent` is false, call `RedirectActivationToAsync(args)` **on another thread, set an event when
+   it completes, and wait on that event with non-blocking APIs** — the documented pattern for a
+   non-async entry point (release notes § 3.4; *applifecycle-instancing* § Redirection without
+   blocking). If `async Task Main` is used instead, record that choice and its reason. Then terminate
+   the process immediately: **no window, no host, no view model, and no log file beyond one redirect
+   line.** Anything else is observable as a flash of a second window or a second log file, and defeats
+   the point.
+6. **Handle the redirect in the owning instance.** Subscribe to `AppInstance.Activated` in
+   `App.xaml.cs` and forward the `AppActivationArguments` to `IActivationRouter`, registered in
+   `Hosting/PegasusHost.cs`. The router parses deep-link and file arguments and asks
+   `INavigationService` ([[FND-033]]) to navigate to the requested case or document; an argument it
+   does not understand is **logged and ignored, never crashed on**. Write the router against
+   `Microsoft.Windows.AppLifecycle.AppActivationArguments` — **not**
+   `Microsoft.UI.Xaml.LaunchActivatedEventArgs`. They are different types from different namespaces
+   (release notes 1.3), and the wrong one will not compile against the redirected path.
+7. **Bring the window forward.** Restore it if minimised and activate it. Use `winui-design` or
    `microsoft_docs_search` for `AppWindow` activation to confirm the supported call rather than
-   guessing at a Win32 interop.
+   guessing at a Win32 interop — a hand-rolled `SetForegroundWindow` is the shape to avoid.
 8. **Log every activation and redirect** with the per-launch session identifier from [[FND-032]],
-   into the single-instance/activation log. [[FND-036]] (plan handle `DSK-02-11`) step 3 collects that
-   log into the diagnostics bundle, so the **line format must be stable and redacted from this
-   commit** — a later format change breaks a consumer that has already shipped.
-9. **Tests in `tests/Pegasus.Desktop.ViewModelTests`** ([[FND-038]], plan handle `DSK-02-13`) for
-   argument parsing and routing: a case deep link routes to the case route with the right identifier;
-   a file activation routes to the document route; an unknown argument is ignored and logged.
-   Instancing itself cannot be unit-tested — that is step 10.
-10. **Prove it end to end.** Install or run the packaged app, then launch it **twice**, using
-    `winapp run` (or `BuildAndRun.ps1`, which wraps it) and **never the packaged `.exe` directly** —
-    a directly-launched `.exe` exits silently and will misdiagnose this feature in both directions.
-    Confirm exactly one window exists, `Get-Process` shows a single Pegasus process, and the second
-    launch's arguments reached the first window via the activation log. If [[TEST-006]]'s (plan handle
-    `DSK-08-06`) `winapp ui` harness exists, add a `single-instance` batch to it; otherwise record a
-    manual pass with a screenshot and name [[TEST-006]] as the automation follow-up.
+   through [[FND-031]] (plan handle `DSK-02-06`)'s `IDiagnosticsWriter` so the redaction hook applies.
+   The line format must be **stable**: [[FND-036]] includes this log in the diagnostics bundle and
+   asserts a manifest against it, and [[FND-049]] (plan handle `DSK-04-13`) tells an operator where to
+   find it. Fix the format once.
+9. **Write the routing tests** in `tests/Pegasus.Desktop.ViewModelTests` ([[FND-038]], plan handle
+   `DSK-02-13`): a case deep link routes to the case route with the right identifier; a file
+   activation routes to the document route; an unknown argument is ignored **and logged** — assert
+   both halves, because silently ignoring is a different behaviour from logging and ignoring.
+   **Instancing itself cannot be unit-tested**; that is step 10. If [[FND-038]] has not landed,
+   sequence it first and record the sequencing.
+10. **Prove it end to end.** Install or run the packaged app, then launch it **twice** using
+    `winapp run` — **never the packaged `.exe` directly**. Running the `.exe` is precisely how a
+    *correct* single-instance implementation gets misdiagnosed as broken, because the second process
+    exiting is the intended behaviour and the direct-launch path makes it look like a silent crash
+    (`.codex/skills/winui-dev-workflow/SKILL.md:76`). Confirm exactly one window exists, that
+    `Get-Process` shows a single Pegasus process, and that the second launch's argument is visible in
+    the activation log. If [[TEST-006]] (plan handle `DSK-08-06`)'s `winapp ui` harness exists, add a
+    `single-instance` batch to it; otherwise record a **manual** pass with a screenshot and name
+    [[TEST-006]] as the automation follow-up.
 11. **Confirm no multi-window capability was added** — Phase 1 is single-window only (plan 02 § 3
-    decision 8). Add the one line to `docs/current-architecture.md` § Failure and recovery boundaries
-    (`:565`). Run the simplification pass, record it under a dated heading below, and open the PR into
-    `dev`.
+    decision 8), and this is an acceptance criterion, so check it rather than assume it. Add the
+    one-line statement to `docs/current-architecture.md` § Failure and recovery boundaries (`:565`).
+    Then run the simplification pass over this branch's own diff, record it under a dated
+    `## Simplification pass` heading in this document, and open the PR into `dev`.
 
 ## Verification
 
 Evidence tier **7 — Browser/accessibility** (`docs/engineering.md` § Required evidence tiers, `:72`),
-applied to the desktop as the UI-behaviour tier: the two-launch scenario is **demonstrated on a real
-session**, not asserted from code.
+applied to the desktop as the UI-behaviour tier, as the ticket body states: the two-launch scenario is
+**demonstrated on a real session, not asserted from code**.
 
-The `proof` document is produced from these:
+The `proof` document is produced from these four outputs.
 
-1. **Launch the packaged app twice via `winapp run`** — expected: one window; `Get-Process` shows a
-   single Pegasus process; the second launch's argument is visible in the activation log. Paste the
-   process listing and the log lines, and state plainly that `winapp run` was used and the `.exe` was
-   not.
-2. `dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --filter "FullyQualifiedName~Activation"`
-   — expected: the routing and unknown-argument tests pass.
-3. `pwsh .codex/skills/winui-dev-workflow/BuildAndRun.ps1 src/Pegasus.Desktop/Pegasus.Desktop.csproj -SkipRun`
-   — expected: exit 0, zero warnings. (This also proves `Program.cs` is present and correct: with
-   `DISABLE_XAML_GENERATED_MAIN` defined, a missing or wrong entry point is a build failure.)
-4. Additionally, and not in the body — three checks that make acceptance criteria executable:
-   - `grep -n 'DISABLE_XAML_GENERATED_MAIN' src/Pegasus.Desktop/Pegasus.Desktop.csproj` — expected:
-     one line, **appending** to `$(DefineConstants)`, not replacing it.
-   - `grep -rn 'WindowsPackageType' src/Pegasus.Desktop/` — expected: no matches. Package identity is
-     what the instancing API depends on.
-   - A **negative** check on the redirected process: after the second launch, confirm no second log
-     file and no second window were created — the redirected process must do nothing beyond one
-     redirect line. A flash of a second window is the observable failure.
-5. Record which entry-point shape was used (non-async `Main` with the off-thread redirect, or
-   `async Task Main`) and why, with the documentation URL.
+- **V1.** `dotnet build ./Pegasus.slnx --configuration Release` — expected exit 0 and
+  `0 Warning(s)`. The authoritative gate: it is what `.github/actions/dotnet-build/action.yml:22-27`
+  runs and, unlike `BuildAndRun.ps1`, it sees the repository-root `Directory.Build.props`.
+- **V2.** `dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --filter "FullyQualifiedName~Activation"`
+  — expected: the case-deep-link, file-activation and unknown-argument tests pass, with the
+  unknown-argument case asserting **both** that it was ignored and that it was logged.
+- **V3.** **The two-launch demonstration**, which is the heart of the proof. Launch the packaged app
+  twice via `winapp run`, then capture: a screenshot showing exactly one window; `Get-Process` output
+  showing a single Pegasus process; and the activation-log lines showing the second launch's argument
+  arriving at the first instance with the session identifier. State whether the second launch was
+  given a deep-link argument or a bare launch — they are different cases and only one of them proves
+  routing.
+- **V4.** The re-confirmation record from step 2: the two documentation URLs, the date they were
+  re-fetched, and whether the answer changed. Also record which redirect pattern was used —
+  other-thread-plus-event, or `async Task Main` — and why.
+
+**Honesty clauses for the proof.**
+
+- **Do not claim this prevents concurrent editing.** It reduces how often an operator meets a
+  conflict on one machine. The invariant lives server-side in `CaseMutationRequest`'s
+  `ExpectedVersion` and `EditLeaseToken` (`src/Pegasus.Core/Workflow/CaseWorkflowContracts.cs:182-188`)
+  and is enforced by `CaseEditAuthority`; two machines can always edit the same case. Overclaiming
+  here would be the dishonest answer the cloud-justification test exists to catch, restated in the
+  proof.
+- Say whether the evidence is a **manual** two-launch pass or a [[TEST-006]] batch, and name
+  [[TEST-006]] as the follow-up if manual. Tier 7 requires a demonstration either way.
+- Record that **instancing across an App Installer upgrade was not exercised** (A-FND035-3) and name
+  [[FND-039]] (plan handle `DSK-02-14`) and area 08 as its owners. A two-launch test on one version
+  quietly does not cover it.
+- A green `BuildAndRun.ps1` is **not** the same claim as a green `dotnet build`: the script injects a
+  project-level `Directory.Build.props` (`.codex/skills/winui-dev-workflow/BuildAndRun.ps1:142-172`,
+  its existence test at `:152` against the project directory only) that shadows the root one and
+  drops `TreatWarningsAsErrors`. V1 is authoritative.
+- No CI job builds a desktop project until [[FND-040]] lands, so a green `repository-check` run says
+  nothing about this ticket.
 
 ## Risks / open questions
 
-- **Risk — blocking the STA.** The single most likely failure. `RedirectActivationToAsync` is async,
-  the body specifies a non-async `Main`, and release notes § 3.4 says not to wait on an async call on
-  an STA. The symptom is a **hang**, not an error, and the `winapp run` misdiagnosis trap will be
-  blamed for it. *Mitigation*: step 5's off-thread-plus-event pattern, taken from the instancing
-  guide's *Redirection without blocking* section, and § Verification item 5 recording which shape was
-  used.
-- **Risk — running the packaged `.exe` directly.** It exits silently, which looks exactly like a
-  successful redirect **and** exactly like a broken build. *Mitigation*: `winapp run` or
-  `BuildAndRun.ps1` only, stated in the proof.
-- **Risk — losing package identity to make testing easier.**
-  `<WindowsPackageType>None</WindowsPackageType>` would remove the identity the instancing API depends
-  on. *Mitigation*: forbidden by the Guardrails and checked by § Verification item 4.
-- **Risk — the redirected process does more than it should.** Building a host, opening a log sink or
-  creating a window in the redirected process defeats the point and is visible as a flash of a second
-  window or a second log file. *Mitigation*: the negative check in § Verification item 4.
-- **Risk — the router captures stale services.** `AppInstance.Activated` can fire after `OnLaunched`
-  has built the host. *Mitigation*: step 6 resolves through the host when the event fires.
-- **Risk — the activation log format changes later.** [[FND-036]] ships a consumer of it.
-  *Mitigation*: step 8 fixes the format and the redaction now.
-- **Untested case, recorded not resolved — instancing across an App Installer upgrade.** The
-  instancing store maintains "separate lists … for different versions of the same app", so an old and
-  a new version can each hold a key. Nothing in this ticket's two-launch test covers it. That belongs
-  to [[FND-039]]'s (plan handle `DSK-02-14`) install/upgrade scenarios and area 08's packaging tests;
-  say so in the proof rather than implying the two-launch test covered it.
-- **Scope boundary, not an open question — file and protocol activation registration.** For a packaged
-  app it is declared in `src/Pegasus.Desktop/Package.appxmanifest` (release notes § 2.2), which is
-  [[FND-030]]'s (plan handle `DSK-02-05`) file. This ticket routes what arrives.
-- **Scope boundary, not an open question — the diagnostics bundle, the update flow and deep-link
-  target screens.** [[FND-036]], areas 04/09, and area 05 respectively.
-- **No `open-questions` document is opened.** Both facts the body's step 2 asks for are settled in the
-  research with URLs and a fetch date; re-confirming them is step 2 of this ticket's own work. Nothing
-  requires an answer from outside the ticket before implementation begins.
+- **Risk — A-FND035-1: blocking the STA hangs instead of failing.** `await`-ing
+  `RedirectActivationToAsync` from a non-async `[STAThread] Main` blocks, and the second process hangs
+  rather than exiting — a symptom indistinguishable from a broken build, and one the "never run the
+  `.exe` directly" trap will be blamed for. *Mitigation*: step 5 uses the documented non-blocking
+  pattern, and V3's `Get-Process` check catches a lingering second process that a screenshot alone
+  would miss. *If wrong*: `async Task Main` is the documented alternative for C# WinUI apps; record
+  which was used.
+- **Risk — misdiagnosis by running the packaged `.exe` directly.** The second process exiting is the
+  **intended** behaviour, so the direct-launch path makes a correct implementation look like a silent
+  crash. *Mitigation*: `winapp run` only, stated in step 10, in § Verification and in the Guardrails.
+  This is the single most likely way this ticket gets "fixed" into being broken.
+- **Risk — A-FND035-3: instancing across an App Installer upgrade is untested here.**
+  *applifecycle-instancing* states instance lists are scoped per app **version** as well as per user,
+  so an old and a new version can each hold a key and the operator ends up with two windows — exactly
+  the state this ticket exists to prevent, arriving through the one path nobody tests. *Mitigation*:
+  recorded as a scope boundary owned by [[FND-039]] and area 08's packaging tests, and stated in the
+  proof rather than left implied.
+- **Risk — A-FND035-2: two operators sharing a workstation.** The per-user scoping is documented, not
+  measured here. *Mitigation*: if two sessions on one machine are testable, test it; otherwise the
+  documentation citation stands and the limitation is recorded. Do **not** "fix" it by embedding a
+  user identifier in the key — that would contradict the documented behaviour and make the key
+  mutable.
+- **Risk — the router is written against the wrong argument type.**
+  `Microsoft.UI.Xaml.LaunchActivatedEventArgs` (what `OnLaunched` receives) and
+  `Microsoft.Windows.AppLifecycle.AppActivationArguments` (what `GetActivatedEventArgs` returns) are
+  different types. *Mitigation*: named explicitly in step 6; the wrong one fails at compile time, so
+  the cost is time, not a shipped defect.
+- **Risk — the activation-log format changes after [[FND-036]] depends on it.** *Mitigation*: step 8
+  fixes it once and records it; [[FND-036]] asserts a manifest against it.
+- **Risk — `Program.cs` becomes a contested file.** [[FND-036]]'s unhandled-exception path also wants
+  the pre-window region. *Mitigation*: this ticket keeps `Program.cs` to instancing only and leaves
+  the seam clean, exactly as [[FND-032]] did for this ticket. The Guardrails already say crash
+  handling must not swallow an exception and continue.
+- **Sequencing, recorded not resolved — [[FND-033]] must have landed for step 6.** The router calls
+  `INavigationService`, which [[FND-033]] creates. The plan's dependency arrow names only [[FND-032]].
+- **Sequencing, recorded not resolved — [[FND-038]] must land before step 9.**
+  `tests/Pegasus.Desktop.ViewModelTests` does not exist yet.
+- **Scope boundary, not an open question — the diagnostics bundle, the update flow, deep-link target
+  screens, and the manifest activation declarations.** [[FND-036]], area 04/09, area 05, and
+  [[FND-030]]'s `Package.appxmanifest` respectively.
+- **No `open-questions` document is opened on this ticket.** The body does not instruct one; the two
+  facts its step 2 asks to be established are settled in the `research` document with URLs and a
+  fetch date, and re-confirming them is a step inside this ticket. Every assumption names the command
+  or the sibling ticket that settles it, and no settled operator decision (D-002, D-003, D-004, the
+  Send-to-AI exclusion) is reopened.
 
 ## Simplification pass
 
