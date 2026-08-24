@@ -22,7 +22,7 @@ first: `winapp cert install ./devcert.pfx`, which
 lets that key vouch for anything the machine trusts — a materially broader grant than ten
 workstations need, warned against by the MSIX troubleshooting guide, and forbidden by
 D-002. Using `Import-Certificate` into `TrustedPeople` instead costs one script and buys a
-rehearsal that transfers directly to `DSK-09-08` (board `REL-007`).
+rehearsal that transfers directly to [[REL-007]] (plan handle `DSK-09-08`).
 
 The negative test is the point of the ticket, not a nicety: step 10 reproduces
 `0x800B0109` on an untrusted machine and then fixes it, which is the only evidence that
@@ -34,7 +34,9 @@ The ticket's `refs` list is **empty** and its frontmatter carries `docs_todo: tr
 (`get_doc_gates REL-006`). No existing PRD/FRD/ADR is claimed to be met.
 
 > **New ADR** — ADR-0105 (signed MSIX / App Installer distribution with a gateway
-> minimum-version gate), authored by `DSK-09-01` (board `REL-001`). Its Consequences
+> minimum-version gate), authored by [[REL-001]] (plan handle `DSK-09-01`); see
+> [[REL-001]]'s plan for the ownership reconciliation — ADR-0105 has three claimants
+> (`REL-001`, `FND-005`, `FND-042`). Its Consequences
 > record D-002: signing is a self-managed certificate trusted per workstation in
 > `LocalMachine\TrustedPeople`, never `Trusted Root`. This ticket rehearses exactly that
 > consequence with a throwaway key. This plan is written to the decision as recorded in
@@ -68,15 +70,17 @@ the plan document.
 - **Skills**, loaded in this order: `pegasus-desktop`
   (`.agents/skills/project/pegasus-desktop/SKILL.md`, verified present) →
   `winui-packaging` (`.codex/skills/winui-packaging/SKILL.md`,
-  `microsoft/win-dev-skills` v0.5.0 `f1028dd5`, verified present).
+  `microsoft/win-dev-skills` v0.5.0 `f1028dd5`, verified present — the path moves to
+  `.agents/skills/vendor/windows/winui-packaging/` once [[TOOL-002]] lands).
 - **MCP**: Kanmer (`get_status`, `get_doc_gates`, `take_ticket`, `set_ticket_doc`,
   `append_scratch`, `move_item`); Microsoft Learn (`microsoft_docs_search`,
   `microsoft_docs_fetch`).
 - **Kanmer pipeline** for profile `chore`: `kanmer-plan` → `kanmer-execute` →
   `kanmer-review` → `kanmer-verify` → `kanmer-closeout`. Call `get_doc_gates REL-006`
-  before every move; a move crosses at most one gated boundary. `get_doc_gates` reports two
-  gated boundaries: `leave-preparing` needs `plan` (this document), `enter-done` needs
-  `proof`.
+  before every move; a move crosses at most one gated boundary. `get_doc_gates` reports
+  exactly two gated boundaries: **`leave-preparing` needs `plan` (this document) **and**
+  `questions-resolved`**, and **`enter-done` needs `proof` **and** `questions-resolved`**.
+  `leave-backlog` is not a gated boundary for a `chore`.
 - **Reviewer**: `pegasus-desktop-reviewer` — an agent that did not implement
   (`AGENTS.md` § Repository task workflow step 5).
 
@@ -95,12 +99,13 @@ agent prepares the command and the evidence template and records the result.
    "Trust certificate (admin) — `winapp cert install ./devcert.pfx`" row is the one this
    ticket does **not** follow.
 3. **Fix the dev certificate subject to `Package.appxmanifest`'s `Identity/@Publisher`**
-   — the stable placeholder CN established by `DSK-02-05` (board `FND-030`). Generate with
+   — the stable placeholder CN established by [[FND-030]] (plan handle `DSK-02-05`).
+   Generate with
    `winapp cert generate --manifest ./src/Pegasus.Desktop --if-exists skip` so the subject
    is auto-matched; `--manifest` is documented in the skill's step 2 as the flag that
    auto-matches `Publisher`, and a mismatch produces the `0x8007000B` packaging failure.
-   Record the resulting subject string verbatim in this document — `DSK-09-08` (board
-   `REL-007`) needs the same string for the production certificate.
+   Record the resulting subject string verbatim in this document — [[REL-007]]
+   needs the same string for the production certificate.
 4. **Git-ignore the private key — it is not covered today.** Verified on 2026-08-24:
    `git check-ignore -v devcert.pfx` exits `1` with no output, and `.gitignore` (77 lines)
    contains no `*.pfx` rule; only `**/artifacts/` and `/artifacts/` at `:20-21` would
@@ -120,8 +125,8 @@ agent prepares the command and the evidence template and records the result.
    `.cer` cannot be committed by accident either. The `.pfx` never leaves the build
    machine.
 6. **Write `eng/packaging/Install-DevCertificateTrust.ps1`.** `eng/` does not exist yet
-   (`ls eng` returns nothing); this ticket may create `eng/packaging/` if `DSK-09-02`
-   (board `REL-002`) has not. Repository script header:
+   (`ls eng` returns nothing); this ticket may create `eng/packaging/` if [[REL-002]]
+   (plan handle `DSK-09-02`) has not. Repository script header:
    `[CmdletBinding()]`, `Set-StrictMode -Version Latest`,
    `$ErrorActionPreference = 'Stop'`. Parameters `-CertificatePath` and
    `-ExpectedThumbprint`. Body: assert the session is elevated and `throw` a sentence
@@ -155,7 +160,7 @@ agent prepares the command and the evidence template and records the result.
     produces.
 11. **Write up the development certificate's renewal and revocation shape** in this
     document: it is a throwaway, regenerated freely, with no estate impact, and the
-    production route is `DSK-09-08` (board `REL-007`) and is **not** interchangeable with
+    production route is [[REL-007]] and is **not** interchangeable with
     it. State that explicitly so a later reader does not reuse the dev material.
 12. **Simplification pass.** Record it under a dated `## Simplification pass` heading in
     this document (`AGENTS.md` § Repository task workflow step 4). If the diff is only the
@@ -200,23 +205,36 @@ assumed.
   `docs/desktop/08-testing/test-uat-stack.md` § Machine prerequisites requires a dedicated,
   rebuildable VM "that will install and uninstall the package many times". Mitigation:
   named in step 7 and in the ticket's Guardrails.
-- **Open question — the dependency the plan row names.** The row's `Depends on` is
-  `DSK-02-10` (board `FND-035`, "Single instance per Windows user:
-  `AppInstance.FindOrRegisterForKey` and activation redirection"), which does not gate
-  certificate work; the substantive prerequisite is `DSK-02-14` (board `FND-039`,
-  "Dev-certificate MSIX build and the install/uninstall packaging script"), because steps
-  8–10 need a packaged MSIX. **Who answers it**: the plan owner / operator. It is recorded
-  here rather than silently re-pointed, as the body requires. It is **not blocking**: the
-  work itself is unchanged either way, and steps 3–6 (subject, `.gitignore`, export, trust
-  script) can be completed and reviewed before any MSIX exists. **No `open-questions`
-  document is created** — an unticked item would block every stage move for a dependency
-  label that changes no work.
-- **Open question, answered by default** — which trust mechanism the Test/UAT machines
-  used. The body's `## Documentation changes` asks for it to be recorded in
-  `runbooks.md` § R7 so `DSK-09-08` (board `REL-007`) can compare it against the estate
+- **Plan-set defect, recorded not opened — the dependency the plan row names.** The § 5
+  row's `Depends on` is [[FND-035]] (plan handle `DSK-02-10`, "Single instance per Windows
+  user: `AppInstance.FindOrRegisterForKey` and activation redirection"), which does not
+  gate certificate work; the substantive prerequisite is
+  [[FND-039]] (plan handle `DSK-02-14`, "Dev-certificate MSIX build and the
+  install/uninstall packaging script"), because steps 8–10 need a packaged MSIX. **Who
+  answers it**: the plan owner / operator. It is recorded here rather than silently
+  re-pointed, as the body requires.
+
+  **No `open-questions` document is created for it**, and the reason is not the one given
+  in an earlier draft of this plan. That draft said "an unticked item would block every
+  stage move", which is false: an unticked `- [ ]` line above `## Parked` blocks exactly
+  `leave-preparing`, `enter-review` and `enter-done`, never `leave-backlog`, and a `chore`
+  carries only the first and the last of those three. Blocking Preparing would have been
+  affordable.
+
+  The real reason stands on its own: **the answer changes no work in this ticket.** Steps
+  3–6 (subject, `.gitignore`, export, trust script) can be completed and reviewed before any
+  MSIX exists, and steps 8–10 need `FND-039`'s packaged MSIX whichever label the plan row
+  carries. The substantive dependency is a **named sibling ticket**, which the authoring
+  contract keeps in this section as a scope boundary rather than in an `open-questions`
+  document; and the label itself is a correction to the plan set, not a decision anyone has
+  to take before this ticket can proceed. Nothing in this ticket's body instructs that a
+  question be recorded in `open-questions/`.
+- **Open question, answered by default and recorded as taken** — which trust mechanism the
+  Test/UAT machines used. The body's `## Documentation changes` asks for it to be recorded in
+  `runbooks.md` § R7 so [[REL-007]] can compare it against the estate
   rollout. Default taken: the scripted elevated `Import-Certificate` of step 6, because the
   Test/UAT machines are standalone VMs and Group Policy Trusted People needs a
-  domain-joined estate — a fact `DSK-09-08` step 10 must establish rather than assume.
+  domain-joined estate — a fact [[REL-007]] step 10 must establish rather than assume.
 
 ## Simplification pass
 
