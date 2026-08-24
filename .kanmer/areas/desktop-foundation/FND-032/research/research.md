@@ -1,39 +1,36 @@
-# Research — FND-032: generic-host composition, channel configuration and bounded redacted logging
+# Research — FND-032: composing the desktop on a generic host with channel-selected configuration and a redacting log sink
 
 ## Question
 
-How must the desktop compose its host, configuration and logging so that every later view model
-resolves its dependencies from one container, a package cannot be re-pointed at another channel after
-it ships, and no token ever reaches a log file — and what does the repository already do for each of
-those three that should be mirrored rather than invented?
+What does this repository already do for host composition, configuration layering, options validation
+and log redaction — and which of those patterns can the desktop reuse rather than invent?
 
 ## Current behaviour
 
 **No parity-matrix row covers this ticket, and none should.** The matrix at
 `docs/desktop/01-inventory-and-parity/parity-matrix.md` holds `PAR-01`…`PAR-46` — counted with
-`grep -c '^| PAR-'`, which returns **46** — and every row is "keyed by the Razor page model and
-handler group that implements it today" (`parity-matrix.md:3-5`). Application composition has no page
-model.
+`grep -c '^| PAR-'`, which returns **46** — and every row is keyed to a page model under
+`src/Pegasus.Web/Pages/**`. Application composition is infrastructure work with no
+operator-observable capability of its own, so it is outside the matrix by construction.
 
-The closest existing repository mechanisms — what does each of the three jobs today:
+The closest existing repository mechanisms — what does this job today:
 
-- **Composition and configuration**: `src/Pegasus.Web/Program.cs:100` builds a
-  `WebApplication.CreateBuilder(applicationArgs)` and reads configuration positionally:
-  `builder.Configuration["Runtime:Profile"] ?? throw new InvalidOperationException("Runtime:Profile is required.")`
-  (`:101-102`). Layering is the ASP.NET default — `src/Pegasus.Web/appsettings.json` plus
-  `src/Pegasus.Web/appsettings.Development.json` (the only two configuration files in `src/`).
-- **Fail-at-start on bad configuration**: the same file, `:104-110`, refuses to start when the
-  `DevelopmentOffline` runtime profile is configured outside the Development environment
-  (`throw new InvalidOperationException("The DevelopmentOffline runtime profile is permitted only in the Development environment.")`),
-  and `:112-116` refuses `Features:LocalIntake` outside that profile. This is the repository's
-  fail-closed configuration precedent, and it is an **explicit throw**, not options validation.
-- **Logging**: `src/Pegasus.Web/appsettings.json` carries a `Logging:LogLevel` section
-  (`Default: Information`, `Microsoft.AspNetCore: Warning`) and the server ships telemetry to
-  Application Insights (`src/Pegasus.Web/Pegasus.Web.csproj:38`).
-- **Redaction**: the only redaction in the repository is type-level —
-  `src/Pegasus.Core/Documents/RequestUploadPolicy.cs:110`,
-  `public override string ToString() => "[REDACTED]";`. There is no log-sink redaction anywhere, so
-  the message processor this ticket builds is genuinely new.
+- **`src/Pegasus.Web/Program.cs:100`** — `WebApplication.CreateBuilder(applicationArgs)` is the web
+  application's composition root. It reads configuration through raw string indexers
+  (`builder.Configuration["Runtime:Profile"]` at `:101`) and enforces required settings by **throwing
+  manually**: `:101-103` throws `"Runtime:Profile is required."`; `:145` loops a key list and checks
+  `string.IsNullOrWhiteSpace(builder.Configuration[key])`. This is the repository's existing
+  "required configuration" idiom.
+- **`src/Pegasus.Worker/Program.cs:9-11`** — `new HostBuilder().ConfigureFunctionsWorkerDefaults()`,
+  the generic-host precedent, though wrapped in the Functions worker defaults the desktop will not
+  use.
+- **`src/Pegasus.Web/Program.cs:100-111`** — the `Runtime:Profile` gate is the closest analogue to
+  the channel model this ticket introduces: a named profile that changes what composes, validated at
+  start, and refused outright in the wrong environment
+  (`"The DevelopmentOffline runtime profile is permitted only in the Development environment."`).
+- **`src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj:31-53`** — twelve `EmbeddedResource`
+  items, each carrying an explicit `LogicalName`, with one (`:48-51`) also using `<Link>`. This is
+  the repository's established embedded-resource idiom and the precedent step 4 follows.
 
 ## Findings
 
@@ -41,100 +38,94 @@ The closest existing repository mechanisms — what does each of the three jobs 
 
 Verified by reading the repository at fork `main`, 2026-08-24. Each carries its source.
 
-- **The options-validation idiom does not exist in this repository.**
-  `grep -rn "ValidateOnStart\|ValidateDataAnnotations\|AddOptions<" src/` returns **nothing**. The
-  bind-and-validate pattern step 5 asks for is new here, not a local convention to copy — which is why
-  step 2's `microsoft_docs_search` for `Host.CreateApplicationBuilder` and `IOptions` validation is a
-  real step and not ceremony.
-- **The fail-closed configuration precedent is an explicit throw.**
-  `src/Pegasus.Web/Program.cs:101-102` and `:104-110`. Whatever validation mechanism is chosen, its
-  observable behaviour must match: the process refuses to start, with a message naming the setting.
-- **`src/Pegasus.Web/appsettings.json` is the live counter-example for the "no secrets in shipped
-  configuration" rule.** It carries a `Bootstrap:VerificationAccount` block with a plaintext user name
-  and password, guarded by a long `"//"` comment that calls it "TEMPORARY", explains it was recorded
-  at the operator's request, and says "Never leave it configured in a real production deployment."
-  This is exactly the failure mode the desktop's acceptance criterion — "No secret, token or
-  connection string appears in any `appsettings*.json` shipped in the package" — exists to prevent,
-  and the desktop's files ship *inside a signed package on operator workstations*, where the
-  server-side mitigation (redeploy and remove) does not exist. The rule is not a formality.
-- **Only two configuration files exist under `src/` today**:
-  `src/Pegasus.Web/appsettings.json` and `src/Pegasus.Web/appsettings.Development.json`. The four
-  files this ticket creates under `src/Pegasus.Desktop/Configuration/` are new, and they are
-  **embedded resources**, not content files — a different mechanism from the server's on-disk layering.
-- **`src/Pegasus.Desktop` and `src/Pegasus.Desktop.Infrastructure` do not exist yet.** `ls src` returns
-  exactly `Pegasus.Core`, `Pegasus.Infrastructure`, `Pegasus.Web`, `Pegasus.Worker`. Every file this
-  ticket edits is created by [[FND-030]] (plan handle `DSK-02-05`) or [[FND-031]] (plan handle
-  `DSK-02-06`).
-- **`Directory.Packages.props` does not exist** (`ls` → *No such file*); [[FND-027]] (plan handle
-  `DSK-02-02`) creates it. The three packages step 2 adds assume it has landed.
-- **None of `Microsoft.Extensions.Hosting`, `Microsoft.Extensions.Configuration.Binder` or
-  `Microsoft.Extensions.Options.DataAnnotations` is referenced anywhere today.**
-  `grep -rn "PackageReference Include" src/*/*.csproj` lists 33 references and none of them is an
-  `Microsoft.Extensions.*` package — the server gets Hosting from `Microsoft.NET.Sdk.Web` and the
-  Worker from `Microsoft.Azure.Functions.Worker`. A `Microsoft.NET.Sdk` desktop project has neither,
-  so all three are genuinely required.
-- **`Directory.Build.props` (19 lines) applies**: `TreatWarningsAsErrors=true`,
+- **`src/Pegasus.Desktop` does not exist yet.** `ls src` returns exactly `Pegasus.Core`,
+  `Pegasus.Infrastructure`, `Pegasus.Web`, `Pegasus.Worker`. `App.xaml.cs` and the csproj this ticket
+  edits are created by [[FND-030]] (plan handle `DSK-02-05`); `IDiagnosticsWriter` and
+  `AddPegasusApiClient` are created by [[FND-031]] (plan handle `DSK-02-06`). Both are hard
+  prerequisites in practice, and the plan's dependency arrow names only [[FND-030]].
+- **This repository has no options-validation pattern at all.**
+  `grep -rn "ValidateOnStart\|ValidateDataAnnotations\|AddOptions<" src/ --include=*.cs` returns
+  **zero matches**. Strongly-typed options with data-annotation validation and `ValidateOnStart` are
+  therefore genuinely *new* to this codebase, not an extension of an existing convention. The
+  incumbent idiom is the manual throw at `src/Pegasus.Web/Program.cs:101-103` and `:145-151`.
+- **This repository has no log-redaction mechanism.** `grep -rln "Redact\|redact" src/ --include=*.cs`
+  returns nothing. The only `Scrub`/`Sanitiz*` hits are
+  `src/Pegasus.Infrastructure/Email/GraphApprovedSources.cs` and
+  `src/Pegasus.Infrastructure/Intake/MimeKitPdfPigOpenXmlIntakeSourceReader.DocMsg.cs`, and neither
+  is about log output. The redaction rule this ticket implements has no prior art here to copy, which
+  is exactly why step 7 requires a fixture test rather than inspection.
+- **`src/Pegasus.Web/appsettings.json` ships a plaintext password.** The `Bootstrap.VerificationAccount`
+  block carries `"UserName": "claudeuiverification"` and
+  `"Password": "Pegasus-UI-Verify-2026!"`, above a `"//"` comment saying it is deliberate,
+  temporary, and "Never leave it configured in a real production deployment." This is the precise
+  mistake the desktop must not repeat, and it is why this ticket's acceptance criterion "no secret,
+  token or connection string appears in any `appsettings*.json` shipped in the package" is checkable
+  rather than rhetorical: the desktop's files are **embedded in an MSIX distributed to
+  workstations**, so a secret there is shipped to every operator's disk.
+- **The package is specified to carry nothing secret.**
+  `docs/desktop/04-auth-session-update-and-startup/README.md:198-199` § 3 item 8: "**Secrets in the
+  package**: none. The package carries only the gateway base URL, feed URL, and channel name per
+  channel (02's embedded …)". That is exactly the three settings step 3 permits, and the sentence
+  names area 02 — this ticket — as its implementer.
+- **`EmbeddedResource` with `LogicalName` is established.**
+  `src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj:31-53`, e.g.
+  `<EmbeddedResource Include="Persistence\ReferenceData\provider-domains.v1.json" LogicalName="Pegasus.Infrastructure.Persistence.ReferenceData.provider-domains.v1.json" />`.
+  A **fixed** logical name is what makes step 4's channel selection safe: the file on disk changes
+  name per channel, the logical name the code reads does not, so `AddJsonStream` needs no
+  channel-aware lookup.
+- **`Directory.Build.props` (19 lines) applies to this project too**: `TreatWarningsAsErrors=true`,
   `AnalysisLevel=latest-recommended`, `Nullable`, `ImplicitUsings`, `LangVersion=latest`,
   `Deterministic=true`, `Version=0.1.0-alpha.1`.
-- **A `BuildAndRun.ps1` build does not carry those settings.** Measured at
-  `.codex/skills/winui-dev-workflow/BuildAndRun.ps1:146-157`: the script tests for
-  `Directory.Build.props` **in the project directory only** and writes one there when absent; MSBuild
-  stops at the first such file walking up, so the injected file shadows the repository root props for
-  that build. Consequence for step 11's channel check: use a plain `dotnet build … -p:PegasusChannel=pilot`,
-  not the script, when the result must be trusted.
-- **Plan 04 § 3 item 8 fixes the payload of the configuration files exactly**: "the package carries
-  only the gateway base URL, feed URL, and channel name per channel (02's embedded
-  `appsettings.<channel>.json`)". Three settings, no fourth.
-- **Plan 04 § 3 item 6 is what the channel configuration serves**: the last successful compatibility
-  response is cached locally for 24 hours and the app fails closed beyond that — so the base address
-  a package carries is the only gateway it can ever reach, with no bypass (§ 9.3).
-- **Plan 02 § 3 decision 7** fixes the composition: `Microsoft.Extensions.Hosting` generic host inside
-  `App.xaml.cs`, `IHttpClientFactory` single pipeline, structured logging to a bounded rolling file
-  sink with redaction, configuration layered as embedded `appsettings.json` +
-  `appsettings.<channel>.json` selected by an **MSBuild property at package time**, channel =
-  `pilot` | `production` | `local`.
-- **Plan 02 § 3 decision 9** forbids a desktop framework on top of WinUI: "a shell service, a
-  navigation service, a dialog service, and a handful of project controls".
-- **Proposal § 18.1** fixes the log contract: structured rolling local logs, a per-launch session
-  identifier, API correlation identifiers, redaction by default, bounded size and retention.
-- **ADR-0109** (desktop diagnostics bundle plus the existing Application Insights, no new telemetry
-  fleet) bounds the design and is authored by [[FND-006]] (plan handle `DSK-00-06`).
-- **L-02 (locked)** makes the `local` channel point at the local Test/UAT stack — local gateway and
-  Worker processes, Azurite, LocalDB/SQL container, replay adapters — never at an Azure test resource;
-  ADR-0014 stands.
-- **`tests/Pegasus.Desktop.ViewModelTests` does not exist** (`ls tests` → three projects only);
-  [[FND-038]] (plan handle `DSK-02-13`) creates it, and every test in step 9 lands there.
-- **The interfaces step 5 registers do not exist yet either.** `IDiagnosticsWriter`,
-  `AddPegasusApiClient` and `IDesktopCredentialStore` are created by [[FND-031]];
-  `INavigationService` and `IDialogService` by [[FND-033]] (plan handle `DSK-02-08`). The body's
-  instruction not to create empty interfaces now is therefore load-bearing, not cautionary.
+- **`Directory.Packages.props` does not exist today** — `ls Directory.Packages.props` → *No such
+  file or directory*. It is created by [[FND-027]] (plan handle `DSK-02-02`); step 2 writes
+  `PackageVersion` entries into a file that ticket creates.
+- **Configuration precedence in this repository is by literal key string, everywhere.** There is no
+  central key catalogue: `Program.cs` reads `Runtime:Profile`, `Features:LocalIntake`,
+  `AzureIdentity:WebClientId`, `CustodyStorage:ServiceUri`, `Graph:BaseUri`, `Box:ClientSecret` and
+  a dozen more as bare strings. `AGENTS.md` § Simplicity rails ("one list per concept") is why the
+  desktop's three keys should be constants bound once through options classes rather than repeated
+  as literals across the code.
+- **`Pegasus.Web` and `Pegasus.Worker` both talk to Application Insights**
+  (`src/Pegasus.Worker/Program.cs:14-15`, `src/Pegasus.Web/Program.cs:194-197`). The desktop does
+  **not**: ADR-0109 is "desktop diagnostics bundle + existing App Insights; no new telemetry fleet"
+  (`docs/desktop/00-governance-and-workflow/README.md` § 3 ADR set table). Nothing in this ticket
+  adds a telemetry client to the desktop.
+
+Official documentation, to be re-confirmed at kickoff (the ticket body's step 2 requires it):
+
+- `Host.CreateApplicationBuilder` / `HostApplicationBuilder` — the current generic-host builder API
+  for non-web applications; the body instructs `microsoft_docs_search` for it before writing code.
+- `AddJsonStream` — the `IConfigurationBuilder` extension that reads configuration from a `Stream`,
+  which is how an embedded resource becomes configuration without a file on disk.
+- `ILoggerProvider` — the extension point for a custom sink over `Microsoft.Extensions.Logging`; the
+  Guardrails forbid a third-party logging framework.
 
 ### Assumptions
 
-- **A-FND032-1 — a `Microsoft.Extensions.Hosting` generic host can be built and disposed inside a WinUI
-  `Application` lifetime without a background service loop.** The host here is a service container and
-  configuration/logging root, not a running service. *Confirms it*: the fake-host fixture in step 9
-  resolving `GatewayOptions`, the API client and the credential store. *If wrong*: composition falls
-  back to a bare `ServiceCollection` plus manual configuration binding, which changes step 5's shape
-  but none of its obligations.
-- **A-FND032-2 — `AddJsonStream` over two embedded resources layers the same way as
-  `AddJsonFile` does on disk** (later stream wins). *Confirms it*: an override test — set
-  `Gateway:BaseAddress` in both files and assert the channel file wins. *If wrong*, a channel file
-  silently fails to override the base and every package points at the same gateway, which is the worst
-  possible failure of this ticket and would not show up in a smoke test.
-- **A-FND032-3 — an `EmbeddedResource` with a fixed logical name whose `Include` is computed from
-  `$(PegasusChannel)` embeds exactly one channel file.** *Confirms it*: step 11's inspection of the
-  built assembly's manifest resource names. *If wrong*, either no channel file or all four are
-  embedded; the "only the pilot channel file embedded" check catches both.
-- **A-FND032-4 — the redaction processor can be applied to the formatted message and its structured
-  state without losing the surrounding message.** *Confirms it*: the planted-token test in step 9,
-  which asserts both that the token is absent **and** that the surrounding message survives. *If
-  wrong*, redaction becomes message suppression and the log stops being usable for support — which,
-  with ADR-0109 making the bundle the only support channel, is a real operational cost.
-- **A-FND032-5 — a per-launch session identifier attached to the logger scope at host build appears on
-  every subsequent line.** *Confirms it*: step 10's inspection of the first line of a real log file,
-  plus a fixture assertion. *If wrong*, the diagnostics bundle from [[FND-036]] (plan handle
-  `DSK-02-11`) cannot correlate a crash with the session that produced it.
+- **A-FND032-1 — `Microsoft.Extensions.Hosting` composes cleanly inside a WinUI 3 `App.xaml.cs`
+  without a second message loop.** The generic host owns a lifetime; WinUI owns the dispatcher. The
+  host must be *built* (not `RunAsync`-ed as a blocking call) so WinUI keeps the UI thread.
+  *Confirms it*: step 10's launch, which must show a window **and** a written log file — a host that
+  seized the thread would show neither. *If wrong*: build the host and start hosted services
+  explicitly rather than calling a blocking `Run`, and record the deviation.
+- **A-FND032-2 — data-annotation options validation is available without pulling in ASP.NET Core.**
+  `Microsoft.Extensions.Options.DataAnnotations` is the named package in step 2. *Confirms it*: the
+  build at step 10 with no `Microsoft.AspNetCore.*` reference appearing in the desktop csproj. *If
+  wrong*: hand-written validation in the options classes' own validator, still failing at start —
+  never a silent default.
+- **A-FND032-3 — an `EmbeddedResource` whose `Include` uses `$(PegasusChannel)` evaluates per build
+  and the unselected channel files are genuinely absent from the assembly.** *Confirms it*: step 11
+  builds with `-p:PegasusChannel=pilot` and inspects the embedded-resource list. *If wrong*, the
+  security property "a pilot package cannot be pointed at production" is lost, and that must be
+  reported rather than glossed — it is the reason the channel is a build-time property at all.
+- **A-FND032-4 — the packaged app's local folder is writable at the moment the host is built.**
+  `ApplicationData.Current.LocalFolder.Path` requires package identity. *Confirms it*: step 10's log
+  file appearing under that folder. *If wrong*: the log sink must degrade to no-op rather than crash
+  the launch, and that behaviour is then itself a tested case.
+- **A-FND032-5 — `TreatWarningsAsErrors=true` is survivable for the hosting and options code.**
+  *Confirms it*: a plain `dotnet build ./Pegasus.slnx --configuration Release` reporting
+  `0 Warning(s)`. *If wrong*: narrow, individually-commented `NoWarn` entries in the desktop csproj —
+  never a relaxation of `Directory.Build.props`.
 
 ## Execution placement
 
@@ -143,49 +134,52 @@ The six-question cloud-justification test from
 
 | Question | Answer | Evidence |
 | --- | --- | --- |
-| Shared authority — must several users see and update the same state? | **No** | The host, its options and its log files are per-process and per-workstation. Nothing composed here is shared between operators. |
-| Unattended execution — must it run with every desktop closed? | **No** | The host lives inside the operator's application session and is disposed on `Application.Current.Exit`. Unattended work stays in `Pegasus.Worker` under ADR-0106. |
-| Protected credentials — a long-lived secret that must not sit on workstations? | **No, and the ticket's acceptance criteria enforce it.** | Plan 04 § 3 item 8: the package carries "only the gateway base URL, feed URL, and channel name per channel" — three settings, no secret. The one credential the desktop holds at all is the short-lived refresh handle in [[FND-031]]'s DPAPI store, never in configuration. The counter-example that makes this rail real is server-side: `src/Pegasus.Web/appsettings.json` carries a plaintext `Bootstrap:VerificationAccount`, marked TEMPORARY in its own comment — a shipped desktop package cannot be fixed by a redeploy the way that can. |
-| Public callback — must an external service call a stable public endpoint? | **No** | The host makes outbound calls only. The `Update:FeedUri` it carries is, under **D-003**, a UNC path on an in-house Windows host served over SMB — deliberately not a public HTTPS endpoint, because **C-01** rules anonymous GitHub-hosted feeds out permanently. |
-| Central enforcement — revocation, permissions, audit or an invariant independent of the client? | **Yes — and it lands on the in-house build/signing host and the already-existing gateway, not on any new Azure resource.** | The channel invariant is enforced at **package time**, not at runtime: the channel file is selected by the `PegasusChannel` MSBuild property and embedded, so "a pilot package cannot be pointed at production by editing a file on disk". That enforcement lives wherever the package is built and signed — the in-house signing host under **D-002**, exercised by the CI lane [[FND-040]] (plan handle `DSK-02-15`). The complementary runtime enforcement — revocation and the minimum-version gate — is already placed on the evolved `Pegasus.Web` gateway (plan 04 § 3 items 3 and 5, ADR-0105), where raising the minimum version is a database-backed administrative action and explicitly **not** an Azure write. |
-| Measured operational advantage — measured evidence that central is materially better? | **No** | None claimed or available. The placement follows from plan 02 § 3 decision 7 and D-002/D-003. |
+| Shared authority — must several users see and update the same state? | **No** | The host, its options and its log sink are per-process and per-workstation. Nothing composed here is shared between operators; all shared state stays behind the gateway under L-01. |
+| Unattended execution — must it run with every desktop closed? | **No** | The host lives exactly as long as the desktop application. Unattended work stays in `Pegasus.Worker` under ADR-0106, which this ticket does not touch. |
+| Protected credentials — a long-lived secret that must not sit on workstations? | **No — and this ticket is the one that *enforces* that answer.** | `docs/desktop/04-auth-session-update-and-startup/README.md:198-199` § 3 item 8: "Secrets in the package: none. The package carries only the gateway base URL, feed URL, and channel name per channel." Step 3 permits exactly those three settings and nothing else. The refresh handle lives in the DPAPI store from [[FND-031]]; the access token stays in memory. |
+| Public callback — must an external service call a stable public endpoint? | **No** | Nothing here listens. The desktop only makes outbound calls to the gateway, and under D-003 the update feed is a UNC share over SMB, deliberately not a public HTTPS endpoint (C-01 rules GitHub Releases and Pages out permanently). |
+| Central enforcement — revocation, permissions, audit or an invariant independent of the client? | **Yes, for one setting — and it lands on the already-existing evolved `Pegasus.Web` gateway, not on any new Azure resource.** | The channel a package was built for is a *client* fact, but what that channel is allowed to do is enforced server-side: ADR-0105's minimum-version gate runs in the compatibility middleware on `/api/v1`, and the minimum version is "a database-backed Administrator setting with audit … not a Container App app setting" (plan 04 § 3 item 5), so raising it is an authenticated administrative action and **not** an Azure write. Making the channel a build-time MSBuild property (step 4) is precisely what stops the client from re-deciding it locally. |
+| Measured operational advantage — measured evidence that central is materially better? | **No** | None claimed. Logs stay local and bounded under ADR-0109 ("no new telemetry fleet"); shipping desktop logs to a central store is explicitly *not* the design, and no benchmark argues for it. |
 
-**Conclusion.** Four "no" and one "yes"; the "yes" names the in-house build host and the existing
-gateway. No responsibility is placed in Azure and no Azure write arises. The `local` channel points at
-the local Test/UAT stack under L-02 — asking for an Azure test endpoint would need a new accepted
-decision against ADR-0014.
+**Conclusion.** Five "no" and one "yes"; the "yes" names the existing gateway, and the one
+credential-shaped question is answered "none" by design and enforced by this ticket's step 3.
+Nothing here places any responsibility in Azure, and no Azure write arises.
 
 ## Implications
 
-1. **Build-time channel selection is a security control, not a convenience.** It is the reason a
-   `pilot` package cannot be re-pointed at production by editing a file, and it is the one thing in
-   this ticket that a runtime configuration mechanism would quietly undo. Step 4's `EmbeddedResource`
-   with a `$(PegasusChannel)`-computed `Include` is therefore not interchangeable with an on-disk
-   `appsettings.<channel>.json`.
-2. **Step 11's check needs a plain `dotnet build`.** `BuildAndRun.ps1` injects a project-level
-   `Directory.Build.props` that shadows the root one (`BuildAndRun.ps1:146-157`), so a build through
-   the script is not the build CI performs. Use
-   `dotnet build ./src/Pegasus.Desktop/Pegasus.Desktop.csproj -c Release -p:PegasusChannel=pilot` and
-   inspect the produced assembly's manifest resource names.
-3. **The options-validation idiom has no local precedent**, so the *observable* behaviour is what must
-   match `src/Pegasus.Web/Program.cs:101-110`: refuse to start, naming the missing setting. Whether
-   that is `ValidateDataAnnotations().ValidateOnStart()` or an explicit throw is an implementation
-   choice; the test in step 9 asserts the behaviour either way.
-4. **Registering nothing that has no caller is enforceable here.** `docs/engineering.md` § Abstractions
-   (`:113`) — "Anything built but unwired for two weeks gains a real caller or is deleted". Since
-   `INavigationService` and `IDialogService` do not exist until [[FND-033]], creating empty interfaces
-   now would be exactly the dormant registration that rule forbids. The plan must sequence, not
-   pre-declare.
-5. **Redaction has one home.** It belongs in the sink's message processor so that [[FND-036]] can
-   re-apply the *same* rule at bundle collection rather than writing a second regex set. A rule
-   implemented twice is the third-copy failure applied to security code, where drift is silent.
-6. **The `local` channel is a real constraint, not a placeholder.** L-02 fixes it at the local
-   Test/UAT stack; writing an Azure endpoint into `appsettings.local.json` would breach ADR-0014
-   without a decision.
+1. **Two patterns in this ticket are new to the repository, not adaptations.** Options validation
+   (`ValidateOnStart`, zero existing matches) and log redaction (zero existing matches) have no prior
+   art in `src/`. The plan must therefore specify their behaviour concretely and test them, rather
+   than pointing at an existing implementation to copy. The nearest precedent — the manual throw at
+   `src/Pegasus.Web/Program.cs:101-103` — is a *fail-at-start* precedent, which is the property to
+   preserve even if the mechanism differs.
+2. **`src/Pegasus.Web/appsettings.json`'s plaintext password is the argument for step 3's strictness,
+   and it should be cited in the review.** A web application's `appsettings.json` sits on a server the
+   operator controls; a desktop `appsettings.json` is embedded in an MSIX and copied to every
+   workstation. The same mistake has a materially worse blast radius here.
+3. **The channel must be a build-time property, and step 11 is what proves it.** If the unselected
+   channel files remain embedded, "a pilot package cannot be pointed at production by editing a file
+   on disk" is false, and the plan's whole justification for an MSBuild property over a runtime
+   switch collapses. That check is not optional polish.
+4. **The `LogicalName` idiom is what keeps the reading code channel-agnostic.** Embedding
+   `Configuration/appsettings.$(PegasusChannel).json` under a *fixed* logical name means
+   `PegasusHost` calls `AddJsonStream` twice with two constant names and never learns which channel
+   it is — the channel appears in exactly one place, the csproj.
+5. **The host must not seize the UI thread.** WinUI owns the dispatcher; the host is built and its
+   services started, not `Run`-blocked. A-FND032-1 is settled by the fact that step 10 requires both
+   a visible window and a written log file.
+6. **The redaction hook belongs to [[FND-031]]'s `IDiagnosticsWriter`, defined once.** [[FND-036]]
+   (plan handle `DSK-02-11`) re-collects those logs into the bundle and must call the same hook
+   rather than re-implementing the regex set — "one list per concept" (`AGENTS.md` § Simplicity
+   rails).
 
 ## Open questions
 
-- None that must be answered before implementation. Every unknown above is an assumption with a named
-  command inside this ticket that settles it, and the two sequencing points — [[FND-031]]'s
-  interfaces and [[FND-038]]'s test project — are scope boundaries with named owners, recorded in the
-  plan's Risks section rather than opened as questions.
+- None that must be answered before implementation. Every assumption above names the command inside
+  the ticket that settles it, and no value here needs an operator decision — the three configuration
+  keys are fixed by plan 04 § 3 item 8, and the channel names (`local`, `pilot`, `production`) are
+  fixed by plan 02 § 3 decision 7.
+- Two sequencing facts are recorded rather than opened as questions: [[FND-031]] must have landed
+  (`IDiagnosticsWriter`, `AddPegasusApiClient`) and [[FND-038]] (plan handle `DSK-02-13`) must exist
+  before step 9's tests can be written. Both are scope boundaries with named owners, recorded in the
+  plan's Risks section.
