@@ -6,6 +6,12 @@
 > needs no rework. Everything marked `NOT YET CAPTURED` requires the dry run to have
 > actually happened: three Appendix C reports, the grading table, the instruction gaps and
 > the follow-up ticket ids. Filling those in is the ticket.
+>
+> **This banner does not hold the gate — the `open-questions` document does.** A banner is
+> prose; the gate reads document existence and unticked boxes. `open-questions` on this
+> ticket carries one unticked `- [ ]` box per `NOT YET CAPTURED` item below, and while any
+> of them is unticked `get_doc_gates TOOL-009` reports `enter-done` **not passable**
+> (verified 2026-08-24).
 
 ## Question
 
@@ -22,11 +28,19 @@ toolchain, not a `src/Pegasus.Web/Pages/**` route, page model, `Pegasus.Core` us
 Worker path.
 
 **No `PAR-nn` row in `docs/desktop/01-inventory-and-parity/parity-matrix.md` covers it, and
-none should.** The matrix's 47 rows are keyed to Razor page models and operator-visible
-capabilities (`parity-matrix.md:36-44`); a protocol rehearsal is neither. The **target**
-ticket the dry run rides on may have a parity row of its own — the default target,
-`FND-030` (plan handle `DSK-02-05`, scaffold `src/Pegasus.Desktop`), does not, because it is
-new-project scaffolding rather than a converted screen.
+none should.** The matrix holds **46 rows, `PAR-01`…`PAR-46`** — counted, not copied:
+`grep -c '^| PAR-' docs/desktop/01-inventory-and-parity/parity-matrix.md` returns `46` and
+the last row is `PAR-46` (verified 2026-08-24). Each is keyed to a Razor page model under
+`src/Pegasus.Web/Pages/**` and an operator-visible capability (column notes at
+`parity-matrix.md:32-40`); a protocol rehearsal is neither. The **target** ticket the dry run
+rides on may have a parity row of its own — the default target,
+[[FND-030]] (plan handle `DSK-02-05`, scaffold `src/Pegasus.Desktop`), does not, because it
+is new-project scaffolding rather than a converted screen.
+
+The closest existing repository mechanism is the invocation protocol itself as written down
+in two places today — `docs/desktop/12-agent-tooling/README.md` § 6 and
+`.agents/skills/project/pegasus-desktop/SKILL.md` § Invocation protocol — which is prose
+that has never been executed.
 
 What exists today, before the dry run:
 
@@ -35,8 +49,8 @@ What exists today, before the dry run:
 - A project skill at `.agents/skills/project/pegasus-desktop/SKILL.md` (110 lines) whose
   § Invocation protocol lists the same seven steps.
 - Routing tables in `docs/desktop/12-agent-tooling/skill-routing.md` naming skills that,
-  until [[TOOL-002]] (`DSK-12-02`) lands, resolve to `.codex/skills/` rather than the
-  vendored destinations.
+  until [[TOOL-002]] (plan handle `DSK-12-02`) lands, resolve to `.codex/skills/` rather than
+  the vendored destinations.
 
 ## Findings
 
@@ -45,15 +59,17 @@ What exists today, before the dry run:
   `pegasus-test-engineer` …; when both finish, spawn `pegasus-desktop-reviewer` on the
   combined diff". The dry run is that shape with `winui-dev` substituted, so it tests a
   documented pattern rather than an invented one.
-- **The default target is `FND-030`** (plan handle `DSK-02-05`), not `FND-026`
-  (`DSK-02-01`). `DSK-02-01` is ADR authoring routed to `kanmer-docs` and exercises neither
-  the implementer nor the test engineer, so it would rehearse almost nothing. `FND-030` is a
-  `feature` routed to `winui-dev` with `winui-setup`, `winui-dev-workflow`, `winui-design`,
-  and it is the first area-02 row that genuinely needs all three agents.
+- **The default target is [[FND-030]]** (plan handle `DSK-02-05`), not
+  [[FND-026]] (plan handle `DSK-02-01`). `DSK-02-01` is ADR authoring routed to `kanmer-docs`
+  and exercises neither the implementer nor the test engineer, so it would rehearse almost
+  nothing. `FND-030` is a `feature` routed to `winui-dev` with `winui-setup`,
+  `winui-dev-workflow`, `winui-design`, and it is the first area-02 row that genuinely needs
+  all three agents.
 - **Two hard prerequisites, both currently unmet.** `FND-030` is `blocked` on the board and
   itself depends on `DSK-02-01` and `DSK-02-02`; and the `[agents]` table does not exist yet
-  ([[TOOL-005]], `DSK-12-05`). If the target is still blocked when this spike is worked, the
-  body is explicit: **record that as the finding rather than switching targets mid-run.**
+  ([[TOOL-005]], plan handle `DSK-12-05`). If the target is still blocked when this spike is
+  worked, the body is explicit: **record that as the finding rather than switching targets
+  mid-run.**
 - **`FND-030` is a `feature`**, so it owes `research`, `files`, `plan` and `checklist` before
   it can leave Preparing, plus `post-implementation-report` before Review and `proof` before
   Done. The dry run therefore exercises the *whole* document pipeline, not just three agent
@@ -84,10 +100,11 @@ Verified by reading the repository and the board on 2026-08-24:
 | The default target is board `FND-030` = plan handle `DSK-02-05`, "Scaffold `src/Pegasus.Desktop` (WinUI 3, x64, packaged, self-contained, pinned Windows App SDK 2.x)", profile `feature`, groups `EPIC-003`/`HZN-002`, currently `blocked`. | `search_items DSK-02-05` |
 | The alternative target board `FND-026` = `DSK-02-01` is ADR authoring, profile `chore`, routed to `kanmer-docs`. | `search_items DSK-00-05` result set |
 | Area 02's plan row for `DSK-02-05` gives acceptance "Builds with `BuildAndRun.ps1`; launches with package identity; no `AnyCPU`; `Package.appxmanifest` identity placeholders documented" and verification "`BuildAndRun.ps1 -SkipRun` then `winapp run` log; screenshot", evidence tier 1. | `docs/desktop/02-architecture-and-foundation/README.md:246` |
-| The canonical repository verification commands the agents must actually use are `dotnet restore ./Pegasus.slnx --locked-mode`, `dotnet build ./Pegasus.slnx --configuration Release --no-restore`, `dotnet test ./Pegasus.slnx --configuration Release --no-build --filter "Category!=Corpus"`. | `docs/runbook.md:298-308` § Locked restore, build, and test |
+| The canonical repository verification commands the agents must actually use are `dotnet restore ./Pegasus.slnx --locked-mode`, `dotnet build ./Pegasus.slnx --configuration Release --no-restore`, `dotnet test ./Pegasus.slnx --configuration Release --no-build --filter "Category!=Corpus"`. | `docs/runbook.md:298-306` § Locked restore, build, and test |
 | The focused forms and the integration-filter complement pair are at `docs/runbook.md:312-320`; the integration project caps concurrency at four in `tests/Pegasus.IntegrationTests/xunit.runner.json`, and the Browser selection halves it on the command line. | `docs/runbook.md:312-330` |
 | The seven Appendix C headings are Skills consulted / Applicable guidance / Project decisions taking precedence / Repository evidence / Implementation / Verification / Deviations. | `.agents/skills/project/pegasus-desktop/SKILL.md` § Evidence format; proposal Appendix C |
 | The seven invocation-protocol steps are listed identically in `docs/desktop/12-agent-tooling/README.md` § 6 and in the project skill § Invocation protocol. | both files |
+| The parity matrix holds 46 rows, `PAR-01`…`PAR-46`, and no row covers a protocol rehearsal. | `grep -c '^| PAR-' docs/desktop/01-inventory-and-parity/parity-matrix.md` → `46` |
 
 ### Assumptions
 
@@ -99,12 +116,12 @@ Verified by reading the repository and the board on 2026-08-24:
   fallback the body permits is "the earliest unstarted row that still routes to
   `winui-dev`", chosen *before* the run starts and with the reason written down.
 - **A-12-7 — the agent roster loads and delegation works.** Depends on [[TOOL-005]] and on
-  [[TOOL-001]]'s (`DSK-12-01`) verdict.
+  [[TOOL-001]]'s (plan handle `DSK-12-01`) verdict.
   Confirmed by: `.codex/config.toml` containing an `[agents]` table and `/agent` listing the
   eight names (body step 1).
   Breaks if wrong: there is nothing to delegate to and the spike stops at step 1.
 - **A-12-8 — the skills named in the routing tables resolve from the vendored paths.**
-  Depends on [[TOOL-002]] and [[TOOL-004]] (`DSK-12-04`).
+  Depends on [[TOOL-002]] and [[TOOL-004]] (plan handle `DSK-12-04`).
   Confirmed by: each agent's Appendix C "Skills consulted" naming a path that exists on disk
   with the pinned SHA.
   Breaks if wrong: an agent silently proceeds without the guidance it claims to have loaded
@@ -122,10 +139,12 @@ Verified by reading the repository and the board on 2026-08-24:
 
 Not applicable, and the heading is kept rather than dropped so the omission is visible: this
 spike places no responsibility in either the desktop or the cloud. It rehearses a developer
-protocol and produces documents. The six-question test in
-`docs/desktop/00-governance-and-workflow/README.md` § 3 is answered by the **target** ticket,
-not by this one — and if any agent asks for an Azure test resource during the run, L-02 and
-ADR-0014 stand and that request is **a finding to record, not a request to fulfil**.
+protocol and produces documents; it carries no credential and publishes no artefact. The
+six-question test in `docs/desktop/00-governance-and-workflow/README.md` § 3 is answered by
+the **target** ticket, not by this one — and if any agent asks for an Azure test resource
+during the run, L-02 and ADR-0014 stand and that request is **a finding to record, not a
+request to fulfil**. The one placement this spike assumes is that the whole rehearsal runs on
+the conversion workstation.
 
 ## Implications
 
@@ -157,6 +176,12 @@ ADR-0014 stand and that request is **a finding to record, not a request to fulfi
 
 ## Dry-run record
 
+### Preconditions (body step 1)
+
+`NOT YET CAPTURED`. Record both before the run starts: whether `.codex/config.toml` contains
+an `[agents]` table (`grep -n '^\[agents\]' .codex/config.toml`), and whether `FND-030` is
+still `blocked` (`get_item FND-030`).
+
 ### Target ticket and why (body step 2)
 
 `NOT YET CAPTURED`. Default: board `FND-030` (plan handle `DSK-02-05`). Write one sentence
@@ -186,7 +211,7 @@ id** — a build log alone does not prove the app ran.
 ### `pegasus-test-engineer` report (body step 5)
 
 `NOT YET CAPTURED`. Must include the verbatim `dotnet test` command from
-`docs/runbook.md:298-320` and the pass/fail counts — not a summary sentence.
+`docs/runbook.md:298-306` and the pass/fail counts — not a summary sentence.
 
 ### `pegasus-desktop-reviewer` report (body step 6)
 
@@ -233,17 +258,36 @@ ticket.**
 
 ## Open questions
 
-None are opened as a blocking `open-questions` document, deliberately: an unticked `- [ ]`
-line there blocks *every* stage move, and this spike's questions are its own subject matter
-— blocking it from starting in order to ask it to start would be circular. Carried here
-instead, each with a destination:
+**Every `NOT YET CAPTURED` section above is an unticked `- [ ]` box in this ticket's
+`open-questions` document, and that document is what stops this spike being closed with the
+dry run never having happened.**
 
-- Whether `FND-030` is unblocked when the spike is worked (A-12-6). Answered by
-  `get_item FND-030` at step 1; if it is still blocked, the body directs that this becomes
-  the recorded finding rather than a target switch.
-- Whether the skills named in the routing tables resolve from the vendored paths (A-12-8).
-  Answered by each agent's "Skills consulted" heading; a path that does not exist is an
-  instruction gap for step 8, not a new question.
-- Whether the Appendix C shape is the right shape at all. Out of scope: the shape is fixed
-  by proposal Appendix C and is [[TOOL-007]]'s (`DSK-12-07`) to install. If the dry run finds
-  it wanting, that is a follow-up ticket, not a decision taken here.
+The earlier draft of this section declined to open one, reasoning that an unticked box
+"blocks every stage move" and that blocking this spike from starting in order to ask it to
+start would be circular. Both halves of that were wrong, and the second followed from the
+first:
+
+- An unticked box blocks exactly three boundaries — `leave-preparing`, `enter-review` and
+  `enter-done` — and never `leave-backlog`. For profile `spike` the board declares only
+  `enter-done: [research, questions-resolved]` (`get_doc_gates` with no id), so the boxes
+  block **Done alone**.
+- There is therefore no circularity: nothing prevents this spike being taken, worked or moved
+  out of Backlog. The boxes prevent only the move that must not happen — closing the ticket
+  before the run has produced its output. Verified 2026-08-24: with `open-questions` present,
+  `get_doc_gates TOOL-009` reports `enter-done` `passable: false`, and `done` has dropped out
+  of `reachable`.
+
+Two questions are **parked** in that document rather than opened:
+
+- Whether the Appendix C shape is the right shape at all — out of scope here; the shape is
+  fixed by proposal Appendix C and [[TOOL-007]] (plan handle `DSK-12-07`) installs it. If the
+  dry run finds it wanting, that is a follow-up ticket under step 12, and a decision a named
+  sibling ticket owns is a scope boundary rather than an open question.
+- Whether the skills named in the routing tables resolve from the vendored paths (A-12-8) —
+  answered mechanically during the run by each agent's "Skills consulted" heading; a path
+  that does not exist is an instruction gap for step 8, not a new question. It depends on
+  [[TOOL-002]] and [[TOOL-004]], both named tickets.
+
+A-12-6 (is `FND-030` unblocked?) is **not** parked: it is the first box in `open-questions`,
+because the body makes the answer part of the record either way — if the target is still
+blocked, that *is* the finding.
