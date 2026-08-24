@@ -1,220 +1,239 @@
-# Research — FND-007: ADR-0108, isolated WebView2 report rendering
+# Research — FND-007: ADR-0108, the one sanctioned WebView2 in the conversion
 
 ## Question
 
-What must ADR-0108 decide now, what must it explicitly leave to the Phase 7
-spike, and how does it stand as a written decision without either breaching the
-proposal's "no WebView shell" constraint or contradicting ADR-0025 and ADR-0028,
-which keep the integrated renderer running in the Web Container App?
+What must ADR-0108 assert so that a WebView2 in a "no WebView shell" programme
+is lawful rather than a breach; what is verifiably true today about report
+rendering; why must the ADR merge `proposed` rather than `accepted`; and what
+does the index gate mean for a `proposed` ADR?
 
 ## Current behaviour
 
-Report rendering is server-side today. Measured 2026-08-24 from the working tree
-at `origin/main` `191ddf3342…`, corroborated by flow record 6
-(`docs/desktop/01-inventory-and-parity/flow-records.md:362-433`):
+Report rendering today is a **gateway** capability, and the parity matrix does
+cover it.
 
-- **Entry point.** `Pages/Cases/Assessment/Index.cshtml.cs`
-  `OnPostGenerateReportDraftAsync`.
-- **Core contract.** `IAssessmentReportRenderer` in
-  `src/Pegasus.Core/Reports/AssessmentReportRendering.cs` (**312 lines**), with
-  the projection at `Reports/AssessmentReportProjection.cs` (362 lines).
-- **Implementation.**
-  `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs`
-  (**326 lines**): `AssessmentReportSnapshot` → Scriban templates → HTML →
-  Playwright Chromium `PdfAsync` → PDFsharp post-processing →
-  `*_assessment.pdf` and `*_fee_note.pdf`. Serialised by a `SemaphoreSlim(1,1)`;
-  the browser is lazily created and cached; `IAsyncDisposable`; registered as a
-  singleton by `AddPegasusReportRendering()`
-  (`src/Pegasus.Infrastructure/DependencyInjection.cs:446`).
-- **Templates.** `ls docs/design/assets/report-renderer/templates/` returns
-  **six `.scriban` files** — `advert_evidence_pack`, `assessment_fee_note`,
-  `assessment_report`, `expert_report`, `fee_note`, `market_valuation_evidence`
-  — plus `report.css`. (Flow record 6 at `:388-392` says "seven `.scriban`
-  files"; measured, it is six plus the stylesheet. A small correction for
-  [[FND-020]] (plan handle `DSK-01-07`), which owns that record — not for this
-  ticket to edit.)
-- **Tests.** `tests/Pegasus.IntegrationTests/Reports/AssessmentReportRendererTests.cs`
-  and `AssessmentReportDraftWebTests.cs` — the baseline [[FEAT-041]] (plan handle
-  `DSK-07-15`) reuses for golden-file fixtures.
-- **Pins.** `Directory.Build.props` `PlaywrightVersion 1.61.0` matched to
-  `Pegasus.Web.csproj` `ContainerBaseImage
-  mcr.microsoft.com/playwright/dotnet:v1.61.0-noble` (ADR-0028); the Container
-  App runs cpu 1.0 / 2 Gi for in-process Chromium.
-
-**No parity-matrix row covers ADR-0108, and none should.**
-`docs/desktop/01-inventory-and-parity/parity-matrix.md` holds **46** rows
-(`grep -c '^| PAR-'` → 46), each keyed to a Razor page model under
-`src/Pegasus.Web/Pages/` (`parity-matrix.md:36-38`); one of those rows will
-cover the assessment page that *triggers* rendering, but the rendering decision
-itself is an ADR, not a screen. The closest existing repository mechanism this
-ticket must not break is the ADR index (`docs/adr/README.md:16-41`) and the CI
-`documentation` job (`.github/workflows/ci.yml:71-87`).
+- **The parity row is `PAR-15`** (`docs/desktop/01-inventory-and-parity/parity-matrix.md:60`),
+  "13.9 Assessment and reporting", owner FRD-11 and FRD-06, entry point
+  `Cases/Assessment/Index.cshtml.cs` (740 lines) with
+  `OnPostGenerateReportDraftAsync` among its handlers. The row already records
+  "report draft via `IAssessmentReportRenderer` (Playwright)" and, in its target
+  column, "Assessment tab + report preview/finalise (Phase 7; rendering local via
+  WebView2 per L-03)". Its recorded test evidence is
+  `tests/Pegasus.IntegrationTests/Reports/AssessmentReportDraftWebTests.cs` and
+  `AssessmentReportRendererTests.cs` — both files exist. Status: `inventoried`.
+  (The matrix holds `PAR-01`…`PAR-46`; `grep -c '^| PAR-' …` → **46**,
+  2026-08-24.)
+- **The port** is `IAssessmentReportRenderer`,
+  `src/Pegasus.Core/Reports/AssessmentReportRendering.cs:284`, consumed by the
+  use case `GenerateAssessmentReportDraft` at `:291`.
+- **The one implementation** is
+  `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs:13`
+  (326 lines), registered as a singleton at
+  `src/Pegasus.Infrastructure/DependencyInjection.cs:448`. It uses `Scriban`
+  (`:8-9`), drives Chromium through `Microsoft.Playwright` (`:5`, `Playwright.CreateAsync()`
+  at `:92`), post-processes with `PdfSharp.Pdf.IO` (`:7`), and stamps a producer
+  string naming the Playwright assembly version and Chromium at `:140`.
+- **Where it runs is already an accepted decision.** ADR-0028 (`:39-45`) puts the
+  integrated renderer in process inside the existing Pegasus Web Container App,
+  and ADR-0025 requires it to be integrated behind a `Pegasus.Core`-owned port
+  rather than deployed as a separate unit. Neither is superseded by ADR-0108;
+  ADR-0108 relates to them and adds a second implementation of the same port on
+  a different host.
 
 ## Findings
 
-- **The proposal both forbids and permits WebView2, and the permission is
-  conditional on this ADR existing.** § 2.1 locked constraint at
-  `Pegasus_Native_Desktop_Design_Proposal.md:60`: "It must not be a
-  WebView/WebView2 shell around the current application." § 23.2 at `:1715`: "An
-  isolated WebView2 use for a third-party login consent page or a specific
-  document preview is not automatically a web wrapper, **but it requires an ADR
-  and must not host Pegasus UI**." Without ADR-0108 on record, the first desktop
-  renderer commit reads as a violation of a locked constraint.
-- **§ 23.2's release gate is where the constraint is actually enforced**
-  (`:1701-1713`): "no WebView renders the legacy Pegasus application", "no
-  required workflow launches the legacy site". ADR-0108 must be written so a
-  reviewer can check the renderer against those lines.
-- **ADR-0025 and ADR-0028 are accepted and keep the gateway renderer running.**
-  ADR-0028 at `:15-16` records "Accepted on 2026-08-19. This decision refines
-  ADR-0015 and ADR-0025; it supersedes neither", and its `## Decision` puts the
-  integrated renderer in process inside the existing Pegasus Web Container App.
-  ADR-0108 must therefore state the retention explicitly or the two decisions
-  look contradictory — and ADR-0028's own Status sentence is the exact
-  precedent for how to word that.
-- **The host is genuinely undecided, and the plan says so.**
-  `docs/desktop/07-integrations/README.md:255` is the risk row: "a WinUI
-  `WebView2` control needs a XAML root; a zero-size collapsed control **may**
-  still initialise, but behaviour must be proven (DSK-07-14 spike);
-  `CoreWebView2Controller` on a hidden HWND is the fallback host. Spike first;
-  record the chosen host in ADR-0108; keep the renderer behind
-  `IAssessmentReportRenderer` so the host can change." That is why the ADR
-  merges `proposed`.
-- **The `docs/adr/README.md` accepted table has no status column**
-  (`:18-19`, `ADR | Title | Related FRD`), so a `proposed` ADR has no honest row
-  there — adding one would assert it as current architecture. `AGENTS.md:114-117`
-  describes a five-column index that would have had one; the real file
-  contradicts it and **the file wins**. Correcting that sentence is [[FND-005]]'s
-  (plan handle `DSK-00-05`), not this ticket's.
-- **`docs/adr/0108-desktop-webview2-report-rendering.md` does not exist**
-  (`ls docs/adr/0108*` → no such file) and **both claimants name that exact
-  path**: this ticket's body, and [[FEAT-038]] (plan handle `DSK-07-12`) at its
-  own steps 2, 3 and `## Guardrails`. [[FEAT-038]]'s Guardrails state the split
-  in the same words this ticket's step 10 uses — [[FND-007]] authors and merges
-  it `proposed` in Phase 0; [[FEAT-038]] performs the frontmatter-only
-  acceptance flip and adds the index row in that same PR. There is no ownership
-  question outstanding.
-- **The house form to copy is ADR-0028/ADR-0029**, which open at `## Status`
-  (`0028:13`, `0029:13`); the older ADR-0014/0015/0025 do not. Every
-  `related_frd:` value in `docs/adr/*.md` is a lowercase stem — `[frd-11]`, not
-  `[FRD-11]`.
-- **Flow record 6 carries four open questions**, Q6.1–Q6.4 at `:414-426`:
-  which templates are in desktop scope (upstream TICK-206), print-to-PDF fidelity
-  differences between WebView2 and Playwright's `PdfAsync`, WebView2 runtime
-  presence on the ten workstations, and PDFsharp behaviour on WebView2 output.
-  Q6.2 and Q6.4 are exactly what the Phase 7 spike measures — they are what
-  ADR-0108 defers, not what it must answer.
-- **The Microsoft Learn references the plan already fetched**
-  (`docs/desktop/07-integrations/README.md:112-114`): the WebView2 print-to-PDF
-  how-to and the `CoreWebView2.PrintToPdfAsync` / `PrintToPdfStreamAsync` /
-  `CoreWebView2PrintSettings` reference. Step 2 re-fetches them so the ADR's API
-  claims carry a current URL and fetch date rather than a remembered one.
-- **The Phase 0 placement of this ticket is deliberate.** Plan 00 § 4 Target
-  state makes ADR-0100…ADR-0110 part of the Phase 0 governance exit gate and
-  allows ADR-0108 to stand `proposed` until the Phase 7 spike — which is why the
-  ticket is grouped `HZN-001` while its acceptance flip waits on [[FEAT-040]]
-  (plan handle `DSK-07-14`) and [[FEAT-041]].
-
 ### Facts
 
-| Fact | Source |
-| --- | --- |
-| "No WebView2 shell" is a locked constraint | proposal `:60` |
-| Isolated WebView2 permitted, requires an ADR, must not host Pegasus UI | proposal `:1715` |
-| § 23.2 release-gate lines | proposal `:1701-1713` |
-| ADR-0028 refines ADR-0015/0025 and supersedes neither | `docs/adr/0028-*.md:15-16` |
-| Integrated renderer runs in the Web Container App | `docs/adr/0028-*.md` § Decision |
-| Core contract `IAssessmentReportRenderer`, 312 lines | `src/Pegasus.Core/Reports/AssessmentReportRendering.cs` |
-| Playwright implementation, 326 lines, `SemaphoreSlim(1,1)` | `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs`; flow record 6 `:373-383` |
-| Registered singleton | `src/Pegasus.Infrastructure/DependencyInjection.cs:446` |
-| Six `.scriban` templates plus `report.css` | `ls docs/design/assets/report-renderer/templates/` |
-| Golden-file baseline tests exist | `tests/Pegasus.IntegrationTests/Reports/` |
-| Off-screen host undecided; spike first; record in ADR-0108 | `docs/desktop/07-integrations/README.md:255` |
-| Accepted index table has no status column | `docs/adr/README.md:18-19` |
-| No ADR-0108 file yet | `ls docs/adr/0108*` |
-| Both claimants name the same path and the same split | this ticket's body; [[FEAT-038]] body steps 2–3 and Guardrails |
-| Q6.1–Q6.4 | `flow-records.md:414-426` |
-| Learn references already identified | `docs/desktop/07-integrations/README.md:112-114` |
+Read on **2026-08-24** at `origin/main` `191ddf3342…`, each with its source.
+
+- **F1 — the proposal's own exception is the whole legal basis, and it is one
+  sentence.** `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md:1715`
+  (§ 23.2 Native verification, heading at `:1701`): "An isolated WebView2 use for
+  a third-party login consent page or a specific document preview is not
+  automatically a web wrapper, but it **requires an ADR and must not host Pegasus
+  UI**." The locked constraint it excepts is at `:1351` — "no WebView shell" —
+  inside § 2.1 Locked constraints (heading at `:54`). ADR-0108 must quote both,
+  or the first renderer commit reads as a violation of a locked constraint.
+- **F2 — the host is genuinely undecided, and the plan says so.**
+  `docs/desktop/07-integrations/README.md:255` (§ 7 Risks and traps, heading at
+  `:251`): "a WinUI `WebView2` control needs a XAML root; a zero-size collapsed
+  control **may still initialise, but behaviour must be proven** (DSK-07-14
+  spike); `CoreWebView2Controller` on a hidden HWND is the fallback host", with
+  the mitigation "Spike first; **record the chosen host in ADR-0108**; keep the
+  renderer behind `IAssessmentReportRenderer` so the host can change." This is
+  why `status: proposed` is the honest first state, not a formality.
+- **F3 — the work breakdown assigns the acceptance flip to another ticket.**
+  `docs/desktop/07-integrations/README.md:227` — row `DSK-07-12`, profile
+  `chore`, "ADR-0108 isolated WebView2 HTML→PDF rendering (scope, never-UI rule,
+  fallback, parity gate)", acceptance "**Accepted ADR** with the §23.2 statement
+  and reversal condition". `DSK-07-14` (`:229`) is the renderer plus the
+  off-screen-host spike; `DSK-07-15` (`:230`) is the golden-file parity suite.
+  Board ids, resolved with `search_items` (read, never computed):
+  `DSK-07-12` → [[FEAT-038]], `DSK-07-13` → [[FEAT-039]], `DSK-07-14` →
+  [[FEAT-040]], `DSK-07-15` → [[FEAT-041]].
+- **F4 — the index has no status column, so a `proposed` row would be a false
+  claim.** `docs/adr/README.md:16` is
+  `## Current architecture decisions (`status: accepted`)` and `:18` is
+  `| ADR | Title | Related FRD |` — three cells. `:11-12` states plainly that
+  "the **current architecture is the set below with `status: accepted`**". A row
+  for a `proposed` ADR would assert it as current architecture. The separate
+  `## Superseded and relocated` table at `:43-52` is not a home for it either.
+  The body's step 8 is therefore correct and is not merely stylistic.
+- **F5 — `AGENTS.md:114-116` describes an index this repository does not have**
+  (`ID | Title | Status | Superseded-by | Owner capability`), which would appear
+  to give a `proposed` ADR a row. The file wins; `grep -n 'Owner capability'
+  AGENTS.md` → exactly one match, at `:115`. **Correcting that sentence belongs
+  to [[FND-005]]** (plan handle `DSK-00-05`) and must not be done here.
+- **F6 — no ADR-01xx file exists yet.** `ls docs/adr/010*` →
+  `No such file or directory`; the tree holds `0001`…`0029` with `0017` never
+  issued (`docs/adr/README.md:57-58`). ADR-0108 is the only number in the
+  reserved block this ticket touches, and it has **no** co-claimant that also
+  *authors* it — [[FEAT-038]] only flips its frontmatter later.
+- **F7 — the house frontmatter form for `related_frd` is a lowercase file stem.**
+  `grep -h '^related_frd:' docs/adr/*.md | sort | uniq -c` over all 28 ADRs
+  returns only `[]` and lowercase stems — `[frd-11]`, `[frd-10, frd-11]`,
+  `[frd-02, frd-05, frd-11]` and so on. `grep -l '^related_frd: \[FRD'
+  docs/adr/*.md` returns **no file**. The ticket body's step 3 writes
+  `related_frd: [FRD-11]`; see *Open questions*.
+- **F8 — the newest ADR opens with `## Status`, the older ones do not.**
+  `docs/adr/0029-image-initiated-case-projection.md` has
+  `## Status` `:13`, `## Context` `:19`, `## Decision` `:27`, `## Consequences`
+  `:45`, `## Links` `:54`. `docs/adr/0015-…` has no `## Status` at all
+  (`## Context` `:16`, `## Decision` `:28`, `## Consequences` `:53`).
+  `AGENTS.md:107-110` requires Status first "so a body-only read is never
+  mistaken for current when it is superseded" — which matters more for a
+  `proposed` ADR than for any other. ADR-0028 shows the form to copy: a
+  `## Status` section that states the date and the relation ("This decision
+  refines ADR-0015 and ADR-0025; it supersedes neither", `:14-16`).
+- **F9 — the templates are already a single governed source.**
+  `docs/design/assets/report-renderer/templates/` holds seven files —
+  `assessment_report.scriban`, `assessment_fee_note.scriban`,
+  `expert_report.scriban`, `fee_note.scriban`, `advert_evidence_pack.scriban`,
+  `market_valuation_evidence.scriban`, `report.css`. ADR-0025's Context (`:30-36`)
+  records that CollisionRenderer "already embeds the canonical design assets from
+  this repository's design tree" and that "its templates are Pegasus product
+  behaviour and must co-version with the FRDs and Core policy that feed them".
+  The desktop renderer must consume that same source — [[FEAT-039]]
+  (`DSK-07-13`) does the embedding, hash-checked.
+- **F10 — the golden-file baseline exists and is Playwright-pinned.**
+  `tests/Pegasus.IntegrationTests/Reports/` holds
+  `AssessmentReportDraftWebTests.cs` and `AssessmentReportRendererTests.cs`.
+  `docs/desktop/07-integrations/README.md:258` records the drift risk that makes
+  the parity gate tolerant rather than exact: "WebView2 runtime updates itself;
+  Playwright is pinned to 1.61.0", mitigated by "Tolerant comparisons (text,
+  values, page count, positions within tolerance)… **not pixel equality**".
+- **F11 — the runtime-absence failure mode is already specified.**
+  `docs/desktop/07-integrations/README.md:257`: "WebView2 runtime missing or
+  outdated on a workstation → Startup check (04) with a named install step;
+  **gateway render fallback** until fixed", and `:229`'s acceptance requires
+  "runtime-missing → named failure and gateway fallback". This is the reason the
+  retention clause is a real mechanism and not a courtesy.
+- **F12 — this ticket is Phase 0 work despite depending on Phase 7.** It carries
+  `HZN-001` and plan 00 § 4 Target state makes ADR-0100…ADR-0110 part of the
+  Phase 0 governance exit gate, explicitly allowing "ADR-0108 may be `proposed`
+  until the Phase 7 spike". Only step 10's verification waits.
 
 ### Assumptions
 
-- **A-00-10 — a collapsed, zero-size WinUI `WebView2` control initialises well
-  enough to print.** *Confirmed by:* the [[FEAT-040]] spike, which is the whole
-  reason this ADR merges `proposed`. *Breaks if:* it does not, in which case the
-  `CoreWebView2Controller`-on-a-hidden-HWND fallback becomes the recorded host —
-  which is why the decision must be written so the host is a *recorded*
-  parameter and the renderer stays behind `IAssessmentReportRenderer`.
-- **A-00-11 — the WebView2 Evergreen runtime is present on every target
-  workstation.** *Confirmed by:* Q6.3, which is [[FND-020]]'s to close.
-  *Breaks if:* it is absent or pinned to an old version on some machines, which
-  turns "runtime missing" from an edge case into the reversal condition step 7
-  must name.
-- **A-00-12 — golden-file parity within documented tolerances is achievable.**
-  *Confirmed by:* [[FEAT-041]]'s fixture run. *Breaks if:* Q6.2 finds a fidelity
-  gap that cannot be closed, in which case ADR-0108 never reaches `accepted` and
-  the gateway renderer stays the path in use — an outcome the ADR must survive
-  rather than a failure of this ticket.
+- **A-00-7-1 — a collapsed or hidden WebView2 will in fact produce a PDF.**
+  Unverified: no desktop project exists yet. *Confirmed by:* [[FEAT-040]]'s spike
+  (F2). *Breaks if:* neither host initialises off-screen — then L-03 itself is in
+  question and the reversal condition of step 7 fires before any code ships. This
+  is precisely why `proposed` is the honest first status.
+- **A-00-7-2 — `PrintToPdfStreamAsync` is the right API and it is current.**
+  `docs/desktop/07-integrations/README.md:112-115` cites the Microsoft Learn
+  print how-to and the `CoreWebView2` WinRT reference, and `:229` names
+  `PrintToPdfStreamAsync`. *Confirmed by:* step 2's `microsoft_docs_search` /
+  `microsoft_docs_fetch`, with the URLs and fetch date recorded in `## Links`.
+  *Breaks if:* the API is renamed, deprecated, or unavailable in the pinned
+  Windows App SDK — the ADR would then name the wrong mechanism, and a published
+  body is immutable.
+- **A-00-7-3 — [[FEAT-038]] performs the acceptance flip, not this ticket.**
+  Based on F3 and the body's step 10. *Confirmed by:* the acceptance PR existing
+  and being verified by this ticket. *Breaks if:* [[FEAT-038]] is descoped —
+  then this ticket has an unowned successor step, which is the one thing that
+  would leave ADR-0108 `proposed` forever.
+- **A-00-7-4 — the WebView2 runtime is present on every target Windows 11
+  workstation.** `docs/desktop/07-integrations/README.md:125` records this as an
+  assumption, not a fact. *Confirmed by:* the area 04 startup check.
+  *Breaks if:* a fleet machine lacks it — mitigated in the ADR by the named
+  failure and gateway fallback (F11), which is why that clause must be in the
+  Decision rather than left to the implementation.
+- **A-00-7-5 — golden-file parity is achievable within tolerance** between a
+  self-updating WebView2 Chromium and a pinned Playwright Chromium (F10).
+  *Confirmed by:* [[FEAT-041]]'s suite passing on approved fixtures.
+  *Breaks if:* divergence cannot be closed — which is exactly the reversal
+  condition step 7 must write down in advance.
 
 ## Execution placement
 
-**This ticket places no responsibility anywhere: it authors one document.** The
-one placement it assumes is that ADR-0108 lives in this repository under
-`docs/adr/`. But the *decision* it records does move a responsibility, and the
-six-question table is what the ADR body must carry — so these are the answers,
-for report rendering, that step 4 writes into `## Context`:
+This is the ticket's own six-question answer for the responsibility ADR-0108
+places: **producing the rendered report document**.
 
 | Question | Answer | Evidence |
 | --- | --- | --- |
-| Shared authority — must several users see and update the same state? | **no** for rendering; **yes** for the result | The render is a pure function of `AssessmentReportSnapshot` (`PlaywrightAssessmentReportRenderer.cs`); the *finalised PDF* is registered into custody centrally, which [[FEAT-042]] (plan handle `DSK-07-16`) owns |
-| Unattended execution — must it run with every desktop closed? | **no** | Rendering today is triggered by an operator action, `OnPostGenerateReportDraftAsync`. Nothing renders on a timer. If a template later needs unattended generation (upstream DOCS-001), that path stays server-side — Q6.1 |
-| Protected credentials — long-lived secret that must not sit on workstations? | **no** | The renderer consumes a snapshot plus templates and brand assets embedded from `docs/design/assets/report-renderer/templates/`; it holds no provider secret |
-| Public callback — must an external service call a stable public endpoint? | **no** | Local HTML → local PDF; no external service is involved |
-| Central enforcement — revocation, permissions, audit, invariant independent of the client? | **yes**, for readiness and finality only | Report readiness, accepted inputs, immutable identity and hash, correction and approval "remain governed by FRD-11 and `Pegasus.Core`" (`docs/adr/0028-*.md` § Context). The desktop renders; it does not decide that a report may be produced |
-| Measured operational advantage — measured evidence central is materially better? | **no** | The measured cost is the other way: Chromium startup on first render, one render at a time behind a `SemaphoreSlim(1,1)`, and a Container App sized cpu 1.0 / 2 Gi to carry in-process Chromium (flow record 6 § Failure modes; ADR-0028 § Context) |
+| Shared authority — must several users see and update the same state? | **no** | A render is a pure transformation of one approved snapshot into one document. The shared, authoritative artefact is the *stored* report record and its Box custody, which stays behind the gateway ([[FEAT-042]], `DSK-07-16`, "Final document stored once; regeneration audited") |
+| Unattended execution — must it run with every desktop closed? | **no** | Rendering is initiated by an operator finalising an assessment; `OnPostGenerateReportDraftAsync` in `Cases/Assessment/Index.cshtml.cs` is a request handler today, not a timer. No scheduled render exists |
+| Protected credentials — long-lived secret that must not sit on workstations? | **no** | The renderer needs the case snapshot and the Scriban templates; the templates are governed repository assets (F9) shipped inside the package, not secrets. Box custody credentials stay behind the gateway under ADR-0107 |
+| Public callback — must an external service call a stable public endpoint? | **no** | Nothing external calls the renderer |
+| Central enforcement — revocation, permissions, audit, invariant independent of the client? | **yes — on the gateway** | FRD-11's report readiness, immutable identity and hash, correction, approval and finality rules are `Pegasus.Core` policy, and ADR-0028 `:33-36` states plainly that those "remain governed by FRD-11 and `Pegasus.Core` rather than by this ADR". The desktop may **produce** the bytes; only the gateway may **register** a final report. That split is what keeps this a rendering decision rather than an authority decision |
+| Measured operational advantage — measured evidence central is materially better? | **no** | Rather the reverse: ADR-0028 `:22-27` records that central rendering forced a pinned Chromium build, native Linux dependencies, fonts and writable temporary space into the Web container image. Moving the render to a machine that already has a Chromium engine removes that from the deployment unit. But no measurement has been taken yet — record it as "no, and not yet measured", not as a claim |
 
-The rendering *step* therefore belongs on the desktop; the *authority* over
-whether a report may be produced and what counts as final stays central under
-FRD-11. That split is the whole content of ADR-0108's decision, and it is why
-the ADR relates ADR-0025 and ADR-0028 rather than superseding them.
+**Conclusion: the render belongs on the desktop; the report record does not.**
+One "yes", and it names the gateway. The ADR must say both halves — an ADR that
+says only "rendering moves to the desktop" invites a later ticket to let the
+desktop register the report too.
+
+**Nothing here is placed in Azure by this ticket, and nothing is removed from
+it.** ADR-0025 and ADR-0028 keep the gateway renderer in the Web Container App
+until the parity gate passes; ADR-0108 adds a second implementation of an
+existing port and deprovisions nothing.
 
 ## Implications
 
-1. **Write the decision so it separates "decided now" from "recorded later".**
-   Decided now: rendering moves to `Pegasus.Desktop.Infrastructure` behind
-   `IAssessmentReportRenderer`, using the shared Scriban templates, in an
-   isolated non-UI single-flight WebView2. Recorded later: which off-screen host
-   (`docs/desktop/07-integrations/README.md:255`). An ADR that pretends the host
-   is settled would be wrong on the day it merged.
-2. **The retention clause must be a gate, not a sentiment.** "The gateway
-   renderer stays until the golden-file parity tests of [[FEAT-041]] pass on
-   approved fixtures, and no required report may depend on the web renderer
-   after that unless amended by a superseding ADR" — phrased so
-   `kanmer-review` can check it against a diff.
-3. **Add no index row at this merge.** The accepted table would assert ADR-0108
-   as current architecture. Discoverability while `proposed` comes from
-   `docs/desktop/00-governance-and-workflow/README.md` § 3's ADR set table and
-   from this ticket.
-4. **Cite Learn with a fetch date.** The two API claims the ADR makes —
-   `PrintToPdfStreamAsync` and `CoreWebView2Controller` hosting on a window
-   handle — are the kind that go stale. Record URL and date in `## Links`.
-5. **A `proposed` ADR is not settled authority.** Until acceptance the gateway
-   renderer remains the path in use, and no other ticket may cite ADR-0108 as
-   binding. Say so in `## Status`.
+- **Write `status: proposed` and mean it.** F2 makes the host genuinely
+  undecided, and `docs/adr/README.md:12-14` makes the body immutable once merged.
+  The ADR must be written so that recording the host later is a **frontmatter and
+  named-blank** change, not a body rewrite — otherwise acceptance costs a
+  superseding ADR.
+- **The §23.2 quotation is the ADR's spine** (F1). Quote `:1715` and `:1351`
+  verbatim in `## Context`, then state the two constraints that keep the
+  exception intact: the control never hosts Pegasus UI, and it is never visible.
+  A reviewer who cannot find those two sentences should reject the ADR.
+- **Add no index row at first merge** (F4), and do not let `AGENTS.md:115` (F5)
+  argue otherwise. The discoverability answer while it is `proposed` is plan 00
+  § 3's ADR set table and this ticket.
+- **Say what stays central, not only what moves** — the Execution-placement
+  "yes" row. ADR-0025 and ADR-0028 are *related*, not superseded; ADR-0028's own
+  Consequences (`:57-60`) already require "measured evidence… and a new accepted
+  ADR" before a renderer moves host, which is exactly what ADR-0108 plus the
+  parity gate provide.
+- **The retention clause must be a gate with an owner**, not a sentiment:
+  the gateway renderer stays until [[FEAT-041]]'s golden-file suite passes on
+  approved fixtures, and after that no required report may depend on the web
+  renderer unless a superseding ADR says so.
+- **The reversal condition must be written before the evidence exists**, which is
+  the only time it can be written honestly: WebView2 runtime absence across the
+  fleet (F11, A-00-7-4), or a golden-file divergence that cannot be closed within
+  tolerance (F10, A-00-7-5).
+- **Cite Microsoft Learn with a fetch date** (A-00-7-2). An immutable body that
+  names a renamed API ages badly, and the ADR's own `## Links` is the only place
+  the claim can be checked later.
+- **This ticket's own diff is one file.** No code, no index row, no change to
+  ADR-0025 or ADR-0028, and nothing in `src/` — the renderer is [[FEAT-040]]'s.
 
 ## Open questions
 
-- **Q6.2 and Q6.4** (print-to-PDF fidelity against Playwright's `PdfAsync`;
-  PDFsharp behaviour on WebView2 output) — deliberately *deferred into* the ADR
-  rather than answered by it. They are what `status: proposed` means here.
-- **Q6.3** (WebView2 runtime presence on the ten workstations) — owned by
-  [[FND-020]]; feeds the reversal condition in step 7.
-- **Q6.1** (which templates are in desktop scope, upstream TICK-206) — an
-  upstream decision; write it `upstream TICK-206`, never bare, since a bare
-  `TICK-<nnn>` would read as a fork board id.
-- **Which off-screen host is used** — owned by [[FEAT-040]]'s spike, a scope
-  boundary rather than an open question; the ADR is written to receive the
-  answer.
-- **Not open, and not to be reopened:** L-03 (report rendering moves to the
-  desktop through an isolated non-UI WebView2 path, gateway renderer retained
-  until parity); L-02 (parity evidence is produced on the local Test/UAT stack);
-  the reserved ADR block (operator, 2026-08-23); and the ADR-0108 authorship
-  split with [[FEAT-038]], which both bodies state identically.
+- **`related_frd: [FRD-11]` versus the measured house form `[frd-11]`.** The
+  ticket body's step 3 writes the uppercase display form; all 28 existing ADRs
+  use lowercase file stems and none uses the uppercase form (F7). The body is
+  settled and outranks this document, so the plan follows it and **flags the
+  discrepancy for the reviewer at the point of writing** rather than diverging
+  silently. It is a one-token frontmatter value, it blocks nothing, and it is
+  raised here rather than opened as a blocking question.
+- **Nothing else is open.** The host choice is a spike owned by [[FEAT-040]]; the
+  acceptance flip is owned by [[FEAT-038]]; the parity fixtures are owned by
+  [[FEAT-041]]; the `AGENTS.md` index sentence is owned by [[FND-005]]. Each is a
+  scope boundary with a named owner and belongs in the plan's *Risks / open
+  questions*, not in an `open-questions` document — and none of them gates this
+  ticket's `leave-preparing`.
