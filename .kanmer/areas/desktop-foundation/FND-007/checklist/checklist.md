@@ -1,5 +1,10 @@
 # Checklist — FND-007
 
+## 2026-08-25 correction — documented invisible host
+
+Microsoft Learn documents `HWND_MESSAGE` as the valid parent for an invisible `CoreWebView2Controller` on Windows 8 and later; the WebView will never become visible. The fixed design is `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`. This supersedes every earlier collapsed-XAML/hidden-HWND host-selection instruction below. Phase 7 validates packaged-app initialisation, PDF output and no-window behaviour; it does not select a host. This user-directed correction also adds `docs/desktop/00-governance-and-workflow/README.md` and `docs/desktop/07-integrations/README.md` to FND-007's docs-only scope.
+
+
 One box per plan step, in plan order. Tick with
 `set_ticket_doc(doc: "checklist")` as you go; append progress notes below rather
 than rewriting.
@@ -18,16 +23,18 @@ than rewriting.
 - [x] In `## Context`, fill **every cell** of the six-question cloud-justification table for report rendering, transcribed from this ticket's `research` document and re-verified; answer "measured operational advantage" as **no, and not yet measured**
 - [x] In `## Decision`, record what is decided now: `Pegasus.Desktop.Infrastructure` behind the **existing** `IAssessmentReportRenderer` port (`src/Pegasus.Core/Reports/AssessmentReportRendering.cs:284`), the same governed Scriban templates embedded by [[FEAT-039]], isolated/non-UI/never-visible/single-flight, and the runtime-missing named failure with gateway fallback
 - [x] In `## Decision`, state that the desktop **produces the document bytes but never registers the report** — registration, custody and audit stay behind the gateway ([[FEAT-042]])
-- [x] In `## Decision`, write the off-screen host as an explicitly **named blank** a later editor can fill without touching anything around it, citing [[FEAT-040]]'s spike
+- [x] In `## Decision`, record the documented `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)` host and make [[FEAT-040]] responsible only for packaged-app validation
 - [x] In `## Consequences`, state the retention gate with its owner: the gateway renderer stays until [[FEAT-041]]'s golden-file parity passes on approved fixtures, after which no required report may depend on the web renderer unless a superseding ADR says so
 - [x] In `## Consequences`, state that parity is tolerant and not pixel-equal (WebView2 Chromium self-updates; Playwright is pinned to 1.61.0), and that acceptance proves architecture only
-- [x] Write `## Reversal condition`: WebView2 runtime absent or unmaintainable across the fleet; unclosable golden-file divergence; neither off-screen host initialising without a visible window
+- [x] Write `## Reversal condition`: WebView2 runtime absent or unmaintainable across the fleet; packaged-app failure of the documented `HWND_MESSAGE` controller; or unclosable golden-file divergence
 - [x] Confirm **no** row was added to `docs/adr/README.md`, and that `AGENTS.md` was not edited
 - [x] Run `pwsh ./scripts/Test-DocumentationLinks.ps1` and `pwsh ./scripts/Test-TestMarkdownPlacement.ps1`; both exit 0, with the Microsoft Learn URLs and their fetch date **outside** any fenced block
 - [x] Confirm `git diff --stat` shows 1 file changed and **0 deletions**, and that `git diff --stat -- docs/adr/0025-*.md docs/adr/0028-*.md docs/adr/README.md AGENTS.md` is empty
 - [ ] Open the PR against `dev` with `gh pr create --base dev` and merge on the independent review from `pegasus-desktop-reviewer`, whose named judgement is that the renderer is not a web shell
 - [ ] After [[FEAT-040]] and [[FEAT-041]] are done, verify [[FEAT-038]]'s frontmatter-only acceptance PR against the reversal condition and the § 23.2 statement — making **no** edit to ADR-0108 from this ticket
 - [ ] Verification run: record the proof as the two PR references plus the golden-file test output cited from [[FEAT-041]], together with the command table from the plan's `## Verification` section
+
+- [x] Apply the 2026-08-25 user-directed correction: update ADR-0108, the Phase 0/7 source plans, and dependent ticket documents from host selection to the documented `HWND_MESSAGE` controller.
 
 ## Progress notes
 
@@ -40,3 +47,6 @@ Paused before the PR/reviewer/acceptance steps: this clone has `origin/main` and
 2026-08-24 — Reviewer-directed follow-up resolved the frontmatter-form discrepancy: ADR-0108 now uses `related_frd: [frd-11]`, matching the house form in ADR-0025/0026/0028. Commit `d3762780` changes no other source file and no ADR index row. `git diff --check`, documentation-link, placement-regression, and committed-range placement checks passed. The remote/no-`origin/dev` PR blocker remains unchanged.
 
 2026-08-24 — Branch published successfully as `origin/fnd-007-webview2-adr` at `d376278098e7731738195a6773d7318c3b382e72` after a repository-local credential-helper override. The PR/review checkbox remains open solely because `origin/dev` does not exist; no PR target was substituted.
+
+
+2026-08-25 — User-directed correction: Microsoft Learn explicitly documents `HWND_MESSAGE` as the valid invisible parent for `CoreWebView2Controller` on Windows 8+. ADR-0108 and the Phase 0/7 source plans now fix that host; Phase 7 retains only packaged-app/PDF validation and parity.

@@ -1,5 +1,10 @@
 # Files — FND-007
 
+## 2026-08-25 correction — documented invisible host
+
+Microsoft Learn documents `HWND_MESSAGE` as the valid parent for an invisible `CoreWebView2Controller` on Windows 8 and later; the WebView will never become visible. The fixed design is `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`. This supersedes every earlier collapsed-XAML/hidden-HWND host-selection instruction below. Phase 7 validates packaged-app initialisation, PDF output and no-window behaviour; it does not select a host. This user-directed correction also adds `docs/desktop/00-governance-and-workflow/README.md` and `docs/desktop/07-integrations/README.md` to FND-007's docs-only scope.
+
+
 Surveyed 2026-08-24 against the working tree at `origin/main`
 `191ddf334208b8966dc5e32f4f597e434a086233`. Every path was confirmed with `ls`
 or `grep`. Exactly one file is created and **nothing existing is edited at this
@@ -9,7 +14,7 @@ merge** — including the ADR index.
 
 | Path | Why |
 | --- | --- |
-| `docs/adr/0108-desktop-webview2-report-rendering.md` | **New, and the only file this ticket writes.** `status: proposed` at first merge. Carries: the § 23.2 exception quoted from the proposal; the never-visible / never-hosts-Pegasus-UI constraint; the six-question cloud-justification table answered for report rendering; the decision to move rendering to `Pegasus.Desktop.Infrastructure` behind the existing `IAssessmentReportRenderer` port using the shared Scriban templates; a **named blank** for the off-screen host that [[FEAT-040]] (plan handle `DSK-07-14`) fills; the retention gate on the gateway renderer; and a `## Reversal condition`. `ls docs/adr/010*` returned *No such file or directory* on 2026-08-24, so there is no existing file to extend |
+| `docs/adr/0108-desktop-webview2-report-rendering.md` | **New, and the only file this ticket writes.** `status: proposed` at first merge. Carries: the § 23.2 exception quoted from the proposal; the never-visible / never-hosts-Pegasus-UI constraint; the six-question cloud-justification table answered for report rendering; the decision to move rendering to `Pegasus.Desktop.Infrastructure` behind the existing `IAssessmentReportRenderer` port using the shared Scriban templates; the fixed documented `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)` host, with [[FEAT-040]] (plan handle `DSK-07-14`) supplying packaged-app validation; the retention gate on the gateway renderer; and a `## Reversal condition`. `ls docs/adr/010*` returned *No such file or directory* on 2026-08-24, so there is no existing file to extend |
 | `docs/adr/README.md` | **NOT edited by this ticket** — listed here because the omission is a decision, not an oversight. The index has one accepted table (`:16`, header `| ADR \| Title \| Related FRD |` at `:18`) and **no status column**, and `:11-12` states that the current architecture *is* that table; a row would assert a `proposed` ADR as current architecture. [[FEAT-038]] (plan handle `DSK-07-12`) adds the row at acceptance |
 
 ## Context files

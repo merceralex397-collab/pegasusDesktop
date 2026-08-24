@@ -1,13 +1,18 @@
 # Plan — FEAT-040: Desktop report renderer — Scriban + isolated WebView2 `PrintToPdfStreamAsync` + PDFsharp post-processing
 
-**Diff estimate: ~9 files, ~880 lines.**
+## 2026-08-25 correction — documented invisible host
 
-Derived from the files document: the renderer itself ~380 lines (the gateway equivalent is 326 —
-`wc -l src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs` → 326 — plus host
-lifetime, the margin-unit conversion and the tuple resolution), the off-screen host ~120, the
-authorised-identity resolver ~70, the desktop csproj ~6, the DI registration ~20, the view-model
-test file ~220 (placeholder, cancellation, provenance, concurrency and six negative tuple cases),
-the architecture-test extension ~35, and ~30 across the three documentation files. No route, no
+Microsoft Learn documents `HWND_MESSAGE` as the valid parent for an invisible `CoreWebView2Controller` on Windows 8 and later; the WebView will never become visible. The fixed design is `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`. This supersedes every earlier collapsed-XAML/hidden-HWND host-selection instruction below. Phase 7 validates packaged-app initialisation, PDF output and no-window behaviour; it does not select a host.
+
+
+**Diff estimate: ~8 files, ~760 lines.**
+
+Derived from the files document: the renderer itself ~430 lines (the gateway equivalent is 326 —
+`wc -l src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs` → 326 — plus the
+fixed controller lifetime, margin-unit conversion and tuple resolution), the authorised-identity
+resolver ~70, the desktop csproj ~6, the DI registration ~20, the view-model test file ~220
+(placeholder, cancellation, provenance, concurrency and six negative tuple cases), the
+architecture-test extension ~35, and ~30 across the three documentation files. No route, no
 migration, no Azure write.
 
 ## Approach
@@ -20,9 +25,8 @@ The rejected alternative was to write a cleaner renderer from the Scriban templa
 smaller, tidier file that nobody could compare against the baseline. It is rejected because
 [[FEAT-041]] (plan handle `DSK-07-15`) has to be able to attribute a golden-file failure, and every
 gratuitous divergence in context building, placeholder rejection or page setup turns a fixture
-failure into an investigation. Fidelity beats elegance here, and the one place elegance is
-warranted — the off-screen host — is isolated behind its own type so ADR-0108's recorded mitigation
-("keep the renderer behind `IAssessmentReportRenderer` so the host can change") stays true.
+failure into an investigation. Fidelity beats elegance here. The existing `IAssessmentReportRenderer` is the renderer boundary;
+with the documented host fixed, no separate `OffScreenWebViewHost` type is warranted.
 
 ## Governing docs
 
@@ -37,8 +41,8 @@ The ticket carries **`docs_todo: true`**:
 > **New ADR** — ADR-0108 (isolated, non-UI WebView2 HTML→PDF rendering; never-UI rule; gateway
 > renderer retained until golden-file parity), authored by [[FND-007]] (plan handle `DSK-00-07`);
 > ADR-0108 has two claimants, so see [[FND-007]]'s plan for the ownership reconciliation —
-> [[FEAT-038]] (plan handle `DSK-07-12`) owns the Phase 7 content and the acceptance flip, and this
-> ticket's chosen host is recorded into **that** file.
+> [[FEAT-038]] (plan handle `DSK-07-12`) owns the acceptance flip, while this ticket records
+> packaged-app evidence for the documented `HWND_MESSAGE` host.
 > This plan is written to the decision as recorded in
 > `docs/desktop/00-governance-and-workflow/README.md` § 3 (the ADR-0108 row) and in
 > `docs/desktop/README.md` § Locked decisions (L-03); if the ADR lands differently this plan is
@@ -92,19 +96,17 @@ Refines the body's fourteen steps in the same order.
    `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs` **end to end** (326
    lines). Call `get_doc_gates FEAT-040`, then `take_ticket` on branch
    `task/dsk-07-14-desktop-renderer`.
-2. **Resolve the host question first, timeboxed, and record the answer in `research`.** Build a
-   throwaway probe that renders a trivial HTML document to PDF twice: once through a zero-size,
-   `Visibility.Collapsed` WinUI `WebView2` control in a XAML root, and once through
-   `CoreWebView2Controller` created on a hidden HWND via `CoreWebView2Environment.CreateAsync`. Use
-   `microsoft_docs_fetch` on the print how-to and `microsoft_code_sample_search` for the exact API
-   shapes — do not code from memory — and **re-date** the documentation facts rather than reusing
-   the area plan's 2026-08-23 fetch. Record which host initialises reliably with no visible window,
-   the WebView2 runtime version observed (`A-07-14-4`), and the margin-unit shape
-   `CoreWebView2PrintSettings` exposes (`A-07-14-2`). Delete the probe; it is not the deliverable.
+2. **Validate the documented controller first and record the evidence in `research`.** Re-fetch
+   the controller and print documentation, then create
+   `CoreWebView2Controller` with
+   `CoreWebView2Environment.CreateCoreWebView2ControllerAsync(HWND_MESSAGE)`. Render a trivial
+   HTML document to PDF twice and repeat the check from the packaged desktop app. Record the
+   observed runtime version (`A-07-14-4`), non-empty output, no-window evidence and the
+   `CoreWebView2PrintSettings` margin-unit shape (`A-07-14-2`). This validates integration;
+   it does not choose a host.
 3. **Create `WebView2AssessmentReportRenderer` in `src/Pegasus.Desktop.Infrastructure`**
-   implementing `Pegasus.Core.Reports.IAssessmentReportRenderer`, with the chosen host behind an
-   internal `OffScreenWebViewHost` type. The interface stays the seam so the host can change
-   without touching callers — the mitigation ADR-0108 records.
+   implementing `Pegasus.Core.Reports.IAssessmentReportRenderer`. The renderer owns the fixed
+   controller lifetime directly; do not introduce an `OffScreenWebViewHost` abstraction.
 4. **Reproduce the composition, not a reinterpretation of it.** Build the two `ScriptObject`
    contexts exactly as `PlaywrightAssessmentReportRenderer` does from one `AssessmentReportSnapshot`
    (`:23-80` and `CommonContext` from `:140`), parse the templates from the embedded resources
@@ -194,13 +196,10 @@ a second render started while one is in flight waits rather than throwing.
 
 ## Risks / open questions
 
-- **Risk — neither off-screen host works.** Mitigation: step 2 is timeboxed and runs first, before
-  any renderer code exists. If both fail, the `IAssessmentReportRenderer` seam means the gateway
-  renderer is still registered and nothing is broken; the finding is reported against ADR-0108's
-  reversal condition rather than worked around.
-- **Risk — a WinUI `WebView2` control needs a XAML root and a collapsed zero-size control still
-  initialises "well enough" in a test but not in the packaged app.** Mitigation: step 13 renders
-  from the **packaged** app on baseline hardware, which is the only environment that settles it.
+- **Risk — the documented `HWND_MESSAGE` controller fails to initialise or print from the packaged
+  app.** Mitigation: step 2 runs before renderer work and records the runtime and PDF evidence. Keep
+  the gateway renderer through parity; report a failure against ADR-0108's reversal condition rather
+  than introducing a collapsed-XAML or arbitrary-hidden-HWND alternative.
 - **Risk — one print operation per WebView; parallel renders throw.** Mitigation: the
   `SemaphoreSlim(1, 1)` at step 7 plus the concurrency test at step 12.
 - **Risk — margin-unit conversion drift.** Mitigation: the conversion is recorded in a comment
@@ -217,9 +216,9 @@ a second render started while one is in flight waits rather than throwing.
   [[FEAT-043]]'s recorded disposition of an already-accepted upstream contract; which signature
   assets are embedded is [[FEAT-039]]'s; the parity fixtures are [[FEAT-041]]'s; storage and
   preview are [[FEAT-042]]'s; the ADR file is [[FEAT-038]]'s.
-- **No open question is opened.** The body instructs none. The host choice and the margin units are
-  this ticket's own work items, and step 13 is an operator action producing proof, not a decision
-  anyone is waiting on.
+- **No open question is opened.** The host is settled by the documented `HWND_MESSAGE` API; margin
+  units and packaged-app integration are implementation facts, and step 13 is an operator action
+  producing proof, not a decision anyone is waiting on.
 
 ## Simplification pass
 
