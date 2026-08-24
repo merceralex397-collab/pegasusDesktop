@@ -38,7 +38,9 @@ question.
 The ticket carries `refs: []` and **`docs_todo: true`**.
 
 > **New ADR** — ADR-0110 (agent-skill pinning and the invocation/review protocol), authored
-> by [[TOOL-008]] (plan handle `DSK-12-08`), filename
+> by [[TOOL-008]] (plan handle `DSK-12-08`); see [[TOOL-008]]'s plan for the ownership
+> reconciliation — ADR-0110 has two claimants, `TOOL-008` and
+> [[FND-005]] (plan handle `DSK-00-05`). Filename
 > `docs/adr/0110-pin-agent-skills-and-invocation-protocol.md`. This plan is written to
 > **L-04** as recorded in `docs/desktop/README.md` § Locked decisions and to
 > `docs/desktop/12-agent-tooling/README.md` § 5 row `DSK-12-11` ("If the team also runs
@@ -71,14 +73,16 @@ Copied from the ticket body's `## Routing` block.
   `docs/desktop/12-agent-tooling/skill-routing.md` because it targets the VS Code
   `.agent.md` format — which is neither Codex TOML nor the Claude Code format, so it would
   actively mislead here. `EPIC-013/context.md` records that the do-not-load table wins over
-  the per-area index, which lists it as "reference only" for area 12.
+  the per-area index, which lists it as "reference only" for area 12. Note that the skill
+  *is* vendored: "do not load" is not "do not vendor", and
+  [[TOOL-002]] (plan handle `DSK-12-02`) step 10 gives the distinction.
 - **MCP**: Kanmer (`get_status`, `get_doc_gates`, `take_ticket`, `set_ticket_doc`,
   `append_scratch`, `move_item`).
 - **Kanmer pipeline** for profile `chore`: `kanmer-plan` → `kanmer-execute` →
   `kanmer-review` → `kanmer-verify` → `kanmer-closeout`. Gates confirmed by
   `get_doc_gates TOOL-011`: `leave-preparing` needs `plan` + `questions-resolved`;
-  `enter-done` needs `proof` + `questions-resolved`. Call `get_doc_gates TOOL-011` before
-  every move.
+  `enter-done` needs `proof` + `questions-resolved`. `leave-backlog` is **not** a gated
+  boundary for a `chore`. Call `get_doc_gates TOOL-011` before every move.
 - **Reviewer**: `pegasus-desktop-reviewer` — an agent that did not implement
   (`AGENTS.md` § Repository task workflow step 5).
 
@@ -88,8 +92,8 @@ Refines the body's 12 steps in the same order.
 
 1. **Orientation.** Read `EPIC-013/context.md`, then the plan sections in the body's
    **Source of truth**. `get_doc_gates TOOL-011`, then `take_ticket`. Confirm
-   [[TOOL-005]] (`DSK-12-05`) landed — mirroring a roster that is itself unreconciled copies
-   the drift.
+   [[TOOL-005]] (plan handle `DSK-12-05`) landed — mirroring a roster that is itself
+   unreconciled copies the drift.
 2. **Operator step — ask, with the evidence in hand.** The question is two-part: *is Claude
    Code used on this repository for conversion work alongside Codex, and is it expected to be
    after cutover?* Put these verified facts in front of the operator rather than asking cold
@@ -105,11 +109,13 @@ Refines the body's 12 steps in the same order.
    So "is it used?" is very likely **yes**; the operator's real decision is whether the
    roster must exist there too. Record the answer **verbatim with its date**. If the answer
    is no, jump to step 9 — that is a complete outcome.
-3. **Read [[TOOL-001]]'s (`DSK-12-01`) research verdict**, step 9 specifically: which of
-   `.agents/skills`, `.codex/skills` and `.grok/skills` each tool discovers. A mirror is only
-   worth building if Claude Code can reach the project skill
+3. **Read [[TOOL-001]]'s (plan handle `DSK-12-01`) research verdict**, step 9 specifically:
+   which of `.agents/skills`, `.codex/skills` and `.grok/skills` each tool discovers. A mirror
+   is only worth building if Claude Code can reach the project skill
    (`.agents/skills/project/pegasus-desktop/SKILL.md`) and the vendored skills the roster
    names — a roster whose step `0.` points at a file the tool cannot load is decoration.
+   That answer is an unticked box on `TOOL-001`'s `open-questions` document ("Claude Code
+   discovery"), so it is a real dependency, not an assumption.
 4. **Establish the target format before writing a single file. Do not guess key names.**
    Codex agents are TOML under `.codex/agents/`; Claude Code agents are a **different
    format** under `.claude/agents/` — Markdown with YAML frontmatter rather than TOML — and
@@ -118,12 +124,17 @@ Refines the body's 12 steps in the same order.
    listing, and record what you read and when. An agent file with invented keys either fails
    to load or, far worse, **loads without its restrictions** — a read-only reviewer that is
    silently read-write is the failure this step exists to prevent.
+   This is answerable by looking, not by asking, which is why it is a step rather than an
+   open question.
    If the format is Markdown, note that `.claude/` is **not** an allowed Markdown root in
    `scripts/Test-MarkdownPlacement.ps1:31`; that only matters if the files are tracked
-   (step 5 option (a)), so resolve step 5 before worrying about it, and if tracking wins,
-   record whether the placement gate needs `.claude/agents` added — that would be a change to
-   `scripts/Test-MarkdownPlacement.ps1` and `scripts/Test-TestMarkdownPlacement.ps1`, which
-   is **outside this ticket's scope boundary** and would need its own ticket.
+   (step 5 option (a)), so resolve step 5 before worrying about it. If tracking wins,
+   `.claude/agents` has to be added to the allowed-roots regex in
+   `scripts/Test-MarkdownPlacement.ps1` and `scripts/Test-TestMarkdownPlacement.ps1` — which
+   is **outside this ticket's scope boundary**. **No ticket exists for that today**: if this
+   branch reaches it, file one in `agent-tooling` (prefix `TOOL`), name its board id in this
+   plan, and record the dependency rather than editing the gate scripts here or quietly
+   leaving the roster untracked.
 5. **Record the blocking fact, and decide.** `.gitignore:23` is `/.claude/` (verified: line
    22 is the comment `# Tool and editor working state`, line 23 is `/.claude/`), so anything
    under `.claude/agents/` is **untracked** — invisible in review and absent from a fresh
@@ -185,8 +196,8 @@ Refines the body's 12 steps in the same order.
 
 Evidence tier **1 — Static/build/architecture**, as the body states. A recorded decision,
 plus — if a mirror was built — both roster listings and the tracked/untracked status. It
-makes no claim that either roster *behaves* correctly; that is [[TOOL-009]]'s (`DSK-12-09`)
-territory. `proof` is a `command-log`.
+makes no claim that either roster *behaves* correctly; that is
+[[TOOL-009]]'s (plan handle `DSK-12-09`) territory. `proof` is a `command-log`.
 
 1. `grep -n 'Claude Code' docs/desktop/12-agent-tooling/subagents.md` → a dated decision
    line, whichever way it went.
@@ -209,13 +220,26 @@ territory. `proof` is a `command-log`.
 | **Two rosters is two lists for one concept** — a stop condition. | Step 8's source-of-truth sentence, and the preference for generation over parallel maintenance. |
 | The mirror drifts after a Codex TOML changes. | Step 8 requires "same PR" if maintained in parallel; step 10's reviewer comparison is the detector. |
 | Mirroring a roster that is itself unreconciled. | Step 1 requires [[TOOL-005]] to have landed. |
-| `.claude/` is not an allowed Markdown root, so tracked Markdown agent files could fail the CI `documentation` job. | Step 4 flags it and routes the placement-gate change to its own ticket — editing `scripts/Test-MarkdownPlacement.ps1` is outside this ticket's scope boundary. |
+| `.claude/` is not an allowed Markdown root, so tracked Markdown agent files could fail the CI `documentation` job. | Step 4 flags it and routes the placement-gate change out of this ticket — editing `scripts/Test-MarkdownPlacement.ps1` is outside the scope boundary. **No ticket owns that change today**, so if this branch reaches it, file one in `agent-tooling` and name its id here; do not leave the roster untracked as a way round it. |
 
-Open questions: **none opened as a blocking document.** The operator answer in step 2 is an
-input the ticket's own first step gathers, not an unresolved question blocking the board —
-and opening it would block every stage move on a ticket whose step 2 is precisely to ask it.
-The `.gitignore` and format questions both have recommended defaults with their reasons in
-steps 4 and 5.
+**Open questions: none opened, and the reason is not the one given before.** The earlier
+draft of this section said "opening it would block every stage move on a ticket whose step 2
+is precisely to ask it". The first half was false and is withdrawn: an unticked `- [ ]` line
+above `## Parked` blocks exactly `leave-preparing`, `enter-review` and `enter-done`, never
+`leave-backlog`, and a `chore` carries only the first and the last of those three — verified
+2026-08-24 against `get_doc_gates`.
+
+The second half survives on its own and is the real reason. The operator answer is an input
+**this ticket's own step 2 gathers** — the body even scripts how to ask it, with the four
+verified facts to put in front of the operator — so it is a step, not a precondition. Nothing
+in this ticket's body instructs that a question be recorded in `open-questions/`.
+
+The other two candidates are answerable by looking rather than by asking, which is what keeps
+them steps too: the `.gitignore` shape has a recommended default with the working two-line
+form and its `git check-ignore` proof (step 5), and the Claude Code agent-file format is read
+from the installed build's documentation (step 4). The one genuine external dependency —
+which trees Claude Code discovers — is [[TOOL-001]]'s unticked box, not a second copy of the
+same question here.
 
 ## Simplification pass
 
