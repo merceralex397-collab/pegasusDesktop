@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:CASE-021 · Refuse Review for a case with no images instead of
   asserting its images are complete
-status: backlog
+status: preparing
 area: case-reference-workflow
 assignee: ''
 profile: fix
+stageEntered:
+  preparing: '2026-08-24T21:23:44.361Z'
 labels:
   - qdos26013
   - production-defect
@@ -30,7 +32,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:42:25.781Z'
-updated: '2026-08-24T11:57:53.115Z'
+updated: '2026-08-24T21:23:44.361Z'
 ---
 
 ## What

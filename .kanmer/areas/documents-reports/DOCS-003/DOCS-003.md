@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:TICK-208 · Preserve final Sent evidence through post-report
   correction
-status: backlog
+status: preparing
 area: documents-reports
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:23:44.571Z'
 labels:
   - now
   - source-now
@@ -25,7 +27,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:20.454Z'
-updated: '2026-08-24T11:57:51.924Z'
+updated: '2026-08-24T21:23:44.571Z'
 ---
 
 ## What

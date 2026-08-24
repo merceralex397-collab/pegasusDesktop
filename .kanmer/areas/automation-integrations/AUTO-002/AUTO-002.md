@@ -2,10 +2,12 @@
 id: AUTO-002
 type: ticket
 title: 'upstream:AUTO-008 · Measure and reduce durable intake processing latency'
-status: backlog
+status: preparing
 area: automation-integrations
 assignee: ''
 profile: spike
+stageEntered:
+  preparing: '2026-08-24T21:23:44.133Z'
 labels:
   - performance
   - intake
@@ -25,7 +27,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:25.722Z'
-updated: '2026-08-24T11:57:36.700Z'
+updated: '2026-08-24T21:23:44.133Z'
 ---
 
 ## What

@@ -2,10 +2,12 @@
 id: INTK-003
 type: ticket
 title: 'upstream:INTK-026 · Normalize kilometre case mileage to canonical miles'
-status: backlog
+status: preparing
 area: intake-processing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:23:32.455Z'
 labels:
   - vehicle
   - mileage
@@ -25,7 +27,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:47:12.089Z'
-updated: '2026-08-24T13:32:46.299Z'
+updated: '2026-08-24T21:23:32.455Z'
 ---
 
 ## What

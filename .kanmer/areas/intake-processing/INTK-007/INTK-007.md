@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:INTK-033 · A triage-request email creates no Triage and no
   Unidentified item — it is stranded
-status: backlog
+status: preparing
 area: intake-processing
 assignee: ''
 profile: fix
+stageEntered:
+  preparing: '2026-08-24T21:23:46.870Z'
 labels:
   - production-defect
   - found-during-qa
@@ -29,7 +31,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:52:39.628Z'
-updated: '2026-08-24T13:38:18.400Z'
+updated: '2026-08-24T21:23:46.870Z'
 ---
 
 ## What

@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:INTK-031 · Identify the third-party engineer behind an audit's
   original report
-status: backlog
+status: preparing
 area: intake-processing
 assignee: ''
 profile: spike
+stageEntered:
+  preparing: '2026-08-24T21:23:32.898Z'
 labels:
   - extraction
   - audits
@@ -21,7 +23,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T11:50:33.921Z'
-updated: '2026-08-24T13:35:28.548Z'
+updated: '2026-08-24T21:23:32.898Z'
 ---
 
 ## What

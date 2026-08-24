@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:INTK-032 · Fall back safely when a third-party report format cannot
   be read
-status: backlog
+status: preparing
 area: intake-processing
 assignee: ''
 profile: feature
+stageEntered:
+  preparing: '2026-08-24T21:23:33.118Z'
 labels:
   - qdos26009
   - extraction
@@ -24,7 +26,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:50:33.940Z'
-updated: '2026-08-24T13:36:34.709Z'
+updated: '2026-08-24T21:23:33.118Z'
 ---
 
 ## What

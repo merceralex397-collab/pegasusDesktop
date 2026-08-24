@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:INTK-002 · Intake duplication chores: adapter-wide fault naming, one
   decision-code table, Web-composition assertion, leftover port
-status: backlog
+status: preparing
 area: intake-processing
 assignee: ''
 profile: chore
+stageEntered:
+  preparing: '2026-08-24T21:23:32.015Z'
 labels:
   - upstream-carryover
   - upstream-INTK-002
@@ -20,7 +22,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:44:22.452Z'
-updated: '2026-08-24T13:30:21.517Z'
+updated: '2026-08-24T21:23:32.015Z'
 ---
 
 ## What

@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:INTK-003 · Recover dispatched intake work whose queue message never
   arrives
-status: backlog
+status: preparing
 area: intake-processing
 assignee: ''
 profile: fix
+stageEntered:
+  preparing: '2026-08-24T21:23:32.235Z'
 labels:
   - upstream-carryover
   - upstream-INTK-003
@@ -24,7 +26,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:44:22.475Z'
-updated: '2026-08-24T13:31:36.217Z'
+updated: '2026-08-24T21:23:32.235Z'
 ---
 
 ## What

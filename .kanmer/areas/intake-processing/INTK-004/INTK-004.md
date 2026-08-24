@@ -4,10 +4,12 @@ type: ticket
 title: >-
   upstream:INTK-027 · Make policy re-evaluation work after transient staging
   cleanup
-status: backlog
+status: preparing
 area: intake-processing
 assignee: ''
 profile: fix
+stageEntered:
+  preparing: '2026-08-24T21:23:32.702Z'
 labels:
   - defect
   - intake
@@ -27,7 +29,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:47:12.109Z'
-updated: '2026-08-24T13:34:01.177Z'
+updated: '2026-08-24T21:23:32.702Z'
 ---
 
 ## What
