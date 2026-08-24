@@ -25,7 +25,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:59:40.211Z'
-updated: '2026-08-24T08:51:40.425Z'
+updated: '2026-08-24T10:31:45.489Z'
 ---
 
 ## What
@@ -34,7 +34,7 @@ Deliver the native Operations screen: retryable external work, active upload lin
 
 ## Why
 
-Proposal §13.10 and §18.3 require failed-work and retry screens plus integration health appropriate to administrators, so a failure is visible and recoverable rather than discovered by a user. Today it is `src/Pegasus.Web/Pages/Operations/Index.cshtml.cs` (236 lines, `OnGetAsync` at `:57`, `OnPostRetryExternalAsync` at `:71`, `OnPostRevokeLinkAsync` at `:112`) over Core `src/Pegasus.Core/Operations/` and `src/Pegasus.Core/Custody/` external-work contracts, plus the existing `/health/live` and `/health/ready` endpoints. The health description must never expose a secret. Siblings: [[DSK-05-01]] shares the dashboard's failure counts, [[DSK-03-13]] supplies the operations endpoints, [[DSK-07-01]] and [[DSK-07-02]] supply the intake-status and retry surfaces.
+Proposal §13.10 and §18.3 require failed-work and retry screens plus integration health appropriate to administrators, so a failure is visible and recoverable rather than discovered by a user. Today it is `src/Pegasus.Web/Pages/Operations/Index.cshtml.cs` (236 lines, `OnGetAsync` at `:57`, `OnPostRetryExternalAsync` at `:71`, `OnPostRevokeLinkAsync` at `:112`) over Core `src/Pegasus.Core/Operations/` and `src/Pegasus.Core/Custody/` external-work contracts, plus the existing `/health/live` and `/health/ready` endpoints. The health description must never expose a secret. Siblings: [[DSK-05-01]] shares the dashboard's failure counts, [[DSK-03-13]] supplies the operations endpoints, [[DSK-07-01]] and [[DSK-07-02]] supply the intake-status and retry surfaces, [[DSK-07-04]] owns the Operations screen itself.
 
 ## Source of truth
 
@@ -45,7 +45,7 @@ Proposal §13.10 and §18.3 require failed-work and retry screens plus integrati
 - Proposal: `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md` § 13.10 Administration and operations, § 18.3 Health
 - Repository evidence: `src/Pegasus.Web/Pages/Operations/Index.cshtml.cs:57`, `:71`, `:112`; `src/Pegasus.Core/Operations/` (operations projection, `IDashboardQueries`), `src/Pegasus.Core/Custody/CustodyContracts.cs` (`IExternalWorkStore`, `IExternalWorkEnqueuer`), `src/Pegasus.Core/Documents/RequestUploadPolicy.cs` (link revoke); `src/Pegasus.Web/Health/DatabaseReadinessHealthCheck.cs` and the `/health/*` and `/diagnostics/version` endpoints in `src/Pegasus.Web/Program.cs`
 - Binding decisions: L-01 the gateway owns the snapshot, the retries and the audit; L-02 verification on the local Test/UAT stack; L-04 routing named on the ticket
-- Depends on: `DSK-05-01` the shell and the dashboard failure counts this screen drills into; `DSK-03-13` the operations snapshot, retry-external and revoke-link endpoints; `DSK-07-01` the intake-status and external-work health endpoints
+- Depends on: `DSK-05-01` the shell and the dashboard failure counts this screen drills into; `DSK-03-13` the operations snapshot, retry-external and revoke-link endpoints; `DSK-07-01` the intake-status and external-work health endpoints; `DSK-07-04` — owns `OperationsViewModel` and `OperationsPage.xaml`; this slice adds the audited retry and revoke commands to them
 
 ## Routing
 
@@ -61,13 +61,13 @@ Proposal §13.10 and §18.3 require failed-work and retry screens plus integrati
 2. Read `src/Pegasus.Web/Pages/Operations/Index.cshtml.cs` in full. Record in `research` what the snapshot projects, which external-work items are retry-eligible and why, what revoking an upload link does, and the reason each command requires. Record the SHA read.
 3. Confirm the endpoints: `GET /api/v1/operations` (snapshot with `ETag`), `POST /api/v1/operations/external-work/{wid}/retry`, `POST /api/v1/operations/upload-links/{lid}/revoke` from [[DSK-03-13]], and the integration-health payload from [[DSK-07-01]] plus `GET /api/v1/admin/health` for dependency states, minimum client version and feed state.
 4. Add the operations and health DTOs to `src/Pegasus.Contracts`. The health payload names each dependency and its state and last-cycle time — it carries no connection string, endpoint credential, token or internal host name.
-5. Implement `OperationsViewModel` in `src/Pegasus.Desktop`: retryable external work and active upload links as two lists on the data-table pattern from [[DSK-06-07]], plus an integration-health panel showing each dependency's state with text (never colour alone) and its last-cycle time in Europe/London through the shared vocabulary map.
+5. Check whether `OperationsViewModel` already exists from [[DSK-07-04]], which owns that type and its page. If it does, add the retry and revoke commands to it in place and change no existing member; if it has not landed, create it with exactly the members [[DSK-07-04]] step 3 pins (`ObservableObject`, `[RelayCommand]`, no UI type in the view model) and record in the plan document which case applied. Either way this slice's own additions are the same: retryable external work and active upload links as two lists on the data-table pattern from [[DSK-06-07]], plus an integration-health panel showing each dependency's state with text (never colour alone) and its last-cycle time in Europe/London through the shared vocabulary map. Never a second view model for the Operations screen.
 6. Implement retry and revoke as explicit commands with an `operationKey` and the reason Core requires, showing the outcome inline. A retry is offered only when the gateway says the item is eligible — the client does not infer eligibility.
 7. Show the update-feed state and the minimum client version from the compatibility surface built by [[DSK-04-06]], so an administrator can see why a workstation is being blocked.
 8. Add contract tests in `tests/Pegasus.Api.ContractTests`: snapshot 200 with `ETag`, 401, 403, retry success and retry of an ineligible item refused with a problem, revoke success and replay returning the same result, and an assertion that the health payload contains no secret-shaped value. Enable `Features:DesktopGateway` explicitly.
 9. Add view-model tests in `tests/Pegasus.Desktop.ViewModelTests` for list loading, eligibility-driven command enablement, retry and revoke outcomes, and health-state rendering including an unavailable dependency.
 10. Exercise end-to-end business scenario 13 from `docs/desktop/08-testing/README.md` on the local Test/UAT stack: cause an external-work failure, see it on this screen, retry it, and see it clear. Record the run in the ticket proof.
-11. Update `docs/desktop/01-inventory-and-parity/parity-matrix.md` for the operations rows, add the operations section to `docs/frd/frd-13-desktop-operator-experience.md`, run the simplification pass over the branch diff, record it under a dated `## Simplification pass` heading, then open the PR into `dev`.
+11. Update `docs/desktop/01-inventory-and-parity/parity-matrix.md` for the operations rows, add the retry and revoke command behaviour inside the Operations screen section [[DSK-07-04]] creates in `docs/frd/frd-13-desktop-operator-experience.md` (a sub-heading under that section, not a second screen section), run the simplification pass over the branch diff, record it under a dated `## Simplification pass` heading, then open the PR into `dev`.
 
 ## Acceptance criteria
 
@@ -93,14 +93,14 @@ Tier 5 obliges route-level evidence that the snapshot and both commands reach Co
 ## Documentation changes
 
 - `docs/desktop/01-inventory-and-parity/parity-matrix.md` — operations rows
-- `docs/frd/frd-13-desktop-operator-experience.md` — operations and health section
+- `docs/frd/frd-13-desktop-operator-experience.md` — the retry and revoke command behaviour inside the Operations screen section [[DSK-07-04]] creates; this ticket adds no second screen section
 - `docs/capabilities.md` — `DSK` rows for operations and integration health
 
 ## Guardrails
 
 - **Azure**: no write. Application Insights and Azure resource state are read-only inputs owned by plan 10 and plan 11; this screen shows only what the gateway health endpoint returns.
-- **Scope boundary**: may touch `src/Pegasus.Desktop`, `src/Pegasus.Contracts`, the `/api/v1` operations group in `src/Pegasus.Web` and the test projects. Must not modify `src/Pegasus.Web/Health/DatabaseReadinessHealthCheck.cs` beyond extension agreed with plan 10, and must not touch `src/Pegasus.Worker`.
-- **Traps**: health must be described without secrets (proposal §18.3); no colour-only state; App Insights quota can hide failures (recorded trap PLAT-034), so the pilot evidence is the desktop diagnostics bundle rather than a telemetry query; upstream PLAT-023 (redesign the Operations workspace) is absorbed by this screen spec; `Features:DesktopGateway` must be enabled in tests.
+- **Scope boundary**: may extend `OperationsViewModel` and `OperationsPage.xaml` in `src/Pegasus.Desktop` — [[DSK-07-04]] owns both and this slice adds members to them rather than creating its own — and may touch `src/Pegasus.Contracts`, the `/api/v1` operations group in `src/Pegasus.Web` and the test projects. Must not modify `src/Pegasus.Web/Health/DatabaseReadinessHealthCheck.cs` beyond extension agreed with plan 10, and must not touch `src/Pegasus.Worker`.
+- **Traps**: health must be described without secrets (proposal §18.3); no colour-only state; App Insights quota can hide failures (recorded trap PLAT-034), so the pilot evidence is the desktop diagnostics bundle rather than a telemetry query; upstream PLAT-023 (redesign the Operations workspace) is absorbed by this screen spec; `Features:DesktopGateway` must be enabled in tests. One view model per screen: [[DSK-07-04]] owns `OperationsViewModel`, this ticket extends it; a second view model for the same screen is a stop condition.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome
