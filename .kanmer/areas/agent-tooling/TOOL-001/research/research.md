@@ -7,14 +7,21 @@
 > marked `NOT YET CAPTURED` needs the operator to run a command in a real Codex (and Claude
 > Code) session and paste the verbatim output here. The verdict paragraph at the end is a
 > fill-in template with blanks, and the blanks are the point of the ticket.
+>
+> **This banner does not hold the gate — the `open-questions` document does.** A banner is
+> prose; the gate reads document existence and unticked boxes. `open-questions` on this
+> ticket carries one unticked `- [ ]` box per `NOT YET CAPTURED` item below, and while any
+> of them is unticked `get_doc_gates TOOL-001` reports `enter-done` **not passable**
+> (verified 2026-08-24). Tick a box only when the matching section here holds the verbatim
+> output and its capture date.
 
 ## Question
 
 Does the Codex build actually installed on the conversion workstation discover skills from
 `.codex/skills/`, from `.agents/skills/`, or from both — and does it load the eight custom
 agents in `.codex/agents/` without an `[agents]` table in `.codex/config.toml`? Everything
-that [[TOOL-002]] (`DSK-12-02`) vendors and everything [[TOOL-004]] (`DSK-12-04`) deletes
-depends on the answer.
+that [[TOOL-002]] (plan handle `DSK-12-02`) vendors and everything
+[[TOOL-004]] (plan handle `DSK-12-04`) deletes depends on the answer.
 
 ## Current behaviour
 
@@ -23,12 +30,18 @@ no `Pegasus.Core` use case and no Worker path involved. It is developer-toolchai
 discovery.
 
 **No `PAR-nn` row in `docs/desktop/01-inventory-and-parity/parity-matrix.md` covers it, and
-none should.** That matrix has 47 rows keyed to `src/Pegasus.Web/Pages/**` page models and
-their operator-visible capabilities (see the column notes at
-`docs/desktop/01-inventory-and-parity/parity-matrix.md:36-44`); agent tooling is not an
+none should.** That matrix has **46 rows, `PAR-01`…`PAR-46`** — counted, not copied:
+`grep -c '^| PAR-' docs/desktop/01-inventory-and-parity/parity-matrix.md` returns `46` and
+the last row is `PAR-46` (verified 2026-08-24). Every row is keyed to a page model under
+`src/Pegasus.Web/Pages/**` and its operator-visible capability (see the column notes at
+`docs/desktop/01-inventory-and-parity/parity-matrix.md:32-40`); agent tooling is not an
 operator capability and has no legacy web surface to reach parity with.
 
-What "today" looks like on disk instead, verified 2026-08-24 at the repository root
+The closest existing repository mechanism instead — the thing that does this job today — is
+the pair of untracked skill trees themselves plus `.codex/config.toml:1-15`, which is
+configuration read by a local toolchain rather than by any deployed Pegasus component.
+
+What "today" looks like on disk, verified 2026-08-24 at the repository root
 `C:\Users\PC\Documents\GitHub\pegasusDesktop`:
 
 | Tree | State | Tracked? |
@@ -59,7 +72,7 @@ What "today" looks like on disk instead, verified 2026-08-24 at the repository r
 - Claude Code is a first-class tool on this repository, not a hypothetical: `CLAUDE.md`
   (tracked, one line, `AGENTS.md`) and `.mcp.json` (tracked, carries the same Kanmer stdio
   server as `.codex/config.toml`) are both committed. This is why step 9 costs one command
-  and is the input [[TOOL-011]] (`DSK-12-11`) needs.
+  and is the input [[TOOL-011]] (plan handle `DSK-12-11`) needs.
 
 ### Facts
 
@@ -77,6 +90,7 @@ Verified by reading the repository on 2026-08-24 (commands shown; all read-only)
 | `.codex/skills/winui-setup/SKILL.md:1-5` carries frontmatter `name: winui-setup` and `disable-model-invocation: true`. A skill with that flag will not be auto-invoked even where it is discovered — so "did not fire" is not proof of "was not found". | `sed -n '1,8p'` |
 | `.grok/skills/.kanmer-skills-version` is `0.1.0`; twelve Kanmer skills are present. | `cat`; `ls .grok/skills` |
 | Claude Code is configured for this repository: `CLAUDE.md` and `.mcp.json` are both tracked. | `git ls-files` |
+| The parity matrix holds 46 rows, `PAR-01`…`PAR-46`, and none of them covers agent tooling. | `grep -c '^| PAR-' docs/desktop/01-inventory-and-parity/parity-matrix.md` → `46` |
 
 Official documentation to re-fetch (step 8 of the body; both are `learn.chatgpt.com`, which
 `microsoft_docs_search` / `microsoft_docs_fetch` do **not** index — use a direct web fetch):
@@ -104,15 +118,17 @@ Official documentation to re-fetch (step 8 of the body; both are `learn.chatgpt.
   unsupported, and the eight untracked folders have never done anything.
 - **A-12-3 — the agent roster loads without an `[agents]` table.** Unverified.
   Confirmed by: `/agent` listing the eight names on today's config.
-  Breaks if wrong: [[TOOL-005]] (`DSK-12-05`) is a hard prerequisite for
-  [[TOOL-009]] (`DSK-12-09`) rather than a tidy-up, and no delegation has ever worked.
+  Breaks if wrong: [[TOOL-005]] (plan handle `DSK-12-05`) is a hard prerequisite for
+  [[TOOL-009]] (plan handle `DSK-12-09`) rather than a tidy-up, and no delegation has ever
+  worked.
 - **A-12-4 — the build honours `sandbox_mode` and `model_reasoning_effort`.** Unverified,
   and it is the one that matters for safety: the read-only guarantee for
   `pegasus-parity-researcher`, `pegasus-desktop-reviewer` and `pegasus-azure-auditor` is
   either enforced by the runtime or is only the prose in `developer_instructions`.
   Confirmed by: the build reporting the field, or a read-only agent visibly refusing a write.
   Breaks if wrong: record it for [[TOOL-005]] step 11 — the guardrail for
-  [[TOOL-006]] (`DSK-12-06`)'s Azure MCP wiring becomes text plus discipline only.
+  [[TOOL-006]] (plan handle `DSK-12-06`)'s Azure MCP wiring becomes text plus discipline
+  only.
 - **A-12-5 — a skill that *lists* also *resolves*.** Unverified, which is exactly why body
   step 7 probes `$winui-design` explicitly. Note that `winui-setup` sets
   `disable-model-invocation: true`, so it may list and deliberately not auto-fire; that is
@@ -122,9 +138,11 @@ Official documentation to re-fetch (step 8 of the body; both are `learn.chatgpt.
 
 Not applicable, and the heading is kept rather than dropped so the omission is visible: this
 ticket places no responsibility in either the desktop or the cloud. It records what a local
-developer toolchain does on one workstation, produces no runtime code path, and calls no
-Azure tool. The six-question test in
+developer toolchain does on one workstation, produces no runtime code path, carries no
+credential, publishes no artefact and calls no Azure tool. The six-question test in
 `docs/desktop/00-governance-and-workflow/README.md` § 3 has nothing to be asked about here.
+The one placement the ticket assumes is that the toolchain runs on the conversion
+workstation itself.
 
 ## Implications
 
@@ -171,11 +189,14 @@ date captured.
 `NOT YET CAPTURED` — operator step (body step 4). Paste the **complete** listing including
 the discovered path for each entry, and the date. The three questions it must answer:
 
-- [ ] Do `winui-setup`, `winui-dev-workflow`, `winui-design`, `winui-code-review`,
-      `winui-ui-testing`, `winui-packaging`, `winui-wpf-migration`, `winui-session-report`
-      appear, and from which directory?
-- [ ] Does `pegasus-release` appear once or twice?
-- [ ] Does `pegasus-desktop` appear, from `.agents/skills/project/pegasus-desktop/`?
+- Do `winui-setup`, `winui-dev-workflow`, `winui-design`, `winui-code-review`,
+  `winui-ui-testing`, `winui-packaging`, `winui-wpf-migration`, `winui-session-report`
+  appear, and from which directory?
+- Does `pegasus-release` appear once or twice?
+- Does `pegasus-desktop` appear, from `.agents/skills/project/pegasus-desktop/`?
+
+(Each of these three is a separate unticked box in the `open-questions` document; the
+plain bullets here are the questions, the boxes there are the gate.)
 
 ### `/agent`
 
@@ -189,6 +210,13 @@ today there is no `[agents]` table.
 and from which file. A name that lists but does not resolve is a different failure from one
 that never lists.
 
+### Optional TOML fields honoured
+
+`NOT YET CAPTURED` — body Guardrails, "Open question to carry". Record whether the installed
+build honours `sandbox_mode` and `model_reasoning_effort` (A-12-4). If it honours neither,
+the body directs that it be recorded as an open question on [[TOOL-005]], where it is
+actionable.
+
 ### Claude Code discovery (body step 9)
 
 `NOT YET CAPTURED`. Record, for Claude Code running against this same repository, which of
@@ -201,15 +229,34 @@ field the installed build does not honour.
 
 ## Open questions
 
-None are opened as a blocking `open-questions` document, deliberately: an unticked
-`- [ ]` line there blocks *every* stage move, and the questions below are the spike's own
-subject matter — blocking this ticket from starting in order to ask it to start would be
-circular. They are carried here instead, and each has a named destination:
+**Every uncaptured item above is an unticked `- [ ]` box in this ticket's `open-questions`
+document, and that document is what stops this spike being closed empty.**
 
-- Whether the installed build honours `sandbox_mode` / `model_reasoning_effort` (A-12-4).
-  If it honours neither, record it for [[TOOL-005]] step 11 as an open question **there**,
-  where it is actionable, per the ticket body's "Open question to carry" guardrail.
-- Whether `/skills` de-duplicates by name or by path. Answered by the `pegasus-release`
-  count; no separate work if it de-duplicates by name.
-- Whether Claude Code needs a roster at all. Not decided here — it is [[TOOL-011]]'s
-  decision, and step 9 only supplies the discovery input.
+The earlier draft of this section declined to open one, reasoning that an unticked box
+"blocks every stage move" and that blocking a spike from starting in order to ask it to
+start would be circular. Both halves of that were wrong, and the second followed from the
+first:
+
+- An unticked box blocks exactly three boundaries — `leave-preparing`, `enter-review` and
+  `enter-done` — and never `leave-backlog`. For profile `spike` the board declares only
+  `enter-done: [research, questions-resolved]` (`get_doc_gates` with no id), so the boxes
+  block **Done alone**.
+- There is therefore no circularity: nothing prevents this spike being taken, worked or
+  moved out of Backlog. The boxes prevent only the one move that must not happen — closing
+  the ticket while the operator output is still `NOT YET CAPTURED`. Verified 2026-08-24:
+  with `open-questions` present, `get_doc_gates TOOL-001` reports `enter-done`
+  `passable: false`, and `done` has dropped out of `reachable`.
+
+Two questions are **parked** in that document rather than opened, each because a named
+sibling ticket owns the decision:
+
+- Whether the one-list rule should be reopened if the build does scan `.codex/skills` —
+  settled by body step 11 and `docs/desktop/12-agent-tooling/README.md` § 7; the move is
+  required under either answer.
+- Whether Claude Code needs a roster at all — [[TOOL-011]]'s decision; step 9 supplies only
+  the discovery input.
+
+One question is carried to another ticket rather than opened here, per the body's
+"Open question to carry" guardrail: whether the installed build honours `sandbox_mode` /
+`model_reasoning_effort` (A-12-4). It is captured here as an item, and if the answer is
+"neither" it is opened as a blocking question on [[TOOL-005]], where it is actionable.
