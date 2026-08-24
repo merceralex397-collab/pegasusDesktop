@@ -24,7 +24,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.649Z'
-updated: '2026-08-24T08:52:18.085Z'
+updated: '2026-08-24T09:36:30.212Z'
 ---
 
 ## What
@@ -90,7 +90,7 @@ Tier 3 obliges deterministic adapter evidence: stable outputs, resource and canc
 
 ## Documentation changes
 
-- `docs/adr/0108-isolated-webview2-report-rendering.md` — Verification section cites this suite; status moves to `accepted` on its evidence (edited via [[DSK-07-12]]'s file)
+- `docs/adr/0108-desktop-webview2-report-rendering.md` — Verification section cites this suite; status moves to `accepted` on its evidence (edited via [[DSK-07-12]]'s file)
 - `docs/desktop/01-inventory-and-parity/parity-matrix.md` — the report rows reach `automated verification passed`
 
 ## Guardrails
