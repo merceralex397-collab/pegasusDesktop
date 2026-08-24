@@ -1,6 +1,6 @@
 # Plan — FND-005: Author ADR-0100, ADR-0101, ADR-0103, ADR-0104, ADR-0105 and ADR-0110 in the reserved block
 
-**Diff estimate: ~9 files, ~560 lines.**
+**Diff estimate: ~10 files, ~560 lines.**
 
 Derived from the `files` document, not asserted. Six new ADRs at the measured
 house length — the six most recent ADRs are 60, 61, 66, 70, 84 and 153 lines
@@ -12,8 +12,7 @@ enforcement layers, D-002, D-003, C-01), ADR-0101/0103 ~85 each, ADR-0110 ~85,
 ADR-0104 ~80 — **~545 lines of new ADR**. Then 6 index rows in
 `docs/adr/README.md`, and two one-line corrections
 (`AGENTS.md:114-116`, `docs/desktop/00-governance-and-workflow/README.md:423`)
-that reflow to ~3 lines each at the files' hard wrap. Nine files touched, six of
-them new.
+that reflow to ~3 lines each at the files' hard wrap. Ten files touched, six of them new: the six ADRs, their index, the two governance corrections, and the area-02 path reconciliation.
 
 ## Approach
 
@@ -382,6 +381,8 @@ The canonical paths for this ticket are:
 - `docs/adr/0110-agent-skill-pinning-and-invocation-protocol.md`
 
 They resolve the stale alternative filenames in the ticket body and checklist. FND-005 owns this one canonical file for each listed ADR; tickets that cite a listed decision link to or review it and do not create another file with the same ADR ID.
+
+The tenth changed file is `docs/desktop/02-architecture-and-foundation/README.md`; it updates only its documentation-change list to the canonical ADR-0100 and ADR-0104 paths above.
 
 The repository currently has no `origin/dev`; `origin/main` also lacks the already-tracked `docs/desktop/` conversion plan that these ADRs cite. The branch therefore has the clean documented base `task/desktop-plan-segmentation` (commit `ecb9b7b4`), with no changes to that branch. A PR must be retargeted to the project integration branch once FND-001 establishes it.
 
