@@ -1,0 +1,33 @@
+# Checklist — FND-045: Startup orchestrator
+
+One box per plan step, in plan order. Tick a box only when the thing it names is true in the
+worktree.
+
+- [ ] **Orient.** Read area 04 § 3 decisions 6–7 and § 7 in full, and `docs/desktop/09-release-update-and-distribution/appinstaller-template.md:140-164` § *Known behaviours*; load `pegasus-desktop`, then `winui-dev-workflow`.
+- [ ] **Confirm the prerequisites exist.** `ls src/Pegasus.Desktop.Infrastructure` ([[FND-031]], bounded cache and diagnostics writer) and `ls src/Pegasus.Desktop.Infrastructure/Session` ([[FND-043]], `ISessionClient`); stop if either is missing.
+- [ ] **Take the ticket.** `get_doc_gates FND-045`, `take_ticket FND-045`, branch `task/desktop-startup-orchestrator` created from `origin/dev`.
+- [ ] **Confirm the platform contract and record the fetch dates.** `microsoft_docs_search` for `Package.CheckUpdateAvailabilityAsync` (five results; the `Package.Current` access-denied note) and `PackageManager.RequestAddPackageByAppInstallerFileAsync`; add both beside the 2026-08-24 WebView2 fetch already in the research document.
+- [ ] **Add `Startup/StartupOrchestrator.cs` and `Startup/StartupState.cs`** under a `Startup/` capability folder — a plain state machine with **no WinUI types and no `DispatcherQueue`** — with the eight states `CheckingForUpdate`, `UpdateRequired`, `CheckingCompatibility`, `Blocked`, `RuntimeWarning`, `RestoringSession`, `SignInRequired`, `Ready`.
+- [ ] **Inject every collaborator behind an interface**: `IPackageUpdateProbe`, `ICompatibilityClient`, `IRuntimePresenceProbe`, `ISessionClient`, `TimeProvider` and the diagnostics writer — no concrete `PackageManager` reference in the orchestrator.
+- [ ] **Implement the update probe** as `FindPackageForUser(string.Empty, Package.Current.Id.FullName)` then `CheckUpdateAvailabilityAsync()` on the **returned** package, never on `Package.Current`.
+- [ ] **Map `Unknown` and `Error` to continue**, with a comment recording that a side-loaded development MSIX always lands there and blocking would be wrong.
+- [ ] **Map the other results**: `Required` → `UpdateRequired` and no further work; `Available` → log and continue; `NoUpdates` → continue.
+- [ ] **Wire "Update now"** to `PackageManager.RequestAddPackageByAppInstallerFileAsync` against the channel's `.appinstaller` path from the embedded channel configuration, treating its failure as a state; **no `ms-appinstaller:` anywhere**.
+- [ ] **Implement the compatibility call**: `GET /api/v1/client-compatibility`, anonymous, sending `X-Pegasus-Client-Version` from `Package.Current.Id.Version` — and **not** wired to `/diagnostics/version`.
+- [ ] **Persist the response and its retrieval timestamp** through [[FND-031]]'s bounded cache; the timestamp is part of the contract, not an extra.
+- [ ] **Map `urn:pegasus:problem:client-unsupported`** to `UpdateRequired` carrying the returned `minimumVersion`.
+- [ ] **Implement the 24-hour fail-closed rule** with `TimeProvider`: a cache younger than 24 hours proceeds when the endpoint is unreachable; at 24 hours or older it goes to `Blocked` and performs no work; a shorter server TTL is honoured and a longer one never extends the ceiling.
+- [ ] **Confirm no bypass exists** — no configuration key, environment variable or debug-only branch that skips or extends the gate.
+- [ ] **Implement the WebView2 presence probe by registry**, reading `pv (REG_SZ)` at `HKLM\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}` and `HKCU\Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}`, treating present-and-greater-than-`0.0.0.0` as installed — with the Learn source and its 2026-08-24 fetch date in a comment, and **no `Microsoft.Web.WebView2` package reference**.
+- [ ] **Make a missing runtime warn, not block**: state `RuntimeWarning` plus a log line, and startup continues.
+- [ ] **Implement session restore**: handle present → `RefreshAsync`; success → `Ready`; `RefreshRevoked` → clear the store and `SignInRequired`; `AccountDisabled` → `Blocked` with the disabled reason; no handle → `SignInRequired` with no error state.
+- [ ] **Emit one structured diagnostics line per step** (step name, outcome, elapsed ms, correlation id) sharing **one** correlation id across the whole startup sequence.
+- [ ] **Call the orchestrator from `App.xaml.cs`** after [[FND-035]]'s single-instance redirection and before the main window is shown, binding `UpdateRequired` and `Blocked` to [[FND-044]]'s screens, `SignInRequired` to the sign-in page and `Ready` to the shell.
+- [ ] **Write the six head-less tests**: `Required` blocks; unreachable with a **23**-hour cache proceeds; unreachable with a **25**-hour cache blocks; `client-unsupported` blocks carrying the minimum version; missing WebView2 warns and proceeds; revoked refresh routes to sign-in — using fakes and [[FND-038]]'s shared `FixedTimeProvider`.
+- [ ] **Operator step — the real `Required` path.** Install from [[FND-048]]'s local Test/UAT `.appinstaller` feed on a Windows 11 workstation with the development certificate trusted, publish a higher version, relaunch, and capture `Get-AppxPackage CollisionEngineers.Pegasus | Select-Object Version` before and after, the update-required screenshot and the ordered rolling-log excerpt — or record the step as **unrun** if [[FND-048]] has not landed, never substituting a side-load.
+- [ ] **Handle the tier-7 UI check.** Run `pwsh ./tests/Pegasus.Desktop.UITests/ui-tests.ps1 -AppPid <pid>` against a compatibility endpoint returning a minimum above the client version — or record the check as **deferred to [[TEST-006]]** if that harness and [[FND-044]]'s cases do not exist, without writing a second harness.
+- [ ] **Leave FRD-13 to [[FND-008]]** and add the `docs/runbook.md` R3 pointer only if [[REL-010]] has proven that runbook; record whichever applied in the plan.
+- [ ] **Run the simplification pass** over this branch's own diff and record it under a dated `## Simplification pass` heading in the plan document.
+- [ ] **Verification / proof.** Run `dotnet test tests/Pegasus.Desktop.ViewModelTests`, `dotnet test tests/Pegasus.ArchitectureTests`, `dotnet build Pegasus.slnx -c Release` (`0 Warning(s)`), and the four `grep` guards from the plan's Verification table (`Microsoft.Web.WebView2`, bypass names, `ms-appinstaller`, `Package.Current.CheckUpdateAvailabilityAsync` — all no-match); attach the operator artefacts as `visual` and `command-log` proof; state in it whether step 13 ran, whether the tier-7 check ran or was deferred, and which registry hive answered the runtime probe. Open the PR into `dev`.
+
+## Progress notes
