@@ -31,3 +31,10 @@ PASS. The reviewer confirmed that `d22c39dd` changes only ADR-0105 and the area-
 ## Delivery update — 2026-08-24
 
 Live remote verification now finds `origin/fnd-005-foundation-adrs` at `d22c39dde51f087620e30ac1c343a2896585b114`, and the local branch tracks it. The earlier HTTP 403 is superseded as the delivery blocker. `origin/dev` remains absent, so the required PR target, Review movement, links, and merged proof are still pending.
+
+
+## Pull request update — 2026-08-25
+
+- `origin/dev` now exists at the shared desktop-plan baseline `ecb9b7b4`.
+- Opened [PR #1](https://github.com/merceralex397-collab/pegasusDesktop/pull/1) from `fnd-005-foundation-adrs` to `dev`.
+- The PR contains the verified ten-file documentation diff; independent PR review and CI remain pending.

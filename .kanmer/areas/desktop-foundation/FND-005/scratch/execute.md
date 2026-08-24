@@ -1,3 +1,5 @@
 2026-08-24 — implementation branch `.worktrees/fnd-005` contains commits `fb634d1c` and `79bb5860`; documentation link and placement gates pass. Blocked from `link_doc`/PR hand-off only because `origin/dev` does not exist and the canonical files are not yet merged into MCP's repository root. Resume after FND-001 establishes the integration branch.
 
 2026-08-24 — `git push -u origin fnd-005-foundation-adrs` was attempted and refused by GitHub: the configured origin grants `collisionengineers` no permission to `merceralex397-collab/pegasusDesktop.git` (HTTP 403). The local branch and commits remain intact; no remote or credentials were changed.
+
+2026-08-25 — opened PR #1 against `dev`: https://github.com/merceralex397-collab/pegasusDesktop/pull/1
