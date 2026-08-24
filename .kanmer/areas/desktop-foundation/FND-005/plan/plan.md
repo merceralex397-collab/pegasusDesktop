@@ -375,3 +375,7 @@ Proof is written on merged `main`, after review and merge — never before
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over
 this branch's own diff before the PR, recorded here under a dated heading.
 Expected outcome for this ticket: `n/a — docs-only`._
+
+## 2026-08-24 ownership decision
+
+The operator assigned **ADR-0105 authorship to FND-005**. This ticket therefore owns the single canonical file `docs/adr/0105-msix-app-installer-and-minimum-version-gate.md`; FND-009, FND-040, FND-041, REL work, and TOOL-008 link to or verify the resulting authority and must not create a competing ADR-0105. This resolves the ownership uncertainty recorded in the ticket body without changing the already-settled distribution mechanism.
