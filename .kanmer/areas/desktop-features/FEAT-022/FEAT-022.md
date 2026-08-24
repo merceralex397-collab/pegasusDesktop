@@ -23,7 +23,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:02:19.010Z'
-updated: '2026-08-24T08:02:19.010Z'
+updated: '2026-08-24T11:16:26.064Z'
 ---
 
 ## What
@@ -40,7 +40,8 @@ Proposal §14.9, §15 and §17 and the Phase 8 exit gate require the full automa
 - Plan detail: `docs/desktop/05-implementation-and-migration/vertical-slices.md` § `S22 · Hardening sweep (DSK-05-22)`
 - Screen spec: `docs/desktop/06-ui-design/keyboard-and-accessibility.md` and `docs/desktop/06-ui-design/screen-specs.md` § `AutomationId convention`
 - Proposal: `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md` § 14.9 Keyboard and accessibility, § 15 Performance design, § 17 Security and privacy, § 24 Phase 8
-- Repository evidence: `tests/Pegasus.IntegrationTests/Browser/AccessibilityTests.cs` (the web-only precedent), `tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs` (520 lines), `docs/design/README.md` § `No explanatory copy and page economy` and the banned-words list
+- Repository evidence: `tests/Pegasus.IntegrationTests/Browser/AccessibilityTests.cs` (the web-only precedent), `tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs` (520 lines), `docs/design/README.md` § `No explanatory copy and page economy` and the banned-words list; `src/Pegasus.Core/Actors/ActorDisplayNames.cs:12` and `src/Pegasus.Core/Identity/StaffAccountAdministration.cs:110` (`IStaffAccountQueries`) — the named sources a picker draws from
+- Upstream evidence: `PLAT-015` names the entry-side breaches by file — the `Engineer ID` text input at `src/Pegasus.Web/Pages/Cases/Shared/_CaseWorkflow.cshtml:268`, the typed `Report SHA-256` input at `:296`, the `Assignee ID` text inputs at `:352` and `:371`, the reply picker showing `InternetMessageIdentity`, and the raw `AggregateId` in the Automation Activity Target column at `src/Pegasus.Web/Pages/Administration/Automation/Activity.cshtml:67`
 - Binding decisions: L-02 every measurement runs on the local Test/UAT workstation, never an Azure environment; L-04 routing named on the ticket; C-01 private-repository Windows runner minutes bill at 2×, so the CI cost of any lane this sweep adds is a live constraint (see [[DSK-08-19]])
 - Depends on: `DSK-05-01`, `DSK-05-02`, `DSK-05-03`, `DSK-05-04`, `DSK-05-05`, `DSK-05-06`, `DSK-05-07`, `DSK-05-08`, `DSK-05-09`, `DSK-05-10`, `DSK-05-11`, `DSK-05-12`, `DSK-05-13`, `DSK-05-14`, `DSK-05-15`, `DSK-05-16`, `DSK-05-17`, `DSK-05-18`, `DSK-05-19`, `DSK-05-20`, `DSK-05-21` — every slice must be merged before the sweep is meaningful
 
@@ -62,7 +63,7 @@ Proposal §14.9, §15 and §17 and the Phase 8 exit gate require the full automa
 6. **Operator step** — perform the manual reviews the automated scan cannot replace, from the checklist in [[DSK-06-16]]: keyboard-only completion of every critical workflow, Narrator smoke, 200 % scale, Windows forced-colours mode, reduced motion, focus visibility and logical focus order, and contrast. Automated axe results do not substitute for these (`docs/engineering.md` § Required evidence tiers, tier 7). Record who performed each review and when.
 7. Run the performance scripts from [[DSK-08-15]] on the baseline workstation — cold and warm startup, repeated navigation, large list, document- and image-heavy case, memory after prolonged use, slow network, provider timeout, ten concurrent users with the worker, report generation — and produce a regression report against the baseline recorded by [[DSK-01-11]].
 8. Run the security checklist from [[DSK-08-11]]: token lifecycle, disabled account, role bypass, direct-object access, malformed uploads, unsafe paths, manifest tampering, version spoofing, temporary-file ACLs, and a secret and log scan over the package and the diagnostics bundle.
-9. Run the operator-copy review across every shipped screen against `docs/design/README.md`: no banned word (`intake`, `bounded`, `projection`, `lease`, `opaque`, `ingress`, `composed`, `artifact`, `durable`, `aggregate`, `caller`, `correlation identifier`, `bytes`), no field hints, no how-it-works copy, only populated sections, filters as dropdowns and newest-first tables. This is a review rule with merge force, not an automated check — upstream PLAT-015 is absorbed here.
+9. Run the operator-copy review across every shipped screen against `docs/design/README.md`, covering both what the screen **shows** and what it **asks for**. Display side: no banned word (`intake`, `bounded`, `projection`, `lease`, `opaque`, `ingress`, `composed`, `artifact`, `durable`, `aggregate`, `caller`, `correlation identifier`, `bytes`), no field hints, no how-it-works copy, only populated sections, filters as dropdowns and newest-first tables. **Entry side (upstream PLAT-015, the half this list omitted)**: no identifier entry anywhere — a staff, case or evidence identifier is chosen from a named picker sourced from `ActorDisplayNames`/`IStaffAccountQueries`, never typed as a key or hash — and no raw aggregate identifier appears in a Target or reference column; it resolves to the Case/PO reference or is omitted. PLAT-015 names the Razor originals this conversion must not reproduce: the `Engineer ID` and `Assignee ID` text inputs (`_CaseWorkflow.cshtml:268`, `:352`, `:371`), the typed `Report SHA-256` input (`:296`), the reply picker showing `InternetMessageIdentity`, and the raw `AggregateId` Target column (`Automation/Activity.cshtml:67`). [[DSK-06-05]]'s `NoRawCodeReachesTheView` reflection test inspects view-model **output** properties only and so cannot see a typed identifier input; the companion test over bound **input** properties is [[DSK-06-05]]'s to add, and this review is the backstop for it, not a substitute. This is a review rule with merge force, not an automated check.
 10. For each finding, create a Kanmer ticket in the **owning slice's** area and epic rather than fixing it here, and link it to this ticket. Only cross-screen fixes with no single owner are made on this branch. Record the finding, its severity, its owner and its ticket id in the proof.
 11. Capture desktop screenshots for the documentation set via `winapp ui screenshot` (upstream PLAT-005 is absorbed here — screenshots come from a real local run, never a mock-up).
 12. Assemble the proof: scan reports, UI suite output, performance regression report, security checklist, manual review records with names and dates, the screenshot set, and the findings table with dispositions. Then run the simplification pass over any code changed on this branch (`n/a — no code change` if the sweep only raised tickets), record it under a dated `## Simplification pass` heading, and open the PR into `dev`.
@@ -75,6 +76,7 @@ Proposal §14.9, §15 and §17 and the Phase 8 exit gate require the full automa
 - [ ] The performance regression report shows every budget met, or a recorded exception with an owning ticket.
 - [ ] The security checklist has no unresolved high-risk item.
 - [ ] No banned operator word and no explanatory copy survives on any shipped screen.
+- [ ] No identifier entry anywhere — a staff, case or evidence identifier is chosen from a named picker sourced from `ActorDisplayNames`/`IStaffAccountQueries`, never typed as a key or hash — and no raw aggregate identifier appears in a Target or reference column; it resolves to the Case/PO reference or is omitted (upstream PLAT-015).
 - [ ] Every finding has an owning ticket in the slice that owns the screen.
 
 ## Verification
@@ -83,6 +85,7 @@ Proposal §14.9, §15 and §17 and the Phase 8 exit gate require the full automa
 - [ ] `pwsh ./eng/packaging/Test-Package.ps1` — expected: clean install of the production-like package on the baseline workstation.
 - [ ] `dotnet test ./Pegasus.slnx --configuration Release --no-build --filter "Category!=Corpus"` — expected: the full automated suite passes at the recorded SHA.
 - [ ] `axe-windows` scan artefacts — expected: zero critical findings; artefacts attached to the ticket proof.
+- [ ] Operator-copy review record in the ticket proof — expected: a per-screen pass covering the display side and the entry side, naming the reviewer and the date, with every identifier-entry and Target-column exception listed and owned.
 - [ ] Manual review, performance and security records in the ticket proof — expected: named reviewers with dates, budgets met, no unresolved high-risk item.
 
 ## Evidence tier
@@ -100,7 +103,7 @@ Tier 7 obliges keyboard, focus, semantic-label, text-plus-colour and 200 %-scale
 
 - **Azure**: no write.
 - **Scope boundary**: this ticket produces evidence and raises tickets. Fixes land in the owning slice's projects; only a genuinely cross-screen fix with no single owner is made on this branch.
-- **Traps**: automated scans do not replace manual keyboard and assistive-technology review; performance figures must come from the baseline workstation, not a developer machine; the operator-copy rules are merge rules with no CI enforcement, so the review is manual and must be recorded honestly; C-01 makes added CI lanes cost real money on private-repository Windows runners — coordinate any new lane with [[DSK-08-19]]; upstream PLAT-005 and PLAT-015 are absorbed here.
+- **Traps**: automated scans do not replace manual keyboard and assistive-technology review; performance figures must come from the baseline workstation, not a developer machine; the operator-copy rules are merge rules with no CI enforcement, so the review is manual and must be recorded honestly; a reflection test over view-model output properties cannot see an identifier that is *typed in*, so the entry-side rule is reviewed here and tested in [[DSK-06-05]] — treating the output-only test as coverage is how PLAT-015's GUID inputs would survive the conversion; C-01 makes added CI lanes cost real money on private-repository Windows runners — coordinate any new lane with [[DSK-08-19]]; upstream PLAT-005 and PLAT-015 are absorbed here, and absorbing PLAT-015 means both its display and its entry halves.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document (`n/a — no code change` when the sweep only raised tickets).
 
 ## Outcome
