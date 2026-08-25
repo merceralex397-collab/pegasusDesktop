@@ -847,8 +847,8 @@ The following contracts must be proved through the owning Core policy and actual
 - London-midnight and Monday dashboard boundaries are correct;
 - preparing, viewing, or copying a manual chaser is not sent evidence;
 - explicit staff confirmation stores actor, time, case, channel, outcome, and optional note exactly once, performs no outbound call, rejects unauthorised, stale, closed, or `Held` submissions, and stores no message body;
-- the separate Triage state, finding, correction, reopen, and link contract is complete;
-- no-registration Triage remains `Needs sorting` without case/reference creation;
+- the separate Triage state, finding, correction, reopen, and conversion contract is complete;
+- a Triage request without a usable registration remains Unidentified without Triage-reference, Principal, or Case/PO allocation;
 - reply-chain evidence uses the exact allowlist and does not fall back to subject, registration, or manual selection;
 - the in-house upload caller proves authenticated staff creation, isolated request-local upload/result presentation, expiry, revocation, bounded retry/abuse behavior, durable custody, and cross-request/non-disclosing failures without a Box File Request route;
 - Case and later-Audit custody use the immutable business reference hierarchy with the database-stored remote folder id as the identity authority (no marker files inside folders), and recover a lost folder-create response only through the predeclared transient creation-owner marker; a persisted custody failure is re-entered only by an authenticated, reasoned, lease- and version-guarded human staff command;
