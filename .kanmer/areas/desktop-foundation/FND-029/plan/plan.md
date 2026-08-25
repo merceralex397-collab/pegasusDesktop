@@ -262,3 +262,17 @@ The first full-solution build attempt overlapped another build invocation and fa
 - Efficiency: the five-member paging envelope preserves the existing fetch-one-extra query shape and avoids introducing an unpopulated COUNT contract; the Contracts project adds no package restore cost.
 - Altitude: the documentation change is one current-architecture row, and the temporary serialization facts stay in the existing architecture test project until TEST-001 creates the dedicated contract-test project.
 - Disposition: no behaviour-preserving simplification finding remained unapplied. The missing Pegasus.Server.slnf integration is an FND-028 dependency, not an omission to compensate for here.
+
+## Review correction — 2026-08-25
+
+The independent reviewer identified that the first `PegasusProblem` shape nested RFC 9457 extension members under `extensions`; because the typed accessors were ignored properties, top-level `currentVersion` and `minimumVersion` could not round-trip. The implementation now uses `PegasusProblemJsonConverter` to read and write arbitrary extension members at the problem document's top level, while retaining typed accessors and omitting null standard members under the shared JSON options. Added focused serialization tests for top-level write and read. The reviewer also found the branch had no commit; commit is required before the fresh review.
+
+Corrective validation:
+
+- `dotnet build ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-restore` — exit 0, 0 warnings, 0 errors.
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~ContractSerialization"` — 6 passed, 0 failed.
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build` — 106 passed, 0 failed.
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore` — exit 0, 0 warnings, 0 errors.
+- Documentation links and Markdown placement scripts — both passed (232 links checked).
+
+The reviewer’s read-only full rerun was constrained by unrelated temporary-directory ACL failures; the serial local full test and canonical build are green.
