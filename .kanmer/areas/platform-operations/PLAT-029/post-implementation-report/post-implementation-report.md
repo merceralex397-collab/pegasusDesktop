@@ -1,0 +1,49 @@
+# Post-implementation report — PLAT-029
+
+## Result
+
+The local document adapter now resolves intake-retained source, attachment, and folded image content from the existing LocalCaseCustody layouts while preserving the existing managed version-id layout. The implementation is committed at `a505175c` and pushed to `origin/plat-029-local-document-content`.
+
+The ticket is not complete. The required local Start/Smoke evidence could not run because this checkout's doctor requires SDK `10.0.302`, while the workstation exposes `10.0.204` and `10.0.303`. PR creation is also blocked by the GitHub account's collaborator permission.
+
+## Scope delivered
+
+- `src/Pegasus.Infrastructure/Custody/LocalDocumentContentStore.cs`
+  - Added `OpenReadVersionAsync`.
+  - Checks the existing `managed/{versionId:N}/content` path first.
+  - Resolves existing `documents/{receipt}/{hash}`, `documents/{receipt}/attachments/{ordinal}-{hash}`, and folded `images/{ordinal}-{receipt}` directories under `cases/{caseId:N}).
+  - Binds candidates to existing `metadata.json` values for hash, filename, media type, and image ordinal.
+  - Preserves root containment, SHA-256 and length verification, FileStream options, cancellation, missing-file message, and fail-closed ambiguity/metadata errors.
+- `tests/Pegasus.IntegrationTests/DocumentCustodyDurabilityTests.cs`
+  - Covers source, attachment, folded image, managed fallback, missing-file, and integrity behavior.
+- `tests/Pegasus.IntegrationTests/CustodyOutboxIntegrationTests.cs`
+  - Covers a real accepted/processed intake source through document download and ZIP export.
+- `docs/desktop/08-testing/test-uat-stack.md`
+  - Updates the named Components and Known gaps sections.
+- No Core contract, Box adapter, LocalCaseCustody writer, Worker, API, Azure, or FRD files changed.
+
+## Validation evidence
+
+- `dotnet restore Pegasus.slnx` — passed.
+- Focused `OpenReadVersionAsync` integration tests — 3 passed, 0 failed.
+- `IntakeRetainedDocumentIsReadableThroughDownloadAndExportReaders` — 1 passed, 0 failed.
+- Relevant integration suites (DocumentCustodyDurabilityTests, EvaHandoffPersistenceTests, CaseCustodyWebTests, BoxDocumentContentStoreTests, CustodyOutboxIntegrationTests) — 41 passed, 0 failed, 1 pre-existing corpus-dependent skip.
+- `dotnet test tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release --no-restore` — 916 passed, 0 failed.
+- `dotnet build Pegasus.slnx --configuration Release --no-restore --nologo` — passed, 0 warnings, 0 errors.
+- `git diff --check` — passed.
+- Pre-fix reproduction — 1 failed as expected with `FileNotFoundException: The document content is unavailable.` at `LocalDocumentContentStore.OpenReadAsync` line 97.
+- `pwsh ./scripts/Initialize-LocalDevelopment.ps1` — restore and Debug build passed; doctor stopped before launch on the SDK mismatch above. Therefore `Invoke-LocalDevelopment.ps1 -Action Start` and `-Action Smoke` have no valid success evidence.
+
+## Simplification pass
+
+Completed and recorded in the plan. Existing validation, root guard, managed layout, and stream behavior are reused. No new naming convention, marker file, Core contract, API, Worker, Azure, desktop, or FRD scope was introduced.
+
+## Independent review
+
+The independent `pegasus-desktop-reviewer` review on 2026-08-25 returned FAIL because this report and checklist were initially absent, and because Start/Smoke remains blocked by the SDK requirement. No code findings were reported. The report and checklist are now being added; the SDK blocker remains.
+
+## Remaining blockers and next actions
+
+1. Provide a workstation/environment with the repository-required SDK `10.0.302`, then rerun `Initialize-LocalDevelopment.ps1`, `Invoke-LocalDevelopment.ps1 -Action Start`, and `-Action Smoke`; capture the retained-content read result.
+2. Restore GitHub collaborator permission or have an authorized collaborator create the PR from the pushed branch.
+3. After those blockers, obtain a fresh independent review, satisfy CI/PR requirements, merge to `dev`, then verify on merged `main` and write proof before moving Kanmer stages.
