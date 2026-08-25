@@ -96,3 +96,9 @@ Maxwell's fresh independent review passed the corrected implementation: persiste
 ## Exact-head CI and current blocker — 2026-08-25
 
 Run 32883994941 tested commit 737059ddc497f072b8678c8cd2f3e61aa04b6b00. Unit, browser, SQL shards 1/2, coverage, changes, documentation, scripts, and reference-data passed. SQL shard 3 failed one existing grouped-image concurrency test because EfIntakeWorkStore.CompleteProcessingAsync was selected as a SQL deadlock victim; no CASE-001 file appears in the stack. The failed job is being rerun at the same head. No merge claim yet.
+
+## Exact-head CI rerun result — 2026-08-25
+
+The authorized rerun of the failed job in repository-check run 32883994941 completed at the same head 737059ddc497f072b8678c8cd2f3e61aa04b6b00 and failed again. SQL shard 3 ran all 291 assigned tests: 290 passed, 1 failed. The failure was the existing GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns test, with SQL Server deadlock victim error during EfIntakeWorkStore.CompleteProcessingAsync at source line 338. The stack is outside CASE-001's changed files. SQL coverage aggregation passed, but the required repository-check remains failed because shard 3 failed.
+
+This is evidence of a repeatable CI concurrency blocker, not evidence that CASE-001's implementation or replay tests fail. Do not merge while required exact-head CI is red. Next action: determine the repository-approved remediation for this pre-existing deadlock or obtain a fresh exact-head green run after a narrowly justified CI rerun; do not change CASE-001 to mask an unrelated test.

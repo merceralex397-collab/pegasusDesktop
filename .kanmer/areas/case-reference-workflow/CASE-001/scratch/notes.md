@@ -37,3 +37,5 @@ Maxwell passed the corrected diff. Committed 737059ddc497f072b8678c8cd2f3e61aa04
 ## Exact-head CI — 2026-08-25
 
 Run 32883994941 exact head 737059ddc497f072b8678c8cd2f3e61aa04b6b00: unit/browser/SQL 1/2/coverage/changes/docs/scripts/reference-data passed. SQL shard 3 had one unrelated deadlock in GroupedImageIntakeConcurrencyTests at EfIntakeWorkStore.CompleteProcessingAsync. Rerunning the failed job at the same head.
+
+2026-08-25: Authorized exact-head rerun 32883994941 failed again at 737059dd. SQL shard 3: 290/291 passed; GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns hit a SQL deadlock victim in existing EfIntakeWorkStore.CompleteProcessingAsync line 338. Coverage passed; required CI remains red. No merge.
