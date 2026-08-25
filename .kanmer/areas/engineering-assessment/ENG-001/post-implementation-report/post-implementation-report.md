@@ -38,3 +38,7 @@ An independent `pegasus-test-engineer` analysis identified gaps in the first tes
 Independent review found no substantive code defect. The migration is **schema-reversible but data-destructive** for historical `ManifestContent`, `ProvenanceContent`, and `ProvenanceSha256` values: `Up()` deletes those values, while `Down()` recreates empty/default columns and cannot recover them. This is accepted within the pre-release scope. Retained `BundleContent`, `BundleSha256`, `JsonContent`, and `JsonSha256` remain intact, and downloads still use `BundleContent`. Old application binaries cannot generate EVA hand-offs after the columns are dropped until rolled forward. The archive bytes intentionally change `InputFingerprint`, so regenerated historical input forms Revision 2 rather than reusing Revision 1.
 
 PR, CI, merge, proof, and closeout are not yet claimed.
+
+## Hosted CI correction — 2026-08-25
+
+Run `32850235619` completed with one real test failure in SQL shard 3: `IntakePersistenceIntegrationTests.CommittedMigrationCreatesTheSqlServerSchema` expected the prior 64-entry migration list but the branch correctly included the new EVA migration as entry 65. The shard ran 291/291 assigned tests with 290 passed and 1 failed; browser, unit, the other SQL shards, coverage, documentation, changes, reference-data, and local-development lanes passed. Commit `e6bd1949` adds `20260825122524_DropEvaHandoffProvenanceAndManifest` to that existing assertion. Focused Release LocalDB validation passed 1/1. A new hosted run on `e6bd1949` is required before merge.

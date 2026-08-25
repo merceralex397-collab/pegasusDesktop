@@ -22,7 +22,7 @@
 | File | Why |
 | --- | --- |
 | `tests/Pegasus.Core.Tests/Qdos/EvaBundleContractTests.cs` | Entry lists lose the two files; every `ProvenanceContent`/`ManifestContent` assertion goes. `BusinessReadableEntryNamesAndManifestGrammarAreExact` is entirely about manifest grammar and is deleted. **New test** pinning the exported JSON bytes: 2-space indent, exact newline, 13 keys in order, and the entry list. |
-| `tests/Pegasus.IntegrationTests/EvaHandoffPersistenceTests.cs` | Removes seeds for the dropped columns and asserts the surviving archive entries and exported JSON value. |
+| `tests/Pegasus.IntegrationTests/IntakePersistenceIntegrationTests.cs` | Updates the committed migration inventory assertion to include the new non-additive EVA migration. |\n| `tests/Pegasus.IntegrationTests/EvaHandoffPersistenceTests.cs` | Removes seeds for the dropped columns and asserts the surviving archive entries and exported JSON value. |
 
 ## Deliberately not touched
 

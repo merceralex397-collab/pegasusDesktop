@@ -185,3 +185,7 @@ No behavior-changing simplification remained. The temporary `PegasusEng001Migrat
 ## Review disposition — 2026-08-25
 
 The independent review found no substantive code defect. The reviewer identified that the migration is schema-reversible but data-destructive for the three removed historical payload columns; that wording is now explicit in this plan, the post-implementation report, and PR #6. Independent local reruns were blocked by another agent's active `Pegasus.Core.dll` process and were not forcibly interrupted. Hosted CI is the required independent validation path once the restored workflow reports checks for the updated PR head.
+
+## CI correction — 2026-08-25
+
+Hosted run `32850235619` exercised the restored workflow on `d335af45`. All lanes passed except SQL shard 3, where `IntakePersistenceIntegrationTests.CommittedMigrationCreatesTheSqlServerSchema` failed because its explicit applied-migration list omitted the new `20260825122524_DropEvaHandoffProvenanceAndManifest` migration; shard 3 otherwise ran all 291 assigned tests (290 passed, 1 failed). The bounded fix is commit `e6bd1949`, adding that migration to the existing list. Focused Release LocalDB validation passed 1/1. No production behavior or migration shape changed.
