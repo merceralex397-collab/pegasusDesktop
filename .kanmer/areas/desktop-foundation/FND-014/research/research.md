@@ -26,6 +26,7 @@ Does the 46-row skeleton in `docs/desktop/01-inventory-and-parity/parity-matrix.
 
 - Added an `Inventoried at` column and stamped all 46 rows with `ecb9b7b40c802b5ea800a69a7a46a0875269737a`.
 - Corrected `PAR-37`, `PAR-39`, `PAR-40`, and `PAR-41` entries so every secondary Administration page has its full `Administration/` prefix. The five affected files are Accounts/Edit, Automation/Activity, Organizations/Edit, Principals/Create, and Principals/Replace.
+- Corrected `PAR-43` so the `Error` and `StatusCode` page models each record their `OnGet` handler; the independent audit had caught this omission.
 - Corrected `PAR-24`: `Triage/Details.OnPostActionAsync` has 12 named cases, not 13. The named set is `assign`, `unassign`, `await_information`, `record_finding`, `supersede_finding`, `link_response`, `unlink_response`, `complete`, `cancel`, `reopen`, `link_case`, and `unlink_case`. The `default` branch throws for unsupported input and is not a command. The matrix now records the expanded set and `× 12`.
 - Corrected the area-plan citation from `Pages/Shared/StaffPageModel` to `Pages/StaffPageModel.cs`.
 - Resolved U-10 by extending the same authorized README edit to correct the objectively measured `CaseMutationPageModel` count from **7** to **8**. The eight derivers are Closure, Custody, Details, Documents/Export, Eva/Download, Tasks, Vehicle, and Workflow. This is a documentation correction, not a product decision or runtime change.
