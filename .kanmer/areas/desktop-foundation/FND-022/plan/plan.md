@@ -409,3 +409,7 @@ The 21 amendment handles were title-matched after full-text search and each owne
 ## Simplification pass — 2026-08-25
 
 n/a — docs-only. The branch changes one existing canonical carry-over document; no code, test, abstraction, dependency, or runtime surface exists to simplify. The document edit was kept to the measured five corrections plus the current-head evidence and did not create a transient repository planning file.
+
+## Delivery blocker — 2026-08-25
+
+The branch is pushed at `e38939e7` on `fnd-022-upstream-triage`. PR creation was attempted with `gh pr create --base dev --head fnd-022-upstream-triage` and failed with the exact GitHub response `GraphQL: must be a collaborator (createPullRequest)`. The ticket remains **implementing**; no PR, review gate, merge, or Kanmer stage move is claimed. An independent `pegasus-desktop-reviewer` review is running against the pushed branch, but it cannot substitute for the missing PR permission/authorized PR creation.

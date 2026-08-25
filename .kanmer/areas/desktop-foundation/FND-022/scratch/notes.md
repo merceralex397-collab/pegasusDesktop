@@ -1,3 +1,7 @@
 2026-08-25: Read-only upstream refresh reached 8566c18d59481df740abc8ea784e629f91ede6cf (118 open/non-archived). Independent pegasus-parity-researcher classified the five new open findings CASE-023, DOCS-014, ENG-017, INTK-036 and PLAT-043 as amendments to existing unclaimed owners, not imports or drops. Applied explicit acceptance/implementation amendments through Kanmer to GWY-009, FEAT-016, FEAT-015, ENG-002 and GWY-013; no worktree/branch/claim was touched. Carry-over document is the sole repository-file edit so far.
 
 2026-08-25 validation: current-head source 8566c18d59481df740abc8ea784e629f91ede6cf; merge-base checks for 8124ae2a and 4d00c3b7 both exit 0; documentation links passed 232 files; Markdown placement passed origin/dev..HEAD; git diff --check passed; capability-row count exactly 1. Simplification pass recorded as n/a — docs-only.
+
+2026-08-25 delivery checkpoint: commit e38939e7 pushed on branch fnd-022-upstream-triage. gh pr create --base dev --head fnd-022-upstream-triage failed with exact external blocker: GraphQL: must be a collaborator (createPullRequest). No PR, merge, or stage move claimed. Smallest next action: grant the authenticated GitHub identity collaborator/createPullRequest permission or have an authorized collaborator open the PR.
+
+Independent pegasus-desktop-reviewer Anscombe is reviewing the pushed docs-only diff while the PR permission blocker remains.
