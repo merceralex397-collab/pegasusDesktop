@@ -241,3 +241,17 @@ The ticket was taken after the live board showed it unclaimed. Before any extern
 - gh pr view 1 proves dev currently contains merged PR #1 (FND-005), merged at 2026-08-25T00:12:46Z, with merge commit 5770eb21c0d03620a6a6d99e0431bde91ec2ad6a.
 
 The required initial ref state no longer exists. No force-update, reset, or GitHub setting change is permitted, and no repository file was changed. The ticket is therefore blocked on an external repository-state decision: whether the current descendant dev head is accepted as the recorded branch baseline, or an authorized owner defines a permitted corrective path. This ticket does not claim the frozen-SHA acceptance criterion.
+
+## Operator decision — 2026-08-25
+
+The operator accepts the current `origin/dev` descendant head as the effective recorded conversion baseline. `dev` was created from the frozen `origin/main` baseline, then advanced only by merged PR #1. This ticket therefore records the verified topology rather than force-updating either branch: `origin/main` remains an ancestor of `origin/dev`; `dev` is the branch from which new task branches are cut. The GitHub default branch remains `main`; no setting change is authorised or needed.
+
+## Revised acceptance and verification
+
+- Prove `origin/main` is `191ddf334208b8966dc5e32f4f597e434a086233` and is an ancestor of `origin/dev`.
+- Prove the merge history records `5770eb21c0d03620a6a6d99e0431bde91ec2ad6a` as the initial integration advancement of `dev`.
+- Record the current `dev` SHA and date in `docs/desktop/README.md`; do not assert that its current head equals `main`.
+
+## Simplification pass — 2026-08-25
+
+n/a — docs-only. The scoped change is one existing baseline paragraph; no new abstraction, compatibility path, or branch-management mechanism is introduced.
