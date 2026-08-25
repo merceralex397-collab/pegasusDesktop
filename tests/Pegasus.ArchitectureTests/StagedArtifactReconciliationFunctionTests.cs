@@ -100,6 +100,7 @@ public sealed class StagedArtifactReconciliationFunctionTests
         public Task<int> RecoverExpiredLeasesAsync(
             DateTimeOffset nowUtc,
             int maximumItems,
+            TimeSpan dispatchedRecoveryAge,
             CancellationToken cancellationToken)
         {
             MaximumItems = maximumItems;

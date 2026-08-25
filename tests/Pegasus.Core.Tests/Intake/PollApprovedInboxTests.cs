@@ -783,6 +783,7 @@ public sealed class PollApprovedInboxTests
         public Task<int> RecoverExpiredLeasesAsync(
             DateTimeOffset nowUtc,
             int maximumItems,
+            TimeSpan dispatchedRecoveryAge,
             CancellationToken cancellationToken) => throw new NotSupportedException();
 
         public Task ScheduleReevaluationAsync(
