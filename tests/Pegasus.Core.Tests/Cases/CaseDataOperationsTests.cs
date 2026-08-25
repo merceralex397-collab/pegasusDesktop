@@ -166,6 +166,10 @@ public sealed class CaseDataOperationsTests
         Assert.Throws<ArgumentOutOfRangeException>(() => CaseDataPolicy.Normalize(new(
             VehicleMileage: -1,
             VehicleMileageUnit: "miles")));
+        Assert.Throws<ArgumentOutOfRangeException>(() => CaseDataPolicy.Normalize(new(
+            VehicleMileage: 123,
+            VehicleMileageUnit: "miles",
+            VehicleMileageKilometres: -1)));
     }
 
     [Fact]
@@ -188,6 +192,17 @@ public sealed class CaseDataOperationsTests
             VehicleMileageUnit: "Miles",
             VehicleMileageKilometres: 100_000));
 
+        Assert.Null(normalized.VehicleMileageKilometres);
+    }
+
+    [Fact]
+    public void NormalizeClearsProvenanceWhenMileageIsCleared()
+    {
+        var normalized = CaseDataPolicy.Normalize(new(
+            VehicleMileageUnit: "Miles",
+            VehicleMileageKilometres: 100_000));
+
+        Assert.Null(normalized.VehicleMileage);
         Assert.Null(normalized.VehicleMileageKilometres);
     }
 

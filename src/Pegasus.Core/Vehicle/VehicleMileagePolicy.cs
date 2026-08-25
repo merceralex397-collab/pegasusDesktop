@@ -28,8 +28,8 @@ public static class VehicleMileagePolicy
     /// </summary>
     public const int MethodVersion = 2;
 
-    /// <summary>Exact, by definition: one mile is 1.609344 kilometres.</summary>
-    private const double KilometresPerMile = 1.609344;
+    /// <summary>The documented-mileage conversion factor required by the case-data contract.</summary>
+    private const decimal MilesPerKilometre = 0.6213711922m;
 
     /// <summary>
     /// The MOT reading expressed in miles. Rounds to the nearest whole mile
@@ -39,7 +39,10 @@ public static class VehicleMileagePolicy
     /// </summary>
     public static long ToMiles(long value, VehicleMileageUnit unit) =>
         unit == VehicleMileageUnit.Kilometres
-            ? (long)Math.Round(value / KilometresPerMile, MidpointRounding.AwayFromZero)
+            ? checked((long)Math.Round(
+                (decimal)value * MilesPerKilometre,
+                0,
+                MidpointRounding.AwayFromZero))
             : value;
 
     public static VehicleMileageCalculation? Calculate(

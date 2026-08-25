@@ -122,7 +122,7 @@ public static class CaseDataPolicy
     public static CaseEditableData Normalize(CaseEditableData data)
     {
         ArgumentNullException.ThrowIfNull(data);
-        if (data.VehicleMileage < 0)
+        if (data.VehicleMileage < 0 || data.VehicleMileageKilometres < 0)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(data),
@@ -143,11 +143,11 @@ public static class CaseDataPolicy
 
         var mileageUnit = MileageUnit(data.VehicleMileageUnit);
         var originalMileageKilometres = data.VehicleMileage is null
-            ? data.VehicleMileageKilometres
+            ? null
             : mileageUnit == VehicleMileageUnit.Kilometres
                 ? data.VehicleMileage
                 : data.VehicleMileageKilometres is { } original
-                    && ToMiles(original) == data.VehicleMileage
+                    && VehicleMileagePolicy.ToMiles(original, VehicleMileageUnit.Kilometres) == data.VehicleMileage
                         ? original
                         : null;
 
@@ -159,7 +159,7 @@ public static class CaseDataPolicy
             VehicleMake = Text(data.VehicleMake, 100, nameof(data.VehicleMake)),
             VehicleModel = Text(data.VehicleModel, 100, nameof(data.VehicleModel)),
             VehicleMileage = data.VehicleMileage is { } mileage
-                ? ToMiles(mileage, mileageUnit)
+                ? VehicleMileagePolicy.ToMiles(mileage, mileageUnit)
                 : null,
             VehicleMileageUnit = data.VehicleMileage is null
                 ? Text(data.VehicleMileageUnit, 40, nameof(data.VehicleMileageUnit))
@@ -199,14 +199,6 @@ public static class CaseDataPolicy
             nameof(value),
             "The vehicle mileage unit is invalid.");
     }
-
-    private static long ToMiles(long value, VehicleMileageUnit unit = VehicleMileageUnit.Kilometres) =>
-        unit == VehicleMileageUnit.Kilometres
-            ? checked((long)Math.Round(
-                (decimal)value * 0.6213711922m,
-                0,
-                MidpointRounding.AwayFromZero))
-            : value;
 
     private static void ValidateInspection(CaseEditableData data)
     {
