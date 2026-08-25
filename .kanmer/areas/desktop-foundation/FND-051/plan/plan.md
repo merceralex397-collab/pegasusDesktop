@@ -351,3 +351,23 @@ This ticket records the boundary through the refactor:
 - Any remaining external-release or upstream-dependent language is a deferred boundary, not an in-repository implementation task.
 
 The amended acceptance is: the repository governance record and Kanmer proof state the boundary, and no upstream operation is performed.
+
+## In-repository boundary implementation — 2026-08-25
+
+The amended ticket is implemented without any upstream operation. The canonical plan surfaces now state that the historical upstream comparison and sync instructions are provenance only and are superseded for the current refactor:
+
+- docs/desktop/README.md records the current operator boundary and the current dev baseline.
+- docs/desktop/01-inventory-and-parity/README.md records the boundary, removes the upstream sync from the Phase 0 exit gate, and adds the DSK-01-13 plan row with the amended acceptance and verification.
+- docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md labels the historical drift/sync section non-executable and directs needed work to in-repository fork tickets.
+
+The configured remote check shows only origin pointing to pegasusDesktop; no upstream remote was added or read. No cloud, deployment, credential, mailbox, Box, or external environment operation was performed.
+
+Validation:
+- pwsh ./scripts/Test-DocumentationLinks.ps1 — passed; 233 files checked.
+- pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD — passed.
+- git diff --check — passed; only line-ending normalization warnings.
+- git remote -v — only configured pegasusDesktop origin fetch/push URLs.
+
+## Simplification pass — 2026-08-25
+
+n/a — docs-only. Reused the three existing canonical plan documents and added one bounded boundary statement plus the missing DSK-01-13 row. No new document family, abstraction, remote, compatibility path, or external operation was introduced. Historical evidence was retained rather than deleted, but all executable upstream instructions were explicitly superseded.
