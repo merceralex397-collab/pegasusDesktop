@@ -20,8 +20,13 @@ FND-051 now records the operator's in-repository-only boundary in the canonical 
 
 ## Delivery state
 
-Commit aa02a2c3 was pushed to task/fnd-051-inrepo-boundary and PR #10 was opened against dev. The first exact-head repository-check run was cancelled when the changes job exceeded its five-minute maximum during checkout. The failed job was rerun at the same exact head under operator authorization; its result remains pending at this report checkpoint. No merge or proof claim is made.
+Commits aa02a2c3 and 85576fe5 were pushed to task/fnd-051-inrepo-boundary and PR #10 was opened against dev. The first exact-head repository-check run was cancelled when the changes job exceeded its five-minute maximum during checkout. The failed job was rerun at the corrected exact head 85576fe54026162b035504c5990a29f49ad8d489 under operator authorization; repository-check run 32887774540 succeeded. No merge or proof claim is made.
 
 ## Simplification
 
 n/a — docs-only. Existing canonical documents were reused; no new document family, abstraction, compatibility path, remote, or external operation was introduced.
+
+
+## Independent review correction — 2026-08-25
+
+The fresh independent review required the remaining unqualified upstream-sync route and first-sync language in the Phase 0 plan to be explicitly historical/superseded. Those references are now labelled as non-executable or replaced with in-repository dispositions. The review also required this report to identify the corrected exact head and green run; it now records head 85576fe54026162b035504c5990a29f49ad8d489 and run 32887774540. Kanmer proof remains deferred until merged-main verification.
