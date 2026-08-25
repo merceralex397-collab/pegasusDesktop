@@ -23,7 +23,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:04:08.606Z'
-updated: '2026-08-24T21:31:39.116Z'
+updated: '2026-08-25T00:12:13.933Z'
 ---
 
 ## What
@@ -80,7 +80,7 @@ Proposal §23 makes a repository-derived parity matrix the conversion's evidence
 ## Verification
 
 - [ ] `pwsh ./scripts/Test-DocumentationLinks.ps1` — expected: passes after every matrix edit; no broken proof or test link.
-- [ ] `pwsh ./scripts/Test-MarkdownPlacement.ps1` — expected: passes; no new Markdown outside `docs/(prd|frd|adr|design|desktop)`.
+- [ ] `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` — expected: passes; no new Markdown outside `docs/(prd|frd|adr|design|desktop)`.
 - [ ] Kanmer `list_items` for area `desktop-features` — expected: every `DSK-05-nn` slice handle resolves to a board ticket and appears in the row mapping.
 - [ ] Completeness report in the ticket proof — expected: every row's status and evidence listed, exceptions named with owning tickets.
 

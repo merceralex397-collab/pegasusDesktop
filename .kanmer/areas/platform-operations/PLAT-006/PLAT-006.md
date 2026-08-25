@@ -22,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:05:04.748Z'
-updated: '2026-08-24T21:21:14.270Z'
+updated: '2026-08-25T00:12:14.122Z'
 ---
 
 ## What
@@ -70,7 +70,7 @@ Proposal §17.3 names "malicious or malformed attachment" as a meaningful threat
 7. Byte-endpoint cases (`DSK-03-10`): assert `Content-Length` is sent, `ETag` is present, a range request behaves, `X-Content-Type-Options: nosniff` is set on the response, and that the download filename is the safe stored name.
 8. Cancellation case: abort a request mid-upload and assert no receipt, no partial case document and no orphaned staged artifact remain (the plan for `DSK-03-11` states "interrupted upload leaves no receipt").
 9. Run `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~ApiUploadLimit"`. All green.
-10. Run `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition` then `pwsh ./scripts/Test-TestShard.ps1` so the new tests are assigned to exactly one shard — the repository's shard guard fails CI otherwise.
+10. Run `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` then `pwsh ./scripts/Test-TestShard.ps1` so the new tests are assigned to exactly one shard — the repository's shard guard fails CI otherwise.
 11. Update the threat register row "malicious or malformed attachment" with the test names ([[DSK-10-01]]).
 12. Record `## Simplification pass` with today's date over the branch diff in the ticket's `plan` document, open the PR into `dev`, and hand review to `pegasus-desktop-reviewer`.
 
@@ -86,7 +86,7 @@ Proposal §17.3 names "malicious or malformed attachment" as a meaningful threat
 
 - [ ] `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~ApiUploadLimit"` — expected: all facts pass.
 - [ ] `pwsh ./scripts/Test-TestShard.ps1` — expected: exit 0 (new tests assigned to exactly one shard).
-- [ ] `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition` — expected: exit 0.
+- [ ] `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` — expected: exit 0.
 
 ## Evidence tier
 

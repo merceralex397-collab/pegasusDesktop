@@ -22,7 +22,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:30:09.678Z'
-updated: '2026-08-24T21:31:46.170Z'
+updated: '2026-08-25T00:12:13.951Z'
 ---
 
 ## What
@@ -71,7 +71,7 @@ The carry-over triage in `docs/desktop/01-inventory-and-parity/upstream-kanmer-c
 9. Disposition the remaining seven — **upstream `DOCS-001`, upstream `DOCS-003`, upstream `DOCS-004`, upstream `TICK-081`, upstream `TICK-096`, upstream `TICK-097` and upstream `TICK-100`** — as either `report-decision` work now on the fork board, or `unchanged-backlog` under proposal § 13.11. **Upstream DOCS-001 is already imported as board [[DOCS-001]]**: verify it as step 7 verifies [[DOCS-003]], and create nothing. **Upstream DOCS-003 and upstream DOCS-004 have no fork ticket and are post-alpha RPT-04 / RPT-05 activation gates — do not write `[[DOCS-003]]` for either, because that wiki-link resolves to the imported upstream TICK-208 ticket and would silently attach a post-alpha gate to a live defect.** Each of the blocked/post-alpha ones needs one sentence saying what would unblock it — "blocked" without a condition is not a disposition.
 10. Apply the recreation rule from [[DSK-01-09]] for every ticket that becomes fork work **and does not already exist**: create it in fork area `documents-reports`, with `upstream:<ID>` as the title prefix (`upstream:<ID> · <upstream title>`) and `upstream-<ID>` plus `upstream-carryover` and the upstream labels in `labels` — **never `upstream:<ID>` in `refs`**, which takes only existing repository-relative paths and would fail the whole `create_items` entry — the original body copied verbatim, and a link to this area plan. Before creating anything, `search_items` for the upstream id and `update_item` an existing ticket rather than creating a second. Do not silently rewrite an upstream body.
 11. Update `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` so each of the eleven rows carries its recorded disposition and, where applicable, the fork ticket id — using the board id, not the upstream id, in the fork-ticket column, and stating both where they differ. Update `docs/desktop/07-integrations/README.md` § 8 if the template scope changed what that section promises.
-12. Run `pwsh ./scripts/Test-DocumentationLinks.ps1` and `pwsh ./scripts/Test-MarkdownPlacement.ps1`; both must pass. List every open question that survived in the ticket's `open-questions` document — an unticked item blocks the move, which is correct here. Then open the PR into `dev`.
+12. Run `pwsh ./scripts/Test-DocumentationLinks.ps1` and `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD`; both must pass. List every open question that survived in the ticket's `open-questions` document — an unticked item blocks the move, which is correct here. Then open the PR into `dev`.
 
 ## Acceptance criteria
 
@@ -90,7 +90,7 @@ The carry-over triage in `docs/desktop/01-inventory-and-parity/upstream-kanmer-c
 ## Verification
 
 - [ ] `pwsh ./scripts/Test-DocumentationLinks.ps1` — expected: exit 0.
-- [ ] `pwsh ./scripts/Test-MarkdownPlacement.ps1` — expected: exit 0.
+- [ ] `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` — expected: exit 0.
 - [ ] `grep -c "report-decision" docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` — expected: every one of the eleven rows still classified and now annotated with its disposition.
 - [ ] `git ls-files | grep -Ei "collisionrenderer\.mcp|\.mcpb$|mcpb"` — expected: no output; upstream `TICK-214`'s retired renderer host, manifest and bundle surfaces are absent from the fork tree after the sync.
 - [ ] Kanmer `search_items` for `upstream:TICK-208` — expected: exactly **one** ticket, board id `DOCS-003`, in `documents-reports`; a second result means a duplicate was created and must be reconciled, not left.

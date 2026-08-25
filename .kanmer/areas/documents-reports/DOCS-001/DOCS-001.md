@@ -30,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:20.415Z'
-updated: '2026-08-24T21:22:05.347Z'
+updated: '2026-08-25T00:12:14.200Z'
 ---
 
 ## What
@@ -41,7 +41,7 @@ Deliver the Core-owned **front half** of report generation that the 208 seeded c
 
 The conversion delivers only report *registration*. [[DSK-07-16]] stores a desktop-rendered PDF and then approves that stored identity, and its own scope boundary forbids it from writing the missing rule — "must not write a second readiness rule — `AssessmentReportProjection` in `src/Pegasus.Core` is the only one". [[DSK-03-14]]'s single readiness mention is "returns the assessment model and readiness summary" on the GET, with no acceptance criterion behind it. Locked decision **L-03** moved rendering onto the client *without moving the readiness gate with it*, so on the seeded set as it stands a desktop can render a PDF for an incomplete, unaccepted assessment and hand it to the gateway to register.
 
-Nothing on the board owns the durable aggregate that makes generation idempotent or a correction append-only. DOCS-001's own research states it in terms: "There are no report request, report version, assessment/fee-note artifact, payload identity, source provenance, generation state, attempt, lease, or failure tables/ports", and reusing `CaseReportApproval` "would collapse generation into human approval and lose the fee-note pair and correction history". The operator-visible consequence is a report registered against a case that was never complete, and a correction that silently replaces the artifact that was actually issued.
+Nothing on the board owns the durable aggregate that makes generation idempotent or a correction append-only. the imported upstream DOCS-001 (board [[DOCS-001]]) ticket's own research states it in terms: "There are no report request, report version, assessment/fee-note artifact, payload identity, source provenance, generation state, attempt, lease, or failure tables/ports", and reusing `CaseReportApproval` "would collapse generation into human approval and lose the fee-note pair and correction history". The operator-visible consequence is a report registered against a case that was never complete, and a correction that silently replaces the artifact that was actually issued.
 
 Upstream will not close it. DOCS-001 is `preparing` upstream and blocked on TICK-092/093/094; under **D-001** the fork becomes the single release source at the first production gateway change and upstream is then frozen, so anything unmerged upstream vanishes. This is the front half of the report path and the desktop inherits the hole whole.
 

@@ -23,7 +23,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:05:04.687Z'
-updated: '2026-08-24T21:21:13.849Z'
+updated: '2026-08-25T00:12:14.104Z'
 ---
 
 ## What
@@ -74,7 +74,7 @@ Replace the committed `Bootstrap:VerificationAccount` block in `src/Pegasus.Web/
 4. Confirm the gate at `src/Pegasus.Web/Program.cs:686-687` still fires: it runs reconciliation when `Bootstrap:VerificationAccount:UserName` **or** `:Removed` is non-empty, so the `Removed` form alone still reaches `ReconcileVerificationAccountAsync`. Do not change `Program.cs`.
 5. Add or extend a test in `tests/Pegasus.IntegrationTests` that starts the host with `Bootstrap:VerificationAccount:Removed` set, seeds a user with that name, and asserts the user is absent afterwards — and a second case asserting that a host with the block absent entirely deletes nothing. Name them so they read as the regression they are (for example `RemovedVerificationAccountIsDeletedOnStart`).
 6. Run `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~VerificationAccount"` and expect the new tests green.
-7. Run `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition` (the repository's shard-assignment guard) so the new tests land in exactly one shard, then `pwsh ./scripts/Test-TestShard.ps1`. Both must exit 0.
+7. Run `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` (the repository's shard-assignment guard) so the new tests land in exactly one shard, then `pwsh ./scripts/Test-TestShard.ps1`. Both must exit 0.
 8. Prove the secret is gone from the working tree: `git grep -n "Pegasus-UI-Verify"` and `git grep -n "claudeuiverification"` — expected: the only remaining hits are the `Removed` value, the ticket documents and the change log. Record in the ticket that the password remains in git **history** and is therefore treated as permanently disclosed; rotation is deletion, not redaction.
 9. Edit `docs/operations.md` to delete the "Temporary verification account" clause at `:768-775` and add a dated line in its place recording that the account was removed by this ticket, the release it shipped in, and the confirmation evidence. Run `pwsh ./scripts/Test-DocumentationLinks.ps1`.
 10. **Operator step** — release `Pegasus.Web` to production by the existing route (load `pegasus-release` and follow it; the desktop route in `docs/desktop/09-release-update-and-distribution/README.md` does not apply to the gateway). Hand back: the release number, the image digest, the revision suffix.
@@ -94,7 +94,7 @@ Replace the committed `Bootstrap:VerificationAccount` block in `src/Pegasus.Web/
 
 - [ ] `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~VerificationAccount"` — expected: all tests pass, including the new deletion test.
 - [ ] `git grep -n "Pegasus-UI-Verify"` — expected: no match under `src/`.
-- [ ] `pwsh ./scripts/Invoke-ProductionSmoke.ps1 …` (parameters as step 11) — expected: exits 0 after the release.
+- [ ] `pwsh ./scripts/Invoke-ProductionSmoke.ps1 -BaseUri <production base uri> -ExpectedSourceRevision <40-hex sha> -ExpectedVersion <version> -ResourceGroupName rg-pegasus-prod -SubscriptionId e6076573-23a5-46a8-acef-7e22d264e5db -ExpectedWorkerActivation approved-live-worker` — expected: exits 0 after the release.
 - [ ] `pwsh ./scripts/Test-DocumentationLinks.ps1` — expected: exits 0.
 
 ## Evidence tier
