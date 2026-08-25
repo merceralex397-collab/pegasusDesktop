@@ -230,3 +230,14 @@ Proof is written on merged `main`, after review and the merge — never before
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over
 this branch's own diff before the PR, recorded here under a dated heading.
 Expected outcome for this ticket: `n/a — docs-only`._
+
+## Execution result — 2026-08-25
+
+The ticket was taken after the live board showed it unclaimed. Before any external write, git fetch origin --prune and the required ref checks were rerun in .worktrees/fnd-001:
+
+- origin/main is 191ddf334208b8966dc5e32f4f597e434a086233, matching the recorded planning baseline.
+- git ls-remote --heads origin dev reports 5770eb21c0d03620a6a6d99e0431bde91ec2ad6a refs/heads/dev; it is not the frozen baseline SHA.
+- git merge-base --is-ancestor origin/main origin/dev exits 0.
+- gh pr view 1 proves dev currently contains merged PR #1 (FND-005), merged at 2026-08-25T00:12:46Z, with merge commit 5770eb21c0d03620a6a6d99e0431bde91ec2ad6a.
+
+The required initial ref state no longer exists. No force-update, reset, or GitHub setting change is permitted, and no repository file was changed. The ticket is therefore blocked on an external repository-state decision: whether the current descendant dev head is accepted as the recorded branch baseline, or an authorized owner defines a permitted corrective path. This ticket does not claim the frozen-SHA acceptance criterion.
