@@ -71,3 +71,14 @@ Fresh evidence: Release build passed with 0 warnings/errors; focused Core 12/12 
 Independent reviewer: Chandrasekhar. Verdict: implementation scope, Core ownership, planned behavior, local test evidence, and simplification disposition all pass. The reviewer independently reran Core 921/921, architecture 99/99, focused CASE-001 integration 2/2, and non-browser/non-corpus integration 873 passed / 3 skipped / 876 total.
 
 Merge remains blocked: PR [#4](https://github.com/merceralex397-collab/pegasusDesktop/pull/4) has no status checks and GitHub reports zero registered Actions workflows. The repository rule requires green CI. Required next action: restore/register CI with owner/admin authority, run it against `d0604850fe0726a8debf955db810d7231866286f`, then attach the green result before merge. No proof or closeout is claimed.
+
+## Durable legacy replay correction — 2026-08-25
+
+Independent review found that durable automatic attempts created before observed image completeness could retain ImagesComplete: true; replay after this change computes false and would otherwise fail the existing operation-hash conflict guard. The correction is limited to the existing persistence store and recovery tests:
+
+- pending legacy attempts are aligned to the current observed completeness/hash before normal acceptance resumes;
+- failed legacy attempts replay their recorded failed state as suppressed;
+- every other persisted command field and actor/operation identity must match;
+- staff retry semantics and unrelated operation conflicts remain unchanged.
+
+Validation: Release Web build passed with 0 warnings/errors; Core 921/921 passed; QdosAllocationRecoveryTests 20/20 passed; git diff --check passed. No cloud, mailbox, Box, deployment, or upstream write was performed. Independent review of this amendment is still required before merge.

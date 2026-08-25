@@ -251,3 +251,23 @@ The implementation amendment is deliberately narrow and is required for correctn
 4. Add LocalDB regression tests for both pending and failed legacy attempts. No broad compatibility layer, migration, dual implementation, or unrelated persistence change is introduced.
 
 This is a behavior-preserving recovery path for a concrete durable state created by this ticket's own rollout, not speculative compatibility engineering. The simplification pass must include this added persistence branch and its tests.
+
+## Durable legacy replay amendment — validation — 2026-08-25
+
+The independent review finding is implemented narrowly in the existing persistence store and recovery test class:
+
+- EfIntakeAllocationStore.BeginAsync now recognizes only automatic pending/failed attempts whose persisted command matches the replay in every stored field except the rollout-affected ImagesComplete value. It requires the same receipt/version, case/principal/audit/deadline fields, actor/roles, operation key, and reason.
+- Pending legacy attempts are canonicalized to the current observed completeness and command hash before the existing acceptance path resumes.
+- Failed legacy attempts are returned as suppressed replays with their recorded failure; staff retry paths are untouched.
+- The pending recovery fixture now deliberately seeds the pre-rollout ImagesComplete: true value.
+- FailedAutomaticOperationWithLegacyCompletenessReplaysWithoutConflict proves a failed pre-rollout attempt is replayed without creating a second attempt or case.
+
+Validation from C:\\Users\\PC\\Documents\\GitHub\\pegasus-worktrees\\case-001-observed-images:
+
+- dotnet build .\\src\\Pegasus.Web\\Pegasus.Web.csproj --configuration Release --no-restore — passed, 0 warnings/errors.
+- dotnet test .\\tests\\Pegasus.Core.Tests\\Pegasus.Core.Tests.csproj --configuration Release --no-build — 921/921 passed.
+- dotnet test .\\tests\\Pegasus.IntegrationTests\\Pegasus.IntegrationTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~QdosAllocationRecoveryTests" — 20/20 passed.
+- git diff --check — passed.
+- The SQL run used LocalDB and no cloud, mailbox, Box, deployment, or upstream write.
+
+The required simplification disposition for this amendment is: reuse the existing BeginAsync replay/concurrency path and Map/hash conventions; keep the rollout exception as one narrow predicate rather than adding an abstraction or migration; keep both pending and failed cases in the existing recovery test class; no remaining behavior-preserving simplification finding is identified.

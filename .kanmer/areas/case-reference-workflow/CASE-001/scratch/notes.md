@@ -21,3 +21,7 @@ PR attempt from `case-001-observed-images` targeting `dev` failed with exact Git
 2026-08-25 CI rerun authorized and triggered by closing/reopening PR #4. Exact head d0604850fe0726a8debf955db810d7231866286f; run 32879516460. reference-data, local-development-scripts, changes, and documentation passed. Unit failed once on QdosInstructionExtractionPolicyTests.AMileageColumnIsCutFreeOfItsNeighbours with RegexMatchTimeoutException in InstructionFieldExtraction.cs:157; browser and SQL shards were still running at note time. Local exact-head reruns passed Core 921/921 and Architecture 99/99. Do not treat this as green CI; rerun failed job after workflow completion and retain the failure as evidence until a complete exact-head green run exists.
 
 2026-08-25 review blocker accepted into exact scope: durable pending/failed automatic attempts created with old ImagesComplete=true can conflict on replay after this change computes false. Plan/files amended for a narrow persistence compatibility path and two LocalDB regression facts; no broad compatibility layer.
+
+## Durable replay amendment — 2026-08-25
+
+Implemented and validated the narrow legacy automatic replay recovery in EfIntakeAllocationStore.cs plus QdosAllocationRecoveryTests.cs. Release Web build passed with 0 warnings/errors; Core passed 921/921; QDOS recovery integration class passed 20/20 on LocalDB; diff check passed. Pending and failed pre-rollout completeness states are covered. Next: independent review, commit/push, exact-head CI, then merge only when all gates pass.
