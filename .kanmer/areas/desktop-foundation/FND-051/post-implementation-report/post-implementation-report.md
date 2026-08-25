@@ -1,0 +1,27 @@
+# Post-implementation report — FND-051
+
+## Summary
+
+FND-051 now records the operator's in-repository-only boundary in the canonical desktop plan set. Historical upstream carry-over evidence is preserved for provenance, but historical sync instructions are explicitly non-executable. The new DSK-01-13 row records the amended scope and route.
+
+## Changed files
+
+- docs/desktop/README.md — current operator boundary and current dev baseline.
+- docs/desktop/01-inventory-and-parity/README.md — historical/superseded DSK-01-10 row, DSK-01-13 row, boundary, and Phase 0 exit-gate correction.
+- docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md — historical-provenance heading and opening, superseded sync language, and in-repository disposition.
+
+## Validation
+
+- pwsh ./scripts/Test-DocumentationLinks.ps1 — passed; 233 files checked.
+- pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD — passed.
+- git diff --check — passed; line-ending normalization warnings only.
+- git remote -v — origin is the only configured remote and points to pegasusDesktop for fetch and push.
+- No upstream, cloud, deployment, credential, mailbox, Box, or external-environment operation was performed.
+
+## Delivery state
+
+Commit aa02a2c3 was pushed to task/fnd-051-inrepo-boundary and PR #10 was opened against dev. The first exact-head repository-check run was cancelled when the changes job exceeded its five-minute maximum during checkout. The failed job was rerun at the same exact head under operator authorization; its result remains pending at this report checkpoint. No merge or proof claim is made.
+
+## Simplification
+
+n/a — docs-only. Existing canonical documents were reused; no new document family, abstraction, compatibility path, remote, or external operation was introduced.

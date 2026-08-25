@@ -371,3 +371,12 @@ Validation:
 ## Simplification pass — 2026-08-25
 
 n/a — docs-only. Reused the three existing canonical plan documents and added one bounded boundary statement plus the missing DSK-01-13 row. No new document family, abstraction, remote, compatibility path, or external operation was introduced. Historical evidence was retained rather than deleted, but all executable upstream instructions were explicitly superseded.
+
+## Independent review correction — 2026-08-25
+
+Reviewer McClintock identified two documentation defects, both corrected in the branch:
+- DSK-01-10 is now explicitly labelled as a historical first-sync plan superseded by the current operator boundary, so it is not an executable route.
+- DSK-01-13 now names the valid planned subagent, skills, and Kanmer MCP route rather than the non-reproducible parent-session shorthand.
+- The carry-over document heading and opening/recreation language now identify the board as historical provenance and state that no upstream remote is consulted.
+
+The reviewer also required the durable Kanmer post-implementation report; it is being written now. Proof remains intentionally absent until the reviewed PR is merged and verification is performed on merged main.
