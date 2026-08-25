@@ -82,3 +82,15 @@ Validation completed:
 - `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --no-restore --configuration Debug --filter "FullyQualifiedName~RecoveryTests" --logger "console;verbosity=minimal"` — 32 passed, 0 failed, 0 skipped.
 
 The repository's scripted L-02 local stack remains unavailable for this ticket's required caller proof: `Invoke-LocalDevelopment.ps1 -Action Start` fails before Web/Functions readiness in the existing launcher at line 1482 because `Process.Path` is empty for the PowerShell-owned launcher. The failure is recorded in AUTO-002's evidence; this ticket does not modify that launcher outside its scope. Integration evidence above is LocalDB-backed and does not claim Azurite/Functions-host execution.
+
+## Independent review — 2026-08-25
+
+The independent `pegasus-desktop-reviewer` review of commit `65a10183` passed the static implementation, threshold, scope, cloud-placement, and simplification lenses, but failed the delivery gate for four findings: missing L-02 caller proof, missing stale-version/concurrent-claim coverage, missing upstream-to-board carry-over annotation, and no PR/CI because GitHub rejected PR creation with `GraphQL: must be a collaborator (createPullRequest)`.
+
+Follow-up completed on this branch:
+
+- Added `ConcurrentRecoveryClaimsOnlyOneStaleDispatchedRow`, which runs two store recoveries against the same stale row and asserts exactly one update wins, the final state is pending, attempt count is unchanged, and lease fields are clear.
+- Extended `QueuedStatusProjectsAnActiveProcessingLease` to assert a duplicate while a live processing lease exists returns `NoOp`.
+- Annotated upstream `INTK-003` in `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` with fork board `[[INTK-002]]`.
+
+The L-02 proof and PR/CI findings remain open. The reviewer correctly notes that the current LocalDB tests do not prove Azurite, the Functions timer, queue loss, restart, or real duplicate delivery. No claim of those tiers is made.

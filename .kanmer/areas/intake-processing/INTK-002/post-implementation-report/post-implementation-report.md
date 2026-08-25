@@ -33,3 +33,7 @@ The repository's L-02 `Initialize-LocalDevelopment.ps1` / `Invoke-LocalDevelopme
 ## PR creation blocker — 2026-08-25
 
 `gh pr create --base dev --head intk-002-recover-dispatched-work` was attempted after the branch push and failed with the exact GitHub response: `GraphQL: must be a collaborator (createPullRequest)`. The branch is available at `origin/intk-002-recover-dispatched-work`; the smallest unblock is collaborator permission or an authorized operator creating the PR from that branch. No merge, CI claim, or Kanmer review-stage move is being claimed until the PR exists and the required independent review/CI path is satisfied.
+
+## Independent review follow-up — 2026-08-25
+
+Review result was FAIL on L-02 caller proof, concurrency coverage, the upstream-to-board annotation, and PR/CI availability. The branch now includes the concurrency and live-processing-lease duplicate tests and the `INTK-003 → [[INTK-002]]` carry-over annotation. Release validation must be rerun after these changes. L-02 proof remains unavailable because the existing local launcher fails before readiness; PR creation remains blocked by GitHub collaborator permission.
