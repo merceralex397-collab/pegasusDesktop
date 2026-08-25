@@ -160,3 +160,193 @@ Azure MCP subscription_list returned the pinned subscription as enabled/default 
 ```
 
 This is authenticated and read-capable, but it is not a reader-level least-privilege session. No Azure write-capable command was issued. FND-021 must not claim the reader-role criterion is satisfied; smallest clearing action is rerun the audit under an identity with Reader access scoped to the pinned subscription/resource group (without changing this Owner session).
+
+### Supplemental read-only Azure CLI output — 2026-08-25
+
+The Azure MCP routers do not expose storage queue listing, Container App show/revision, Function App settings-name, Log Analytics workspace show, Application Insights component show, or budget commands in their advertised child schemas. The following Azure CLI commands were run as supplemental read-only reads only; values were filtered to omit secrets and setting values.
+
+```text
+--- az storage queue list (names only) ---
+WARNING: Command group 'storage queue' is in preview and under development. Reference and support levels: https://aka.ms/CLI_refstatus
+[
+  "external-work",
+  "external-work-poison",
+  "intake-work",
+  "intake-work-poison"
+]
+--- az containerapp show (safe fields; env names only) ---
+{
+  "activeRevisionsMode": "Single",
+  "envNames": [
+    "APPLICATIONINSIGHTS_CONNECTION_STRING",
+    "APPLICATIONINSIGHTS_AUTHENTICATION_STRING",
+    "APPLICATIONINSIGHTS_ENABLEADAPTIVESAMPLING",
+    "ASPNETCORE_ENVIRONMENT",
+    "ASPNETCORE_HTTP_PORTS",
+    "Runtime__Profile",
+    "ConnectionStrings__Pegasus",
+    "KEY_VAULT_URI",
+    "TransportStorage__AccountName",
+    "CustodyStorage__AccountName",
+    "CustodyStorage__ServiceUri",
+    "AZURE_CLIENT_ID",
+    "AzureIdentity__WebClientId",
+    "Graph__BaseUri",
+    "Box__BaseUri",
+    "Box__UploadUri",
+    "Box__RootFolderId",
+    "Box__ConfigJson",
+    "Box__ClientSecret",
+    "Eva__AcceptedMapping__Key",
+    "Eva__AcceptedMapping__Version",
+    "Eva__AcceptedMapping__EvidenceReference",
+    "Features__AutomationMcp",
+    "AutomationMcp__ClientId",
+    "AutomationMcp__ClientSecret",
+    "AutomationMcp__PublicOrigin",
+    "AutomationMcp__RedirectUris"
+  ],
+  "environmentId": "/subscriptions/e6076573-23a5-46a8-acef-7e22d264e5db/resourceGroups/rg-pegasus-prod/providers/Microsoft.App/managedEnvironments/pegasus-prod-aca-env-252ow37gij",
+  "image": "pegasusprodacr252ow37gij.azurecr.io/pegasus/web@sha256:08f5f605b511f3a8d16a6702a071aa72e1403281b0b8289ddaae46601c86f105",
+  "ingress": {
+    "additionalPortMappings": null,
+    "allowInsecure": false,
+    "clientCertificateMode": null,
+    "corsPolicy": null,
+    "customDomains": null,
+    "exposedPort": 0,
+    "external": true,
+    "fqdn": "pegasus-prod-web-252ow37gij.ashymushroom-676209e5.uksouth.azurecontainerapps.io",
+    "ipSecurityRestrictions": null,
+    "stickySessions": null,
+    "targetPort": 8080,
+    "traffic": [
+      {
+        "latestRevision": true,
+        "weight": 100
+      }
+    ],
+    "transport": "Auto"
+  },
+  "name": "pegasus-prod-web-252ow37gij",
+  "provisioningState": "Succeeded",
+  "revisionSuffix": "7e9465b00603"
+}
+--- az containerapp revision list ---
+[
+  {
+    "active": true,
+    "created": "2026-08-25T01:13:07+00:00",
+    "healthState": "Healthy",
+    "name": "pegasus-prod-web-252ow37gij--7e9465b00603",
+    "replicas": 1
+  }
+]
+--- az functionapp appsetting names only ---
+[
+  "Runtime__Profile",
+  "AzureWebJobsStorage__accountName",
+  "AzureWebJobsStorage__credential",
+  "AzureWebJobsStorage__clientId",
+  "AzureIdentity__WorkerClientId",
+  "IntakeStorage__ServiceUri",
+  "IntakeQueue__ServiceUri",
+  "ExternalWorkQueue__ServiceUri",
+  "PendingWorkDispatchSchedule",
+  "IntakeStagedArtifactReconciliationSchedule",
+  "ApprovedInboxPollSchedule",
+  "SentEvidencePollSchedule",
+  "DueWorkSweepSchedule",
+  "AzureWebJobs.PendingWorkDispatchFunction.Disabled",
+  "AzureWebJobs.IntakeWorkFunction.Disabled",
+  "AzureWebJobs.IntakePoisonFunction.Disabled",
+  "AzureWebJobs.StagedArtifactReconciliationFunction.Disabled",
+  "AzureWebJobs.InboxPollFunction.Disabled",
+  "AzureWebJobs.SentEvidencePollFunction.Disabled",
+  "AzureWebJobs.DueWorkSweepFunction.Disabled",
+  "AzureWebJobs.ExternalWorkFunction.Disabled",
+  "AzureWebJobs.ExternalPoisonFunction.Disabled",
+  "APPLICATIONINSIGHTS_CONNECTION_STRING",
+  "APPLICATIONINSIGHTS_AUTHENTICATION_STRING",
+  "APPLICATIONINSIGHTS_ENABLEADAPTIVESAMPLING",
+  "ConnectionStrings__Pegasus",
+  "KEY_VAULT_URI",
+  "TransportStorage__AccountName",
+  "CustodyStorage__AccountName",
+  "Graph__BaseUri",
+  "Graph__MailboxId",
+  "Graph__MailboxAddress",
+  "Graph__InboxFolderId",
+  "Graph__SentFolderId",
+  "Box__BaseUri",
+  "Box__UploadUri",
+  "Box__RootFolderId",
+  "Dvla__BaseUri",
+  "Dvsa__BaseUri",
+  "Dvsa__TokenUri",
+  "Dvsa__Scope",
+  "Box__ConfigJson",
+  "Box__ClientSecret",
+  "Dvla__ApiKey",
+  "Dvsa__ClientId",
+  "Dvsa__ClientSecret",
+  "Dvsa__ApiKey"
+]
+--- az monitor workspace show ---
+{
+  "name": "pegasus-prod-logs-252ow37gij",
+  "publicNetworkAccessForIngestion": "Enabled",
+  "publicNetworkAccessForQuery": "Enabled",
+  "retentionInDays": 31,
+  "sku": "PerGB2018",
+  "workspaceCapping": {
+    "dailyQuotaGb": 0.1,
+    "dataIngestionStatus": "RespectQuota",
+    "quotaNextResetTime": "2026-08-25T03:00:00Z"
+  }
+}
+--- az Application Insights resource show ---
+{
+  "disableLocalAuth": true,
+  "kind": "web",
+  "name": "pegasus-prod-appi-252ow37gij",
+  "type": "microsoft.insights/components",
+  "workspaceResourceId": "/subscriptions/e6076573-23a5-46a8-acef-7e22d264e5db/resourceGroups/rg-pegasus-prod/providers/Microsoft.OperationalInsights/workspaces/pegasus-prod-logs-252ow37gij"
+}
+--- az acr show ---
+{
+  "adminUserEnabled": false,
+  "loginServer": "pegasusprodacr252ow37gij.azurecr.io",
+  "name": "pegasusprodacr252ow37gij",
+  "publicNetworkAccess": "Enabled",
+  "sku": "Basic"
+}
+--- az consumption budget list (safe fields) ---
+} was unexpected at this time.
+C:\Users\PC\Documents\GitHub\pegasusDesktop\.worktrees\fnd-021>  "C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\\..\python.exe" -IBm azure.cli consumption budget list --subscription e6076573-23a5-46a8-acef-7e22d264e5db --query [?name=='pegasus-prod-monthly'].{name:name,amount:amount,currentSpend:currentSpend,timeGrain:timeGrain,timePeriod:timePeriod,notificationNames:keys(notifications)} -o json
+
+```
+
+### Supplemental budget read-only output — 2026-08-25
+
+Command: az consumption budget list --subscription e6076573-23a5-46a8-acef-7e22d264e5db --query "[?name=='pegasus-prod-monthly'].{name:name,amount:amount,currentSpend:currentSpend,timeGrain:timeGrain,timePeriod:timePeriod}" -o json
+
+```text
+WARNING: This command is in preview and under development. Reference and support levels: https://aka.ms/CLI_refstatus
+[
+  {
+    "amount": "75.0",
+    "currentSpend": {
+      "amount": "29.50478827580924",
+      "unit": "GBP"
+    },
+    "name": "pegasus-prod-monthly",
+    "timeGrain": "Monthly",
+    "timePeriod": {
+      "endDate": "2036-08-01T00:00:00Z",
+      "startDate": "2026-08-01T00:00:00Z"
+    }
+  }
+]
+
+```
