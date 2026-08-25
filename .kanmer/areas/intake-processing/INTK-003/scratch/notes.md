@@ -3,3 +3,5 @@
 Final-source rerun: dotnet build --configuration Release --no-restore passed with 0 warnings/errors after explicit named-unit parser hardening; CaseDataOperationsTests remained 12/12.
 
 Ticket moved implementing -> review after fresh get_doc_gates. PR #12 is open against dev at b8970c51 on configured origin. GitHub Actions run 32896214185 is active: changes/reference-data/local-development-scripts pass; browser, documentation, unit, and SQL integration lanes pending; infrastructure skipped. Independent reviewer agents have stalled and have not supplied review evidence; merge is withheld.
+
+Independent review initially failed on duplicate conversion ownership and incomplete provenance validation. Corrective patch now delegates case writes to existing VehicleMileagePolicy.ToMiles (factor 0.6213711922 with midpoint-away-from-zero), rejects negative VehicleMileageKilometres, and clears provenance when mileage is cleared. Final validation after correction: full Core 927/927; CaseDataCompletenessPersistenceTests 5/5; Release build 0 warnings/errors; Test-MigrationGrants 66 migrations passed.

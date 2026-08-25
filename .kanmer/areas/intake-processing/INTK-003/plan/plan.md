@@ -79,3 +79,12 @@ The EAV field registry is enforced by `CK_CaseDataFields_FieldName`, so the earl
 - Scope: the change is limited to canonical write normalization, typed provenance persistence/projection, the existing case-details display/preservation fields, the FRD/capability register, migration constraint, and focused tests. EVA fields and external/cloud paths remain unchanged.
 - Correctness simplification: replaced permissive enum parsing with explicit named-value matching so numeric enum text cannot bypass the unknown-unit fail-closed rule. Added a regression assertion for `"0"`.
 - Disposition: no further behaviour-preserving simplification was identified. The required EAV migration is proportional because the existing SQL field-name check constraint otherwise rejects the new provenance field.
+
+## Review correction — 2026-08-25
+
+The independent review found and the implementation corrected two issues:
+
+- `VehicleMileagePolicy.ToMiles` is the single conversion owner. Case-data normalization now delegates to it; the previous duplicate helper was removed. The existing policy owner uses the required `0.6213711922` decimal factor and midpoint-away-from-zero rounding.
+- `VehicleMileageKilometres` is validated for negativity, and provenance is cleared when canonical mileage is cleared, so a hidden/form or API value cannot leave stale or invalid provenance behind.
+
+The corrected source was rebuilt and retested: 927 Core tests passed, all 5 case-data persistence tests passed, the Release build passed with 0 warnings/errors, and `Test-MigrationGrants.ps1` passed.
