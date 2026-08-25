@@ -37,8 +37,8 @@ One box per implementation obligation. The original checklist's stale filenames 
 - [x] PR merge verified: PR #1 is MERGED into dev at 2026-08-25T00:12:46Z.
 - [x] proof.md finalised with PR URL, merge commit and validation evidence.
 - [x] Moved to final stage: Kanmer Done at 2026-08-25T04:57:28.410Z.
-- [ ] Outcome recorded in ticket body (pending closeout metadata update).
-- [ ] cd out of worktree; remove .worktrees/fnd-005.
-- [ ] delete merged branch.
-- [ ] fetch --prune and worktree prune.
-- [ ] release ticket claim.
+- [x] Outcome recorded in ticket body with PR #1, merge SHA, no deployment, and downstream follow-ups.
+- [x] Main checkout used for cleanup; .worktrees/fnd-005 removed.
+- [x] Local and origin/fnd-005-foundation-adrs branches deleted after merged-branch verification.
+- [x] git fetch --prune origin and git worktree prune completed.
+- [x] Ticket claim released after cleanup.
