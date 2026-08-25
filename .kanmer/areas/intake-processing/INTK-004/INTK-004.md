@@ -4,13 +4,14 @@ type: ticket
 title: >-
   upstream:INTK-027 · Make policy re-evaluation work after transient staging
   cleanup
-status: review
+status: verifying
 area: intake-processing
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
   preparing: '2026-08-24T21:23:32.702Z'
   review: '2026-08-25T20:13:23.068Z'
+  verifying: '2026-08-25T20:13:47.885Z'
 taken_at: '2026-08-25T19:17:45.434Z'
 branch: task/upstream-intk-027-reevaluation-after-cleanup
 worktree: ../pegasus-worktrees/upstream-intk-027-reevaluation-after-cleanup
@@ -31,9 +32,14 @@ blocks:
 refs:
   - docs/frd/frd-02-intake-and-source-identity.md
 docs_todo: true
+commits:
+  - eff8c6678dc464cc4ca5c11426580266c5be7b41
+  - 7656a65fff3e17d0c4bdada91acf72d5dc78b0b1
+prs:
+  - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/11'
 archived: false
 created: '2026-08-24T11:47:12.109Z'
-updated: '2026-08-25T20:13:23.068Z'
+updated: '2026-08-25T20:13:47.885Z'
 ---
 
 ## What
