@@ -1,0 +1,1 @@
+Corpus survey completed read-only against the operator-supplied ignored corpus. Research now records inventory, EML provenance cohort, issuer evidence/counts, proposed firm-keyed registry location, abstention contract for [[INTK-006]], desktop contract consequence, follow-on work, and honest coverage limits. No corpus or repository product files were modified.
