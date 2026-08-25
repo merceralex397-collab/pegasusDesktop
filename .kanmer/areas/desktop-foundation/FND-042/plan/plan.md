@@ -284,3 +284,11 @@ must not read as if the flow works. Proof type: `command-log`.
 _`n/a — docs-only`. `AGENTS.md` § Repository task workflow step 4 requires a pass over this
 branch's own diff before the PR; this branch adds two Markdown files and two index rows and
 touches no code. Record the dated heading with this value rather than omitting the section._
+
+## Implementation result — 2026-08-25
+
+The canonical ADR-0105 from [[FND-005]] already exists on `origin/dev`; this ticket extended that one file in place rather than creating a duplicate. Added ADR-0102 at the agreed path and its three-cell index row. ADR-0102 uses the nine required headings, six answered cloud-justification rows, and records the existing Identity/OpenIddict evidence, public-client/password+refresh decision, staff-versus-Automation boundary, Data Protection requirement, and reversal conditions. ADR-0105 now records the 2026-08-25 Microsoft Learn verification of the 2021 schema and the `ms-appinstaller:` default, plus the App Installer fail-open/gateway fail-closed split. The first local PowerShell count probe had a parser error; the corrected scoped probe passed.
+
+### Simplification pass — 2026-08-25
+
+n/a — docs-only. The diff adds one ADR, one index row, and a focused in-place clarification to ADR-0105. No code, runtime, Azure, source, or unrelated cleanup was added.
