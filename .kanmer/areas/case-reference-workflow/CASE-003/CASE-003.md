@@ -31,11 +31,12 @@ refs:
   - docs/frd/frd-03-triage.md
 commits:
   - 9039d3f8
+  - '57619531'
 prs:
   - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/5'
 archived: false
 created: '2026-08-25T12:04:56.725Z'
-updated: '2026-08-25T12:15:11.021Z'
+updated: '2026-08-25T12:19:39.125Z'
 ---
 
 ## What

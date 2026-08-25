@@ -1,0 +1,1 @@
+2026-08-25 — Already-merged check on origin/dev found `ProvenanceFileName`, `ManifestFileName`, and `Indented = false`, so the upstream fix has not arrived. Per the approved ticket plan, minimally corrected FRD-07's three manifest-mandating statements before any code change. No external operations.
