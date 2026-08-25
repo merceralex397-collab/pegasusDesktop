@@ -85,3 +85,15 @@ Focused validation:
 - Used one canonical re-stage call before the existing queue mutation. No duplicate storage path, API route, UI copy, or speculative recovery job was added.
 - Updated only the three existing direct-construction test call sites to satisfy the new required dependency; this is constructor plumbing, not a second implementation.
 - No behaviour-preserving simplification remained after the pass. The only test correction was to compare replay contract fields rather than array-backed whole-record equality.
+
+## Independent review disposition — 2026-08-25
+
+Reviewer: independent `pegasus-desktop-reviewer` agent Turing (`01a03a6b-b65e-7d71-bf78-1740fde16235`), read-only and did not implement the ticket.
+
+- **Active lease finding — applied.** The guard now treats both persisted `dispatching` and `processing` states with a future lease expiry as active. The regression theory covers both states.
+- **Untracked test finding — resolved.** The new integration test file is now included in the branch commit preparation and will be verified in the committed diff before PR/CI evidence is accepted.
+- **Ambiguous-source and re-stage-failure coverage — applied.** Added tests for duplicate retained source assets and an `IIntakeArtifactStore.StageAsync` failure; both assert unchanged receipt version, work state, history, and no duplicate stage call.
+- **Stage-before-commit observation — disposition.** The external stage is deliberately before the existing database mutation because the Worker must see the staged source before dispatch. The existing FileSystem/Azure implementations use the staged receipt id and content hash for immutable, replay-safe staging; a later DB rollback leaves no receipt/work/history mutation and a retry reconciles the same canonical staged content. This ticket does not add cleanup, a second transaction, or a new storage protocol. The acceptance gate concerns business-state atomicity on refusal and is covered by the missing/corrupt/ambiguous/stage-failure tests.
+- **Simplification finding — resolved.** The dated simplification pass is recorded above in this Kanmer plan; it confirms reuse of the existing port/transaction, no second storage path, and no compatibility/API/UI architecture.
+
+The reviewer’s broad-suite note is recorded separately in the post-implementation report: the ticket-specific focused suites are green, while the non-Corpus/non-Browser run hit an unrelated SQL deadlock in existing grouped-image concurrency code and was stopped after hanging.
