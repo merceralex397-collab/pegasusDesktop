@@ -391,3 +391,7 @@ No tag was applied. Any future write must enumerate the exact resource IDs from 
 > Request change of tags on the explicitly enumerated resource IDs in subscription e6076573-23a5-46a8-acef-7e22d264e5db, resource group rg-pegasus-prod: add or merge desktop-conversion=phase0-inventory, owner=<approved owner>, and codepath=<verified path:line>; because this is Phase 0 inventory ownership metadata and not a permission or runtime change; applied only through the approved IaC/release route after the exact-target approval; rollback by removing only those three added tag keys/values and restoring the prior tag set; approver: the operator named in the exact-target approval. Nothing else changes.
 
 This text is recorded for a future write ticket. It is not authorization and no Azure write occurred.
+
+### Cost forecast endpoint attempt — 2026-08-25
+
+A read-only Azure Cost Management forecast query was attempted at the pinned subscription scope. The first request returned HTTP 415 Unsupported Media Type; the JSON-header retry returned HTTP 400 because the CLI body was serialized as an invalid Usage value. No resource or budget state was changed. Together with the budget read and Azure MCP pricing empty results, this does not prove a forecast amount; U-9 remains open.
