@@ -16,3 +16,13 @@ Reviewer: `pegasus-desktop-reviewer` (Herschel), independent of implementation.
 ### Verdict
 
 **Needs changes pending re-review:** confirm the evidence/report reconciliation. CI registration remains a separate merge blocker.
+
+## Independent re-review — 2026-08-25
+
+Reviewer: `pegasus-desktop-reviewer` (Herschel), independent of implementation.
+
+- The permitted-plan post-implementation report is now sufficient for the `chore` profile.
+- The reviewer independently reran the task-worktree validation at `8d6fc34d`; links resolved for 232 files, placement passed, and `git diff --check` passed.
+- **Remaining blocker:** PR #3 has no reported CI checks because Actions workflow registration is absent. The repository requires green CI before a `dev` merge; no workaround or merge is authorised.
+
+**Verdict:** needs changes only for the external CI-registration/green-run condition.
