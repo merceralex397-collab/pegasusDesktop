@@ -25,3 +25,7 @@ The ticket is not yet merged or proven on `main`. Independent review and the con
 ## Review correction — 2026-08-25
 
 The first independent review failed on duplicated conversion ownership and incomplete provenance validation. Those findings were fixed by delegating to `VehicleMileagePolicy.ToMiles`, rejecting negative provenance, and clearing provenance when mileage is cleared. Final corrected-source validation is 927/927 Core tests, 5/5 case-data persistence tests, a Release build with 0 warnings/errors, and a passing 66-migration grant check.
+
+## Review correction — 2026-08-25 (corrected head)
+
+The corrected changes are committed as `52b00c52` and pushed to the configured `pegasusDesktop` remote. The earlier review findings were addressed: conversion now has one owner in `VehicleMileagePolicy.ToMiles`, negative kilometre provenance is rejected, and provenance is cleared when mileage is cleared. Corrected-source validation is 36/36 focused Core/VehicleWorkflow tests, 927/927 full Core tests, 5/5 case-data persistence tests, Release build with 0 warnings/errors, 66-migration grant check passed, and `git diff --check` passed.

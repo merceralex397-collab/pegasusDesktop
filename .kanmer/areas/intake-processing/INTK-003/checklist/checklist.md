@@ -8,9 +8,11 @@
 - [x] Preserve the marker through the existing case DTO and save callers; display it beside the canonical miles value in the existing case summary without client-side reconversion.
 - [x] Leave EVA field names/bundle ownership unchanged and record the consequence in the plan.
 - [x] Add FRD-06 and capability-register requirements; no new route, table, column, batch, read-time conversion, data backfill, Azure write, or cloud/deployment activity.
-- [x] Validate Core mileage tests (12/12), full Core tests (926/926), case-data persistence tests (5/5), Release build (0 warnings/errors), migration grants (66 migrations checked), and diff hygiene.
-- [ ] Independent review, PR/CI, merge to `dev`, post-merge proof on `main`, and Kanmer closeout remain to be completed.
+- [x] Validate corrected source: focused Core/VehicleWorkflow tests (36/36), full Core tests (927/927), case-data persistence tests (5/5), Release build (0 warnings/errors), migration grants (66 migrations checked), and diff hygiene.
+- [ ] Independent review of corrected head, PR/CI, merge to `dev`, post-merge proof on `main`, and Kanmer closeout remain to be completed.
 
 ## Evidence notes
 
 The first persistence run correctly exposed the existing EAV field-name check constraint; after generating `CanonicalCaseMileageProvenance`, the focused and full case-data persistence tests passed. The migration changes only that constraint and does not transform existing persisted cases.
+
+The first independent review found duplicate conversion ownership and incomplete provenance validation. The corrected commit `52b00c52` delegates conversion to the existing `VehicleMileagePolicy.ToMiles`, rejects negative provenance, and clears provenance when mileage is cleared.
