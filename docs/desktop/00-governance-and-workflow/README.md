@@ -58,8 +58,9 @@ read 2026-08-23):
   into `dev`, `main` is the deployed branch, promotion is an exact-SHA atomic
   fast-forward requiring the literal `MERGE AUTH GRANTED`; a GitHub
   merge/squash/rebase is not a promotion; `scripts/Test-MainBranchHistory.ps1`
-  guards `main` history on push. The fork has **only `main`** (no `dev`, no
-  tags; `git branch -a`, `git tag`, 2026-08-23).
+   guards `main` history on push. The accepted fork topology is `main`
+   `191ddf33` with `dev` at `5770eb21` (the merged FND-005 advancement), and
+   `main` is an ancestor of `dev`; the GitHub default branch remains `main`.
 - Upstream `collisionengineers/pegasus` (`git ls-remote`, 2026-08-23): heads
   `dev` `499b8885`, `main` `7d6a948a`, `kanmer-board` `4694067c`. Fork `main`
   `191ddf33` **is an ancestor** of upstream `main`; upstream is **32 commits
@@ -183,7 +184,8 @@ Azure", "the web app does it", "it may scale later" are not answers.
 Keep the `AGENTS.md` shape — the release skill, the CI history guard and the
 review rules already assume it — with four fork-specific additions:
 
-1. **Create `dev` from `main` now.** `task/<slug>` → PR → `dev` (CI green +
+1. **Record the existing `dev` trunk.** `dev` was created from `main` and now
+   records the accepted head `5770eb21`; new `task/<slug>` branches → PR → `dev` (CI green +
    independent review) → exact-SHA promotion to `main` with
    `MERGE AUTH GRANTED`. No long-lived `desktop-conversion` branch: the
    fork's `dev`/`main` *are* the conversion trunk (the proposal's isolation
@@ -361,7 +363,7 @@ no ticket can leave `backlog` without a governing doc (probe one with
 
 | ID | Title | Profile | Depends on | Acceptance | Verification | Tier | Routing |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| DSK-00-01 | Create `dev` from `main`; record the baseline commit in `docs/desktop/README.md` | chore | — | `dev` exists at the baseline SHA; AGENTS.md workflow unchanged | `git branch --list dev`; `git rev-parse dev main` equal | 1 | (operator or `winui-dev`) · `pegasus-desktop` project skill · Kanmer `get_status` |
+| DSK-00-01 | Record the accepted `dev` trunk and baseline relationship in `docs/desktop/README.md` | chore | — | `dev=5770eb21` is recorded; `main=191ddf33` is an ancestor; AGENTS.md workflow unchanged | `git show -s origin/dev`; `git merge-base --is-ancestor origin/main origin/dev` exits 0 | 1 | (operator or `winui-dev`) · `pegasus-desktop` project skill · Kanmer `get_status` |
 | DSK-00-02 | Add read-only `upstream` remote; first one-way sync (32 commits) via PR into `dev`; never push upstream | chore | DSK-00-01 | `upstream/main` merged into `dev` and promoted; CI green | `git merge-base --is-ancestor <fork-main> upstream/main`; `repository-check` green | 1 | `pegasus-desktop-reviewer` reviews the sync diff · — · Kanmer |
 | DSK-00-03 | Seed the fork board: areas, HZN phases, EPIC per area plan, `context.md` per group | chore | — | `get_status` lists the 16 areas and 24 groups | Kanmer `list_board`, `list_groups` | 1 | — · `kanmer-setup`, `kanmer-tickets` · Kanmer `create_group`, `create_item` |
 | DSK-00-04 | Create every DSK ticket from plans 01–12 with `refs`/`docs_todo`, profile, area, group and a `## Routing` block | chore | DSK-00-03 | Every ticket row in the plans exists on the board | `list_items` count equals the plan rows; `get_doc_gates` on a sample | 1 | — · `kanmer-tickets` · Kanmer `create_item`, `link_doc`, `set_ticket_doc` |
