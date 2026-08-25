@@ -8,7 +8,7 @@ Does the 46-row skeleton in `docs/desktop/01-inventory-and-parity/parity-matrix.
 
 - Baseline: `git rev-parse HEAD` and `git log -1 --format='%H%n%cI'` both returned `ecb9b7b40c802b5ea800a69a7a46a0875269737a`; commit time `2026-08-24T19:11:49+01:00`.
 - Scope stayed within the two authorized repository documents: `docs/desktop/01-inventory-and-parity/parity-matrix.md` and `docs/desktop/01-inventory-and-parity/README.md`. No source, tests, runtime, Azure, or status-column changes were made.
-- The raw 136-line handler declaration output is in FND-014 scratch `notes.md), produced by the exact command required by the ticket.
+- The raw 136-line handler declaration output is in FND-014 scratch `notes.md`, produced by the exact command required by the ticket. Of these, 134 declarations are in the 53 `*.cshtml.cs` page-model files and two are shared inherited declarations in `UploadConfirmationPageModel.cs`; the latter are represented once in PAR-29 and explicitly inherited by PAR-30.
 
 ## Findings
 
@@ -16,10 +16,10 @@ Does the 46-row skeleton in `docs/desktop/01-inventory-and-parity/parity-matrix.
 
 - `git ls-files 'src/Pegasus.Web/**/*.cshtml.cs'` returned **53** page models.
 - `git ls-files 'src/Pegasus.Web/**/*.cshtml'` returned **76** views.
-- `git grep -n "public .*On\\(Get\\|Post\\)[A-Za-z]*" -- 'src/Pegasus.Web/Pages'` returned **136 declaration lines**. The per-file reconciliation has no code-only or matrix-only handler names.
+- `git grep -n "public .*On\\(Get\\|Post\\)[A-Za-z]*" -- 'src/Pegasus.Web/Pages'` returned **136 declaration lines**: 134 are in the 53 `*.cshtml.cs` page-model files and two are shared inherited declarations in `UploadConfirmationPageModel.cs`. The per-file reconciliation for the 53 page-model files is complete, and the two shared declarations are represented once in PAR-29 with PAR-30's inheritance called out explicitly.
 - Difference list (a), page models with no matrix row: **empty** after correcting the five missing `Administration/` prefixes.
 - Difference list (b), matrix page-model paths that do not exist: **empty** after the same corrections.
-- Difference list (c), handlers present in code but absent from a row, or listed by a row but absent from code: **empty**. `PAR-04` and the two shell pages intentionally have no handler list; `PAR-43` is a web-shell grouping.
+- Difference list (c), handlers present in code but absent from a row, or listed by a row but absent from code: **empty** after representing the two shared `UploadConfirmationPageModel` handlers once in PAR-29 and noting their inheritance in PAR-30. `PAR-04` and the two shell pages intentionally have no handler list; `PAR-43` is a web-shell grouping.
 - The pathspec check is material: `src/Pegasus.Web/Pages/Cases/**/*.cshtml.cs` returns **4**, while `Pages/Cases/*.cshtml.cs` returns **12**; the Administration equivalents return **11** and **15**. The correction was handed to [[FND-016]] in its Kanmer scratch.
 
 ### Corrections made
@@ -91,8 +91,8 @@ The table is the complete 46-row handoff to [[FND-015]], [[FND-016]], [[FND-017]
 | PAR-26 | ImageIntake/Index.cshtml.cs<br>ImageIntake/Details.cshtml.cs | OnGetAsync<br>OnPostCloseAsync | ImageIntake/Index.cshtml.cs: none<br>ImageIntake/Details.cshtml.cs: StaffPageModel | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
 | PAR-27 | Operations/Index.cshtml.cs | OnGetAsync<br>OnPostRetryExternalAsync<br>OnPostRevokeLinkAsync | Operations/Index.cshtml.cs: StaffPageModel | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
 | PAR-28 | Upload.cshtml.cs | OnGet<br>OnPostAsync | Upload.cshtml.cs: StaffPageModel | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
-| PAR-29 | UploadStatus.cshtml.cs | OnGetAsync | UploadStatus.cshtml.cs: UploadConfirmationPageModel | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
-| PAR-30 | UploadGroupStatus.cshtml.cs | OnGetAsync<br>OnPostRegisterGroupAsync<br>OnPostAttachGroupAsync | UploadGroupStatus.cshtml.cs: UploadConfirmationPageModel | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
+| PAR-29 | UploadStatus.cshtml.cs; shared UploadConfirmationPageModel.cs (also inherited by PAR-30) | OnGetAsync; OnGetCaseSearchAsync; OnPostAttachAsync | UploadStatus.cshtml.cs: UploadConfirmationPageModel | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
+| PAR-30 | UploadGroupStatus.cshtml.cs (inherits the shared handlers listed in PAR-29) | OnGetAsync<br>OnPostRegisterGroupAsync<br>OnPostAttachGroupAsync | UploadGroupStatus.cshtml.cs: UploadConfirmationPageModel | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
 | PAR-31 | Uploads/Request.cshtml.cs | OnGetAsync<br>OnPostAsync | Uploads/Request.cshtml.cs: none | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
 | PAR-32 | Administration/Index.cshtml.cs | OnGet | Administration/Index.cshtml.cs: AdministrationPageModel | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
 | PAR-33 | Administration/Configuration.cshtml.cs | OnGetAsync<br>OnPostAsync | Administration/Configuration.cshtml.cs: AdministrationPageModel | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
