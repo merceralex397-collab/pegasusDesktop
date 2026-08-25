@@ -140,6 +140,45 @@ public sealed class RecoveryTests
 
     [Fact]
     [Trait("Category", "QdosAlphaAcceptance")]
+    public async Task ConcurrentRecoveryClaimsOnlyOneStaleDispatchedRow()
+    {
+        var clock = new AdjustableTimeProvider(new(2031, 5, 6, 10, 30, 0, TimeSpan.Zero));
+        using var factory = new IntakeWebApplicationFactory(clock);
+        await using var firstScope = factory.Services.CreateAsyncScope();
+        await using var secondScope = factory.Services.CreateAsyncScope();
+        var firstStore = firstScope.ServiceProvider.GetRequiredService<IIntakeWorkStore>();
+        var secondStore = secondScope.ServiceProvider.GetRequiredService<IIntakeWorkStore>();
+        var received = await StageAndDispatchAsync(
+            firstStore,
+            firstScope.ServiceProvider.GetRequiredService<IIntakeArtifactStore>(),
+            clock,
+            "concurrent-recovery");
+        clock.Advance(TimeSpan.FromHours(1));
+
+        var results = await Task.WhenAll(
+            firstStore.RecoverExpiredLeasesAsync(
+                clock.GetUtcNow(),
+                10,
+                TimeSpan.FromHours(1),
+                CancellationToken.None),
+            secondStore.RecoverExpiredLeasesAsync(
+                clock.GetUtcNow(),
+                10,
+                TimeSpan.FromHours(1),
+                CancellationToken.None));
+
+        Assert.Equal(1, results.Sum());
+        var recovered = Assert.IsType<IntakeWorkItem>(await firstStore.FindWorkItemAsync(
+            received.StagedReceiptId,
+            CancellationToken.None));
+        Assert.Equal(IntakeWorkState.Pending, recovered.State);
+        Assert.Equal(0, recovered.AttemptCount);
+        Assert.Null(recovered.LeaseToken);
+        Assert.Null(recovered.LeaseExpiresAtUtc);
+    }
+
+    [Fact]
+    [Trait("Category", "QdosAlphaAcceptance")]
     public async Task DuplicateQueueMessageAfterRecoveryIsNoOp()
     {
         var clock = new AdjustableTimeProvider(new(2031, 5, 6, 10, 30, 0, TimeSpan.Zero));
@@ -514,6 +553,11 @@ public sealed class RecoveryTests
             clock.GetUtcNow(),
             TimeSpan.FromMinutes(5),
             CancellationToken.None));
+
+        Assert.Equal(
+            QueuedIntakeProcessingOutcome.NoOp,
+            await IntakeWebDriver.CreateProcessor(services)
+                .ExecuteAsync(received.StagedReceiptId));
 
         var status = Assert.IsType<QueuedIntakeStatus>(
             await services.GetRequiredService<IQueuedIntakeStatusQueries>()
