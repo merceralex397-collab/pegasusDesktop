@@ -4,12 +4,15 @@ type: ticket
 title: >-
   upstream:PLAT-032 · Simplification and duplicate-route sweep across the
   codebase
-status: preparing
+status: implementing
 area: platform-operations
-assignee: ''
+assignee: codex-mcp-client
 profile: chore
 stageEntered:
   preparing: '2026-08-24T21:21:17.135Z'
+taken_at: '2026-08-25T07:09:58.676Z'
+branch: task/plat-028-duplicate-route-sweep
+worktree: ../pegasus-worktrees/plat-028-duplicate-route-sweep
 labels:
   - simplification
   - upstream-carryover
@@ -25,7 +28,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:47:25.327Z'
-updated: '2026-08-24T21:21:17.135Z'
+updated: '2026-08-25T07:09:58.676Z'
 ---
 
 ## What

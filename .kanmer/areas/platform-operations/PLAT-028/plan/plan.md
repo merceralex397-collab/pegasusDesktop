@@ -68,3 +68,11 @@ Operator direction on the upstream ticket — "check for excessive bloat, duplic
 ## Simplification pass
 
 Before the PR, independently assess the branch diff for unnecessary abstractions, duplicated policy, and scope expansion; record findings and dispositions here.
+
+## Documentation changes
+
+No repository documentation changes are required. This ticket's research and files documents record the sweep findings. The plan premise that only `RetainedMailFolderMoveResult.Outcome` is consumed is corrected by current evidence: `src/Pegasus.Web/Pages/Mail/Message.cshtml` consumes all four expected concurrency fields for uncertain-move recovery, so the fields remain. The live `ICaseEvidenceImageQueries` caller and the distinct content-store routes are likewise retained; future desktop contract ownership remains with DSK-03-07/DSK-03-10/DSK-03-12.
+
+## Research disposition
+
+The sweep found one behavior-preserving consolidation: a shared inline-image predicate across the existing source-reader partials. It found no safe deletion of a store, evidence-image query, custody overload, move-result field, or Razor page.
