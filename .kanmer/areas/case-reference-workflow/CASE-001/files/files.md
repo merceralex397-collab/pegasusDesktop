@@ -29,3 +29,15 @@ So a letterhead banner becomes export-eligible while the gallery excludes it. Af
 this fix a receipt carrying only a banner would be `ImagesComplete: false` yet still
 export — a narrower disagreement in the opposite direction. Real, but folding it in
 widens the diff and risks the export side. Filed separately.
+
+
+## Review finding scope amendment — 2026-08-25
+
+The independent review found a concrete rollout failure: a durable pending or failed automatic allocation created before this observed-completeness change can retain the old `ImagesComplete: true` command hash. A replay of the same operation after the change computes `false` and currently raises an operation conflict. The narrow fix owns the existing persistence boundary and the existing recovery test file:
+
+| Path | Additional change |
+| --- | --- |
+| `src/Pegasus.Infrastructure/Persistence/EfIntakeAllocationStore.cs` | Recognize only an automatic-attempt replay whose persisted/current commands match in every field except `Completeness.ImagesComplete`; pending attempts are canonicalized to the current observed value before recovery, and failed attempts replay their recorded failure without a conflict. No general command-hash compatibility is added. |
+| `tests/Pegasus.IntegrationTests/QdosAllocationRecoveryTests.cs` | Add pending and failed legacy-completeness replay facts using the existing LocalDB allocation store and command-hash helper. |
+
+All other scope boundaries remain unchanged.

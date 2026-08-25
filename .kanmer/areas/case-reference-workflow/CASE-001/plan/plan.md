@@ -238,3 +238,16 @@ One intervening full-Core attempt, started immediately after the concurrent Loca
 ## Simplification pass — test-evidence follow-up, 2026-08-25
 
 Applied: reuse the existing allocation helper and workflow query rather than add a second fixture, clock, or policy seam. No unnecessary abstraction, production change, compatibility path, or unrelated convention cleanup was introduced. No remaining behavior-preserving simplification finding is in scope.
+
+## Review finding — durable legacy replay — 2026-08-25
+
+Independent review identified a real rollout defect introduced by the observed image-completeness value: durable automatic attempts created before this change can retain `ImagesComplete: true), while a replay after the change computes `false). The same operation key then fails the command-hash equality check in `EfIntakeAllocationStore.BeginAsync`, stranding pending or failed automatic work behind an operation conflict.
+
+The implementation amendment is deliberately narrow and is required for correctness of this ticket's own rollout:
+
+1. In `EfIntakeAllocationStore.BeginAsync`, allow only an automatic attempt whose stored/current command and the new automatic command match in every persisted field except `ImagesComplete), with the same actor, operation key, reason, receipt version and other command fields.
+2. For a pending legacy attempt, update the persisted completeness/hash to the current command before the existing idempotent acceptance path resumes, so the attempt record and the accepted Case agree.
+3. For a failed legacy attempt, return the recorded failed attempt as a suppressed replay instead of raising a conflict; staff retry semantics remain unchanged.
+4. Add LocalDB regression tests for both pending and failed legacy attempts. No broad compatibility layer, migration, dual implementation, or unrelated persistence change is introduced.
+
+This is a behavior-preserving recovery path for a concrete durable state created by this ticket's own rollout, not speculative compatibility engineering. The simplification pass must include this added persistence branch and its tests.
