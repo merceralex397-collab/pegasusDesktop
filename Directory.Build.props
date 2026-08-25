@@ -6,6 +6,7 @@
     <Deterministic>true</Deterministic>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <Version>0.1.0-alpha.1</Version>
     <!-- Single source of truth for the pinned Microsoft.Playwright package
          version. Pegasus.Infrastructure's PackageReference and

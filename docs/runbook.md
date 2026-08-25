@@ -306,6 +306,7 @@ dotnet test ./Pegasus.slnx --configuration Release --no-build --filter "Category
 ```
 
 These commands are identical on both platforms; `pwsh` runs them either way.
+Package versions are centralized in `Directory.Packages.props`; after a version change, regenerate the lock files with `dotnet restore ./Pegasus.slnx --force-evaluate` before running the locked restore.
 
 The focused forms are below; the two integration filters are a complement pair, so
 their union with the two unit projects is exactly the canonical selection:
