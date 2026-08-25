@@ -198,3 +198,24 @@ _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass ove
 own diff before the PR, recorded here under a dated heading. Record `n/a — docs-only` for this
 documentation-only branch — and on step 3's outcome A or B, where this branch has no diff of
 its own, record `n/a — docs-only; change folded into <authoring ticket>'s PR`._
+
+## Execution outcome C — 2026-08-25
+
+The destination check was run against `origin/dev` / HEAD `5770eb21c0d03620a6a6d99e0431bde91ec2ad6a`. `docs/adr/0100-native-winui-3-client-in-the-fork.md` exists there with frontmatter `id: ADR-0100`, `status: accepted`, and body text “Accepted on 2026-08-24.” ADR-0100 is therefore immutable under AGENTS.md; this ticket did not edit it and did not hand-edit another ticket's branch.
+
+The premise checks produced:
+
+- `git ls-files` search for `desktop-conversion-plan|desktop.azure.conversion|recommended.desktop.api`: no tracked output.
+- `rg -il 'Recommended desktop API architecture' docs reference`: the proposal citation plus this fallback note after implementation.
+- Excluding `Pegasus_Native_Desktop_Design_Proposal.md` and `docs/index.md`: `<no non-proposal/non-index hit>`.
+- The proposal's hit is its own citation at §2 item 5 / Appendix D, not one of the missing prior documents.
+
+Per the plan's explicit outcome-C path, the authority note was added to `docs/index.md` § Authority. The proposal, ADR-0100, desktop plan, operator notes, and any other ADR were not edited. The note states that the three cited prior documents are not present or retrievable, are not inputs to conversion tickets, and have their substantive positions reconciled in proposal §3.
+
+Validation: `pwsh ./scripts/Test-DocumentationLinks.ps1` passed (“All relative Markdown links resolve (232 files checked).”); `git diff --check` passed; the only changed repository file is `docs/index.md`; no `docs/adr/` file is changed.
+
+The acceptance item requiring hand-off before ADR-0100 acceptance is not applicable because the ADR was already accepted before this ticket was taken; the ticket's fallback explicitly authorizes the `docs/index.md` path and records this reason.
+
+## Simplification pass — 2026-08-25
+
+n/a — docs-only. The branch contains one existing canonical-file edit, no new ADR, no duplicate note, no code, and no un-applied behavior-preserving simplification finding.
