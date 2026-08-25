@@ -261,6 +261,12 @@ gate; `get_doc_gates <id>` is authoritative, never `board.yml`. Every
 conversion ticket is `feature` unless it is a pure defect (`fix`), hygiene
 (`chore`) or a timeboxed investigation (`spike`).
 
+**Deviation:** plan folders `10-security-observability-performance` (18 PLAT
+tickets) and `11-azure-disposition` (9 PLAT tickets) share the existing
+`platform-operations` area; the realised board also contains deliberate
+`EPIC-014` for the upstream carry-over batch. The area and group decisions are
+recorded in `HZN-001/board-conventions.md` § 2.
+
 ### Ticket template (proposal §25 → Kanmer documents)
 
 | Proposal §25 section | Kanmer document | Note |
