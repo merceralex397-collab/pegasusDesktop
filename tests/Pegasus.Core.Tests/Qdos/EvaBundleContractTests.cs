@@ -23,6 +23,8 @@ public sealed class EvaBundleContractTests
 
         Assert.Equal(first.Content, replay.Content);
         Assert.Equal(first.Sha256, replay.Sha256);
+        Assert.Equal(Convert.ToHexString(SHA256.HashData(first.Content)).ToLowerInvariant(), first.Sha256);
+        Assert.Equal(Convert.ToHexString(SHA256.HashData(first.JsonContent)).ToLowerInvariant(), first.JsonSha256);
         Assert.Equal("EVA-QDOS001.zip", first.FileName);
         using var archive = new ZipArchive(new MemoryStream(first.Content), ZipArchiveMode.Read);
         Assert.Equal(
@@ -30,28 +32,12 @@ public sealed class EvaBundleContractTests
                 "EVA-QDOS001.json",
                 "Images/002 overview.jpg",
                 "Images/003 damage.png",
-                "Images/004 other.jpg",
-                "provenance.json",
-                "manifest.sha256"
+                "Images/004 other.jpg"
             ],
             archive.Entries.Select(entry => entry.FullName));
 
         using var eva = JsonDocument.Parse(first.JsonContent);
         Assert.Equal(FieldNames, eva.RootElement.EnumerateObject().Select(property => property.Name));
-        using var provenance = JsonDocument.Parse(first.ProvenanceContent);
-        Assert.Equal(EvaBundleSchema.SchemaVersion, provenance.RootElement.GetProperty("schemaVersion").GetString());
-        Assert.Equal(13, provenance.RootElement.GetProperty("fields").GetArrayLength());
-        Assert.Equal(3, provenance.RootElement.GetProperty("images").GetArrayLength());
-        Assert.Equal(
-            OverviewOccurrenceId,
-            provenance.RootElement.GetProperty("images")[0].GetProperty("occurrenceId").GetGuid());
-        Assert.Equal(
-            1,
-            provenance.RootElement.GetProperty("images")[0].GetProperty("version").GetInt32());
-
-        var manifest = Encoding.UTF8.GetString(first.ManifestContent);
-        Assert.Contains($"{first.JsonSha256}  EVA-QDOS001.json\n", manifest, StringComparison.Ordinal);
-        Assert.Contains($"{first.ProvenanceSha256}  provenance.json\n", manifest, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -80,29 +66,20 @@ public sealed class EvaBundleContractTests
         Assert.Equal(
             [
                 "EVA-QDOS001.json",
-                "Images/002 overview.jpg",
-                "provenance.json",
-                "manifest.sha256"
+                "Images/002 overview.jpg"
             ],
             archive.Entries.Select(entry => entry.FullName));
-        using var provenance = JsonDocument.Parse(bundle.ProvenanceContent);
-        Assert.Equal(1, provenance.RootElement.GetProperty("images").GetArrayLength());
-        Assert.Equal(
-            OverviewOccurrenceId,
-            provenance.RootElement.GetProperty("images")[0].GetProperty("occurrenceId").GetGuid());
     }
 
     [Fact]
-    public void ChangedAcceptedFieldAndProvenanceCreateDifferentDeterministicBundle()
+    public void ChangedAcceptedFieldCreatesDifferentDeterministicBundle()
     {
         var source = Source();
         var changedSource = source with
         {
             Fields = source.Fields with { Mileage = "12001" },
             Provenance = source.Provenance
-                .Select(item => item.Name == "Mileage"
-                    ? item with { Value = "12001", SourceVersion = "case-data/v14" }
-                    : item)
+                .Select(item => item.Name == "Mileage" ? item with { Value = "12001" } : item)
                 .ToArray()
         };
 
@@ -113,6 +90,23 @@ public sealed class EvaBundleContractTests
         Assert.NotEqual(first.Sha256, changed.Sha256);
         Assert.Equal(changed.Content, replay.Content);
         Assert.Equal(changed.Sha256, replay.Sha256);
+    }
+
+    [Fact]
+    public void MismatchedFieldProvenanceIsRejected()
+    {
+        var source = Source();
+        var mismatched = source with
+        {
+            Provenance = source.Provenance
+                .Select(item => item.Name == "Mileage" ? item with { Value = "wrong" } : item)
+                .ToArray()
+        };
+
+        var exception = Assert.Throws<InvalidDataException>(
+            () => EvaBundleSchema.CreateOfflineReplay(mismatched, Images()));
+
+        Assert.Contains("does not match", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -127,7 +121,7 @@ public sealed class EvaBundleContractTests
     }
 
     [Fact]
-    public void BusinessReadableEntryNamesAndManifestGrammarAreExact()
+    public void ExportedJsonIsTwoSpaceIndentedAndTheArchiveCarriesOnlyJsonAndImages()
     {
         var bundle = EvaBundleSchema.CreateOfflineReplay(Source(), Images());
 
@@ -138,9 +132,7 @@ public sealed class EvaBundleContractTests
                 "EVA-QDOS001.json",
                 "Images/002 overview.jpg",
                 "Images/003 damage.png",
-                "Images/004 other.jpg",
-                "provenance.json",
-                "manifest.sha256"
+                "Images/004 other.jpg"
             ],
             names);
         Assert.All(names, name =>
@@ -148,13 +140,22 @@ public sealed class EvaBundleContractTests
             Assert.DoesNotContain(OverviewOccurrenceId.ToString("N"), name, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain(DamageOccurrenceId.ToString("N"), name, StringComparison.OrdinalIgnoreCase);
         });
-        var manifest = Encoding.UTF8.GetString(bundle.ManifestContent);
-        Assert.DoesNotContain('\r', manifest);
-        Assert.False(manifest.EndsWith("\n\n", StringComparison.Ordinal));
-        var lines = manifest.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        Assert.Equal(names.Length - 1, lines.Length);
-        Assert.All(lines, line => Assert.Matches("^[0-9a-f]{64}  [^\\r\\n]+$", line));
-        Assert.Equal(names[..^1], lines.Select(line => line[66..]));
+
+        var jsonEntry = archive.Entries.Single(entry => entry.FullName == "EVA-QDOS001.json");
+        using var entryStream = jsonEntry.Open();
+        using var copiedJson = new MemoryStream();
+        entryStream.CopyTo(copiedJson);
+        var exportedJson = copiedJson.ToArray();
+
+        Assert.Equal(bundle.JsonContent, exportedJson);
+        Assert.True(exportedJson.AsSpan().StartsWith("{\r\n  \"Work Provider\": "u8));
+        var json = Encoding.UTF8.GetString(exportedJson);
+        var lines = json.Split("\r\n", StringSplitOptions.None);
+        Assert.Equal("{", lines[0]);
+        Assert.Equal("}", lines[^1]);
+        Assert.All(lines[1..^1], line => Assert.StartsWith("  \"", line, StringComparison.Ordinal));
+        using var eva = JsonDocument.Parse(exportedJson);
+        Assert.Equal(FieldNames, eva.RootElement.EnumerateObject().Select(property => property.Name));
     }
 
     [Fact]
