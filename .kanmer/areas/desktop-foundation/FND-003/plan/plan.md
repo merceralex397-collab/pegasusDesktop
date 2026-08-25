@@ -225,7 +225,7 @@ behaviour.
   exists" run duplicates the group set. Mitigation: step 1 forbids it and every
   repair in this plan is a `set_group_doc` or `update_group` on an existing
   object.
-- **The body's "24 groups" is stale, not wrong.** It counts the plan-derived
+- **The original body's "24 groups" was stale, not wrong.** It counts the plan-derived
   groups; `EPIC-014` postdates it. Mitigation: step 5a reports 25 and names the
   addition rather than reconciling the number down.
 - **The § 2 the body tells you to cite does not exist yet.** Measured: no
