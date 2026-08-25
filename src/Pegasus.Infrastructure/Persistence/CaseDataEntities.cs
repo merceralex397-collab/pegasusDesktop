@@ -47,6 +47,7 @@ internal static class CaseDataFieldNames
     public const string VehicleModel = "vehicle_model";
     public const string VehicleMileage = "vehicle_mileage";
     public const string VehicleMileageUnit = "vehicle_mileage_unit";
+    public const string VehicleMileageKilometres = "vehicle_mileage_kilometres";
     public const string AccidentCircumstances = "accident_circumstances";
     public const string IncidentDate = "incident_date";
     public const string ContactName = "contact_name";
@@ -69,6 +70,7 @@ internal static class CaseDataFieldNames
         VehicleModel,
         VehicleMileage,
         VehicleMileageUnit,
+        VehicleMileageKilometres,
         AccidentCircumstances,
         IncidentDate,
         ContactName,

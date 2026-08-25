@@ -107,6 +107,91 @@ public sealed class CaseDataOperationsTests
     }
 
     [Fact]
+    public void NormalizeConvertsKilometresAndRetainsTypedProvenance()
+    {
+        var normalized = CaseDataPolicy.Normalize(new(
+            VehicleMileage: 100_000,
+            VehicleMileageUnit: "kilometres"));
+
+        Assert.Equal(62_137, normalized.VehicleMileage);
+        Assert.Equal("Miles", normalized.VehicleMileageUnit);
+        Assert.Equal(100_000, normalized.VehicleMileageKilometres);
+    }
+
+    [Fact]
+    public void NormalizeUsesAwayFromZeroAtTheRoundingBoundaryAndEitherSide()
+    {
+        Assert.Equal(
+            7_812,
+            CaseDataPolicy.Normalize(new(
+                VehicleMileage: 12_572,
+                VehicleMileageUnit: "Kilometres")).VehicleMileage);
+        Assert.Equal(
+            7_812,
+            CaseDataPolicy.Normalize(new(
+                VehicleMileage: 12_573,
+                VehicleMileageUnit: "Kilometres")).VehicleMileage);
+        Assert.Equal(
+            7_813,
+            CaseDataPolicy.Normalize(new(
+                VehicleMileage: 12_574,
+                VehicleMileageUnit: "kilometres")).VehicleMileage);
+    }
+
+    [Fact]
+    public void NormalizeTreatsMissingOrMilesUnitAsCanonicalMiles()
+    {
+        var missing = CaseDataPolicy.Normalize(new(VehicleMileage: 123));
+        var miles = CaseDataPolicy.Normalize(new(
+            VehicleMileage: 123,
+            VehicleMileageUnit: "miles"));
+
+        Assert.Equal(123, missing.VehicleMileage);
+        Assert.Equal("Miles", missing.VehicleMileageUnit);
+        Assert.Null(missing.VehicleMileageKilometres);
+        Assert.Equal(123, miles.VehicleMileage);
+        Assert.Equal("Miles", miles.VehicleMileageUnit);
+        Assert.Null(miles.VehicleMileageKilometres);
+    }
+
+    [Fact]
+    public void NormalizeRejectsUnknownMileageUnitsAndNegativeMileage()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => CaseDataPolicy.Normalize(new(
+            VehicleMileage: 123,
+            VehicleMileageUnit: "yards")));
+        Assert.Throws<ArgumentOutOfRangeException>(() => CaseDataPolicy.Normalize(new(
+            VehicleMileage: 123,
+            VehicleMileageUnit: "0")));
+        Assert.Throws<ArgumentOutOfRangeException>(() => CaseDataPolicy.Normalize(new(
+            VehicleMileage: -1,
+            VehicleMileageUnit: "miles")));
+    }
+
+    [Fact]
+    public void NormalizePreservesAConsistentExistingKilometreMarkerForAUnrelatedPartialSave()
+    {
+        var normalized = CaseDataPolicy.Normalize(new(
+            VehicleMileage: 62_137,
+            VehicleMileageUnit: "Miles",
+            VehicleMileageKilometres: 100_000));
+
+        Assert.Equal(62_137, normalized.VehicleMileage);
+        Assert.Equal(100_000, normalized.VehicleMileageKilometres);
+    }
+
+    [Fact]
+    public void NormalizeDoesNotAcceptAnInconsistentKilometreMarker()
+    {
+        var normalized = CaseDataPolicy.Normalize(new(
+            VehicleMileage: 62_138,
+            VehicleMileageUnit: "Miles",
+            VehicleMileageKilometres: 100_000));
+
+        Assert.Null(normalized.VehicleMileageKilometres);
+    }
+
+    [Fact]
     public async Task SaveCaseNormalizesExplicitConfirmedValuesWithoutAnIdentityField()
     {
         var store = new RecordingStore();

@@ -1,3 +1,4 @@
+using Pegasus.Core.Vehicle;
 using Pegasus.Core.Address;
 using Pegasus.Core.Lifecycle;
 using Pegasus.Core.Workflow;
@@ -140,6 +141,16 @@ public static class CaseDataPolicy
         ValidateDate(data.InspectionDate, nameof(data.InspectionDate));
         ValidateDate(data.InspectionDeadline, nameof(data.InspectionDeadline));
 
+        var mileageUnit = MileageUnit(data.VehicleMileageUnit);
+        var originalMileageKilometres = data.VehicleMileage is null
+            ? data.VehicleMileageKilometres
+            : mileageUnit == VehicleMileageUnit.Kilometres
+                ? data.VehicleMileage
+                : data.VehicleMileageKilometres is { } original
+                    && ToMiles(original) == data.VehicleMileage
+                        ? original
+                        : null;
+
         var normalized = data with
         {
             ClaimantName = Text(data.ClaimantName, 300, nameof(data.ClaimantName)),
@@ -147,7 +158,13 @@ public static class CaseDataPolicy
             VehicleRegistration = Registration(data.VehicleRegistration),
             VehicleMake = Text(data.VehicleMake, 100, nameof(data.VehicleMake)),
             VehicleModel = Text(data.VehicleModel, 100, nameof(data.VehicleModel)),
-            VehicleMileageUnit = Text(data.VehicleMileageUnit, 40, nameof(data.VehicleMileageUnit)),
+            VehicleMileage = data.VehicleMileage is { } mileage
+                ? ToMiles(mileage, mileageUnit)
+                : null,
+            VehicleMileageUnit = data.VehicleMileage is null
+                ? Text(data.VehicleMileageUnit, 40, nameof(data.VehicleMileageUnit))
+                : VehicleMileageUnit.Miles.ToString(),
+            VehicleMileageKilometres = originalMileageKilometres,
             AccidentCircumstances = Text(data.AccidentCircumstances, 2000, nameof(data.AccidentCircumstances)),
             ContactName = Text(data.ContactName, 300, nameof(data.ContactName)),
             ContactEmailAddress = Text(data.ContactEmailAddress, 320, nameof(data.ContactEmailAddress)),
@@ -159,6 +176,37 @@ public static class CaseDataPolicy
         ValidateInspection(normalized);
         return normalized;
     }
+
+    private static VehicleMileageUnit MileageUnit(string? value)
+    {
+        var normalized = Text(value, 40, nameof(CaseEditableData.VehicleMileageUnit));
+        if (normalized is null)
+        {
+            return VehicleMileageUnit.Miles;
+        }
+
+        if (string.Equals(normalized, nameof(VehicleMileageUnit.Miles), StringComparison.OrdinalIgnoreCase))
+        {
+            return VehicleMileageUnit.Miles;
+        }
+
+        if (string.Equals(normalized, nameof(VehicleMileageUnit.Kilometres), StringComparison.OrdinalIgnoreCase))
+        {
+            return VehicleMileageUnit.Kilometres;
+        }
+
+        throw new ArgumentOutOfRangeException(
+            nameof(value),
+            "The vehicle mileage unit is invalid.");
+    }
+
+    private static long ToMiles(long value, VehicleMileageUnit unit = VehicleMileageUnit.Kilometres) =>
+        unit == VehicleMileageUnit.Kilometres
+            ? checked((long)Math.Round(
+                (decimal)value * 0.6213711922m,
+                0,
+                MidpointRounding.AwayFromZero))
+            : value;
 
     private static void ValidateInspection(CaseEditableData data)
     {
