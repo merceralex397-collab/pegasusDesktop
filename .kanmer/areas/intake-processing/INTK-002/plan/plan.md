@@ -56,3 +56,29 @@ The repository facts above were re-checked on the implementation branch. FRD-02 
 The threshold is one hour since DueAtUtc. Source values are visibilityTimeout=00:05:00 in src/Pegasus.Worker/host.json:16, and the omitted timeToLive on AzureQueueIntakeWorkQueue.SendMessageAsync uses Azure Queue Storage's documented seven-day default. One hour is safely above the visibility timeout and safely below the message TTL. The existing ClaimProcessingAsync guard is the duplicate-safety basis: completed/failed rows return null; a live processing lease returns null; only dispatching|dispatched|processing without that live lease can claim.
 
 The branch implementation keeps one reconciliation timer, extends the existing recovery store contract with the explicit age, includes only unleased dispatched rows older than the cutoff, preserves AttemptCount, clears lease fields, and retains a state/attempt/lease/due optimistic-concurrency predicate.
+
+## 2026-08-25 implementation and simplification pass
+
+Implementation completed on branch `intk-002-recover-dispatched-work` in `.worktrees/intk-002`.
+
+- `IIntakeWorkStore.RecoverExpiredLeasesAsync` now receives the chosen one-hour dispatched recovery age from the existing `ReconcileStagedArtifacts` timer.
+- Infrastructure selects only unleased `dispatched` rows whose `DueAtUtc` is at least one hour old, returns them to `pending`, clears lease/failure fields, preserves `AttemptCount`, and retains state/attempt/lease/due optimistic concurrency checks.
+- Existing leased `dispatching`/ `processing` recovery remains unchanged in behavior. No second timer, table, migration, Web/API route, desktop project, or Azure write was added.
+- `RecoveryTests` covers stale dispatched re-dispatch and one-time processing, fresh dispatched preservation, and a late duplicate queue message no-op. Existing recovery/lease/retry tests remain green.
+- FRD-02 and `docs/operations.md` now state the bounded recovery behavior and its one-hour threshold against the five-minute visibility timeout and seven-day default Azure Queue TTL.
+
+Simplification review over the branch diff:
+
+- Reused the existing reconciliation timer, store contract, dispatch path, processor, and test harness; no new abstraction or timer was introduced.
+- Made the recovery candidate predicate explicitly parenthesized so the leased-state and unleased-dispatched branches are readable without changing behavior.
+- Reused the existing `StageAndDispatchAsync` setup and added one test-only `CreateReconciler` helper for the three new cases; no production helper or compatibility path was added.
+- Kept the existing method name `RecoverExpiredLeasesAsync` because it is the established port used by the reconciliation timer and still owns both lease and bounded dispatched recovery; renaming it would expand the diff without reducing duplication.
+- No further behavior-preserving simplification was identified. The remaining repeated assertions are deliberately acceptance-specific (state, attempt count, lease clearing, evaluation revision, and receipt cardinality).
+
+Validation completed:
+
+- `dotnet restore Pegasus.slnx --locked-mode` — passed before implementation.
+- `dotnet build tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --no-restore --configuration Debug --nologo` — passed.
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --no-restore --configuration Debug --filter "FullyQualifiedName~RecoveryTests" --logger "console;verbosity=minimal"` — 32 passed, 0 failed, 0 skipped.
+
+The repository's scripted L-02 local stack remains unavailable for this ticket's required caller proof: `Invoke-LocalDevelopment.ps1 -Action Start` fails before Web/Functions readiness in the existing launcher at line 1482 because `Process.Path` is empty for the PowerShell-owned launcher. The failure is recorded in AUTO-002's evidence; this ticket does not modify that launcher outside its scope. Integration evidence above is LocalDB-backed and does not claim Azurite/Functions-host execution.
