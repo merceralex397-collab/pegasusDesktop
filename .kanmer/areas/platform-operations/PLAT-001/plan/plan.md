@@ -53,3 +53,22 @@ The Phase 8 exit gate (proposal §24 `:1885-1890`) demands that the "security re
 ## Simplification pass
 
 Before the PR, independently review the branch diff for reuse, unnecessary abstraction, duplicated policy, and scope expansion; record findings and dispositions here.
+
+## Execution evidence — 2026-08-25
+
+- Added `docs/desktop/10-security-observability-performance/threat-register.md` with the exact proposal §17.3 nine-threat order, one cited control and one test ticket per row, the verbatim §17.2 non-goals, the shared secret/PII pattern list, and D-002/D-003 certificate/feed custody rows.
+- Updated the existing area README §8 to link the register; no other repository area or governance file changed.
+- Structural audit: 9 threat rows, 9 rows with test references, required non-goal/pattern markers all present, and the exact table header present.
+- `pwsh ./scripts/Test-DocumentationLinks.ps1` — passed; all 232 Markdown files checked.
+- `pwsh ./scripts/Test-TestMarkdownPlacement.ps1` — passed.
+- `git diff --check` — passed.
+
+## Simplification pass — 2026-08-25
+
+- `n/a — docs-only` for implementation simplification: the ticket required one canonical register and one existing README link, so no code abstraction, helper, duplicate policy, or additional index was introduced.
+- Reused the area README's existing Documentation changes section and cited existing controls/ticket owners rather than copying policy into new documents.
+- Scope check: only the new register and the single README link are changed; no unresolved simplification finding remains.
+
+## Current status
+
+Documentation implementation and local validation are complete. Commit, independent review, PR/CI, merge to `dev`, proof on merged `main`, and Kanmer closeout remain.

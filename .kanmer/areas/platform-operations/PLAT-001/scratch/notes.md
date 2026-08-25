@@ -1,0 +1,1 @@
+2026-08-25: Implemented the threat register and linked it from the area README. Structural audit found 9/9 threat rows, 9/9 test references, all required §17.2 non-goals and scan markers, and the exact header. Documentation links (232 files), placement regression, and git diff check passed. Simplification pass recorded as n/a — docs-only. No source/test/CI/Azure changes.
