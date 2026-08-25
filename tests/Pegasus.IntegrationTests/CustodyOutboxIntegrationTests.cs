@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.IO.Compression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,71 @@ namespace Pegasus.IntegrationTests;
 [Trait("Category", "SqlServer")]
 public sealed class CustodyOutboxIntegrationTests
 {
+    [Fact]
+    public async Task IntakeRetainedDocumentIsReadableThroughDownloadAndExportReaders()
+    {
+        using var factory = new IntakeWebApplicationFactory();
+        await using var scope = factory.Services.CreateAsyncScope();
+        var accepted = await AcceptDirectSourceAsync(scope.ServiceProvider);
+        await scope.ServiceProvider.GetRequiredService<IProcessQueuedCustody>()
+            .ExecuteAsync(accepted.CustodyWorkId, CancellationToken.None);
+
+        await using var context = await scope.ServiceProvider
+            .GetRequiredService<IDbContextFactory<PegasusDbContext>>()
+            .CreateDbContextAsync();
+        var occurrence = await context.Set<DocumentOccurrenceEntity>()
+            .SingleAsync(value => value.CaseId == accepted.CaseId);
+        var version = await context.Set<DocumentVersionEntity>()
+            .SingleAsync(value => value.Id == occurrence.VersionId);
+        var actor = ActionActor.Staff(Guid.NewGuid(), [StaffRole.Engineer]);
+
+        await using (var download = await scope.ServiceProvider
+                         .GetRequiredService<IDownloadCaseDocument>()
+                         .ExecuteAsync(
+                             new(
+                                 accepted.CaseId,
+                                 occurrence.Id,
+                                 version.Id,
+                                 actor,
+                                 $"retained-download:{Guid.NewGuid():N}"),
+                             CancellationToken.None))
+        {
+            Assert.NotNull(download);
+            using var copy = new MemoryStream();
+            await download!.Content.CopyToAsync(copy);
+            Assert.Equal(accepted.Content, copy.ToArray());
+        }
+
+        var state = Assert.IsType<CaseDocumentState>(
+            await scope.ServiceProvider.GetRequiredService<ICaseDocumentStateQueries>()
+                .GetAsync(accepted.CaseId, CancellationToken.None));
+        var lease = await scope.ServiceProvider.GetRequiredService<ILeaseCaseForEdit>()
+            .ClaimAsync(
+                new(
+                    accepted.CaseId,
+                    state.CaseVersion,
+                    actor,
+                    $"retained-export-lease:{Guid.NewGuid():N}"),
+                CancellationToken.None);
+        await using var export = await scope.ServiceProvider
+            .GetRequiredService<IExportCaseDocuments>()
+            .ExecuteAsync(
+                new(
+                    accepted.CaseId,
+                    [new(occurrence.Id, version.Id)],
+                    actor,
+                    $"retained-export:{Guid.NewGuid():N}",
+                    1024 * 1024,
+                    lease.Version,
+                    lease.Token),
+                CancellationToken.None);
+        using var archive = new ZipArchive(export.Content, ZipArchiveMode.Read);
+        using var entryStream = archive.GetEntry(version.FileName)!.Open();
+        using var entryCopy = new MemoryStream();
+        await entryStream.CopyToAsync(entryCopy);
+        Assert.Equal(accepted.Content, entryCopy.ToArray());
+    }
+
     private static readonly DateTimeOffset FixedUtcNow =
         new(2031, 5, 6, 10, 30, 0, TimeSpan.Zero);
 

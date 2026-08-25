@@ -2,7 +2,9 @@ using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Pegasus.Core.Custody;
 using Pegasus.Core.Documents;
+using Pegasus.Core.Intake;
 using Pegasus.Core.Identity;
 using Pegasus.Core.Workflow;
 using Pegasus.Infrastructure.Custody;
@@ -13,6 +15,236 @@ namespace Pegasus.IntegrationTests;
 [Trait("Category", "SqlServer")]
 public sealed class DocumentCustodyDurabilityTests
 {
+    [Fact]
+    public async Task OpenReadVersionAsyncReadsContentRetainedByLocalCaseCustody()
+    {
+        var content = "retained intake source"u8.ToArray();
+        var hash = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        var artifactStore = new FixedArtifactStore(content);
+        using var factory = new IntakeWebApplicationFactory(
+            "Development",
+            localIntakeEnabled: true,
+            artifactStore: artifactStore);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var custody = scope.ServiceProvider.GetRequiredService<ICaseCustody>();
+        var caseId = Guid.NewGuid();
+        var receiptId = Guid.NewGuid();
+        var root = await custody.CreateCaseRootAsync(
+            caseId,
+            "QDOS31010",
+            "custody-root:document-read",
+            CancellationToken.None);
+        await custody.RetainAcceptedIntakeSourceAsync(
+            root,
+            new(
+                receiptId,
+                "source.eml",
+                "message/rfc822",
+                hash,
+                FixedArtifactStore.SourceObjectKey,
+                content.LongLength),
+            "custody-content:document-read",
+            CancellationToken.None);
+
+        IDocumentContentStore store = new LocalDocumentContentStore(
+            Path.Combine(factory.ArtifactDirectory, "custody"));
+        var address = new ManagedDocumentContentAddress(
+            caseId,
+            root.Reference,
+            Guid.NewGuid(),
+            1,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            1,
+            DocumentSemanticRole.OriginalSource,
+            "source.eml",
+            "message/rfc822");
+
+        await using var retained = await store.OpenReadVersionAsync(
+            address,
+            hash,
+            content.LongLength,
+            CancellationToken.None);
+        using var copy = new MemoryStream();
+        await retained.CopyToAsync(copy);
+
+        Assert.Equal(content, copy.ToArray());
+    }
+
+    [Fact]
+    public async Task OpenReadVersionAsyncReadsAttachmentAndFoldedImageCustodyLayouts()
+    {
+        var attachment = "retained instruction attachment"u8.ToArray();
+        var image = "retained image-case asset"u8.ToArray();
+        var artifactStore = new MappingArtifactStore(new Dictionary<string, ReadOnlyMemory<byte>>
+        {
+            ["attachment"] = attachment,
+            ["image"] = image
+        });
+        using var factory = new IntakeWebApplicationFactory(
+            "Development",
+            localIntakeEnabled: true,
+            artifactStore: artifactStore);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var custody = scope.ServiceProvider.GetRequiredService<ICaseCustody>();
+        var caseId = Guid.NewGuid();
+        var root = await custody.CreateCaseRootAsync(
+            caseId,
+            "QDOS31011",
+            "custody-root:document-shapes",
+            CancellationToken.None);
+        var attachmentHash = Convert.ToHexString(SHA256.HashData(attachment)).ToLowerInvariant();
+        await custody.RetainAcceptedIntakeAttachmentAsync(
+            root,
+            new(
+                Guid.NewGuid(),
+                "instruction.pdf",
+                "application/pdf",
+                attachmentHash,
+                "attachment",
+                attachment.LongLength),
+            2,
+            "custody-content:attachment",
+            CancellationToken.None);
+
+        IDocumentContentStore store = new LocalDocumentContentStore(
+            Path.Combine(factory.ArtifactDirectory, "custody"));
+        var attachmentAddress = new ManagedDocumentContentAddress(
+            caseId,
+            root.Reference,
+            Guid.NewGuid(),
+            2,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            1,
+            DocumentSemanticRole.Instruction,
+            "instruction.pdf",
+            "application/pdf");
+        await using (var attachmentStream = await store.OpenReadVersionAsync(
+                         attachmentAddress,
+                         attachmentHash,
+                         attachment.LongLength,
+                         CancellationToken.None))
+        {
+            using var copy = new MemoryStream();
+            await attachmentStream.CopyToAsync(copy);
+            Assert.Equal(attachment, copy.ToArray());
+        }
+
+        var imageCaseId = Guid.NewGuid();
+        var imageRoot = await custody.CreateCaseRootAsync(
+            imageCaseId,
+            "IMG31011",
+            "custody-root:image-shape",
+            CancellationToken.None);
+        var imageReceiptId = Guid.NewGuid();
+        var imageHash = Convert.ToHexString(SHA256.HashData(image)).ToLowerInvariant();
+        await custody.RetainImageCaseAssetAsync(
+            imageRoot,
+            new(
+                imageReceiptId,
+                "damage.jpg",
+                "image/jpeg",
+                imageHash,
+                "image",
+                image.LongLength),
+            1,
+            "custody-content:image",
+            CancellationToken.None);
+        await custody.MergeImageCaseContentsAsync(
+            imageRoot,
+            root,
+            "custody-content:image-fold",
+            CancellationToken.None);
+
+        var imageAddress = new ManagedDocumentContentAddress(
+            caseId,
+            root.Reference,
+            Guid.NewGuid(),
+            1,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            1,
+            DocumentSemanticRole.Image,
+            "damage.jpg",
+            "image/jpeg");
+        await using var imageStream = await store.OpenReadVersionAsync(
+            imageAddress,
+            imageHash,
+            image.LongLength,
+            CancellationToken.None);
+        using var imageCopy = new MemoryStream();
+        await imageStream.CopyToAsync(imageCopy);
+        Assert.Equal(image, imageCopy.ToArray());
+    }
+
+    [Fact]
+    public async Task OpenReadVersionAsyncPreservesManagedFallbackAndFailureContracts()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "Pegasus.IntegrationTests",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            IDocumentContentStore store = new LocalDocumentContentStore(root);
+            var caseId = Guid.NewGuid();
+            var versionId = Guid.NewGuid();
+            var content = "managed fallback content"u8.ToArray();
+            var hash = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+            await store.StoreAsync(
+                caseId,
+                "QDOS31012",
+                versionId,
+                content,
+                hash,
+                CancellationToken.None);
+            var address = new ManagedDocumentContentAddress(
+                caseId,
+                "QDOS31012",
+                Guid.NewGuid(),
+                0,
+                Guid.NewGuid(),
+                versionId,
+                1,
+                DocumentSemanticRole.Other,
+                "upload.txt",
+                "text/plain");
+
+            await using var retained = await store.OpenReadVersionAsync(
+                address,
+                hash,
+                content.LongLength,
+                CancellationToken.None);
+            using var copy = new MemoryStream();
+            await retained.CopyToAsync(copy);
+            Assert.Equal(content, copy.ToArray());
+
+            var missing = address with { VersionId = Guid.NewGuid() };
+            var exception = await Assert.ThrowsAsync<FileNotFoundException>(() =>
+                store.OpenReadVersionAsync(
+                    missing,
+                    hash,
+                    content.LongLength,
+                    CancellationToken.None));
+            Assert.Equal("The document content is unavailable.", exception.Message);
+
+            await Assert.ThrowsAsync<InvalidDataException>(() =>
+                store.OpenReadVersionAsync(
+                    address,
+                    new string('0', 64),
+                    content.LongLength,
+                    CancellationToken.None));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
     [Fact]
     public async Task StaffConfirmationOfThirdPartyVehicleEvidenceIsDurableAndExactlyReplayable()
     {
@@ -495,6 +727,43 @@ public sealed class DocumentCustodyDurabilityTests
             }
 
             return base.SavingChangesAsync(eventData, result, cancellationToken);
+        }
+    }
+
+    private sealed class FixedArtifactStore(ReadOnlyMemory<byte> content) : IIntakeArtifactStore
+    {
+        public const string SourceObjectKey = "local-custody-source";
+
+        public Task<string> StoreAsync(
+            string contentHash,
+            ReadOnlyMemory<byte> value,
+            CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
+
+        public Task<ReadOnlyMemory<byte>?> ReadAsync(
+            string storageKey,
+            CancellationToken cancellationToken)
+        {
+            Assert.Equal(SourceObjectKey, storageKey);
+            return Task.FromResult<ReadOnlyMemory<byte>?>(content);
+        }
+    }
+
+    private sealed class MappingArtifactStore(
+        IReadOnlyDictionary<string, ReadOnlyMemory<byte>> content) : IIntakeArtifactStore
+    {
+        public Task<string> StoreAsync(
+            string contentHash,
+            ReadOnlyMemory<byte> value,
+            CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
+
+        public Task<ReadOnlyMemory<byte>?> ReadAsync(
+            string storageKey,
+            CancellationToken cancellationToken)
+        {
+            Assert.True(content.TryGetValue(storageKey, out var value));
+            return Task.FromResult<ReadOnlyMemory<byte>?>(value);
         }
     }
 }
