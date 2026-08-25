@@ -4,12 +4,15 @@ type: ticket
 title: >-
   upstream:DOCS-001 · Trigger report generation from complete accepted
   assessments and retain immutable report references
-status: preparing
+status: implementing
 area: documents-reports
-assignee: ''
+assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:22:05.347Z'
+taken_at: '2026-08-25T06:07:40.309Z'
+branch: docs-001-report-aggregate
+worktree: .worktrees/docs-001
 labels:
   - now
   - renderer-integration
@@ -30,7 +33,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:20.415Z'
-updated: '2026-08-25T00:12:14.200Z'
+updated: '2026-08-25T06:07:40.309Z'
 ---
 
 ## What
