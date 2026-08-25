@@ -28,9 +28,11 @@ refs:
   - docs/prd/pegasus-product.md
   - docs/frd/frd-01-case-identity-and-lifecycle.md
   - docs/frd/frd-03-triage.md
+commits:
+  - 9039d3f8
 archived: false
 created: '2026-08-25T12:04:56.725Z'
-updated: '2026-08-25T12:10:29.252Z'
+updated: '2026-08-25T12:14:13.991Z'
 ---
 
 ## What
