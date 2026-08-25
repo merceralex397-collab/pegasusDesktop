@@ -212,3 +212,29 @@ Revalidation: focused later-receipt integration fact 1/1; Release solution build
 Halley's independent re-review of `995bf671` passed. The only review warning was reconciled in the `files` document: the caller-wiring facts are owned by `AllocateDefinitiveIntakeTests.cs`; the unchanged CASE-013 policy guards remain in `AutomaticCaseReadinessTests.cs`. No implementation blocker remains.
 
 The fresh PR attempt remains externally blocked: `gh pr create --base dev --head case-001-observed-images` returned exactly `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`. The branch is pushed and independently reviewed, but no PR, CI, merge, proof, or done claim is made. Next action: repository collaborator permission or an authorized PR workflow path.
+
+## Test-evidence correction — 2026-08-25
+
+Independent `pegasus-test-engineer` review found two untested parts of the existing acceptance claim. Commit `d0604850` corrects only those gaps:
+
+- The existing real-path `AllocateAsync` helper now asserts `InstructionComplete: true`, `InstructionConfirmedByStaff: false`, and `ImagesConfirmedByStaff: false` before returning the acceptance request. This covers every changed observed-image test without duplicating the same invariants in five methods.
+- `PhotographsArrivingAfterAllocationDoNotRewriteAllocationCompleteness` now queries the existing `ICaseWorkflowQueries` projection after the later image and asserts `CaseDueWorkState.Scheduled` with a non-null `NextChaseAtUtc`.
+
+The audit's `TimeProvider.System` convention note was not changed: it predates this ticket's assertions and changing clock strategy is unrelated to the observed-images behavior.
+
+Post-fix validation:
+
+- `dotnet restore ./Pegasus.slnx` — passed.
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore` — passed, 0 warnings/errors.
+- Focused `AllocateDefinitiveIntakeTests` — 12/12 passed.
+- Focused later-receipt integration fact — 1/1 passed.
+- CI-equivalent `Invoke-TestShard.ps1` runs (three shards) — 287 passed/3 skipped, 295 passed, and 291 passed; each emitted `shard-<n>.trx`.
+- `Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` — `3 shards covered all 876 enumerated tests exactly once.`
+- Architecture tests — 99/99 passed.
+- Full Core rerun after the correction — 921/921 passed.
+
+One intervening full-Core attempt, started immediately after the concurrent LocalDB shards, produced two unrelated `RegexMatchTimeoutException` failures in QDOS extraction tests. The same command rerun when the shard processes had exited passed 921/921. This is recorded as timing-sensitive validation evidence, not ignored or attributed to the CASE-001 code/test diff.
+
+## Simplification pass — test-evidence follow-up, 2026-08-25
+
+Applied: reuse the existing allocation helper and workflow query rather than add a second fixture, clock, or policy seam. No unnecessary abstraction, production change, compatibility path, or unrelated convention cleanup was introduced. No remaining behavior-preserving simplification finding is in scope.

@@ -56,3 +56,12 @@ The original risk remains intentional: later photographs do not rewrite allocati
 Halley's independent re-review of `995bf671` passed after the later-receipt test and historical comment correction. The ticket files map was reconciled to document the simplification move into `AllocateDefinitiveIntakeTests.cs`; the CASE-013 policy guard remains unchanged.
 
 The branch is pushed, but `gh pr create --base dev --head case-001-observed-images` returned exactly `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`. Therefore there is no PR, CI result, merge, proof, or Kanmer closeout evidence yet.
+
+## Test-evidence strengthening — 2026-08-25
+
+Independent test review required two missing assertions. Commit `d0604850` changes only the mapped test files:
+
+- `AllocateDefinitiveIntakeTests.cs`: the existing real-path helper proves the unchanged instruction and staff-confirmation fields alongside observed image completeness.
+- `QdosAllocationRecoveryTests.cs`: after a later image receipt, the existing workflow query proves due work remains scheduled and retains a next-chase time.
+
+Fresh evidence: Release build passed with 0 warnings/errors; focused Core 12/12 and focused LocalDB 1/1 passed; CI-equivalent integration shards passed 876 enumerated tests exactly once (873 passed, 3 skipped) with three TRX files; partition verification passed; architecture tests passed 99/99; full Core passed 921/921 on its idle rerun. A concurrent-load Core attempt had two unrelated regex timeouts and is retained in the plan as honest timing-sensitive evidence.
