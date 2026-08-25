@@ -29,3 +29,7 @@ The repository's L-02 `Initialize-LocalDevelopment.ps1` / `Invoke-LocalDevelopme
 - Simplification pass is recorded in the ticket plan.
 - Branch pushed: `origin/intk-002-recover-dispatched-work`.
 - PR creation is the next delivery step; merge into `dev` requires independent review and green CI.
+
+## PR creation blocker — 2026-08-25
+
+`gh pr create --base dev --head intk-002-recover-dispatched-work` was attempted after the branch push and failed with the exact GitHub response: `GraphQL: must be a collaborator (createPullRequest)`. The branch is available at `origin/intk-002-recover-dispatched-work`; the smallest unblock is collaborator permission or an authorized operator creating the PR from that branch. No merge, CI claim, or Kanmer review-stage move is being claimed until the PR exists and the required independent review/CI path is satisfied.
