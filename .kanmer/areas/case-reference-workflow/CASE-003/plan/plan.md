@@ -39,3 +39,7 @@ This task’s proof is the merged `dev` commit, independent review, passing docu
 ## Simplification pass
 
 2026-08-25 — n/a — docs-only. The plan changes only the minimum governing/downstream documents required to reconcile the direct operator decision; no code abstraction or compatibility path is introduced.
+
+## Scope adjustment — 2026-08-25
+
+A targeted contradiction search added the existing runbook verification line and desktop parity-matrix description to step 4. They are direct consumers of the former pre-case wording and remain documentation-only.

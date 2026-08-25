@@ -37,3 +37,7 @@
 ## Validation
 
 Run the repository documentation link check and Markdown placement check against `origin/dev` and `HEAD`; inspect the ADR index/front matter and the branch diff.
+
+## Scope adjustment — 2026-08-25
+
+Read-only contradiction search found two additional directly affected downstream documents, so this ticket also updates `docs/runbook.md` (Triage registration gate verification) and `docs/desktop/01-inventory-and-parity/parity-matrix.md` (the Triage Core boundary). Both changes only align their existing references with FRD-03; no workflow, code, or UI design is added.

@@ -1,0 +1,1 @@
+2026-08-25 — Added ADR-0030 and aligned operator authority, PRD, FRD-01, FRD-03, capability registry, design authority, runbook, and parity matrix. A focused contradiction search found no remaining Triage/pre-case or optional-link wording requiring this ticket's correction.
