@@ -1,0 +1,32 @@
+# Post-implementation report — PLAT-028
+
+## Scope delivered
+
+Consolidated the duplicated inline-image classification in the existing `MimeKitPdfPigOpenXmlIntakeSourceReader` partial class. Both EML and DOC/MSG call the same private `IsInlineImage` policy. No deletion candidate from roster items 1, 2, 3, or 5 was removed because current callers/guard semantics require those routes and fields; roster item 6 remains explicitly out of scope on the desktop cut list.
+
+## Branch and commit
+
+- Branch: `task/plat-028-duplicate-route-sweep`
+- Worktree: `C:\Users\PC\Documents\GitHub\pegasus-worktrees\plat-028-duplicate-route-sweep`
+- Commit: `9f582036` (`PLAT-028 consolidate inline image classification`)
+- PR: not opened yet; this report precedes the review boundary.
+
+## Validation
+
+- `dotnet restore` — passed.
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore` — passed, 0 warnings and 0 errors.
+- `dotnet test ./tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release --no-build` — passed, 916/916.
+- `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build` — passed, 920 passed, 18 skipped, 0 failed, 938 total.
+- Exact inline-image integration check `MultiFormatIntakeWebTests.DirectImagesAreAcceptedIntoNeedsSortingWithoutOcrOrReference` — passed, 2/2.
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build` — passed, 99/99.
+- `pwsh ./scripts/Test-PegasusPlatform.ps1` — passed.
+- `git diff --check` — passed.
+- The earlier broad filtered hosted invocation was canceled after 99.2 seconds and is recorded as canceled, not as a pass.
+
+## Scope proof
+
+The branch diff contains only:
+- `src/Pegasus.Infrastructure/Intake/MimeKitPdfPigOpenXmlIntakeSourceReader.cs`
+- `src/Pegasus.Infrastructure/Intake/MimeKitPdfPigOpenXmlIntakeSourceReader.DocMsg.cs`
+
+No Pages, Worker, API-contract, Azure, mailbox, or Box files changed.
