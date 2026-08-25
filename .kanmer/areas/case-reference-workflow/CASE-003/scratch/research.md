@@ -1,0 +1,1 @@
+2026-08-25 — Began documentation-only authority reconciliation. Live board verified; no group context applies. Research will compare the linked PRD/FRD/operator authority against the operator's explicit T-aggregate, custody-transfer, and conversion decision.
