@@ -42,3 +42,7 @@ PR, CI, merge, proof, and closeout are not yet claimed.
 ## Hosted CI correction — 2026-08-25
 
 Run `32850235619` completed with one real test failure in SQL shard 3: `IntakePersistenceIntegrationTests.CommittedMigrationCreatesTheSqlServerSchema` expected the prior 64-entry migration list but the branch correctly included the new EVA migration as entry 65. The shard ran 291/291 assigned tests with 290 passed and 1 failed; browser, unit, the other SQL shards, coverage, documentation, changes, reference-data, and local-development lanes passed. Commit `e6bd1949` adds `20260825122524_DropEvaHandoffProvenanceAndManifest` to that existing assertion. Focused Release LocalDB validation passed 1/1. A new hosted run on `e6bd1949` is required before merge.
+
+## Merge result — 2026-08-25
+
+Corrected PR head `e6bd1949` passed hosted run `32852051438` completely: changes, documentation, local-development-scripts, reference-data, unit, browser, SQL integration shards 1–3, and SQL integration coverage passed; infrastructure was correctly skipped. PR #6 was independently reviewed and merged into `dev` at `e0322ee1b7523a76451bf1c65416b4a55c4f8173`. No `main` promotion, deployment, Azure write, or proof claim has been made.
