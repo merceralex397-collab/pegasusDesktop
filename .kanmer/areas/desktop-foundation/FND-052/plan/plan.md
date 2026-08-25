@@ -1,6 +1,6 @@
 # Plan — FND-052: groom the seeded board
 
-**Diff estimate: 22 Kanmer ticket bodies, ~49 edited lines. No repository file
+**Diff estimate: 21 Kanmer ticket bodies, ~49 edited lines. No repository file
 changes at all.**
 
 Derived from the measured inventory below, not asserted. The unit here is a
@@ -46,7 +46,7 @@ The gate itself: `scripts/Test-MarkdownPlacement.ps1:2-6` declares
 $Head`, and `:81` prints `Markdown placement passed for $Base..$Head.` on
 success. A bare invocation prompts or fails and checks nothing.
 
-### B · `-VerifyPartition` — 4 call sites, 3 bodies
+### B · `-VerifyPartition` — 5 call sites, 3 bodies
 
 | Body | Line | Current text |
 | --- | --- | --- |
@@ -112,12 +112,12 @@ adds the real validator **beside** it, not instead of it.
 | Group | Bodies | Edits |
 | --- | --- | --- |
 | A placement gate | 11 | 16 |
-| B `-VerifyPartition` | 3 (`FND-046`, `PLAT-002`, `PLAT-006`) | 4 |
+| B `-VerifyPartition` | 3 (`FND-046`, `PLAT-002`, `PLAT-006`) | 5 |
 | C placeholder | 1 (`PLAT-002`, already counted) | 1 |
 | D ambiguous ids | 7 (`FEAT-043` already counted) | 19 |
 | E dangling/namespace links | 1 | 6 |
 | F `REL-013` validator | 1 | 2 |
-| **Distinct** | **22** | **49** |
+| **Distinct** | **21** | **49** |
 
 ### Measured and deliberately not touched
 
@@ -258,7 +258,7 @@ the same ownership and the same targets.
    actually inspected. Adding, not replacing: the self-test guards the
    validator and the validator guards the file, and neither substitutes for
    the other.
-5. **Add the shard arguments to the four `-VerifyPartition` call sites** —
+5. **Add the shard arguments to the five `-VerifyPartition` call sites** —
    `FND-046:91`, `PLAT-002:75`, `PLAT-006:71`, `PLAT-006:87` — copying
    `TEST-003:68`'s working form
    `-VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3`.
@@ -380,3 +380,8 @@ behavioural changes.
 ## Live inventory correction — 2026-08-25
 
 The original 2026-08-24 inventory stated that REL-007 had only the two withdrawn wiki-links. A live `get_links REL-007` read immediately before implementation found six unresolved parser targets: the two withdrawn handles plus four existing plan handles (`DSK-09-11`, `DSK-09-14`, `DSK-09-15`, `DSK-09-18`). The four map unambiguously to `REL-009`, `REL-012`, `REL-013`, and `REL-016` by the live board titles. The body-only correction remains within the plan's namespace-normalization purpose; no ticket fields, dependencies, repository files, or product decisions change.
+
+
+### Live inventory correction — VerifyPartition count — 2026-08-25
+
+The live body recheck found five command occurrences, not four: `FND-046` has one implementation-step occurrence and one verification occurrence, `PLAT-002` has one, and `PLAT-006` has one step plus one verification occurrence. All five now carry `-ArtifactRoot ./artifacts/test-shards -ShardCount 3`; this is a measurement correction, not a scope expansion.
