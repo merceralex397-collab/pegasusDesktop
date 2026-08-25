@@ -284,3 +284,7 @@ Independent reviewer: `pegasus-desktop-reviewer` (Herschel), who did not impleme
 - **Medium — author report:** the reviewer found no separate report document. Disposition: resolved by this section in the profile-permitted plan document; `get_doc_gates FND-001` confirms that `post-implementation-report` is not an allowed document type for this `chore` ticket.
 
 Review conclusion pending re-review of this reconciliation.
+
+## Final independent re-review disposition — 2026-08-25
+
+Meitner independently re-reviewed PR #3 at its updated head `1a78a16f`. The required owning area-plan correction is now implemented: `docs/desktop/00-governance-and-workflow/README.md` records the accepted topology `main=191ddf33`, `dev=5770eb21`, `main` as an ancestor, the trunk branching rule, and the corrected DSK-00-01 acceptance/verification. The prior stale ticket statements that CI was absent and `docs_todo` was true are superseded: live `get_doc_gates FND-001` reports `docs_todo:false`, and CI run `32849827677` is green with only expected conditional skips. No code, cloud, branch-protection, or release operation is involved. Independent review is now satisfied; merge remains subject to the updated PR checks/merge state and proof after merge.
