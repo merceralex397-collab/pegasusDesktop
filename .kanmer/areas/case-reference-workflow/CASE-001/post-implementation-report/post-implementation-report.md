@@ -88,3 +88,7 @@ Validation: Release Web build passed with 0 warnings/errors; Core 921/921 passed
 The first independent review found two blockers in the durable replay amendment. The compatibility predicate was narrowed to the one real rollout direction (persisted true to current false), and the pending test now verifies the persisted completeness and exact current hash. A near-miss false-to-true regression asserts the original operation conflict remains.
 
 Fresh evidence: Release integration build passed with 0 warnings/errors; QdosAllocationRecoveryTests passed 21/21; git diff --check passed. A fresh independent review is required before merge.
+
+## Final review and pushed amendment — 2026-08-25
+
+Maxwell's fresh independent review passed the corrected implementation: persisted true to current false is the only legacy replay direction; pending durability/hash and reverse-direction conflict are tested; failed replay and scope/simplification pass. Commit 737059ddc497f072b8678c8cd2f3e61aa04b6b00 is pushed to origin and PR #4 now targets dev at that exact head. Repository-check run 32883994941 is queued. The old-head unit timeout (run 32879516460) remains recorded as a prior-head failure, not a green result. No merge or proof claim yet.

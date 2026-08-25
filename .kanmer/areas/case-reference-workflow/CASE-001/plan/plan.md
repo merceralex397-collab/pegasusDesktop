@@ -287,3 +287,9 @@ Fresh validation after these corrections:
 - git diff --check — passed.
 
 The first review is recorded as BLOCK until the fresh independent review confirms these corrections; no merge claim is made.
+
+## Final independent review and amendment commit — 2026-08-25
+
+Fresh independent reviewer Maxwell (agent 01a03a28-40ee-77f2-b464-542d08e0a4e4) reviewed the corrected two-file diff and passed the one-way replay predicate, durable pending canonicalization/hash proof, failed replay, reverse-direction conflict test, scope, and simplification. No UI, packaging, API, schema, migration, cloud, or upstream concerns apply.
+
+Committed as 737059ddc497f072b8678c8cd2f3e61aa04b6b00 (`Recover legacy automatic allocation replays`) and pushed to origin task/case-001-observed-images. PR #4 now points to this exact head, base dev. New repository-check run 32883994941 is queued for this head. The preceding run 32879516460 failed at the old head d0604850 with one timing-sensitive QDOS RegexMatchTimeoutException; it is not evidence about the new head. Merge remains gated on the new exact-head CI result.

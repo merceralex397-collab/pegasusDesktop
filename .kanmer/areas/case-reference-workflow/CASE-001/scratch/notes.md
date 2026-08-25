@@ -29,3 +29,7 @@ Implemented and validated the narrow legacy automatic replay recovery in EfIntak
 ## Review correction — 2026-08-25
 
 First independent review blocked the amendment on reverse-direction compatibility and missing durable hash proof. Narrowed the predicate, added persisted completeness/hash assertions, and added a false-to-true conflict regression. Integration build 0 warnings/errors and QdosAllocationRecoveryTests 21/21 passed. Awaiting fresh independent review.
+
+## Final review and push — 2026-08-25
+
+Maxwell passed the corrected diff. Committed 737059ddc497f072b8678c8cd2f3e61aa04b6b00 and pushed origin task/case-001-observed-images. PR #4 exact head is 737059ddc497f072b8678c8cd2f3e61aa04b6b00; repository-check run 32883994941 is queued. Await exact-head CI before merge.
