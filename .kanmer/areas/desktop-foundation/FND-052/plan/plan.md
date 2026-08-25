@@ -18,33 +18,37 @@ row below was measured against the board store on 2026-08-24 with `grep -n`,
 `grep -c` and `sed -n`, reading **ticket bodies only** (`<ID>.md`), never the
 `plan/` or `files/` documents beside them.
 
-### A · The Markdown placement gate — 16 actual command call sites, 11 bodies
+### A · The Markdown placement gate — 16 actual command call sites, 11 ticket bodies
 
-| Body | Call sites (bare) | Line numbers |
+| Body | Call sites (body commands) | Line numbers |
 | --- | --- | --- |
-| `DUI-013` | 2 | `:73` (step), `:89` (verification) |
-| `DUI-017` | 2 | `:129`, `:145` |
-| `FEAT-025` | 1 | `:81` |
+| `DUI-013` | 2 | `:75`, `:91` |
+| `DUI-017` | 2 | `:131`, `:147` |
+| `FEAT-025` | 1 | `:83` |
 | `FEAT-038` | 0 | Its `Test-TestMarkdownPlacement.ps1` regression self-test is not a gate invocation; leave it unchanged. |
-| `FEAT-043` | 2 | `:72`, `:91` |
-| `FND-014` | 1 | `:102` |
-| `FND-015` | 1 | `:88` |
-| `FND-019` | 1 | `:98` |
-| `FND-020` | 1 | `:96` |
-| `FND-023` | 2 | `:76`, and `:154` inside the embedded `DSK-01-13` specification |
-| `FND-042` | 2 | `:80`, `:97` |
+| `FEAT-043` | 2 | `:74`, `:93` |
+| `FND-014` | 1 | `:104` |
+| `FND-015` | 1 | `:90` |
+| `FND-019` | 1 | `:100` |
+| `FND-020` | 1 | `:98` |
+| `FND-023` | 1 | `:78` |
+| `FND-042` | 2 | `:82`, `:99` |
+| `REL-013` | 2 | `:69`, `:87` |
+ 
+The total is **16 ticket-body command invocations**: 14 across the ten desktop-foundation/desktop-ui/desktop-features bodies listed before `REL-013`, plus 2 in `REL-013`. Ten of the sixteen are `## Verification` lines. The earlier `FND-023:154` entry was a command in that ticket's plan document, not its ticket body, and is excluded because this ticket's scope is body Markdown only. The four known path references in other ticket documents — `DUI-013:47`, `DUI-017:95`, `DUI-017:171`, and `FEAT-025:41` — are path references in prose, not commands; adding arguments to them is noise. The separate `FEAT-038` self-test is also intentionally unchanged.
 
-**16 invocations.** Ten of them are `## Verification` lines, exactly as the body
-says. The four known path references — `DUI-013:47`, `DUI-017:95`,
-`DUI-017:171`, and `FEAT-025:41` — are *path references* in Source-of-truth
-and evidence prose, not commands. **Leave those four alone**; adding arguments
-to a path reference is noise. The separate `FEAT-038` self-test is also
-intentionally unchanged.
+The gate itself: `scripts/Test-MarkdownPlacement.ps1:2-6` declares `[Parameter(Mandatory)][string] $Base` and `[Parameter(Mandatory)][string] $Head`, and `:81` prints `Markdown placement passed for $Base..$Head.` on success. A bare invocation prompts or fails and checks nothing.
 
-The gate itself: `scripts/Test-MarkdownPlacement.ps1:2-6` declares
-`[Parameter(Mandatory)][string] $Base` and `[Parameter(Mandatory)][string]
-$Head`, and `:81` prints `Markdown placement passed for $Base..$Head.` on
-success. A bare invocation prompts or fails and checks nothing.
+### B · `-VerifyPartition` — 5 ticket-body call sites, 3 bodies
+
+| Body | Line | Current text |
+| --- | --- | --- |
+| `FND-046` | `:93` | `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` |
+| `PLAT-002` | `:77` | `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` |
+| `PLAT-006` | `:73` | `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` |
+| `PLAT-006` | `:89` | `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` |
+
+The working form to copy is `TEST-003:68` and `TEST-003:84`. The five occurrences above are the ticket-body commands in scope; stale bare examples in other tickets' plan, research, and checklist documents are outside this body-only ticket. `scripts/Invoke-TestShard.ps1:35-36` declares `[Parameter(Mandatory)] [int] $ShardCount` with no `ParameterSetName`, so it is mandatory in the `Verify` set too.
 
 ### B · `-VerifyPartition` — 5 call sites, 3 bodies
 
@@ -65,11 +69,7 @@ at `:23` means a bare call does not even land in the `Verify` set cleanly.
 
 ### C · The placeholder — 1 site, 1 body
 
-`PLAT-002:95` reads `pwsh ./scripts/Invoke-ProductionSmoke.ps1 …` with a
-literal ellipsis. The real invocation is in the same body at `:79`:
-`-BaseUri <production base uri> -ExpectedSourceRevision <40-hex sha>
--ExpectedVersion <version> -ResourceGroupName …`. Copy from `:79` into `:95`;
-do not re-derive it from the script.
+`PLAT-002:95` reads `pwsh ./scripts/Invoke-ProductionSmoke.ps1 …` with a literal ellipsis. The real invocation is in the same ticket body at `:79`; copy its complete argument list into `:95` without re-deriving it from the script.
 
 ### D · Ambiguous ids — 19 occurrences, 7 bodies
 
@@ -93,10 +93,7 @@ the target.
 
 ### E · Dangling/namespace wiki-links — 6 sites, 1 body
 
-`REL-007:61` — step 1's closing clause reads "…do not re-open Artifact Signing
-or an OV certificate, whose spikes `[[DSK-09-07]]` and `[[DSK-09-09]]` were
-withdrawn." Both handles are withdrawn and no ticket carries them. Confirmed by
-`search_items`: neither resolves.
+A live `get_links REL-007` read found six relevant sites: withdrawn `DSK-09-07` and `DSK-09-09` are plain code spans, while `DSK-09-11`, `DSK-09-14`, `DSK-09-15`, and `DSK-09-18` map explicitly to board tickets `REL-009`, `REL-012`, `REL-013`, and `REL-016`. The four live mappings resolve; the two withdrawn handles remain documented as withdrawn rather than being fabricated as tickets.
 
 ### F · `REL-013`'s missing real validator — 2 sites, 1 body
 
@@ -389,4 +386,8 @@ The live body recheck found five command occurrences, not four: `FND-046` has on
 
 ## Review correction — board-shaped links versus plan handles — 2026-08-25
 
-The independent review's broad scan separated namespaces before judging the acceptance: the 229 ticket body files contain 2,654 wiki sites; 2,407 unresolved sites are DSK-* desktop plan handles, which use a two-hyphen plan shape and are not fork board ids under HZN-001's `<PREFIX>-<nnn>` rule. The remaining unresolved non-DSK sites were 31 references inside `### Upstream ticket <ID> (verbatim)` blocks. The 15 non-DSK/template sites outside those quoted blocks were normalized through MCP across 11 ticket bodies. The scoped result is therefore zero unresolved fork-board-shaped wiki-links outside verbatim blocks; DSK plan handles remain unchanged as plan references, and quoted upstream text remains immutable.
+The independent re-review used the governing namespace rule against all 229 ticket body files. The bodies contain 2,654 wiki sites; 2,407 unresolved sites are `DSK-nn-nn` desktop plan handles, which use a two-hyphen plan shape and are not fork board ids under HZN-001's `<PREFIX>-<nnn>` rule. After the MCP normalization, 27 unresolved non-DSK sites remain and all 27 are inside immutable `### Upstream ticket <ID> (verbatim)` blocks. The four outside template sites `[[<board-id>]]` were converted to plain `<board-id>` text across INTK-001, INTK-002, INTK-004, and INTK-007. The scoped result is therefore zero unresolved fork-board-shaped wiki-links outside verbatim blocks; DSK plan handles remain unchanged as plan references, and quoted upstream text remains immutable.
+
+## Review correction — inventory counts and evidence wording — 2026-08-25
+
+The re-review identified stale inventory prose. The corrected live counts are 16 placement command invocations in ticket bodies (14 across the ten bodies preceding REL-013 plus 2 in REL-013) and five `-VerifyPartition` command invocations across FND-046, PLAT-002, and PLAT-006. The earlier four-row shard table and the FND-023 plan-document placement entry are excluded from the body-only inventory. The contemporaneous scratch validation note records an initial missing-artifact failure, followed by the later successful restore/build, three shard listings, and `874/874` partition validation recorded in the report; proof remains pending until verification.
