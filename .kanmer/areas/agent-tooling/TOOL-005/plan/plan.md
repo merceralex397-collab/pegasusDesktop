@@ -285,3 +285,10 @@ documentation._
 ## Current status
 
 Implementation and static/discovery evidence are complete. A proof document, independent review, task PR/CI, merge to `dev`, merged-main verification, and Kanmer closeout remain before Done.
+
+## Delivery blocker — 2026-08-25
+
+- Commit `e6ac6cec` is pushed to `origin/tool-005-reconcile-agents`.
+- `gh pr create --base dev --head tool-005-reconcile-agents` failed twice with `GraphQL: must be a collaborator (createPullRequest)`.
+- Two bounded independent `pegasus-desktop-reviewer` attempts did not return a review within two 30-second waits each and were shut down; no review is treated as approval.
+- Ticket remains `implementing`. Next action: obtain repository collaborator permission, create the PR, obtain a fresh independent review, satisfy CI and merge requirements, then verify on merged `main`, write proof, and close out.
