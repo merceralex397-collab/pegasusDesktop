@@ -33,3 +33,5 @@ whose completion makes the box true.
 ## Progress notes
 
 - 2026-08-25: implementation and validation complete except the explicitly deferred FND-028 server-filter registration; full evidence is recorded in the plan.
+
+- 2026-08-25 corrective review: RFC 9457 top-level extension serialization/readback was fixed with `PegasusProblemJsonConverter`; top-level version accessor tests pass. Commit `54ade310` is pushed and the fresh independent review is pending.
