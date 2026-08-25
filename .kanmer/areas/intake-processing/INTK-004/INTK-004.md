@@ -4,12 +4,15 @@ type: ticket
 title: >-
   upstream:INTK-027 · Make policy re-evaluation work after transient staging
   cleanup
-status: preparing
+status: implementing
 area: intake-processing
-assignee: ''
+assignee: codex-mcp-client
 profile: fix
 stageEntered:
   preparing: '2026-08-24T21:23:32.702Z'
+taken_at: '2026-08-25T19:17:45.434Z'
+branch: task/upstream-intk-027-reevaluation-after-cleanup
+worktree: ../pegasus-worktrees/upstream-intk-027-reevaluation-after-cleanup
 labels:
   - defect
   - intake
@@ -29,7 +32,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:47:12.109Z'
-updated: '2026-08-25T00:38:18.705Z'
+updated: '2026-08-25T19:17:45.434Z'
 ---
 
 ## What
@@ -147,3 +150,13 @@ Tier 2 obliges positive, contradictory and failure cases for the re-evaluation p
 ## Outcome
 
 _Filled at closeout._
+
+
+## Operator scope amendment — 2026-08-25
+
+The operator prohibits all upstream synchronization and external deployment activity during this refactor. This supersedes the imported upstream-sync dependency and any instruction to consult or merge an upstream remote.
+
+- All implementation, tests, documentation, commits, and PRs stay in this repository and use the configured `pegasusDesktop` remote only.
+- No upstream remote is added, fetched, compared, merged, or pushed.
+- No cloud or deployment write is part of this ticket; local Test/UAT evidence is sufficient for this code change.
+- The ticket's current acceptance is the in-repository re-evaluation fix and its local validation; the historical upstream record remains provenance only.
