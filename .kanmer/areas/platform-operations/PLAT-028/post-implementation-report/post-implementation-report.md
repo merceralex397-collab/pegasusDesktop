@@ -30,3 +30,7 @@ The branch diff contains only:
 - `src/Pegasus.Infrastructure/Intake/MimeKitPdfPigOpenXmlIntakeSourceReader.DocMsg.cs`
 
 No Pages, Worker, API-contract, Azure, mailbox, or Box files changed.
+
+## PR blocker — 2026-08-25
+
+The branch was pushed successfully to `origin/task/plat-028-duplicate-route-sweep`. `gh pr create --base dev --head task/plat-028-duplicate-route-sweep` was rejected by GitHub with the exact error: `GraphQL: must be a collaborator (createPullRequest)`. Therefore no PR, independent review, merge, or post-merge proof exists yet. Smallest next action: grant the authenticated GitHub account collaborator/create-PR permission or create the PR through an authorized collaborator, then return to the review gate.
