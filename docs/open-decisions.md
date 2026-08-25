@@ -2,6 +2,26 @@
 
 This is the sole register of material unresolved decisions. Most product decisions reviewed through 2026-07-25 are not reopened here. The [requirements](prd/README.md) and [capability inventory](capabilities.md) own scope context; deliberately deferred, conditional, and `Unclear` capabilities are not current-scope questions merely because their activation evidence is recorded here.
 
+## Desktop flow-record decisions (2026-08-25)
+
+- **FND-020 / Q4.3 — PLAT-041 before desktop export.** `PLAT-041` remains a
+  backlog carry-over: resolve the Box case folder once per export, rather than
+  once per image. The desktop export endpoint stays gated on that fix; this
+  inventory ticket does not expose or implement the endpoint.
+- **FND-020 / Q6.1 — Report template capability mapping.** `TICK-206` remains
+  in preparing. The current governed asset set is six `.scriban` templates plus
+  `report.css`; `PlaywrightAssessmentReportRenderer` currently calls the
+  assessment report and fee-note templates, while the other four templates
+  remain retained assets pending the capability mapping and retirement
+  decision. No template retirement is authorized by FND-020.
+- **FND-020 / Q6.3 — WebView2 workstation observation.** Before the Phase 7
+  desktop renderer can claim deployment readiness, the operator must nominate
+  an owner and record, for each of the ten target Windows workstations, the OS
+  build, WebView2 Evergreen runtime version/presence, and the fixed-version
+  fallback decision if Evergreen is absent or unsuitable. No such ten-machine
+  observation is present in this repository as of 2026-08-25; no runtime
+  presence or fallback is claimed here.
+
 Evidence tiers are defined once in [engineering](engineering.md#required-evidence-tiers); no stronger state is inferred below.
 
 Accepted decisions move to an [ADR](adr/README.md) or their canonical owner. Delivery status does not belong in this register.

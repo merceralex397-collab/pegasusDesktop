@@ -301,6 +301,39 @@ retry; conflict detection via document version. No Box secret in the package
 - Q4.3 PLAT-041 (resolve folder once per export) must land before the export
   endpoint is exposed to avoid per-image Box calls from a desktop batch.
 
+**Answers (2026-08-25).**
+
+- Q4.1 **Answered.** `Box.Sdk.Gen` 1.12.0 exposes named APIs for this shape:
+  `DownloadsManager.GetDownloadFileUrlAsync`,
+  `UploadsManager.PreflightFileUploadCheckAsync`,
+  `ChunkedUploadsManager.CreateFileUploadSessionAsync` and its URL-based
+  upload-part/commit methods, plus `BoxDeveloperTokenAuth.DownscopeTokenAsync`.
+  The current Pegasus `BoxContentClient` does not call those generated APIs:
+  it keeps the authorization header and guarded upload/download HTTP calls in
+  the gateway/Worker path. Box documents that generated SDK downloads normally
+  return binary content, while a download URL is short-lived (normally about
+  15 minutes), and that token exchange can restrict a token to a file/folder
+  and scopes such as `item_download` or `item_upload`. This proves available
+  primitives, not approval to expose them: direct desktop transfer remains
+  conditional on the DSK-07-07 security/metadata spike; the default is still
+  gateway streaming. Sources fetched 2026-08-25:
+  [Box Get Download URL](https://developer.box.com/guides/downloads/get-url),
+  [Box Downscope a Token](https://developer.box.com/guides/authentication/tokens/downscope),
+  [Box Preflight Check](https://developer.box.com/reference/options-files-content),
+  [Box Uploads](https://developer.box.com/guides/uploads).
+- Q4.2 **Answered.** Core’s `DocumentVersion` and the matching EF
+  `DocumentVersionEntity` carry file name/type (`FileName`, `MediaType`), size
+  (`ContentLength`), uploader/actor (`CreatedBy`), and version timestamp
+  (`CreatedAtUtc`); `Sha256`, custody status, version, current/removal state
+  are also available. `DocumentOccurrence`/`DocumentOccurrenceEntity` carry
+  source (`DocumentSource`/`Source`), semantic role, source-occurrence
+  identity, and the occurrence timestamp (`RecordedAtUtc`). There is no
+  separate uploader or source field missing from this projection; the gateway
+  should expose these existing fields rather than infer them from Box names.
+- Q4.3 **Moved to `docs/open-decisions.md` 2026-08-25.** PLAT-041 is still a
+  backlog carry-over. The desktop export endpoint therefore remains gated on
+  the one-folder-per-export fix; this ticket does not expose or implement it.
+
 **Read-only verification.**
 `git grep -n "class BoxCaseCustody" src/Pegasus.Infrastructure/Custody/BoxCaseCustody.cs`,
 `git grep -n "Microsoft.KeyVault(" src/Pegasus.Infrastructure`,
@@ -354,6 +387,26 @@ the desktop (Core policy, shared assembly); no provider key in the package.
   serialises; confirm the gateway request path never calls the provider
   inline.
 
+**Answers (2026-08-25).**
+
+- Q5.1 **Answered.** No repository evidence authorizes a direct native
+  provider call. The Web page model calls Core’s `IRequestVehicleLookup`, and
+  the production `IVehicleLookupAdapter` is registered in the Worker; the
+  package therefore receives no DVLA/DVSA credential and the default remains
+  gateway/Worker mediation.
+- Q5.2 **Answered.** No central provider-cache TTL is defined. The durable
+  workflow records each observation’s `RetrievedAtUtc`, optional
+  `EffectiveAtUtc` and `SourceObservedAtUtc`; lookup requests are idempotent
+  durable work, not a client-side time-based cache. A future freshness policy
+  must be accepted separately rather than inferred from the recorded source
+  age.
+- Q5.3 **Answered.** `OnPostRequestVehicleLookupAsync` calls
+  `IRequestVehicleLookup`; `EfVehicleWorkflowStore` persists/enqueues the
+  request, and the Worker’s queued-lookup processor owns the adapter
+  invocation. The Web request does not call `DvlaDvsaProductionAdapter`
+  inline. The reconciliation timer only enqueues missing lookups and uses the
+  existing external-work queue.
+
 **Read-only verification.**
 `git grep -n "class DvlaDvsaProductionAdapter" src/Pegasus.Infrastructure/Vehicle/`,
 `git grep -n "VehicleLookupRequests" src/Pegasus.Infrastructure/Persistence/Migrations | head`,
@@ -385,10 +438,10 @@ keeping the gateway renderer until golden-file parity passes.
   `Pegasus.Web.csproj` `ContainerBaseImage
   mcr.microsoft.com/playwright/dotnet:v1.61.0-noble` (ADR-0028, DELIV-012);
   Container App cpu 1.0 / 2 Gi for in-process Chromium.
-- Templates: seven `.scriban` files under
-  `docs/design/assets/report-renderer/templates/` (advert_evidence_pack,
-  assessment_fee_note, assessment_report, expert_report, fee_note,
-  market_valuation_evidence, …) with `report.css`, LF-forced by
+- Templates: six `.scriban` files under
+  `docs/design/assets/report-renderer/templates/` (`advert_evidence_pack`,
+  `assessment_fee_note`, `assessment_report`, `expert_report`, `fee_note`,
+  `market_valuation_evidence`) plus `report.css`, LF-forced by
   `.gitattributes`.
 - Tests: `tests/Pegasus.IntegrationTests/Reports/AssessmentReportRendererTests.cs`,
   `AssessmentReportDraftWebTests.cs`; renderer workspace provenance
@@ -425,9 +478,41 @@ and the gateway renderer kept as fallback until parity (ADR-0108).
 - Q6.4 PDFsharp post-processing behaviour on WebView2 output (metadata,
   merge of fee note).
 
+**Answers (2026-08-25).**
+
+- Q6.1 **Moved to `docs/open-decisions.md` 2026-08-25.** TICK-206 remains a
+  preparing decision ticket. The current repository asset scope is the six
+  `.scriban` templates listed above plus `report.css`; the existing callers
+  are `PlaywrightAssessmentReportRenderer.RenderPdfAsync` for
+  `assessment_report.scriban` and `assessment_fee_note.scriban`, with the
+  remaining templates retained as governed assets pending TICK-206’s
+  capability mapping. No template is retired by this inventory ticket.
+- Q6.2 **Answered.** Microsoft documents
+  `CoreWebView2.PrintToPdfAsync(String, CoreWebView2PrintSettings)` and
+  `PrintToPdfStreamAsync`; the settings cover page size, margins, scale,
+  backgrounds, and headers/footers, and only one print operation may be in
+  progress per WebView. Fidelity against the pinned Playwright renderer is
+  not claimed here; Phase 7 golden-file testing measures it. Fetched
+  2026-08-25 from [PrintToPdfAsync](https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.printtopdfasync?view=webview2-dotnet-1.0.4129.50)
+  and [CoreWebView2PrintSettings](https://learn.microsoft.com/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/corewebview2printsettings?view=webview2-winrt-1.0.4129.50).
+- Q6.3 **Moved to `docs/open-decisions.md` 2026-08-25.** This repository
+  contains no operator-run evidence for the ten target workstations, so it
+  does not claim Evergreen runtime presence or a fixed-version fallback. The
+  required workstation observation and owner are recorded in the decision
+  register.
+- Q6.4 **Answered.** The application pins `PDFsharp` 6.2.4 and uses
+  `PdfReader.Open(..., PdfDocumentOpenMode.Import)` to combine the generated
+  PDFs. Official PDFsharp documentation describes the library as able to
+  modify, merge, and split PDFs and documents importing pages into a new
+  document; it does not establish WebView2-vs-Playwright fidelity. That
+  behavior remains a Phase 7 fixture test. Fetched 2026-08-25 from
+  [PDFsharp features](https://docs.pdfsharp.net/PDFsharp/Overview/Features.html)
+  and [PDFsharp encryption/import example](https://docs.pdfsharp.net/PDFsharp/Topics/PDF-Features/Encryption.html).
+
 **Read-only verification.**
 `git grep -n "PdfAsync\|PrintToPdf" src tests`,
-`ls docs/design/assets/report-renderer/templates/`,
+`Get-ChildItem docs/design/assets/report-renderer/templates/`,
 `git grep -n "PlaywrightVersion" Directory.Build.props src/Pegasus.Web/Pegasus.Web.csproj`,
-Microsoft Learn `microsoft_docs_search "CoreWebView2 PrintToPdfAsync"` (fetched
-2026-08-23 for the plan; re-fetch at ticket time).
+Microsoft Learn `microsoft_docs_search "CoreWebView2 PrintToPdfAsync"` and
+`microsoft_docs_fetch` for `CoreWebView2.PrintToPdfAsync` and
+`CoreWebView2PrintSettings` (fetched 2026-08-25).
