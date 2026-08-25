@@ -13,6 +13,8 @@ using Pegasus.Core.ImageIntake;
 using Pegasus.Core.Intake;
 using Pegasus.Core.Operations;
 using Pegasus.Core.Triage;
+using Pegasus.Core.Tasks;
+using Pegasus.Core.Workflow;
 using Pegasus.Infrastructure.Persistence;
 using Pegasus.Web.Authentication;
 using Pegasus.Web.Mcp;
@@ -207,11 +209,11 @@ public sealed class QdosAllocationRecoveryTests
             receipt.Version,
             CaseType.Inspection,
             "PENDING",
-            // CASE-013: the automatic route records the instruction and its
-            // images as complete, because its own precondition establishes
-            // that. The seeded pending attempt must carry the same command or
-            // the resumed attempt is a different one.
-            new(true, true, false, false),
+            // The automatic route observes image completeness from the
+            // receipt's retained assets. This fixture has no photographs, so
+            // the seeded pending attempt must carry the same command or the
+            // resumed attempt is a different one.
+            new(true, false, false, false),
             null,
             receipt.InstructionDraft?.InspectionDate);
         var actor = ActionActor.SystemWorker("system-worker:intake-processing");
@@ -279,6 +281,39 @@ public sealed class QdosAllocationRecoveryTests
         Assert.Equal(1, await AllocationTestData.CountAsync(factory.Services, "ExternalWorkItems"));
         Assert.Equal(0, await AllocationTestData.CountAsync(factory.Services, "Triage"));
         Assert.Equal(1, await AllocationTestData.AllocationEventCountAsync(factory.Services));
+    }
+
+    [Fact]
+    public async Task AutomaticAllocationWithoutPhotographsPersistsNotReadyWithScheduledChase()
+    {
+        using var factory = new IntakeWebApplicationFactory();
+        var principal = $"N{Guid.NewGuid():N}"[..12].ToUpperInvariant();
+        await AllocationTestData.SeedPrincipalAsync(factory.Services, principal);
+        var receipt = await AllocationTestData.StoreDefinitiveReceiptAsync(
+            factory.Services,
+            CaseType.Inspection,
+            principal,
+            assets: []);
+
+        IntakeAllocationResult result;
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            result = Assert.IsType<IntakeAllocationResult>(
+                await scope.ServiceProvider.GetRequiredService<IAllocateIntake>()
+                    .AttemptAutomaticAsync(receipt.Id, Guid.NewGuid()));
+        }
+
+        var caseId = Assert.IsType<Guid>(result.State.CaseId);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var workflow = await scope.ServiceProvider
+                .GetRequiredService<ICaseWorkflowQueries>()
+                .GetAsync(caseId, CancellationToken.None);
+
+            Assert.Equal(CaseLifecycleState.NotReady, workflow?.State);
+            Assert.Equal(CaseDueWorkState.Scheduled, workflow?.DueWork?.State);
+            Assert.NotNull(workflow?.DueWork?.NextChaseAtUtc);
+        }
     }
 
     [Fact]
@@ -1521,7 +1556,8 @@ internal static class AllocationTestData
         string principalCode,
         MailRouteEvaluationResult? routeDecision = null,
         MailClassificationResult? classificationDecision = null,
-        CaseMatchEvaluationResult? caseMatchDecision = null)
+        CaseMatchEvaluationResult? caseMatchDecision = null,
+        IReadOnlyList<IntakeAssetRecord>? assets = null)
     {
         var token = Guid.NewGuid().ToString("N");
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
@@ -1553,6 +1589,7 @@ internal static class AllocationTestData
                 "1",
                 "qdos-test-policy",
                 1,
+                Assets: assets,
                 MailRouteDecision: routeDecision ?? new(
                     MailRouteDisposition.Accepted,
                     new(principalCode, MailRouteKind.DirectProvider, principalCode),

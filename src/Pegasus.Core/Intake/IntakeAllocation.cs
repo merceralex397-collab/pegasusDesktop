@@ -212,21 +212,16 @@ public sealed class AllocateIntake(
     /// <summary>
     /// What the automatic route actually knows when it allocates. It runs only
     /// for a receipt whose decision is already <see cref="IntakeDecision.CaseCreated"/> —
-    /// a definitive authorised instruction, with its evidence retained
-    /// alongside — so the instruction and its images are complete. Staff have
-    /// confirmed neither, and the policy waives that for an automatically
-    /// definitive intake rather than pretending otherwise.
+    /// a definitive authorised instruction — so instruction completeness is
+    /// observed from that decision and image completeness is observed from the
+    /// receipt's retained evidence images. Staff have confirmed neither, and
+    /// the policy waives that for an automatically definitive intake rather than
+    /// pretending otherwise.
     ///
     /// This used to record all four as false, which meant every automatically
     /// created case was born "details incomplete" and could never reach Review
     /// no matter how complete it was (CASE-013).
     /// </summary>
-    private static readonly CaseCompleteness AutomaticCompleteness =
-        new(InstructionComplete: true,
-            ImagesComplete: true,
-            InstructionConfirmedByStaff: false,
-            ImagesConfirmedByStaff: false);
-
     public async Task<IntakeAllocationResult?> AttemptAutomaticAsync(
         Guid receiptId,
         Guid evaluationId,
@@ -266,7 +261,11 @@ public sealed class AllocateIntake(
             receipt.Version,
             caseType,
             principalCode,
-            AutomaticCompleteness,
+            new(
+                InstructionComplete: true,
+                ImagesComplete: InstructionEvidenceImages.Select(receipt.AssetRecords).Count > 0,
+                InstructionConfirmedByStaff: false,
+                ImagesConfirmedByStaff: false),
             StandaloneAuditEvidenceId: standaloneAuditEvidenceId,
             receipt.InstructionDraft?.InspectionDate);
         var actor = ActionActor.SystemWorker(SystemActor);
