@@ -1,0 +1,1 @@
+2026-08-25 live dependency stop: plan handles map to GWY-012 (DSK-03-12), FEAT-029 (DSK-07-03), FEAT-010 (DSK-05-10); all are preparing and blocked. No take/worktree/implementation; wait for the three owning mail/API contracts.

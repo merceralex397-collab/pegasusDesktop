@@ -24,3 +24,7 @@ The ticket's future plan must re-read the landed Core contracts and reduce its s
 - `git ls-tree -r --name-only origin/dev | rg 'MailMcp|AutomationMail'`
 - `git log --all --oneline --grep='MCP-05'`
 - Kanmer reads for TICK-062, EPIC-005 and EPIC-006 context, and linked ticket stages.
+
+## Live owner dependency recheck — 2026-08-25
+
+The plan's capability-handle dependencies were mapped to live board tickets before taking this ticket: DSK-03-12 is board [[GWY-012]], DSK-07-03 is board [[FEAT-029]], and DSK-05-10 is board [[FEAT-010]]. Live Kanmer shows all three are still in Preparing and blocked. Therefore the Core/API contracts this ticket must reuse have not landed; AUTO-001 remains unclaimed and no MCP tool shape, branch, worktree, or code change was created. Smallest unblock: GWY-012, FEAT-029 and FEAT-010 deliver their owning contracts first.
