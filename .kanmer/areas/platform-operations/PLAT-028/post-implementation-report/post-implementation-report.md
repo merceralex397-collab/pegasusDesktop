@@ -48,3 +48,7 @@ Using the already-authenticated `merceralex397-collab` repository account (read-
 - `git diff --check` — passed.
 
 The independent reviewer confirmed the implementation and scope, but noted that their own full integration attempt was canceled after 6m10s; the completed exact run above is recorded as implementer-run evidence. PR #2 still has no status checks because the repository API reports `total_count: 0` registered workflows.
+
+## Current state correction — 2026-08-25
+
+The initial `Branch and commit` PR line and the historical `PR blocker` section describe the pre-PR state and the failed attempt under the pull-only CLI account. They are superseded by the later `PR opened`, `Exact validation addendum`, and review entries: PR #2 is currently open at head `9f582036c5d304bfeea441ffb30415f71274c699`, targeting `dev`; review returned NEEDS CHANGES only for CI/evidence conditions, which have been addressed except for the external CI-registration blocker.
