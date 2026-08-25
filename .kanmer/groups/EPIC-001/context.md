@@ -96,3 +96,8 @@ Subagents are `.codex/agents/<name>.toml`. Never load a skill from the
 6. `docs/index.md` § Authority
 7. `docs/desktop/12-agent-tooling/skill-routing.md` — exact skill, subagent and MCP names
 8. `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md` §§ 1–3, 6, 24–29, Appendix A
+
+
+## Operator scope amendment — 2026-08-25
+
+The operator has prohibited all synchronization with the upstream Pegasus repository. This supersedes the historical upstream-sync/freeze instructions in this context. The current refactor is in-repository only: use the configured `pegasusDesktop` remote, preserve current `origin/dev` and `origin/main`, and do not add, fetch, merge, compare, or push an upstream remote. Cloud writes and deployments are deferred until the full refactor is complete. Tickets that previously required upstream work must be amended to record this boundary rather than executing it.

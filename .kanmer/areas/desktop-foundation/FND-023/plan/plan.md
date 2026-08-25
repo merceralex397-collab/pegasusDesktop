@@ -333,3 +333,16 @@ so; the pass covers only the fork-authored edits to
 `docs/desktop/01-inventory-and-parity/parity-matrix.md` and
 `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md`, for which the
 expected result is `n/a — docs-only`._
+
+## Operator scope amendment — 2026-08-25
+
+The operator has prohibited all synchronization with the upstream Pegasus repository. This supersedes the original first-sync procedure, acceptance criteria, verification commands, and follow-up cadence.
+
+This ticket is now an in-repository record only:
+
+- Do not add, fetch, merge, validate, or push an `upstream` remote.
+- Use the configured `pegasusDesktop` remote and the repository's existing `origin/dev` and `origin/main` history only.
+- Do not import upstream commits or wait for upstream changes.
+- Record the in-repository baseline and this boundary in the owned repository documentation and Kanmer proof.
+
+The amended acceptance is: the repository-only source boundary is documented, no upstream operation is performed, and downstream tickets proceed from the current in-repository baseline.

@@ -90,3 +90,8 @@ proves nothing about deployed permissions (upstream `PLAT-035`).
 - `docs/desktop/12-agent-tooling/skill-routing.md` (exact names, pins, do-not-load table)
 - `AGENTS.md` (Simplicity rails, Safety rails, Product invariants, Repository task workflow) and
   `docs/engineering.md` (§ Branches and delivery, § Required evidence tiers, § Engineering invariants)
+
+
+## Operator scope amendment — 2026-08-25
+
+The operator has prohibited all synchronization with the upstream Pegasus repository. This supersedes the historical first-sync and continuing-sync instructions in this context. Inventory, parity, and carry-over work must remain in this repository and use the configured `pegasusDesktop` remote only. Do not add, fetch, merge, compare, or push an upstream remote. The existing local `corpus/` is the immutable/local testing corpus; preserve it and do not publish or modify it. Cloud writes and deployments are deferred until the full refactor is complete.

@@ -338,3 +338,16 @@ _Not yet run, and it is run **per branch** rather than once: `AGENTS.md`
 before its PR, recorded here under a dated heading per repetition.
 `n/a — docs-only` is the expected record where a branch carries only the merge
 and the register lines. Upstream commits are never in scope for the pass._
+
+## Operator scope amendment — 2026-08-25
+
+The operator has prohibited all upstream synchronization. This supersedes the standing later-sync cadence, watch, fetch, merge, and freeze-dependent acceptance criteria.
+
+This ticket records the boundary through the refactor:
+
+- No upstream remote, fetch, merge, comparison, cadence, or push is permitted.
+- All implementation and history work stays in this repository and uses the configured `pegasusDesktop` remote only.
+- Cloud writes and deployments remain deferred until the full refactor is complete.
+- Any remaining external-release or upstream-dependent language is a deferred boundary, not an in-repository implementation task.
+
+The amended acceptance is: the repository governance record and Kanmer proof state the boundary, and no upstream operation is performed.

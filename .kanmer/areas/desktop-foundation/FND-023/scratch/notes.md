@@ -1,0 +1,1 @@
+2026-08-25 operator scope amendment applied: upstream synchronization is prohibited; this ticket is now limited to an in-repository boundary and proof. No upstream or cloud/deployment write was performed.

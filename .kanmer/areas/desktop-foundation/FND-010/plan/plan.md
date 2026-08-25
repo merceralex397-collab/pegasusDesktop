@@ -221,3 +221,17 @@ The independent desktop-conversion review returned **NEEDS CHANGES**. The high f
 The reviewer also identified the D-002 consequence edit as minor scope drift because the plan said only the D-001 status cell changes. Disposition: **retained and accepted as necessary** because leaving “no open decisions remain” would contradict the newly documented pending upstream freeze; the plan and scratch record this rationale.
 
 The branch remains unmerged and the proof gate is not satisfied. PR creation is still blocked by GitHub collaborator permission (`GraphQL: must be a collaborator (createPullRequest)`).
+
+## Operator scope amendment — 2026-08-25
+
+The operator has directly resolved the release-source question for this refactor: do not synchronize with the upstream Pegasus repository. This supersedes the original request for an external freeze agreement and any upstream contact, archive, fetch, or merge step.
+
+The current decision is entirely in-repository:
+
+- The configured `pegasusDesktop` remote is the only delivery remote.
+- No upstream remote is added, read, fetched, merged, or pushed.
+- All implementation and history work remains in this repository.
+- Cloud writes and deployments are deferred until the full refactor is complete.
+- The repository governance record and Kanmer proof must state this boundary; ADR-0100 remains unchanged.
+
+The amended acceptance is: the in-repository release boundary is documented and evidenced without external coordination or an upstream operation.

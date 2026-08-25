@@ -45,3 +45,8 @@ Reads are free; every write is ⚠, needs exact-target approval (`docs/runbook.m
 - `docs/desktop/12-agent-tooling/README.md`, with `skill-routing.md` and `subagents.md`
 - `docs/desktop/Pegasus_Native_Desktop_Design_Proposal.md` § 24 Phase 0
 - `.kanmer/groups/HZN-001/board-conventions.md`
+
+
+## Operator scope amendment — 2026-08-25
+
+The operator has prohibited all upstream synchronization. This supersedes the historical D-001 sync cadence in this horizon context. Phase-0 work remains in-repository only, using the configured `pegasusDesktop` remote and current local history. No upstream remote is added, fetched, merged, compared, or pushed. Cloud writes and deployments remain deferred until the full refactor is complete.
