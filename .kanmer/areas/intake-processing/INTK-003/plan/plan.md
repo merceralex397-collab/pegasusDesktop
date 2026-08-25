@@ -88,3 +88,16 @@ The independent review found and the implementation corrected two issues:
 - `VehicleMileageKilometres` is validated for negativity, and provenance is cleared when canonical mileage is cleared, so a hidden/form or API value cannot leave stale or invalid provenance behind.
 
 The corrected source was rebuilt and retested: 927 Core tests passed, all 5 case-data persistence tests passed, the Release build passed with 0 warnings/errors, and `Test-MigrationGrants.ps1` passed.
+
+## Review correction — 2026-08-25 (vehicle workflow writer)
+
+The second independent review found that vehicle-suggestion correction bypassed the canonical case-data mileage normalization path. The correction is now implemented in the owned branch:
+
+- `EfVehicleWorkflowStore.AcceptOnceAsync` delegates the proposed mileage/unit pair to `CaseDataPolicy.Normalize`, then persists canonical miles and `Miles`.
+- The existing EAV provenance field `vehicle_mileage_kilometres` is included in the vehicle-field set, populated for kilometre corrections, and removed when mileage is replaced or cleared; no external/cloud or data-backfill path was added.
+- The confirmation history stores the same canonical mileage/unit as the case fields.
+- Added `VehicleWorkflowTerminalTests.KilometreCorrectionIsStoredAsCanonicalMilesWithOriginalReading`, which exercises the SQL-backed acceptance writer and asserts the canonical case fields and confirmation history.
+
+### Simplification pass — 2026-08-25 (correction)
+
+The correction reuses `CaseDataPolicy.Normalize`, the existing `VehicleMileagePolicy.ToMiles` owner, `SetConfirmedField`, and the existing EAV field registry. No new abstraction, route, migration, or compatibility path was introduced. The repeated removal condition is required to preserve partial Accept semantics while clearing stale provenance whenever mileage is explicitly replaced or corrected. No further behaviour-preserving simplification was identified.

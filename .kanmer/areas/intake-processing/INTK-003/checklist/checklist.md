@@ -16,3 +16,9 @@
 The first persistence run correctly exposed the existing EAV field-name check constraint; after generating `CanonicalCaseMileageProvenance`, the focused and full case-data persistence tests passed. The migration changes only that constraint and does not transform existing persisted cases.
 
 The first independent review found duplicate conversion ownership and incomplete provenance validation. The corrected commit `52b00c52` delegates conversion to the existing `VehicleMileagePolicy.ToMiles`, rejects negative provenance, and clears provenance when mileage is cleared.
+
+## Review correction — 2026-08-25
+
+- [x] Correct the vehicle-suggestion acceptance writer to reuse canonical mileage normalization and persist/clear the existing kilometre provenance marker.
+- [x] Add and pass the SQL-backed kilometre-correction integration test; rerun full Core tests, Release build, migration-grant validation, and diff hygiene.
+- [ ] Obtain independent PASS review of corrected head, green exact-head CI, merge to `dev`, post-merge proof on `main`, and Kanmer closeout.
