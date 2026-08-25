@@ -76,3 +76,20 @@ No repository documentation changes are required. This ticket's research and fil
 ## Research disposition
 
 The sweep found one behavior-preserving consolidation: a shared inline-image predicate across the existing source-reader partials. It found no safe deletion of a store, evidence-image query, custody overload, move-result field, or Razor page.
+
+## Sweep findings
+
+- **Roster item 1 — content stores:** Confirmed in `src/Pegasus.Infrastructure/DependencyInjection.cs` that local composition keeps `FileSystemIntakeArtifactStore` as `IIntakeArtifactStore` and `LocalDocumentContentStore` as `IDocumentContentStore`; production composition likewise keeps Azure Blob intake artifacts separate from Box document content. Evidence-image and document-content callers use their existing typed routes. No duplicate store route was found; no change.
+- **Roster item 2 — evidence images:** `InstructionEvidenceImages` remains the documented Core owner. `ICaseEvidenceImageQueries` is still consumed by `src/Pegasus.Web/Pages/Cases/Details.cshtml.cs`, and the EVA occurrence query remains a separate handoff projection. The current and future gateway/desktop links do not justify deletion; no change.
+- **Roster item 3 — custody overloads:** The guarded and unguarded custody pairs remain intentional: guarded Box methods perform `CustodyEffectLeaseGuard.RequireCurrentAsync` immediately before the remote mutation, while local implementations use the guardless operations and default interface wrappers. No safe collapse without changing the guard boundary; no change.
+- **Roster item 4 — inline-image classification:** The EML and DOC/MSG paths duplicated the same policy with different input names. Added one private `IsInlineImage` rule in the existing reader partial class and routed both call sites through it. Explicit EML attachments remain excluded; DOC/MSG retains its existing `IsInline`/ContentId behavior. The code comment records INTK-030 as the drift this consolidation prevents.
+- **Roster item 5 — move-result fields:** Current `src/Pegasus.Web/Pages/Mail/Message.cshtml` consumes all four expected concurrency fields for uncertain-move recovery. The fields remain in the Core contract and store write; no deletion is safe.
+- **Roster item 6 — Razor page model:** Explicitly out of scope because the page model is on the conversion cut list and is replaced by the linked desktop/gateway work.
+- The bounded sweep found no additional safe duplicate-route deletion. No tests, pages, Worker, API contracts, Azure, mailbox, or Box code changed.
+
+## Simplification pass — 2026-08-25
+
+- Reused the existing partial reader, `SourceFormat`, and already-computed disposition values; no new type, interface, wrapper, or policy copy was introduced.
+- Kept the helper private and colocated with the two existing call sites. This is the smallest owner boundary that serves both EML and DOC/MSG paths.
+- Preserved all live routes and fields with current callers or required guard semantics; no speculative cleanup or compatibility path was added.
+- No unapplied behavior-preserving simplification findings remain.
