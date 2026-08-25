@@ -4,8 +4,11 @@ The original repository `collisionengineers/pegasus` is not a finished
 project: its Kanmer board still carries open work, and its `main` keeps
 moving. This document triages that board once, dated, so the fork's board
 starts with what matters and nothing is lost. Source: read-only clone of
-`collisionengineers/pegasus` branch `kanmer-board` at `4694067`
-("chore(kanmer): sync board 2026-08-23T15:51:00.775Z"), read 2026-08-23.
+`collisionengineers/pegasus` branch `kanmer-board` at `8566c18d59481df740abc8ea784e629f91ede6cf`
+("chore(kanmer): sync board 2026-08-25T01:28:04.859Z"), read 2026-08-25.
+The original 2026-08-23 triage remains below as the historical 109-row
+classification; the 2026-08-24 `a5b28111` coverage pass and this later-head
+amendment pass are recorded after that table.
 Ticket DSK-01-09 executes the dispositions; DSK-01-10 performs the first
 code sync.
 
@@ -66,9 +69,10 @@ tickets follow the **fork** profile set; `get_doc_gates` is authoritative.
 
 Recreation rule (DSK-01-09): each `desktop-screen-spec`,
 `gateway-worker-ticket`, and `report-decision` ticket is recreated on the
-fork board in the fork area named below, with `refs` containing the
-upstream ID (`upstream:<ID>`), the original body copied verbatim into the
-ticket body, the upstream labels kept, and a link to the owning area plan.
+fork board in the fork area named below, with the upstream ID in the ticket
+title (`upstream:<ID> · <title>`) and labels, the original body copied
+verbatim into the ticket body, and only real repository-relative governing
+documents in `refs`.
 The 233 done and 114 archived upstream tickets are **not** recreated —
 their history stays upstream and is reachable through the `upstream`
 remote. `unchanged-backlog` tickets are not recreated either; the table is
@@ -162,7 +166,7 @@ their register until a horizon activates them.
 | TICK-037 | intake-processing | backlog | feature | capability, INT-06, next, post-alpha, blocked | INT-06 — Automatic ingestion from engineers@collisionengineers.co.uk | unchanged-backlog | — | intake-processing |
 | TICK-038 | intake-processing | backlog | feature | capability, INT-07, next, post-alpha, blocked | INT-07 — Automatic ingestion from info@collisionengineers.co.uk | unchanged-backlog | — | intake-processing |
 | TICK-041 | intake-processing | backlog | feature | capability, INT-16, next, post-alpha, blocked | INT-16 — OCR for scan-like PDF instruction pages | unchanged-backlog | — | intake-processing |
-| TICK-054 | mail-communications | preparing | feature | capability, MAIL-13, next, post-alpha, blocked | MAIL-13 — Change read state, Outlook categories, flags, or delete messages in the app | gateway-worker-ticket (provider port exists, unavailable by default) | 07 (mail) | mail-communications |
+| TICK-054 | mail-communications | preparing | feature | capability, MAIL-13, next, post-alpha, blocked | MAIL-13 — Change read state, Outlook categories, flags, or delete messages in the app | unchanged-backlog | — | mail-communications |
 | TICK-066 | mail-communications | backlog | feature | capability, MAIL-19, later, post-alpha, blocked | MAIL-19 — Automatically send chasers or other outbound messages | unchanged-backlog | — | mail-communications |
 | TICK-075 | mail-communications | backlog | feature | capability, MAIL-17, later, post-alpha, blocked | MAIL-17 — Idempotent report/fee-note send on the original Outlook thread or provider API | unchanged-backlog | — | mail-communications |
 | TICK-088 | mail-communications | preparing | feature | capability, MAIL-12, later, post-alpha, blocked | MAIL-12 — Authenticated staff compose, reply, forward, and send email in Pegasus | unchanged-backlog | — | mail-communications |
@@ -190,9 +194,33 @@ their register until a horizon activates them.
 
 Disposition totals: `desktop-screen-spec` 18 (including CASE-009's screen
 half), `gateway-worker-ticket` 26, `report-decision` 13,
-`unchanged-backlog` 53. Every row above is recreated, listed, or both per the
-recreation rule; none is dropped outright — a "drop" needs the operator, and
-the only candidate is CASE-001 once Razor Pages are retired.
+`unchanged-backlog` 53. The 75 non-imported rows in the corrected coverage
+pass are 58 post-alpha rows, 13 rows covered by named seeded tickets, two rows
+already merged into the fork, one Razor-only row, and upstream `TICK-001`
+under operator decision D-004. `unchanged-backlog` is reserved for rows that
+have a docs/capabilities.md row; rows without that capability authority are
+not silently deferred.
+
+## Coverage pass and later upstream head
+
+The corrected coverage pass at upstream head `a5b28111` found **114 open,
+non-archived** upstream tickets: 19 required their own fork ticket, 21 were
+amendments to existing seeded tickets, and 75 were dropped from the fork
+register with the dispositions above. The 19 imports are members of Kanmer
+group `EPIC-014`; the authoritative upstream-to-fork join table is
+`HZN-001/board-conventions.md`.
+
+The five rows that postdated the original 109-row table — upstream `DOCS-013`,
+`ENG-014`, `ENG-015`, `INTK-034` and `INTK-035` — were already represented by
+the coverage pass as the relevant imported or amended work, not recreated as
+duplicates. At the later upstream head
+`8566c18d59481df740abc8ea784e629f91ede6cf`, the open count is **118**: five
+new review findings were opened and classified as amendments to existing
+unclaimed owners, with their acceptance and implementation obligations added
+through Kanmer to `GWY-009` (upstream `CASE-023`), `FEAT-016` (upstream
+`DOCS-014`), `FEAT-015` (upstream `ENG-017`), `ENG-002` (upstream `INTK-036`)
+and `GWY-013` (upstream `PLAT-043`). No later-head import or legitimate drop
+was identified.
 
 ## Code drift and the first sync
 
