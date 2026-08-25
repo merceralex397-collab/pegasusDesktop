@@ -10,7 +10,9 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // This is intentionally non-additive: do not roll an older application back behind it.
+            // This is schema-reversible but data-destructive: Up removes historical
+            // manifest/provenance values, and Down can recreate only empty/default columns.
+            // Do not roll an older application back behind this migration.
             migrationBuilder.DropColumn(
                 name: "ManifestContent",
                 table: "EvaHandoffRevisions");
