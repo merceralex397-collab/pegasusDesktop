@@ -558,13 +558,14 @@ and `docs/open-decisions.md`.
 - Corrected migration census at this branch → 64 non-designer, non-snapshot
   migrations; first `20260724104624_InitialProviderNeutralIntake`; last
   `20260822044425_GrantWorkerCaseDocuments`.
-- `pwsh ./scripts/Test-DocumentationLinks.ps1` and the repository's markdown
-  placement check are required ticket validation; their exact final outcomes
-  are recorded after the document patch verification step.
+- `pwsh ./scripts/Test-DocumentationLinks.ps1` → exit 0: all relative Markdown
+  links resolve (232 files checked). `pwsh ./scripts/Test-MarkdownPlacement.ps1
+  -Base origin/dev -Head HEAD` → exit 0: Markdown placement passed for
+  `origin/dev..HEAD`. `git diff origin/dev...HEAD --check` also passed.
 - Azure MCP read-only `functionapp_get` succeeded for
   `pegasus-prod-worker-252ow37gij` in `rg-pegasus-prod`: Running, UK South,
   plan `pegasus-prod-worker-plan-252ow37gij`, release `0.1.0-alpha.1`.
-  A read-only setting-name query returned the nine
+  A separate read-only Azure CLI app-settings-name query returned the nine
   `AzureWebJobs.<function>.Disabled` names plus ordinary non-secret settings;
   no setting values were read and no Azure write was performed. The nine names
   match `infra/modules/platform.bicep:531-539`.
