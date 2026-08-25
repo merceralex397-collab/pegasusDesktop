@@ -44,3 +44,63 @@ It is filed as a **spike** because its deliverable is the labelled evidence base
 ## Planning implication
 
 Reuse the cited boundaries and revalidate the named sources against current `origin/dev` after the ticket is taken. Do not create a compatibility path, duplicate policy, or an unapproved external write.
+
+## Corpus availability and method — 2026-08-25
+
+The operator-supplied corpus is present at the local ignored path `C:/Users/PC/Documents/GitHub/pegasusDesktop/corpus/corpus`. It remains untracked and immutable; no corpus file, excerpt, claimant data, or generated output was added to the repository.
+
+Read-only inventory:
+
+- 2,567 files total: 271 `.eml`, 690 `.pdf`, 68 `.docx`, and 203 directories.
+- All 271 EML headers and attachment names were scanned. Fifteen messages were audit/assessment candidates by subject or attachment vocabulary. Thirteen had report/instruction attachments; two were header-only candidates and had no attached report to attribute.
+- A focused text extraction scan covered 283 PDFs under `cereference/audits`, `cereference/totalLoss`, `cereference/reports`, and `qdosmapping`. PyMuPDF extraction was used read-only. The cohort is a report-candidate survey, not a claim that every corpus document is an audit.
+- Twenty legacy `.doc` attachments, image-only material, and PDFs without extractable text were not assigned an issuer from this pass. This is a coverage limitation, not permission to guess.
+
+Principal/source provenance available from the EML headers and paths:
+
+- QDOS-assist-forwarded candidates: 7 (sender domains/paths observed as `qdosassist.co.uk` or `qdosmapping`).
+- Collision Engineers desk candidates: 5 (sender `collisionengineers.co.uk`).
+- Connexus sender candidate: 1 (`connexus.co.uk`).
+- Vehicle Resolutions sender candidate: 1.
+- One additional total-loss subject from an `als.example.co.uk` sender had no attachments and cannot be attributed.
+- These are observed corpus provenance labels, not product-level principal decisions. The firm registry must key on the report issuer, not the forwarding principal.
+
+## Proposed issuer evidence
+
+The following table records only extracted layout/outcome evidence and aggregate counts. `Repairable parts` is treated as a component label unless accompanied by the report-level status/title; it is not independently used as the outcome.
+
+| Proposed firm key | Evidence cohort | Issuer/layout tells | Report-level outcome wording/location |
+|---|---:|---|---|
+| `collision-engineers` (internal control, excluded from third-party registry) | 142 PDFs: 105 total-loss, 18 repairable, 19 other/unclear | Collision Engineers letterhead/footer and `engineers@collisionengineers.co.uk`; observed in audit/report candidates | Report titles/status blocks use `TOTAL LOSS REPORT`, `REPAIRABLE REPORT`, and `T/Loss`; outcome is taken from the report-level title/status, not a parts list |
+| `connexus-vehicle-assessors` | 27 PDFs, all repairable | `Engineer Repairable Report` title and explicit `Connexus Vehicle Assessors` issuer line | `Repairable` in the report title and repairable section |
+| `exclusive-vehicle-assessors` | 63 PDFs, all repairable | `REPAIRABLE REPORT` title and explicit `Exclusive Vehicle Assessors` issuer line | `Repairable` in the report title; repairable-parts section is supporting evidence |
+| `laird-assessors` | 6 PDFs, all total-loss style | `Total Loss Damage Assessment Report`, Laird footer/domain and social handle | Status block states `Total Loss`; supporting prose recommends total-loss treatment |
+| `northern-assessors` | 1 PDF, total-loss style | `Northern Assessors` issuer line | `TOTAL LOSS REPORT - Cat N` title; the unrelated `Repairable parts` detail does not override the status |
+| `sprint-assessors` | 1 directly attributable PDF sample | `sprintassessors@btinternet.com`, `Consulting Engineers`, `Automotive Claims Assessors` | `Vehicle Status: REPAIRABLE` |
+| isolated/unknown candidates | 43 of the 283-PDF cohort were not assigned to the five recurring external firms above or the internal control | Atkinson, AMBER Vehicle Assessors, NorthEast Assessors, and a legal-evidence reference to Stephenson's appeared only in isolated material | No repeatable issuer/outcome grammar established; must abstain pending more legible evidence |
+
+The repeated external-firm cohort is therefore 98 reports (27 Connexus + 63 Exclusive + 6 Laird + 1 Northern + 1 Sprint), with 43 remaining isolated/unassigned and 142 internal Collision Engineers reports excluded from the proposed third-party registry. Counts are heuristic text-extraction counts and require a later image/`.doc` review before they can become production selection rules.
+
+## Registry and extraction proposal
+
+The proposed registry is keyed by engineering firm and should sit beside the shared extraction code, for example `src/Pegasus.Core/Intake/EngineeringFirmReportRegistry.cs` with focused per-firm descriptors beside it. It must not live under `src/Pegasus.Core/Intake/DirectProviders/Qdos/`, because QDOS is a forwarding principal and not the report issuer. Issuer selection should precede the existing shared `InstructionFieldExtraction` grammar; it must not create a second extractor or duplicate field normalization.
+
+Each descriptor should contain: firm key, positive issuer anchors, report-layout anchors, fact locations, outcome anchors for Repairable and Total Loss, precedence when a detail section conflicts with a report-level status, and an evidence reference to the reviewed local cohort. The registry remains a follow-on implementation; this spike creates no code or registry.
+
+The abstention contract for [[INTK-006]] is:
+
+1. No issuer matched: return no issuer attribution and preserve today's extraction behavior; do not fail intake solely because the issuer is unknown.
+2. Issuer matched but the outcome is absent, contradictory, or only inferable from a non-authoritative detail: return an explicit outcome-unreadable/abstained result, not `Repairable` or `TotalLoss`.
+3. Unknown issuer must never default to either case-reference prefix. The existing undifferentiated `null` is insufficient evidence for the later immutable reference allocation.
+
+The desktop consequence is data-only: once implemented, issuer identity and outcome provenance must travel with extracted facts to [[DSK-05-09]] through [[DSK-03-10]] and onward to [[DSK-05-04]]. Adding that provenance is an additive contract change requiring the [[DSK-03-04]] OpenAPI snapshot and [[DSK-03-05]] generated client to be regenerated. This ticket does not make that change.
+
+## Follow-on work and unresolved evidence
+
+- Registry implementation: add the firm-keyed descriptor owner beside shared extraction and preserve unknown-issuer degradation.
+- Per-issuer extraction rules: implement and test at least Connexus and Exclusive repairable layouts, Laird/Northern total-loss status layouts, and Sprint's vehicle-status wording; include Collision Engineers only as an explicit internal-control case if product scope later requires it.
+- Provenance contract: carry issuer, outcome, and evidence location through Core/gateway/desktop contracts without client-side inference.
+- [[INTK-006]]: decide the operator-facing state for matched-but-unreadable and no-issuer cases; this ticket intentionally does not make that product decision.
+- Corpus completeness remains unresolved for legacy `.doc`, image-only material, and the 43 isolated/unassigned PDF candidates. A later read-only corpus pass is required before treating the proposed counts as exhaustive. No product behavior should be implemented from those unresolved cases.
+- `docs/capabilities.md` has no existing upstream INTK-031 row in this checkout and the carry-over row is the live board provenance. No repository documentation was edited by this research-only pass.
+- Simplification pass: n/a — research-only; no prototype or product code was written.
