@@ -23,7 +23,7 @@ Required outcomes:
 `Audit`, `Triage`, `Unidentified`, `Image Intake`, and `Blocked intake` have distinct meanings. `Triage` is the only current term for the operator workflow described below.
 
 - `Audit` is standalone reviewed work with its own evidence and acceptance boundary; it is not a synonym for Triage or generic sorting.
-- `Triage` is a staff workflow for a recorded matter requiring a finding and, where applicable, exact reply-chain Sent evidence.
+- `Triage` is a separately identified product case with an immutable T-reference, its own evidence history, and a staff workflow requiring a finding and, where applicable, exact reply-chain Sent evidence. It is not a normal Case aggregate or Case/PO/Principal allocation; a later accepted formal instruction may create a linked normal Case through the ordinary acceptance and allocation gates.
 - `Unidentified` is the receiving/intake outcome when evidence can be persisted safely but its identity, meaning, ownership, or destination cannot yet be established. Each item or inseparable group receives an immutable `U<n>` tracking reference and a required canonical reason; that reference is never a Case/PO, Audit, Image Intake, or principal identity.
 - `Image Intake` is the image-initiated pre-instruction outcome when a usable VRM exists but no unique formal instruction Case can be matched; it retains its VRM reference and is not Unidentified.
 - `Blocked intake` is a pre-case failure boundary where required processing, identity, limits, custody, or evidence is incomplete or unsafe.

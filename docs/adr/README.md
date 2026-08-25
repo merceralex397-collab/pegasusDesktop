@@ -39,6 +39,7 @@ never renumbered or reused.
 | [0027](0027-authorization-code-for-external-mcp-connectors.md) | Authorization code with PKCE for external MCP connectors | FRD-10 |
 | [0028](0028-run-integrated-renderer-in-web-container-app.md) | Run the integrated report renderer in the Web Container App | FRD-11 |
 | [0029](0029-image-initiated-case-projection.md) | Image-initiated Case projection | FRD-01/02/05/06/12 |
+| [0030](0030-triage-as-separate-aggregate.md) | Triage as a separate aggregate | FRD-01, FRD-03 |
 | [0100](0100-native-winui-3-client-in-the-fork.md) | Native WinUI 3 client in the Pegasus fork | — |
 | [0101](0101-local-execution-cloud-authority-split.md) | Local-execution / cloud-authority split | — |
 | [0103](0103-gateway-not-direct-database-access.md) | Gateway, not direct workstation database access | — |
