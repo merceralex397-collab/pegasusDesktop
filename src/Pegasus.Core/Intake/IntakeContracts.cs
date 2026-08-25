@@ -1,4 +1,3 @@
-using System.Data.Common;
 using Pegasus.Core.Cases;
 using Pegasus.Core.Identity;
 
@@ -583,10 +582,9 @@ public static class IntakeExceptionPolicy
 
     /// <summary>
     /// Faults worth a bounded retry rather than an immediate terminal outcome:
-    /// the named intake conflicts, the dependency-unavailable fault adapters
-    /// translate to, and raw I/O, timeout and database faults, including any
-    /// of those wrapped by another exception, which is how EF surfaces a
-    /// deadlock or dropped connection. Retryable processing must remain in
+    /// the named intake conflicts and the dependency-unavailable fault
+    /// adapters translate to. Adapters own translation of provider, I/O, and
+    /// timeout faults before they cross this boundary. Retryable processing must remain in
     /// processing rather than allocating a terminal decision or an
     /// Unidentified reference on the first attempt.
     /// </summary>
@@ -595,9 +593,6 @@ public static class IntakeExceptionPolicy
             or IntakeOperationConflictException
             or IntakeVersionConflictException
             or IntakeDependencyUnavailableException
-            or IOException
-            or TimeoutException
-            or DbException
         || (exception.InnerException is { } inner && IsTransientFailure(inner));
 }
 

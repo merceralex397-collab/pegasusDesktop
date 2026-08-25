@@ -38,7 +38,7 @@ internal sealed class EfIntakeReceiptStore(IDbContextFactory<PegasusDbContext> c
             }
         }
 
-        throw new InvalidOperationException("The intake receipt could not be stored after the concurrency retry limit.");
+        throw new IntakeVersionConflictException();
     }
     public async Task<IntakeReceipt> ReplaceEvaluationAsync(
         IntakeReceiptDraft draft,
@@ -112,7 +112,7 @@ internal sealed class EfIntakeReceiptStore(IDbContextFactory<PegasusDbContext> c
         receipt.SourceReaderVersion = draft.SourceReaderVersion;
         receipt.ExtractionPolicyKey = draft.ExtractionPolicyKey;
         receipt.ExtractionPolicyVersion = draft.ExtractionPolicyVersion;
-        receipt.Decision = ToCode(draft.Decision);
+        receipt.Decision = IntakeDecisionCodes.ToCode(draft.Decision);
         receipt.DecisionReason = draft.DecisionReason;
         receipt.EvidenceJson = SerializeEvidence(draft.Evidence);
         receipt.FieldsJson = SerializeFields(draft.Fields);
@@ -175,7 +175,7 @@ internal sealed class EfIntakeReceiptStore(IDbContextFactory<PegasusDbContext> c
             .Where(item => !context.CaseIntakeLinks.Any(link => link.IntakeReceiptId == item.Id))
             .Select(item => item.Decision)
             .ToListAsync(cancellationToken);
-        var parsedDecisions = decisions.Select(ParseDecision).ToArray();
+        var parsedDecisions = decisions.Select(IntakeDecisionCodes.Parse).ToArray();
         return new(
             parsedDecisions.Count(item => item == IntakeDecision.NeedsSorting),
             parsedDecisions.Count(item => item == IntakeDecision.BlockedIntake));
@@ -206,7 +206,7 @@ internal sealed class EfIntakeReceiptStore(IDbContextFactory<PegasusDbContext> c
         var matches = context.IntakeReceipts.AsNoTracking();
         if (decision is { } requested)
         {
-            var code = ToCode(requested);
+            var code = IntakeDecisionCodes.ToCode(requested);
             matches = matches.Where(item => item.Decision == code);
         }
 
@@ -265,7 +265,7 @@ internal sealed class EfIntakeReceiptStore(IDbContextFactory<PegasusDbContext> c
                     item.Id,
                     item.SourceFileName,
                     item.ReceivedAtUtc,
-                    ParseDecision(item.Decision),
+            IntakeDecisionCodes.Parse(item.Decision),
                     item.FailureReason,
                     item.Sender,
                     ReadSubject(item.EvidenceJson),
@@ -428,7 +428,7 @@ internal sealed class EfIntakeReceiptStore(IDbContextFactory<PegasusDbContext> c
             SourceReaderVersion = draft.SourceReaderVersion,
             ExtractionPolicyKey = draft.ExtractionPolicyKey,
             ExtractionPolicyVersion = draft.ExtractionPolicyVersion,
-            Decision = ToCode(draft.Decision),
+            Decision = IntakeDecisionCodes.ToCode(draft.Decision),
             DecisionReason = draft.DecisionReason,
             EvidenceJson = SerializeEvidence(draft.Evidence),
             FieldsJson = SerializeFields(draft.Fields),
@@ -503,7 +503,7 @@ internal sealed class EfIntakeReceiptStore(IDbContextFactory<PegasusDbContext> c
             Actor = draft.Actor,
             OccurredAtUtc = draft.ProcessedAtUtc,
             DetailsJson = SerializeEnvelope(new IntakeReceiptEventDetails(
-                ToCode(draft.Decision),
+                IntakeDecisionCodes.ToCode(draft.Decision),
                 channelCode,
                 draft.SourceIdentity.ExternalReceiptToken,
                 draft.SourceHash))
@@ -532,7 +532,7 @@ internal sealed class EfIntakeReceiptStore(IDbContextFactory<PegasusDbContext> c
             new(ParseSourceChannel(entity.SourceChannel), entity.ExternalReceiptToken),
             entity.ReceivedAtUtc,
             entity.ProcessedAtUtc,
-            ParseDecision(entity.Decision),
+            IntakeDecisionCodes.Parse(entity.Decision),
             entity.DecisionReason,
             DeserializeEvidence(entity.EvidenceJson),
             fields,
@@ -1226,29 +1226,6 @@ internal sealed class EfIntakeReceiptStore(IDbContextFactory<PegasusDbContext> c
         _ => throw UnknownCode("mail-route kind", value)
     };
 
-    internal static string ToCode(IntakeDecision value) => value switch
-    {
-        IntakeDecision.CaseCreated => "case_created",
-        IntakeDecision.NeedsSorting => "needs_sorting",
-        IntakeDecision.BlockedIntake => "blocked_intake",
-        IntakeDecision.Unsupported => "unsupported",
-        IntakeDecision.OcrRequired => "ocr_required",
-        IntakeDecision.TechnicalFailure => "technical_failure",
-        IntakeDecision.ImageIntakeRegistered => "image_intake_registered",
-        _ => throw UnknownEnum(value)
-    };
-
-    internal static IntakeDecision ParseDecision(string value) => value switch
-    {
-        "case_created" => IntakeDecision.CaseCreated,
-        "needs_sorting" => IntakeDecision.NeedsSorting,
-        "blocked_intake" => IntakeDecision.BlockedIntake,
-        "unsupported" => IntakeDecision.Unsupported,
-        "ocr_required" => IntakeDecision.OcrRequired,
-        "technical_failure" => IntakeDecision.TechnicalFailure,
-        "image_intake_registered" => IntakeDecision.ImageIntakeRegistered,
-        _ => throw UnknownCode("decision", value)
-    };
 
     /// <summary>
     /// Internal rather than private: <c>EfDashboardQueries</c> reuses this so

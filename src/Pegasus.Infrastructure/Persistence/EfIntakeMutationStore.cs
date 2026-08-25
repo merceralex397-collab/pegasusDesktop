@@ -184,7 +184,7 @@ internal sealed class EfIntakeMutationStore(
             {
                 if (request.Kind == IntakeResolutionKind.Block)
                 {
-                    receipt.Decision = EfIntakeReceiptStore.ToCode(IntakeDecision.BlockedIntake);
+                    receipt.Decision = IntakeDecisionCodes.ToCode(IntakeDecision.BlockedIntake);
                     receipt.DecisionReason = request.Reason.Trim();
                     receipt.FailureCode = "blocked_intake";
                     receipt.FailureReason = request.Reason.Trim();
@@ -206,7 +206,7 @@ internal sealed class EfIntakeMutationStore(
                 var missing = InstructionDraftCompleteness
                     .MissingIdentityCriticalFieldNames(correctedDraft);
                 var canBecomeCase = missing.Count == 0;
-                receipt.Decision = EfIntakeReceiptStore.ToCode(
+                receipt.Decision = IntakeDecisionCodes.ToCode(
                     canBecomeCase ? IntakeDecision.CaseCreated : IntakeDecision.BlockedIntake);
                 receipt.DecisionReason = canBecomeCase
                     ? "The intake correction produced a reviewable instruction draft."
@@ -262,7 +262,7 @@ internal sealed class EfIntakeMutationStore(
                 workItem.LeaseToken = null;
                 workItem.LeaseExpiresAtUtc = null;
                 workItem.FailureCode = null;
-                receipt.Decision = EfIntakeReceiptStore.ToCode(IntakeDecision.BlockedIntake);
+                receipt.Decision = IntakeDecisionCodes.ToCode(IntakeDecision.BlockedIntake);
                 receipt.DecisionReason = "A policy re-evaluation of the retained source is queued.";
                 receipt.FailureCode = "reevaluation_pending";
                 receipt.FailureReason = null;

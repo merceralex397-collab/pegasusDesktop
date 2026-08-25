@@ -46,8 +46,8 @@ public sealed class QdosIntakeWebTests
             Assert.Equal(IntakeWorkState.Pending, work.State);
             Assert.Null(await statusScope.ServiceProvider.GetRequiredService<IIntakeWorkStore>()
                 .GetCompletedEvaluationAsync(stagedReceiptId, CancellationToken.None));
-            Assert.Throws<InvalidOperationException>(
-                () => statusScope.ServiceProvider.GetRequiredService<ProcessQueuedIntake>());
+            Assert.Null(statusScope.ServiceProvider.GetService<ProcessQueuedIntake>());
+            Assert.Null(statusScope.ServiceProvider.GetService<IProcessQueuedIntake>());
         }
         using var statusPage = await client.GetAsync(upload.Location);
         statusPage.EnsureSuccessStatusCode();

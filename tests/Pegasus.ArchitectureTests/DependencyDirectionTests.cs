@@ -206,6 +206,19 @@ public sealed class DependencyDirectionTests
     }
 
     [Fact]
+    public void WebCompositionDoesNotOwnTheWorkerIntakeProcessor()
+    {
+        var webAssembly = typeof(Pegasus.Web.Pages.Cases.CreateModel).Assembly;
+
+        Assert.DoesNotContain(
+            webAssembly.GetReferencedAssemblies(),
+            reference => reference.Name is "Pegasus.Worker" or "Azure.Storage.Queues");
+        Assert.DoesNotContain(
+            webAssembly.GetTypes(),
+            type => typeof(IProcessQueuedIntake).IsAssignableFrom(type));
+    }
+
+    [Fact]
     public void ProviderReferenceRuntimeKeepsWorkbookAuthoringOutsideApplicationProjects()
     {
         var root = FindRepositoryRoot();
