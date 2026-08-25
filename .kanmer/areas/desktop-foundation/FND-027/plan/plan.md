@@ -346,3 +346,13 @@ the branch changes `Directory.Build.props`, six `.csproj` files, seven lock file
 CI action, so the pass has real material to work on — in particular whether the 36
 `PackageVersion` entries are grouped legibly and whether any package in the list is now
 referenced by no project._
+
+## Simplification pass
+
+### 2026-08-25
+
+- Reuse: kept the existing `Directory.Build.props` `PlaywrightVersion` property as the single source for both the central `Microsoft.Playwright` version and the Web container image; no wrapper or new version abstraction was introduced.
+- Simplification: centralization is one root `Directory.Packages.props`; project files retain only package identity and existing metadata. No `VersionOverride` was added because the one patch-level conflict is intentionally aligned to the existing highest version, `Azure.Storage.Blobs 12.29.1`, as this plan specifies.
+- Efficiency: added the central props file to the existing CI NuGet cache dependency list so package-version changes invalidate the cache without changing the restore/build steps.
+- Altitude: the runbook records the required `--force-evaluate` step at the existing locked-restore section; no desktop package, code abstraction, workflow job, or unrelated cleanup was added.
+- Disposition: no behaviour-preserving simplification finding remained unapplied. The intentional resolved-package changes (the `Azure.Storage.Blobs` alignment and its transitive graph) are recorded as conversion evidence and covered by the locked build plus focused tests.
