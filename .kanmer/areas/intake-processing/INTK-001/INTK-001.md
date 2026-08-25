@@ -4,12 +4,14 @@ type: ticket
 title: >-
   upstream:INTK-002 · Intake duplication chores: adapter-wide fault naming, one
   decision-code table, Web-composition assertion, leftover port
-status: implementing
+status: verifying
 area: intake-processing
 assignee: codex-mcp-client
 profile: chore
 stageEntered:
   preparing: '2026-08-24T21:23:32.015Z'
+  review: '2026-08-25T14:34:40.636Z'
+  verifying: '2026-08-25T14:35:12.517Z'
 taken_at: '2026-08-25T13:32:11.875Z'
 branch: task/upstream-intk-002-intake-duplication
 worktree: ../pegasus-worktrees/upstream-intk-002-intake-duplication
@@ -23,9 +25,13 @@ links: []
 blocks:
   - GWY-010
 docs_todo: true
+commits:
+  - e430e9b801687f486094b4b3e08eb627df4f42f1
+prs:
+  - '7'
 archived: false
 created: '2026-08-24T11:44:22.452Z'
-updated: '2026-08-25T13:32:11.875Z'
+updated: '2026-08-25T14:35:12.517Z'
 ---
 
 ## What
