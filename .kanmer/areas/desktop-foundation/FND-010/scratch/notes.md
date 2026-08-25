@@ -9,3 +9,5 @@
 2026-08-25 operator scope amendment applied: upstream synchronization is prohibited; this ticket is now limited to an in-repository boundary and proof. No upstream or cloud/deployment write was performed.
 
 2026-08-25 evidence checkpoint: operator amendment is current acceptance. `git remote -v` shows only origin fetch/push to https://github.com/merceralex397-collab/pegasusDesktop.git; `git remote` returns only origin; refs/remotes lists only origin/*, with no upstream namespace. Working tree clean except local branch is one commit ahead for AGENTS.md operator constraints (636c9427). `git diff --check` passed. `pwsh ./scripts/Test-DocumentationLinks.ps1` passed: all relative Markdown links resolve (226 files). Independent pegasus-desktop-reviewer requested; proof remains unwritten pending review result.
+
+2026-08-25 review disposition applied: all original upstream/freeze criteria and obsolete three-document claims are explicitly superseded. Amended scope owns only AGENTS.md plus post-merge proof. Singer's BLOCK findings are recorded; a fresh independent review is required before merge.

@@ -235,3 +235,16 @@ The current decision is entirely in-repository:
 - The repository governance record and Kanmer proof must state this boundary; ADR-0100 remains unchanged.
 
 The amended acceptance is: the in-repository release boundary is documented and evidenced without external coordination or an upstream operation.
+
+## Scope reconciliation and independent review — 2026-08-25
+
+The operator's no-upstream instruction supersedes the original upstream-freeze task. The original three-document implementation claim (`ADR-0100`, `docs/operations.md`, and `docs/desktop/README.md`) is removed from the amended scope; ADR-0100 remains unchanged and no speculative current-state statement is added. The only repository-owned implementation for this amended ticket is the operator-constraints section in `AGENTS.md). The remote and ref evidence, documentation-link validation, and exact merged-head proof are the required evidence.
+
+An independent `pegasus-desktop-reviewer` (agent `01a03a0f-4b30-7c10-962c-fca667ee3f96`, Singer) reviewed the amended ticket and returned **BLOCK**. Findings and dispositions:
+
+- Superseded upstream acceptance and verification remained visible as unchecked: disposition is to state explicitly above and in the ticket body that every earlier upstream/freeze criterion is superseded.
+- The plan claimed obsolete documentation edits: disposition is this scope reconciliation, naming only `AGENTS.md) as the owned repository change.
+- Proof is absent: expected before Done, but correctly deferred until the PR is merged and verification runs on merged `main`.
+- No current exact-head review was recorded: this section records the reviewer identity and exact finding; a post-reconciliation independent review is required before merge.
+
+The current plan is therefore docs-only and in-repository. Simplification remains `n/a — docs-only`.
