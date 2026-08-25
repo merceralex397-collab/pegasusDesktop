@@ -2,12 +2,15 @@
 id: TOOL-001
 type: ticket
 title: DSK-12-01 · Verify Codex skill and agent discovery on the workstation
-status: preparing
+status: implementing
 area: agent-tooling
-assignee: ''
+assignee: codex-mcp-client
 profile: spike
 stageEntered:
   preparing: '2026-08-24T21:21:29.439Z'
+taken_at: '2026-08-25T03:48:33.970Z'
+branch: tool-001-verify-discovery
+worktree: .worktrees/tool-001
 labels:
   - desktop-conversion
   - plan-12
@@ -25,7 +28,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:04:54.684Z'
-updated: '2026-08-24T21:21:29.439Z'
+updated: '2026-08-25T03:48:33.970Z'
 ---
 
 ## What
