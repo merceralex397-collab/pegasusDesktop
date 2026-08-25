@@ -60,3 +60,14 @@ Read-only check in the ticket worktree at fork `origin/dev` / HEAD `5770eb21c0d0
 - No separate TICK-094 accepted Engineer-decision component was found. The existing report path still uses the accepted renderer engineer tuple in `AssessmentReportRendering.cs` and the report projection; that is not evidence of a new accepted-decision component.
 
 This replaces the copied 2026-08-24 prerequisite snapshot for current-fork facts. It does not authorize inventing the missing contracts; the plan's minimum-snapshot deviation remains a design choice to make only after the trigger decision is settled. No Azure, mailbox, Box, upstream, or external write was performed.
+
+## Current governing cost-policy check — 2026-08-25
+
+A read-only search of the fork confirms the remaining implementation prerequisite is not a missing code seam but an unresolved business formula:
+
+- `docs/open-decisions.md:277` leaves EXT-09 open: rate-card ownership and the accepted derivation formulas, including WU÷10×rate, sundry/material bands, and VAT.
+- `docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md:120-128` explicitly says no accepted repair-cost formula exists and that report readiness must remain closed on “Repair cost figures”.
+- `src/Pegasus.Infrastructure/Persistence/EfAssessmentReportProjectionSource.cs:121` supplies `Costs: null` for every production projection.
+- `src/Pegasus.Core/Reports/AssessmentReportProjection.cs:152-162` therefore returns the named repair-cost readiness reason for every production case, while `AssessmentReportSnapshot.Validate` rejects absent/invalid costs.
+
+This is the current governing state, not an implementation defect. The operator's earlier trigger answer (automatic generation after all required assessment details are accepted) resolves the trigger question, but does not authorize a rate-card owner, numeric formula, material bands, or VAT rule. DOCS-001 cannot truthfully satisfy its positive “complete accepted assessment produces a report” criterion until that authority is supplied or the acceptance criterion is explicitly narrowed by the product owner. No product code was changed and no financial policy was inferred.
