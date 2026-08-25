@@ -13,3 +13,5 @@
 2026-08-25 review disposition applied: all original upstream/freeze criteria and obsolete three-document claims are explicitly superseded. Amended scope owns only AGENTS.md plus post-merge proof. Singer's BLOCK findings are recorded; a fresh independent review is required before merge.
 
 2026-08-25 PR delivery: pushed commit 636c94274c24ce0f1e3fd972fa61337afc0afd5d to configured origin task/desktop-plan-segmentation and opened PR #9 targeting dev. CI run 32881152777 is in progress; reference-data and local-development-scripts pass, changes/documentation pending. Exact-head reviewer record is now in plan; awaiting final PASS confirmation.
+
+2026-08-25 merge checkpoint: PR #9 merged into dev at 2026-08-25T18:01:01Z, merge commit 86fae775d8b6b82c291287b39c6b21f912af0c14. Exact PR head 636c94274c24ce0f1e3fd972fa61337afc0afd5d. CI run 32881152777 completed success; changes, documentation, local-development-scripts, and reference-data passed; browser, infrastructure, unit, and SQL lanes skipped because the diff is docs-only. Proof is intentionally deferred until merged main.
