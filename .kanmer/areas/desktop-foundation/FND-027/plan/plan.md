@@ -356,3 +356,11 @@ referenced by no project._
 - Efficiency: added the central props file to the existing CI NuGet cache dependency list so package-version changes invalidate the cache without changing the restore/build steps.
 - Altitude: the runbook records the required `--force-evaluate` step at the existing locked-restore section; no desktop package, code abstraction, workflow job, or unrelated cleanup was added.
 - Disposition: no behaviour-preserving simplification finding remained unapplied. The intentional resolved-package changes (the `Azure.Storage.Blobs` alignment and its transitive graph) are recorded as conversion evidence and covered by the locked build plus focused tests.
+
+## Scope correction — 2026-08-25
+
+The independent review found that a root `Directory.Packages.props` and the root lock property also affect the separately owned WinForms evaluator under `scripts/email-eval-desktop/`, which is deliberately excluded from `Pegasus.slnx` by ADR-0016. Its test project retained inline package versions, so leaving the root settings unbounded would create `NU1008` and an untracked lock boundary.
+
+Resolved by adding the smallest explicit boundary at `scripts/email-eval-desktop/`: a nested `Directory.Packages.props` sets `ManagePackageVersionsCentrally=false`, and a nested `Directory.Build.props` imports the repository defaults then sets `RestorePackagesWithLockFile=false`. No evaluator project or package declaration was changed. `dotnet msbuild` confirms both properties are false for the evaluator test project; its restore passed and its Release test run passed 9/9. This preserves the ADR-0016 independent tool boundary while leaving the seven `Pegasus.slnx` projects under the new central policy.
+
+The simplification reviewer’s only correctness finding is therefore dispositioned and no longer blocks merge. The central package list was also corrected to the repository skill’s case-insensitive alphabetical order; no package or version changed as a result.
