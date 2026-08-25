@@ -317,6 +317,73 @@ public sealed class QdosAllocationRecoveryTests
     }
 
     [Fact]
+    public async Task PhotographsArrivingAfterAllocationDoNotRewriteAllocationCompleteness()
+    {
+        using var factory = new IntakeWebApplicationFactory(
+            "Development",
+            true,
+            useIntegrationTestAuthentication: true,
+            recognitionEngine: new FakeVrmRecognitionEngine("AB12CDE"));
+        using var client = IntakeWebDriver.CreateClient(factory);
+        var principal = $"N{Guid.NewGuid():N}"[..12].ToUpperInvariant();
+        await AllocationTestData.SeedPrincipalAsync(factory.Services, principal);
+        var instruction = await AllocationTestData.StoreDefinitiveReceiptAsync(
+            factory.Services,
+            CaseType.Inspection,
+            principal,
+            assets: []);
+
+        Guid caseId;
+        await using (var allocationScope = factory.Services.CreateAsyncScope())
+        {
+            var allocation = await allocationScope.ServiceProvider
+                .GetRequiredService<IAllocateIntake>()
+                .AttemptAutomaticAsync(instruction.Id, Guid.NewGuid());
+            caseId = Assert.IsType<Guid>(allocation?.State.CaseId);
+
+            var data = await allocationScope.ServiceProvider
+                .GetRequiredService<ICaseDataQueries>()
+                .GetAsync(caseId, CancellationToken.None);
+            Assert.NotNull(data);
+            Assert.Equal(CaseLifecycleState.NotReady, data!.State);
+            Assert.False(data.Completeness.Values.ImagesComplete);
+            Assert.False(data.Completeness.Values.ImagesConfirmedByStaff);
+        }
+
+        var laterImage = await IntakeWebDriver.UploadAndProcessAsync(
+            factory,
+            client,
+            "later-photograph.png",
+            "image/png",
+            Convert.FromBase64String(MultiFormatFixture.TinyPngBase64),
+            Guid.NewGuid().ToString("N"));
+        var laterReceiptId = IntakeWebDriver.ReceiptId(laterImage);
+
+        await using var assertScope = factory.Services.CreateAsyncScope();
+        var services = assertScope.ServiceProvider;
+        var laterReceipt = await services
+            .GetRequiredService<IIntakeReceiptQueries>()
+            .GetAsync(laterReceiptId, CancellationToken.None);
+        Assert.NotNull(laterReceipt);
+        Assert.Equal(IntakeDecision.ImageIntakeRegistered, laterReceipt!.Decision);
+        Assert.Equal(caseId, laterReceipt.CurrentCaseId);
+
+        var imageDetail = await services
+            .GetRequiredService<IImageIntakeQueries>()
+            .GetByOriginReceiptAsync(laterReceiptId, CancellationToken.None);
+        Assert.NotNull(imageDetail);
+        Assert.Equal(caseId, imageDetail!.AssociatedCaseId);
+
+        var afterLaterImage = await services
+            .GetRequiredService<ICaseDataQueries>()
+            .GetAsync(caseId, CancellationToken.None);
+        Assert.NotNull(afterLaterImage);
+        Assert.Equal(CaseLifecycleState.NotReady, afterLaterImage!.State);
+        Assert.False(afterLaterImage.Completeness.Values.ImagesComplete);
+        Assert.False(afterLaterImage.Completeness.Values.ImagesConfirmedByStaff);
+    }
+
+    [Fact]
     public async Task UniqueExistingCaseAssociationBypassesNewAllocationExactlyOnce()
     {
         using var factory = new IntakeWebApplicationFactory();

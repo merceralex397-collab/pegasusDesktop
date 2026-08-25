@@ -218,9 +218,9 @@ public sealed class AllocateIntake(
     /// the policy waives that for an automatically definitive intake rather than
     /// pretending otherwise.
     ///
-    /// This used to record all four as false, which meant every automatically
-    /// created case was born "details incomplete" and could never reach Review
-    /// no matter how complete it was (CASE-013).
+    /// The former automatic route asserted image completeness for every case
+    /// and waived staff confirmation; observing the retained evidence keeps
+    /// CASE-013's instruction waiver without making that image assertion.
     /// </summary>
     public async Task<IntakeAllocationResult?> AttemptAutomaticAsync(
         Guid receiptId,
