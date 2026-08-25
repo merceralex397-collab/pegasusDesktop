@@ -157,3 +157,29 @@ parameters rather than gaining a switch.
    `Inspection Address`. Both are pre-existing and JSON-semantically identical
    — `json.loads` of both files gives equal strings for every key — so neither
    is in ENG-014's scope. Noted for [[ENG-015]] if byte-parity is ever wanted.
+
+---
+
+## Current-branch simplification pass — 2026-08-25
+
+Run against `task/eng-001-drop-manifest-indent-json`, not the copied upstream branch.
+
+| Lens | Finding | Disposition |
+| --- | --- | --- |
+| Reuse / altitude | One current production caller, `EvaHandoffStore`, reaches one shared `CreateOfflineReplay` writer; no second export caller or `CaseOperatorExportTests.cs` exists in this tree. | Kept one smaller writer and added no flag, enum, wrapper, or alternate package path. |
+| Assertion quality | The first byte-layout guard inspected `EvaBundle.JsonContent` but not the JSON entry stored in the ZIP. | Applied: the test now reads `EVA-QDOS001.json`, asserts byte equality with `JsonContent`, then checks CRLF/two-space layout and field order. |
+| Integration scope | The production-path test filtered only `Images/`, so a reintroduced companion file could pass. | Applied: it now asserts the complete ordered archive entry list. |
+| Guard coverage | Replay equality did not prove either reported SHA matched its content, and no contradictory provenance-value case was direct. | Applied: added literal archive/JSON SHA assertions and a mismatched-provenance rejection fact. |
+| Test proportionality | A new migration test would duplicate the required real LocalDB `Up → Down → Up` validation and add migration harness surface. | Not applied: the scaffolded migration was applied, reverted, and reapplied against a dedicated LocalDB database; `sys.columns` confirmed the 13 remaining columns. |
+| Scope | `CustodyOutboxIntegrationTests` has a separate non-EVA manifest concept; the plan's `CaseOperatorExportTests.cs` is absent. | Not applied: no speculative changes to inactive/non-EVA tests. |
+
+No behavior-changing simplification remained. The temporary `PegasusEng001Migration` LocalDB database was removed after validation.
+
+## Current-branch implementation evidence — 2026-08-25
+
+- Upstream code had **not** arrived: the filename constants, writers, persistence members, and minified writer were present on `origin/dev` before this work.
+- FRD-07 was corrected first. `docs/current-architecture.md` was re-read and already did not claim a manifest/provenance archive, so it was not changed.
+- The active model/production/test search excluding frozen historic migrations returned no `manifest.sha256`, `provenance.json`, `ManifestContent`, `ProvenanceContent`, or `ProvenanceSha256` reference. Historic migration files intentionally retain their historical schema names.
+- `dotnet ef migrations add DropEvaHandoffProvenanceAndManifest --project src/Pegasus.Infrastructure --startup-project src/Pegasus.Web` scaffolded the new migration and snapshot. Its `Up` has three drops, `Down` has three restores, and no table creation.
+- Dedicated LocalDB validation applied the new migration, reverted to `20260822044425_GrantWorkerCaseDocuments`, then reapplied it. `EvaHandoffRevisions` then had exactly 13 remaining columns: `Id`, `CaseId`, `Revision`, `AcceptedCaseVersion`, `SchemaVersion`, `InputFingerprint`, `FileName`, `BundleContent`, `BundleSha256`, `JsonContent`, `JsonSha256`, `GeneratedAtUtc`, `GeneratedBy`.
+- The archive-byte change intentionally changes `InputFingerprint`: regenerated historical inputs make a new revision rather than deduping to the old one. The migration is deliberately non-additive; an older application cannot generate EVA hand-offs after it applies until rolled forward again. The migration comment records this for review.
