@@ -65,3 +65,9 @@ Independent test review required two missing assertions. Commit `d0604850` chang
 - `QdosAllocationRecoveryTests.cs`: after a later image receipt, the existing workflow query proves due work remains scheduled and retains a next-chase time.
 
 Fresh evidence: Release build passed with 0 warnings/errors; focused Core 12/12 and focused LocalDB 1/1 passed; CI-equivalent integration shards passed 876 enumerated tests exactly once (873 passed, 3 skipped) with three TRX files; partition verification passed; architecture tests passed 99/99; full Core passed 921/921 on its idle rerun. A concurrent-load Core attempt had two unrelated regex timeouts and is retained in the plan as honest timing-sensitive evidence.
+
+## Independent review — 2026-08-25
+
+Independent reviewer: Chandrasekhar. Verdict: implementation scope, Core ownership, planned behavior, local test evidence, and simplification disposition all pass. The reviewer independently reran Core 921/921, architecture 99/99, focused CASE-001 integration 2/2, and non-browser/non-corpus integration 873 passed / 3 skipped / 876 total.
+
+Merge remains blocked: PR [#4](https://github.com/merceralex397-collab/pegasusDesktop/pull/4) has no status checks and GitHub reports zero registered Actions workflows. The repository rule requires green CI. Required next action: restore/register CI with owner/admin authority, run it against `d0604850fe0726a8debf955db810d7231866286f`, then attach the green result before merge. No proof or closeout is claimed.
