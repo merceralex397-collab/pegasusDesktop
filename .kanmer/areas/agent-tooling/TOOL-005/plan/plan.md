@@ -256,3 +256,32 @@ branch's own diff before the PR, recorded here under a dated heading. The diff i
 of configuration and documentation; record the four lenses' dispositions honestly rather
 than writing `n/a — docs-only`, since `.codex/config.toml` is configuration, not
 documentation._
+
+## Reconciliation evidence — 2026-08-25
+
+- `.agents/skills/project/pegasus-desktop/SKILL.md` exists once, is tracked, and was read end to end. Authority comparison against `docs/desktop/README.md` found only L-04 and L-05 missing; added those two bullets. L-01, L-02, L-03, D-001, D-002, D-003, and C-01 were already present and unchanged. D-004 remains intentionally absent because it is not yet in the authority index and is owned by REL-009.
+- `.codex/agents/` contains exactly the eight named TOMLs: `pegasus-azure-auditor`, `pegasus-desktop-reviewer`, `pegasus-gateway-dev`, `pegasus-parity-researcher`, `pegasus-release-packager`, `pegasus-test-engineer`, `pegasus-ui-verifier`, and `winui-dev`. No agent was created or restored.
+- All eight TOMLs retain the project-skill `step 0.` reference. Declared sandbox and effort fields match the roster: three read-only auditors/reviewer, four workspace-write implementation agents, and `winui-dev` with neither override. No TOML contains a `model` key.
+- Added the exact four-key `[agents]` table to `.codex/config.toml`. The existing `[mcp_servers.kanmer]` absolute paths were not changed; the diff contains only the new table.
+- Added the project-skill-first and lockfile-governs-revisions sentence to `AGENTS.md` outside the managed Kanmer block.
+
+## Verification — 2026-08-25
+
+- `python -c "import tomllib,sys; tomllib.load(open(sys.argv[1],'rb'))" <file>` for `.codex/config.toml` and each of the eight agent TOMLs — 9/9 `PARSE_OK`, no parser errors.
+- Agent field audit — 8/8 step-0 references present; declared sandbox/effort values match; 0 model keys.
+- `grep -L 'pegasus-desktop' .codex/agents/*.toml` equivalent PowerShell audit — no missing references.
+- `grep -n '^\[agents\]' -A 5 .codex/config.toml` equivalent Select-String audit — all four keys present.
+- Fresh `codex exec --ephemeral --skip-git-repo-check` probe from this worktree, after the config change, reported exactly these eight names and paths: `.codex/agents/pegasus-azure-auditor.toml`, `.codex/agents/pegasus-desktop-reviewer.toml`, `.codex/agents/pegasus-gateway-dev.toml`, `.codex/agents/pegasus-parity-researcher.toml`, `.codex/agents/pegasus-release-packager.toml`, `.codex/agents/pegasus-test-engineer.toml`, `.codex/agents/pegasus-ui-verifier.toml`, `.codex/agents/winui-dev.toml`. It stated no files were modified.
+- The probe did not expose whether optional `sandbox_mode` or `model_reasoning_effort` fields are enforced at runtime. That remains the parked question; no enforcement claim is made.
+- `git diff --check` — passed.
+
+## Simplification pass — 2026-08-25
+
+- Reuse: retained the existing project skill, eight TOMLs, and existing MCP configuration; added only the two missing decision bullets, the required `[agents]` table, and the one AGENTS routing sentence.
+- Safety: no new agent, skill copy, Azure entry, model pin, machine-local path, managed Kanmer edit, or source/test change was introduced.
+- Verification altitude: static parse, roster, declared-field, and fresh discovery checks are proportional to this configuration/documentation change; runtime optional-field enforcement is explicitly not promoted to a fact.
+- Disposition: no additional simplification remained; the diff is the minimum reconciliation required by the ticket.
+
+## Current status
+
+Implementation and static/discovery evidence are complete. A proof document, independent review, task PR/CI, merge to `dev`, merged-main verification, and Kanmer closeout remain before Done.

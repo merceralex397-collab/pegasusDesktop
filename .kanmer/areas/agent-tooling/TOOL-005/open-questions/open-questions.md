@@ -61,3 +61,7 @@ exactly `leave-preparing`, `enter-review` and `enter-done`, never `leave-backlog
   where the per-area routing index and the do-not-load table disagree, **the do-not-load table
   wins**. Note that it *is* vendored — "do not load" is not "do not vendor"; see
   [[TOOL-002]] (plan handle `DSK-12-02`) step 10.
+
+## Observation — 2026-08-25
+
+The fresh Codex probe listed all eight custom agents after the `[agents]` table was added. It did not expose runtime enforcement of `sandbox_mode` or `model_reasoning_effort`; the parked question therefore remains parked and no enforcement claim is made.
