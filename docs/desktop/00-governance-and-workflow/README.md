@@ -420,7 +420,7 @@ names; the project skill `pegasus-desktop`
 
 | Document | Change |
 | --- | --- |
-| `docs/adr/0100…0110-*.md`, `docs/adr/README.md` | New ADRs and index rows; ADR-0009 `superseded_by` note limited to its deferral clause (body immutable — record in ADR-0100) |
+| `docs/adr/0100…0110-*.md`, `docs/adr/README.md` | New ADRs and index rows; ADR-0100 records the narrow ADR-0009 deferral-clause supersession in its Context, while ADR-0009 remains unchanged |
 | `AGENTS.md` | § ADR conventions: reserved block recorded (done, 2026-08-23); § New Markdown placement: done in this task |
 | `docs/index.md` | Desktop plan-set row (done); FRD-13 link |
 | `docs/frd/frd-13-desktop-operator-experience.md`, `docs/frd/README.md` | New FRD |
