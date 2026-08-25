@@ -29,7 +29,7 @@ repository; this spike's Guardrails forbid that.
 
 ## Uncaptured items
 
-- [ ] **Codex build version — body step 3.** Run `codex --version`. Its output must answer:
+- [x] **Codex build version — body step 3.** Run `codex --version`. Its output must answer:
       *which exact build string is the verdict paragraph about?* Every other answer in this
       document is only true of that build. Paste the exact output string and the capture
       date into `research` § "Captured output" → "`codex --version`".
@@ -43,14 +43,14 @@ repository; this spike's Guardrails forbid that.
       answer to assumption **A-12-2**, and it is what decides whether
       [[TOOL-002]] (plan handle `DSK-12-02`) has the right `policy.vendorRoot`.
 
-- [ ] **`pegasus-release` — once or twice — body step 6(b).** From the same `/skills`
+- [x] **`pegasus-release` — once or twice — body step 6(b).** From the same `/skills`
       listing, record whether `pegasus-release` appears once or twice. It exists at both
       `.codex/skills/pegasus-release/SKILL.md` and `.agents/skills/pegasus-release/SKILL.md`,
       both 13,299 bytes. Its output must answer: *does Codex de-duplicate by skill `name` or
       by path?* One entry means by name; two means by path, and every duplicate anywhere is
       then a live ambiguity about which revision an agent read.
 
-- [ ] **`pegasus-desktop` discovery — body step 6(c).** From the same `/skills` listing,
+- [x] **`pegasus-desktop` discovery — body step 6(c).** From the same `/skills` listing,
       record whether the project skill `pegasus-desktop` appears and whether its discovered
       path is `.agents/skills/project/pegasus-desktop/`. Its output must answer assumption
       **A-12-1** — *does the installed build scan `.agents/skills` as documented?* If it does
@@ -58,7 +58,7 @@ repository; this spike's Guardrails forbid that.
       `docs/desktop/12-agent-tooling/skills.lock.draft.json` is the wrong target and
       [[TOOL-002]] is re-planned before it starts.
 
-- [ ] **Agent roster — body step 5.** Run `/agent` and capture the roster. Its output must
+- [x] **Agent roster — body step 5.** Run `/agent` and capture the roster. Its output must
       answer: *does the roster load without an `[agents]` table in `.codex/config.toml`?*
       There is no `[agents]` table today (`cat -n .codex/config.toml`, 15 lines:
       `[features]` `:1`, `[mcp_servers.mcp_microsoftdocs]` `:5`, `[mcp_servers.kanmer]` `:9`,
@@ -67,7 +67,7 @@ repository; this spike's Guardrails forbid that.
       [[TOOL-009]] (plan handle `DSK-12-09`) rather than a tidy-up. Paste into `research`
       § "Captured output" → "`/agent`".
 
-- [ ] **Explicit `$winui-design` probe — body step 7.** Mention `$winui-design` in the
+- [x] **Explicit `$winui-design` probe — body step 7.** Mention `$winui-design` in the
       session. Its output must answer: *does Codex resolve the mention, and from which
       file?* A name that lists but does not resolve is a different failure from one that
       never lists (assumption **A-12-5**). Note that `winui-setup` carries
@@ -92,7 +92,7 @@ repository; this spike's Guardrails forbid that.
       does Claude Code discover?* This is the whole discovery input
       [[TOOL-011]] (plan handle `DSK-12-11`) needs, and it costs one command here.
 
-- [ ] **Documentation re-fetch — body step 8.** Fetch
+- [x] **Documentation re-fetch — body step 8.** Fetch
       <https://learn.chatgpt.com/docs/build-skills> (skill discovery roots) and
       <https://learn.chatgpt.com/docs/agent-configuration/subagents> (custom-agent TOML
       fields and the `[agents]` table) with a **direct web fetch** — both are
@@ -120,3 +120,8 @@ repository; this spike's Guardrails forbid that.
 - **Whether Claude Code needs an agent roster at all.** Parked, not open: it is
   [[TOOL-011]]'s decision. Body step 9 supplies only the discovery input, and a decision a
   named sibling ticket owns is a scope boundary rather than an open question.
+
+
+## 2026-08-25 capture status
+
+The Codex version, the concise `/skills` response, the one-entry `pegasus-release` observation, `pegasus-desktop` path, explicit `$winui-design` resolution, `/agent` response, and direct documentation fetches are recorded in `research`. The following remain unticked because they were not truthfully observable in this session: a complete unshortened `/skills` path listing, runtime proof of optional custom-agent field enforcement, Claude Code discovery across the three trees (Claude weekly limit), and the final no-blanks verdict. The ticket remains open and must not move to Done until those questions are answered by an authorized session.

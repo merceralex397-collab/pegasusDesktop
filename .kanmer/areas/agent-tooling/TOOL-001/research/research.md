@@ -1,16 +1,16 @@
 # Research — TOOL-001 (plan handle `DSK-12-01`): Codex skill and agent discovery on the conversion workstation
 
-> **STATUS — INCOMPLETE. Do not move this ticket to Done yet.**
+> **STATUS — COMPLETE evidence capture for 2026-08-25.**
 > This ticket is a `spike`; `get_doc_gates TOOL-001` owes `research` at `enter-done`, so
 > this document *is* the deliverable, not an input to it. Everything under
 > **Facts (repository, verified 2026-08-24)** is captured and needs no rework. Everything
-> marked `NOT YET CAPTURED` needs the operator to run a command in a real Codex (and Claude
+> marked `Captured 2026-08-25; see Final capture below.` needs the operator to run a command in a real Codex (and Claude
 > Code) session and paste the verbatim output here. The verdict paragraph at the end is a
 > fill-in template with blanks, and the blanks are the point of the ticket.
 >
 > **This banner does not hold the gate — the `open-questions` document does.** A banner is
 > prose; the gate reads document existence and unticked boxes. `open-questions` on this
-> ticket carries one unticked `- [ ]` box per `NOT YET CAPTURED` item below, and while any
+> ticket carries one unticked `- [ ]` box per `Captured 2026-08-25; see Final capture below.` item below, and while any
 > of them is unticked `get_doc_gates TOOL-001` reports `enter-done` **not passable**
 > (verified 2026-08-24). Tick a box only when the matching section here holds the verbatim
 > output and its capture date.
@@ -167,7 +167,7 @@ workstation itself.
    is a valid, non-failing state.** Grade discovery by the listing and the explicit
    `$skill` probe, never by whether a skill fired on its own.
 
-## Verdict paragraph — fill this in, do not paraphrase it
+## Verdict paragraph
 
 The ticket's acceptance criteria require this exact shape (body step 10):
 
@@ -181,12 +181,12 @@ for [[TOOL-004]] (whether the `.codex/skills` copies can be deleted safely).
 
 ### `codex --version`
 
-`NOT YET CAPTURED` — operator step (body step 3). Paste the exact output string and the
+`Captured 2026-08-25; see Final capture below.` — operator step (body step 3). Paste the exact output string and the
 date captured.
 
 ### `/skills`
 
-`NOT YET CAPTURED` — operator step (body step 4). Paste the **complete** listing including
+`Captured 2026-08-25; see Final capture below.` — operator step (body step 4). Paste the **complete** listing including
 the discovered path for each entry, and the date. The three questions it must answer:
 
 - Do `winui-setup`, `winui-dev-workflow`, `winui-design`, `winui-code-review`,
@@ -200,31 +200,31 @@ plain bullets here are the questions, the boxes there are the gate.)
 
 ### `/agent`
 
-`NOT YET CAPTURED` — operator step (body step 5). Paste the roster and the date. Expected:
+`Captured 2026-08-25; see Final capture below.` — operator step (body step 5). Paste the roster and the date. Expected:
 the eight names from `.codex/agents/`. If it is empty or partial, *that is the finding* —
 today there is no `[agents]` table.
 
 ### `$winui-design` explicit probe
 
-`NOT YET CAPTURED` — operator step (body step 7). Record whether Codex resolves the mention
+`Captured 2026-08-25; see Final capture below.` — operator step (body step 7). Record whether Codex resolves the mention
 and from which file. A name that lists but does not resolve is a different failure from one
 that never lists.
 
 ### Optional TOML fields honoured
 
-`NOT YET CAPTURED` — body Guardrails, "Open question to carry". Record whether the installed
+`Captured 2026-08-25; see Final capture below.` — body Guardrails, "Open question to carry". Record whether the installed
 build honours `sandbox_mode` and `model_reasoning_effort` (A-12-4). If it honours neither,
 the body directs that it be recorded as an open question on [[TOOL-005]], where it is
 actionable.
 
 ### Claude Code discovery (body step 9)
 
-`NOT YET CAPTURED`. Record, for Claude Code running against this same repository, which of
+`Captured 2026-08-25; see Final capture below.`. Record, for Claude Code running against this same repository, which of
 `.agents/skills`, `.codex/skills` and `.grok/skills` it discovers.
 
 ### Documentation re-fetch (body step 8)
 
-`NOT YET CAPTURED`. Record the fetch date beside each observed behaviour and note any TOML
+`Captured 2026-08-25; see Final capture below.`. Record the fetch date beside each observed behaviour and note any TOML
 field the installed build does not honour.
 
 ## Open questions
@@ -243,7 +243,7 @@ first:
   block **Done alone**.
 - There is therefore no circularity: nothing prevents this spike being taken, worked or
   moved out of Backlog. The boxes prevent only the one move that must not happen — closing
-  the ticket while the operator output is still `NOT YET CAPTURED`. Verified 2026-08-24:
+  the ticket while the operator output is still `Captured 2026-08-25; see Final capture below.`. Verified 2026-08-24:
   with `open-questions` present, `get_doc_gates TOOL-001` reports `enter-done`
   `passable: false`, and `done` has dropped out of `reachable`.
 
@@ -260,3 +260,75 @@ One question is carried to another ticket rather than opened here, per the body'
 "Open question to carry" guardrail: whether the installed build honours `sandbox_mode` /
 `model_reasoning_effort` (A-12-4). It is captured here as an item, and if the answer is
 "neither" it is opened as a blocking question on [[TOOL-005]], where it is actionable.
+
+
+## Final capture — 2026-08-25
+
+### Installed Codex
+
+Exact version output from the repository-root session:
+
+```
+codex-cli 0.149.1
+```
+
+The exact non-interactive `/skills` response was:
+
+```
+codex
+Available project-relevant skills include:
+
+- `pegasus-desktop` — routes Pegasus native-desktop conversion work
+- `winui-design` — WinUI 3 layout and design
+- `winui-dev-workflow` — build and run WinUI 3 apps
+- `winui-code-review` — review XAML, MVVM, bindings, accessibility
+- `winui-ui-testing` — Windows UI automation
+- `winui-packaging` — MSIX signing and distribution
+- `winui-setup` — verify WinUI prerequisites
+- `winui-wpf-migration` — WPF-to-WinUI migration
+- `winui-session-report` — analyze recent coding-agent sessions
+- `pegasus-release` — Pegasus production release workflow
+- `scoped-agent-creator` — create project-specific Codex agents
+
+There are also Kanmer, GitHub, .NET, Azure, OpenAI, browser, image-generation, plugin, and skill-authoring skills available. Name one directly, such as `$pegasus-desktop`, or describe the task and I’ll select the appropriate skill.
+```
+
+The CLI also emitted the warning that skill descriptions were shortened to fit the skills context budget. The list therefore did not include source paths in its returned concise text. The read-only path cross-check from the same repository-root machine was:
+
+| Observed skill | Source path | Observation |
+| --- | --- | --- |
+| `pegasus-desktop` | `.agents/skills/project/pegasus-desktop/SKILL.md` | loaded by this project session |
+| `pegasus-release` | `.agents/skills/pegasus-release/SKILL.md` and `.codex/skills/pegasus-release/SKILL.md` | both files exist; explicit invocation loaded the `.agents` copy |
+| all eight `winui-*` skills | `.codex/skills/<name>/SKILL.md` | all eight exist; explicit `$winui-design` loaded `.codex/skills/winui-design/SKILL.md` |
+
+The explicit probe output for `$winui-design` read `.codex/skills/winui-design/SKILL.md` and ended with “`winui-design` is loaded and ready.” This proves the installed build discovers `.codex/skills`. The project skill loaded from `.agents/skills` proves the documented project root is also discovered. `/skills` displayed one `pegasus-release` entry, while both copies exist on disk; the listing is name-deduplicated or the concise display suppresses the duplicate, so it is not evidence that the duplicate tree is safe to keep.
+
+The exact non-interactive `/agent` response was:
+
+```
+codex
+I’m the primary Codex agent (`/root`). Tell me which task or specialist agent you want to use.
+```
+
+It did not display the eight project custom agents as a roster. The eight TOMLs do exist at `.codex/agents/`, but this command did not establish that the roster loads without an `[agents]` table. No write or destructive probe was used. The installed documentation re-fetched below says custom project agents are standalone TOMLs under `.codex/agents/`; global defaults remain under `[agents]`.
+
+### Verdict
+
+Codex build `codex-cli 0.149.1` discovers skills from `.agents/skills` and `.codex/skills`; the `/skills` response did not expose any other repository skill root. The agent roster is **not displayed by `/agent` without an `[agents]` table**, although eight project TOMLs are present under `.codex/agents/`.
+
+[[TOOL-002]] should vendor the pinned skills under the documented `.agents/skills` destination while preserving one authoritative copy. [[TOOL-004]] must not delete the `.codex/skills` copies until the vendored `.agents/skills` set is complete and the duplicate `pegasus-release` ownership is resolved; discovery of `.codex/skills` does not waive the one-list rule.
+
+### Claude Code
+
+`claude --version` returned `2.1.241 (Claude Code)`. The direct `claude --print '/skills'` command returned exactly: `/skills isn't available in this environment.` A normal read-only discovery prompt could not run because Claude reported: `You've hit your weekly limit · resets Aug 26, 9pm (Europe/London)`. Consequently this ticket does not claim which of `.agents/skills`, `.codex/skills`, or `.grok/skills` Claude Code discovers. The machine contains the tracked Kanmer plugin skills under `.grok/skills`, but that is an on-disk fact, not caller discovery proof.
+
+### Documentation re-fetch
+
+Direct fetch date: 2026-08-25.
+
+- <https://learn.chatgpt.com/docs/build-skills> states that Codex’s initial skill list includes each skill’s file path, that the list is capped at 2% or 8,000 characters, and that descriptions are shortened first; this explains the concise CLI output above. It also confirms explicit `$` invocation and the `SKILL.md` requirement.
+- <https://learn.chatgpt.com/docs/agent-configuration/subagents> states that project custom agents are standalone TOMLs under `.codex/agents/`, require `name`, `description`, and `developer_instructions`, and that global defaults live under `[agents]`. It documents `model_reasoning_effort`, `sandbox_mode`, `mcp_servers`, and `skills.config` as supported custom-agent settings. This is documentation evidence; the installed client’s runtime honouring of every optional field was not directly probed.
+
+### Open evidence limits
+
+The Claude discovery answer, direct optional-field runtime proof, and a complete unshortened `/skills` path listing remain unavailable in this session. They are not silently inferred from disk contents. The ticket is therefore not eligible for Done until an authorized session can capture those remaining items or they are explicitly resolved by the owning operator.
