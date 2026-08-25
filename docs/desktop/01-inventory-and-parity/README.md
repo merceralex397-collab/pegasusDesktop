@@ -9,7 +9,7 @@ the Phase 0 tickets fill in:
 | [parity-matrix.md](parity-matrix.md) | The repository-derived feature-parity matrix, pre-populated with every Razor page model and handler in `src/Pegasus.Web` |
 | [flow-records.md](flow-records.md) | Six current-flow records (authentication, database/migrations, Graph intake, Box custody, DVLA/DVSA, report rendering) pre-filled from the code |
 | [azure-resource-register.md](azure-resource-register.md) | The Azure resource register pre-filled from `infra/` and `docs/operations.md`, with read-only verification commands |
-| [upstream-kanmer-carryover.md](upstream-kanmer-carryover.md) | Triage of the 109 open tickets on the original `collisionengineers/pegasus` Kanmer board and the first upstream sync |
+| [upstream-kanmer-carryover.md](upstream-kanmer-carryover.md) | Historical triage of the original board and the current in-repository disposition; upstream sync instructions are superseded |
 
 ## 1. Purpose and proposal coverage
 
@@ -40,7 +40,8 @@ Proposal sections implemented here:
 ### Facts
 
 Verified on 2026-08-23 by read-only inspection of the fork at `main`
-`191ddf33` and a read-only clone of upstream `collisionengineers/pegasus`.
+`191ddf33`. The historical upstream comparison is retained as provenance only;
+the operator boundary below prohibits any new upstream synchronization.
 
 Web surface (what the parity matrix enumerates):
 
@@ -103,8 +104,9 @@ Web surface (what the parity matrix enumerates):
 - Baseline performance numbers will be captured on the lowest-spec supported
   office workstation (proposal §15.1) against the production-like local stack
   defined in area 08; no Azure load testing is assumed.
-- The upstream board continues to move; the carry-over triage is dated and a
-  re-triage is a ticket, not a rewrite.
+- The carry-over triage is historical evidence. No upstream board or remote is
+  read during this refactor; any work needed from that history is recreated or
+  amended as an in-repository ticket.
 
 ## 3. Decisions and assumptions
 
@@ -118,6 +120,10 @@ Locked decisions this area depends on (see the index):
   production pilot ring, never in an Azure test environment.
 - L-05 Kanmer is seeded by the implementing agent from these plans — the
   carry-over document is the seed list for carried-over upstream work.
+- Operator boundary (2026-08-25): all work remains in this repository on the
+  configured `pegasusDesktop` remote. No upstream remote operation, cloud write,
+  deployment, credential change, or external environment change is permitted
+  until the full refactor is complete.
 
 Decisions taken inside this area:
 
@@ -155,8 +161,9 @@ Target state at the end of Phase 0:
   position" for every resource, verified by a read-only Azure MCP run whose
   output is attached to the ticket proof.
 - `upstream-kanmer-carryover.md` dispositions are accepted and the
-  carried-over tickets exist on the fork board; the first upstream sync PR
-  has merged.
+  carried-over tickets exist on the fork board. The historical sync step is
+  superseded by the operator boundary; no upstream sync is a Phase 0 exit
+  condition.
 - Baseline performance and critical business fixtures are recorded (web app,
   production-like local stack, named workstation spec).
 - Dependency rules are written as architecture-test targets for area 02
@@ -195,6 +202,7 @@ discovery, `chore` for board/doc mechanics.
 | DSK-01-10 | First one-way upstream sync (`upstream/main` → fork `dev`) | chore | area 00 branch creation | 32 upstream commits merged via PR; CI green; `docs/operations.md` release table shows releases 21–24 | `git log --oneline dev..upstream/main` empty after merge | 1 | `pegasus-gateway-dev` · `run-tests` · — |
 | DSK-01-11 | Record baseline performance and critical business fixtures | spike | area 08 Test/UAT stack ticket | Cold/warm page timings, list paging, report generation, and memory for the web app on the named workstation against the local stack; fixtures listed by path (no fabricated data) | Numbers recorded in `10-security-observability-performance` baseline table with commands | 10 | `pegasus-ui-verifier` · `analyzing-dotnet-performance`, `dotnet-trace-collect` · — |
 | DSK-01-12 | Characterization-test gap list for Core policies and dependency-rule targets | spike | DSK-01-03, DSK-01-04 | Gap list per Core folder (Intake, Workflow, Lifecycle, Assessment, Vehicle, Triage, Reports) with the lowest reliable boundary named; architecture-test targets written for area 02 | Reviewer checks each gap against `tests/Pegasus.Core.Tests` | 1, 2 | `pegasus-test-engineer` · `test-gap-analysis`, `assertion-quality` · — |
+| DSK-01-13 | Maintain the in-repository release boundary through the refactor | chore | none under the current operator boundary | Historical upstream-sync instructions are explicitly superseded; all work stays in this repository on `pegasusDesktop`, and cloud/deployment/external changes remain deferred | `git remote -v`; `git diff --check`; documentation and Markdown-placement gates; no upstream operation performed | 1 | parent session · `pegasus-desktop`, Kanmer · configured `pegasusDesktop` remote |
 
 ## 6. Routing table
 
