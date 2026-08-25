@@ -234,7 +234,31 @@ The `proof` document is produced from these command logs:
 - **No open question is opened on this ticket.** Everything unknown is settled by a command inside
   the ticket's own steps; nothing requires an answer from outside before implementation may begin.
 
+
+
+## Execution result — 2026-08-25
+
+Implementation is complete within the planned scope. The solution entry point Pegasus.Server.slnf does not exist on the live origin/dev head; FND-028 has not landed, so its planned Contracts registration is explicitly deferred to that ticket. No duplicate server filter was created.
+
+Evidence and validation:
+
+- dotnet restore ./src/Pegasus.Contracts/Pegasus.Contracts.csproj --force-evaluate -p:RestorePackagesWithLockFile=true — exit 0; generated src/Pegasus.Contracts/packages.lock.json is 124 bytes with the same three empty TFM/RID entries as Pegasus.Core.
+- dotnet restore ./Pegasus.slnx --locked-mode — exit 0.
+- dotnet build ./Pegasus.slnx --configuration Release --no-restore — exit 0, 0 warnings, 0 errors.
+- dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build --filter FullyQualifiedName~Contract — 19 passed, 0 failed.
+- dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build — 104 passed, 0 failed.
+- pwsh ./scripts/Test-DocumentationLinks.ps1 — exit 0; 232 files checked.
+- pwsh ./scripts/Test-TestMarkdownPlacement.ps1 — exit 0.
+- Static checks: the Contracts project has no PackageReference, ProjectReference or FrameworkReference; ActionActor and paging Total are absent; Pegasus.slnx includes Contracts; no server filter exists to update.
+
+The first full-solution build attempt overlapped another build invocation and failed on an own WorkerExtensions.csproj file lock. Only the identified MSBuild nodes from those overlapping attempts were stopped; the serial canonical build above passed. This is an execution-environment event, not a source failure.
+
 ## Simplification pass
 
-_Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this branch's own
-diff before the PR, recorded here under a dated heading._
+### 2026-08-25
+
+- Reuse: copied the existing dependency-free Pegasus.Core project shape and reused the repository's XDocument solution/dependency test helpers; no new framework or validation abstraction was introduced.
+- Simplification: each envelope, problem slug list, paging cap, header list and JSON-options owner has one canonical location. The gateway validator remains outside Contracts.
+- Efficiency: the five-member paging envelope preserves the existing fetch-one-extra query shape and avoids introducing an unpopulated COUNT contract; the Contracts project adds no package restore cost.
+- Altitude: the documentation change is one current-architecture row, and the temporary serialization facts stay in the existing architecture test project until TEST-001 creates the dedicated contract-test project.
+- Disposition: no behaviour-preserving simplification finding remained unapplied. The missing Pegasus.Server.slnf integration is an FND-028 dependency, not an omission to compensate for here.
