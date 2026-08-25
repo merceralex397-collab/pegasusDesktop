@@ -191,3 +191,7 @@ Applied an equivalent independent four-lens pass over `git diff origin/dev...HEA
 - **Altitude:** the production comment now states the observed instruction/image boundary; tests drive `AttemptAutomaticAsync` and the persisted acceptance path rather than constructing the completeness record by hand.
 
 No behavior-preserving simplification findings remain unapplied. The initial full integration run found a correctness fixture mismatch, not a simplification finding; it was fixed by making the seeded pending command match the now-observed no-image receipt and then revalidated.
+
+## PR handoff blocker — 2026-08-25
+
+The branch `case-001-observed-images` is pushed at commit `29c1b83b030f402c349576e6fc4f7e1ab1184430` and the required post-implementation report is written. `gh pr create --base dev --head case-001-observed-images` failed with the exact response `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`. No PR, CI, merge, or proof claim is made. The next action is repository collaborator permission or an authorized PR workflow path.

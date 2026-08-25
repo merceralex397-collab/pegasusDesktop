@@ -33,9 +33,11 @@ blocks:
 refs:
   - docs/frd/frd-01-case-identity-and-lifecycle.md
 docs_todo: true
+commits:
+  - 29c1b83b030f402c349576e6fc4f7e1ab1184430
 archived: false
 created: '2026-08-24T11:42:25.781Z'
-updated: '2026-08-25T05:33:44.181Z'
+updated: '2026-08-25T06:04:35.643Z'
 ---
 
 ## What
