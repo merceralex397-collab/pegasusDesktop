@@ -292,3 +292,6 @@ The canonical ADR-0105 from [[FND-005]] already exists on `origin/dev`; this tic
 ### Simplification pass — 2026-08-25
 
 n/a — docs-only. The diff adds one ADR, one index row, and a focused in-place clarification to ADR-0105. No code, runtime, Azure, source, or unrelated cleanup was added.
+
+### Independent review follow-up — 2026-08-25
+Aquinas returned FAIL on the first review for missing ADR-0105 Appendix A headings and settled distribution facts/citation, plus the missing `password-change-required` routing in ADR-0102. These were documentation-only corrections. Commit `7b68a637` adds the required sections, exact Publisher/UNC/VPN and database-backed minimum-setting evidence, direct Microsoft Learn citation, and the password-change problem/routing decision. Re-review is required before the ticket crosses the next boundary.
