@@ -57,3 +57,8 @@ Inside an imported ticket's `### Upstream ticket <ID> (verbatim)` block. That
 text is a quotation of the upstream body and is copied unedited — its ids are
 upstream ids by definition, and the heading above it says so. Never "fix" ids
 inside a verbatim block.
+
+
+## 2. Deviation to note
+
+Plan folders `10-security-observability-performance` and `11-azure-disposition` seed into the existing `platform-operations` (`PLAT`) board area even though the plan 00 § 3 area table assigns no separate area to folders 10 and 11. This is the realised board shape, not a second area: plan 10 has 18 tickets (`PLAT-001`…`PLAT-018`) and plan 11 has 9 (`PLAT-019`…`PLAT-027`), measured from live Kanmer labels on 2026-08-25. The two plan families remain distinct in their group and horizon context; only their board area is shared.
