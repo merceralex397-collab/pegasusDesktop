@@ -90,7 +90,7 @@ because the guardrail forbids touching ids inside a
 occurrences at execution; the body's figure of 12 is the sweep's number and is
 the target.
 
-### E · Dangling wiki-links — 2 sites, 1 body
+### E · Dangling/namespace wiki-links — 6 sites, 1 body
 
 `REL-007:61` — step 1's closing clause reads "…do not re-open Artifact Signing
 or an OV certificate, whose spikes `[[DSK-09-07]]` and `[[DSK-09-09]]` were
@@ -114,7 +114,7 @@ adds the real validator **beside** it, not instead of it.
 | B `-VerifyPartition` | 3 (`FND-046`, `PLAT-002`, `PLAT-006`) | 4 |
 | C placeholder | 1 (`PLAT-002`, already counted) | 1 |
 | D ambiguous ids | 7 (`FEAT-043` already counted) | 19 |
-| E dangling links | 1 | 2 |
+| E dangling/namespace links | 1 | 6 |
 | F `REL-013` validator | 1 | 2 |
 | **Distinct** | **22** | **45** |
 
@@ -373,3 +373,8 @@ _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass ove
 this branch's own diff before the PR, recorded here under a dated heading. This
 ticket changes no repository file, so the expected record is
 **`n/a — board-only`** (body Guardrails)._
+
+
+## Live inventory correction — 2026-08-25
+
+The original 2026-08-24 inventory stated that REL-007 had only the two withdrawn wiki-links. A live `get_links REL-007` read immediately before implementation found six unresolved parser targets: the two withdrawn handles plus four existing plan handles (`DSK-09-11`, `DSK-09-14`, `DSK-09-15`, `DSK-09-18`). The four map unambiguously to `REL-009`, `REL-012`, `REL-013`, and `REL-016` by the live board titles. The body-only correction remains within the plan's namespace-normalization purpose; no ticket fields, dependencies, repository files, or product decisions change.
