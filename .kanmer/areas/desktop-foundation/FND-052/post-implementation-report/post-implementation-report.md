@@ -23,6 +23,7 @@ Commands run from `.worktrees/fnd-052`:
 - `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` — exit 0; the validator reported all 874 enumerated tests covered exactly once.
 - `git status --porcelain` in the ticket worktree — empty.
 - MCP re-read of the changed bodies confirmed all placement command lines carry both mandatory arguments, all five shard-verification lines carry `-ShardCount 3`, PLAT-002 has no verification ellipsis, and `get_links REL-007` returns only `REL-009`, `REL-012`, `REL-016`, and `REL-013`, each with a resolved title.
+- Independent review scan of all 229 ticket body files found 2,654 wiki sites. It classified 2,407 unresolved DSK-* handles as desktop plan references (two-hyphen plan shape, not fork board ids under HZN-001), and 31 unresolved non-DSK references as immutable quoted `### Upstream ticket <ID> (verbatim)` content. The remaining 15 unresolved non-DSK/template sites outside quoted blocks were normalized in 11 ticket bodies through MCP. The scoped board result is zero unresolved fork-board-shaped targets outside verbatim blocks; DSK plan handles are explicitly reported and excluded by the governing namespace rule.
 
 ## Simplification pass
 
@@ -30,4 +31,4 @@ Commands run from `.worktrees/fnd-052`:
 
 ## Remaining gates
 
-FND-052 has not been independently reviewed, merged, or proven on merged `main`. The next action is an independent `pegasus-desktop-reviewer` review of the Kanmer-body diff, followed by the repository PR workflow.
+Independent review initially returned NEEDS CHANGES for the over-broad link assertion; the review correction is now recorded in the plan/report/body, and the 15 legitimate non-DSK/template sites are fixed. Re-review is still required before any PR or merge; proof remains pending merged `main`.

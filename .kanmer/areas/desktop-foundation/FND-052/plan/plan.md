@@ -385,3 +385,8 @@ The original 2026-08-24 inventory stated that REL-007 had only the two withdrawn
 ### Live inventory correction — VerifyPartition count — 2026-08-25
 
 The live body recheck found five command occurrences, not four: `FND-046` has one implementation-step occurrence and one verification occurrence, `PLAT-002` has one, and `PLAT-006` has one step plus one verification occurrence. All five now carry `-ArtifactRoot ./artifacts/test-shards -ShardCount 3`; this is a measurement correction, not a scope expansion.
+
+
+## Review correction — board-shaped links versus plan handles — 2026-08-25
+
+The independent review's broad scan separated namespaces before judging the acceptance: the 229 ticket body files contain 2,654 wiki sites; 2,407 unresolved sites are DSK-* desktop plan handles, which use a two-hyphen plan shape and are not fork board ids under HZN-001's `<PREFIX>-<nnn>` rule. The remaining unresolved non-DSK sites were 31 references inside `### Upstream ticket <ID> (verbatim)` blocks. The 15 non-DSK/template sites outside those quoted blocks were normalized through MCP across 11 ticket bodies. The scoped result is therefore zero unresolved fork-board-shaped wiki-links outside verbatim blocks; DSK plan handles remain unchanged as plan references, and quoted upstream text remains immutable.
