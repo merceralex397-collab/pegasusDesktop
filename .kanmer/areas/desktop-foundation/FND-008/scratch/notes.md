@@ -1,0 +1,1 @@
+2026-08-25 dependency stop recorded: origin/dev has ADR-0100/0101/0103/0104/0105; ADR-0102 and ADR-0108 absent. FND-005 done; FND-006 preparing; FND-007 review with active claim. Per ticket plan step 1, no take/worktree/branch/implementation. Recheck after FND-006 and FND-007 deliver the missing ADR files to dev.

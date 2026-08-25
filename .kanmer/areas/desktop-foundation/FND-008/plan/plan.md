@@ -312,3 +312,7 @@ Proof is written on merged `main`, after review and merge — never before
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over
 this branch's own diff before the PR, recorded here under a dated heading.
 Expected outcome for this ticket: `n/a — docs-only`._
+
+## Dependency stop — 2026-08-25
+
+Before taking FND-008, the required ADR gate was rerun against `origin/dev`. Present: `docs/adr/0100-native-winui-3-client-in-the-fork.md`, `0101-local-execution-cloud-authority-split.md`, `0103-gateway-not-direct-database-access.md`, `0104-online-required-bounded-local-cache.md`, and `0105-msix-app-installer-and-minimum-version-gate.md`. Missing: ADR-0102 and ADR-0108. Live Kanmer confirms FND-006 remains `preparing` and FND-007 remains `review`/claimed. This is the plan's explicit stop condition, so no take, worktree, branch, document implementation, or speculative link was made. Recheck after those two ADR deliveries land in `dev`; the smallest unblock is their reviewed delivery, not a ticket-local workaround.

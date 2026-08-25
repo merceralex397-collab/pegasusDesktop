@@ -214,3 +214,7 @@ technical decision (`docs/frd/README.md:4-8`).
   [[REL-016]]; the reserved ADR block (operator, 2026-08-23); L-03, which puts
   report-rendering behaviour under ADR-0108 so FRD-13 references it rather than
   re-specifying it.
+
+## Live dependency recheck — 2026-08-25
+
+The hard pre-writing dependency was rechecked before taking the ticket. `git ls-tree -r --name-only origin/dev docs/adr` and the working tree list show these reserved ADR files present: ADR-0100, ADR-0101, ADR-0103, ADR-0104 and ADR-0105. ADR-0102 and ADR-0108 are absent. Live Kanmer reads FND-005 `done`, FND-006 `preparing` with no delivery commit, and FND-007 `review` with a claimed branch. Because FRD-13 must cite ADR-0102 and ADR-0108 by relative path and the ticket's own step 1 makes missing ADRs a stop condition, FND-008 is not taken and no worktree, branch or product/document implementation was created. Smallest unblock: FND-006 and FND-007 must deliver the missing ADR files into `dev` (with FND-007's proposed status preserved) before this ticket can be taken.
