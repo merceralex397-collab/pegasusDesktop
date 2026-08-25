@@ -339,16 +339,6 @@ each output pasted raw:
 
 ## Simplification pass
 
-_Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a four-lens pass
-over this branch's own diff before the PR, recorded here under a dated heading with the
-findings and their dispositions. **`n/a — docs-only` is not available on this ticket**:
-the branch changes `Directory.Build.props`, six `.csproj` files, seven lock files and a
-CI action, so the pass has real material to work on — in particular whether the 36
-`PackageVersion` entries are grouped legibly and whether any package in the list is now
-referenced by no project._
-
-## Simplification pass
-
 ### 2026-08-25
 
 - Reuse: kept the existing `Directory.Build.props` `PlaywrightVersion` property as the single source for both the central `Microsoft.Playwright` version and the Web container image; no wrapper or new version abstraction was introduced.
