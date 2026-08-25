@@ -45,3 +45,7 @@ Validation after this correction:
 ## CI correction — 2026-08-25
 
 Exact-head run `32899041711` failed in `sql-integration (3)` because `CommittedMigrationCreatesTheSqlServerSchema` expected the pre-ticket migration list and omitted `20260825202208_CanonicalCaseMileageProvenance`; the actual database applied the migration correctly. Updated `tests/Pegasus.IntegrationTests/IntakePersistenceIntegrationTests.cs` to include that generated migration. Local rerun of the failing test passed 1/1. The correction is not merge-ready until a new exact-head CI run is green.
+
+## CI concurrency blocker — 2026-08-25
+
+After the migration-list correction, exact-head run `32900431792` failed twice in `sql-integration (3)` on the existing `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` test. Both failures were SQL Server deadlock-victim errors (1205) at `EfIntakeWorkStore.CompleteProcessingAsync`; the second attempt passed 290/291 tests. This is unrelated to the ticket's changed files. CI is not green and the PR is not merge-ready; no bypass or false green claim is allowed.

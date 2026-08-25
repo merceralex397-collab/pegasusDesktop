@@ -13,3 +13,5 @@ Corrected review findings committed as `52b00c52` and pushed to the configured `
 2026-08-25: Exact-head CI run 32899041711 failed only in sql-integration (3): migration-list assertion omitted generated 20260825202208_CanonicalCaseMileageProvenance. Updated the owned expectation; focused local migration-schema test passed 1/1. Browser, unit, SQL shards 1/2, and coverage passed in the failed run. New commit and exact-head CI rerun required before merge.
 
 2026-08-25: Exact-head CI rerun 32900431792 failed sql-integration (3) on existing GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns: SQL Server deadlock victim in EfIntakeWorkStore.CompleteProcessingAsync; 290/291 tests passed. This is unrelated to canonical-mile code. Reran only failed job on same exact head; attempt is active.
+
+2026-08-25: Failed-job rerun of 32900431792 also failed sql-integration (3), same existing GroupedImageIntakeConcurrencyTests deadlock (SQL error 1205) at EfIntakeWorkStore.CompleteProcessingAsync; 290/291 assigned tests passed. Exact-head CI remains red; no merge/bypass.

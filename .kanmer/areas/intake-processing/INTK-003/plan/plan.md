@@ -105,3 +105,7 @@ The correction reuses `CaseDataPolicy.Normalize`, the existing `VehicleMileagePo
 ## CI correction — 2026-08-25
 
 Exact-head CI run `32899041711` reached terminal failure only in `sql-integration (3)`. The failing test was `IntakePersistenceIntegrationTests.CommittedMigrationCreatesTheSqlServerSchema`: the expected applied-migration list omitted the ticket's generated `20260825202208_CanonicalCaseMileageProvenance` migration, while the database correctly applied it. The migration itself was not failing. The owned integration-test expectation was updated to include the generated migration, and the same test passed locally (1/1). Browser, unit, SQL shards 1 and 2, and coverage passed in that run; the exact-head run is not accepted because shard 3 failed. Push the test correction and require a new exact-head run before merge.
+
+## CI concurrency blocker — 2026-08-25
+
+The corrected exact-head run `32900431792` was rerun once after the migration-expectation fix. It failed twice in the same existing test, `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns`, with SQL Server error 1205 (deadlock victim) during `EfIntakeWorkStore.CompleteProcessingAsync`; the second attempt again ran 290/291 assigned tests successfully. The failure is outside this ticket's changed files and is not evidence against canonical mileage. CI remains a hard merge gate; do not bypass it. Next action is a further authorized rerun or a separately owned fix for the flaky concurrency test, without expanding INTK-003 scope.

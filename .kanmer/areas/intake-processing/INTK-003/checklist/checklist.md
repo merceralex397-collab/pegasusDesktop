@@ -24,3 +24,5 @@ The first independent review found duplicate conversion ownership and incomplete
 - [ ] Obtain independent PASS review of corrected head, green exact-head CI, merge to `dev`, post-merge proof on `main`, and Kanmer closeout.
 
 - [x] Diagnose exact-head CI failure: the migration-list assertion omitted the generated canonical-mileage provenance migration; update the owned test expectation and pass the focused local rerun (1/1).
+
+- [ ] Exact-head CI remains blocked: run `32900431792` failed twice on the unrelated SQL Server deadlock in `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` (290/291 passed on the second attempt).
