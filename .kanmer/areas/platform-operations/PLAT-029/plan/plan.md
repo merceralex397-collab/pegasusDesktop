@@ -76,3 +76,22 @@ Choose strategy (b): resolve the occurrence-addressed local content by reading t
 Check the existing managed `cases/{safe case reference}/managed/{VersionId:N}/content` path first and use it unchanged when present. This preserves content written through `StoreAsync`. Only when that file is absent does the override search the local custody occurrence layouts. Both paths use the existing root guard, `FileStream` options, `VerifyAsync` SHA-256/length checks, and stable missing/corrupt failure behavior. The Box path and interface default remain unchanged.
 
 The pre-fix fact `OpenReadVersionAsyncReadsContentRetainedByLocalCaseCustody` was run on 2026-08-25 after the test compiled: it failed with `System.IO.FileNotFoundException: The document content is unavailable.` from `LocalDocumentContentStore.OpenReadAsync` line 97, despite `LocalCaseCustody` having retained the source.
+
+## Validation — 2026-08-25
+
+- `dotnet restore Pegasus.slnx` — passed; generated missing assets for ArchitectureTests, CoreTests, and Worker.
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~OpenReadVersionAsync" --logger "console;verbosity=minimal"` — 3 passed, 0 failed.
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~IntakeRetainedDocumentIsReadableThroughDownloadAndExportReaders" --logger "console;verbosity=minimal"` — 1 passed, 0 failed. This exercises the retained source through the real queued custody processor, download reader, and ZIP export reader.
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~DocumentCustodyDurabilityTests|FullyQualifiedName~EvaHandoffPersistenceTests|FullyQualifiedName~CaseCustodyWebTests|FullyQualifiedName~BoxDocumentContentStoreTests|FullyQualifiedName~CustodyOutboxIntegrationTests" --logger "console;verbosity=minimal"` — 41 passed, 0 failed, 1 pre-existing corpus-dependent test skipped.
+- `dotnet test tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release --no-restore --logger "console;verbosity=minimal"` — 916 passed, 0 failed.
+- `dotnet build Pegasus.slnx --configuration Release --no-restore --nologo` — passed, 0 warnings, 0 errors.
+- `git diff --check` — passed.
+- `pwsh ./scripts/Initialize-LocalDevelopment.ps1` — restore and Debug build passed, but the doctor failed before service launch because the repository requires SDK 10.0.302 and this machine exposes 10.0.204 and 10.0.303. `pwsh ./scripts/Invoke-LocalDevelopment.ps1 -Action Start` therefore cannot produce Start/Smoke evidence in this ticket run. No source workaround or SDK installation is in scope; leave the blocker explicit.
+
+## Simplification pass — 2026-08-25
+
+- Reuse: the existing `Resolve`, `ValidateIdentifiers`, `NormalizeSha256`, `VerifyAsync`, and FileStream options remain the single managed read/integrity path; the new override delegates to them rather than duplicating verification.
+- Resolution: no new custody naming convention, marker, binding file, Core contract, or production/Box change was introduced. The implementation reuses `LocalCaseCustody`'s existing directory and metadata contracts and uses the address's ordinal/hash only to narrow candidates.
+- Failure and security: managed content is preferred unchanged; occurrence candidates stay under the case-id custody root; ambiguity, malformed metadata, missing metadata, missing content, length mismatch, and hash mismatch fail closed.
+- Scope/altitude: changed one local adapter, the named integration tests (including one real download/export caller), and the two named Test/UAT documentation locations. No speculative API, Worker, Azure, desktop, or FRD changes were found.
+- Disposition: no behavior-preserving simplification remained after the pass. The local Start/Smoke blocker is validation evidence, not a code simplification finding.
