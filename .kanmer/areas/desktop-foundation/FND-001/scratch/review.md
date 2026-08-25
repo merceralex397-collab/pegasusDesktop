@@ -26,3 +26,5 @@ Reviewer: `pegasus-desktop-reviewer` (Herschel), independent of implementation.
 - **Remaining blocker:** PR #3 has no reported CI checks because Actions workflow registration is absent. The repository requires green CI before a `dev` merge; no workaround or merge is authorised.
 
 **Verdict:** needs changes only for the external CI-registration/green-run condition.
+
+2026-08-25 independent re-review (Meitner): CI run 32849827677 is green with expected conditional skips; prior CI-registration blocker cleared. Merge remains blocked by stale owning area-plan facts in docs/desktop/00-governance-and-workflow/README.md:61-62,186-190,364, which still say dev is absent and must be created at the old equal baseline. Required next action: update those facts, branching instruction, and FND-001 acceptance/verification to record dev=5770eb21 with main as ancestor. Also supersede stale ticket-document claims that docs_todo is true and CI is absent.
