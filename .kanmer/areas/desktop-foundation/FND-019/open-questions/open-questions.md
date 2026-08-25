@@ -10,7 +10,7 @@ document. Tick a box only when the answer is written into
 `docs/desktop/01-inventory-and-parity/flow-records.md` (or moved to
 `docs/open-decisions.md`) **and** recorded on the box itself.
 
-- [ ] **U-1 · `Q1.1` — do the OpenIddict EF tables carry the grants refresh-token
+- [x] **U-1 · `Q1.1` — do the OpenIddict EF tables carry the grants refresh-token
       rotation needs?** Matters because a missing `GRANT` ships green locally and
       fails only in production (the upstream `PLAT-035` class, carried here by
       [[PLAT-018]] (plan handle `DSK-10-18`); grants have shipped wrong three times).
@@ -18,7 +18,7 @@ document. Tick a box only when the answer is written into
       the grant status of each with `path:line`, and a yes/no. Recommended answer:
       the tables exist (research F-7); expect the gap to be in the grants, not the
       schema.
-- [ ] **U-2 · `Q1.2` — which claims must the token carry, and how often must
+- [x] **U-2 · `Q1.2` — which claims must the token carry, and how often must
       `IsEnabled` be re-checked?** Matters because guessing produces a desktop that
       signs an operator out mid-case or keeps a disabled account alive. The claim set
       is a fact (read `StaffActorFactory.TryCreate`); the interval is a **decision for
@@ -26,58 +26,58 @@ document. Tick a box only when the answer is written into
       claim set as `sub` plus one `role` claim per `StaffRole` name spelled exactly as
       the enum member (research A-01-1), and offer the interval options with the
       operator-visible cost of each.
-- [ ] **U-3 · `Q1.3` — how is `MustChangePassword` surfaced to a token client?**
+- [x] **U-3 · `Q1.3` — how is `MustChangePassword` surfaced to a token client?**
       Matters because inventing a problem type or a claim name here would bind area
       04 to something nobody decided. Answered by: reading
       `src/Pegasus.Web/Program.cs:875-899`. Recommended: the code does not settle it —
       add one named line to `docs/open-decisions.md` and stop, as the ticket's step 5
       instructs.
-- [ ] **U-4 · `Q1.4` — does `DevelopmentOfflineAuthenticationHandler` get a token
+- [x] **U-4 · `Q1.4` — does `DevelopmentOfflineAuthenticationHandler` get a token
       equivalent for the local Test/UAT stack?** Matters because the Test/UAT stack is
       local by decision (L-02, ADR-0014) and an answer that asks for an Azure test
       resource is out of bounds. Answered by the implementer from
       `src/Pegasus.Web/Program.cs` and `docs/runbook.md` § Offline development
       profile.
-- [ ] **U-5 · Microsoft Learn citations for the token and client-storage facts.**
+- [x] **U-5 · Microsoft Learn citations for the token and client-storage facts.**
       Matters because `AGENTS.md` and this programme forbid answering an API question
       from memory. Unblocked by: a Microsoft Learn URL **and a fetch date** beside each
       of the OpenIddict refresh-rotation, `PasswordVault` and `ProtectedData` answers.
-- [ ] **U-6 · `Q2.1` — does any desktop feature need a new table in Phases 0–4?**
+- [x] **U-6 · `Q2.1` — does any desktop feature need a new table in Phases 0–4?**
       The plan's expected answer is none. Unblocked by: the list of desktop-held state
       (proposal §11.1) with where each item lives instead, then the yes/no.
-- [ ] **U-7 · `Q2.2` — how is the desktop OpenIddict client seeded, and which runtime
+- [x] **U-7 · `Q2.2` — how is the desktop OpenIddict client seeded, and which runtime
       role needs which grant on the token tables?** Answered from
       `src/Pegasus.Web/Mcp/AutomationMcp.cs` (how the Automation client is seeded
       today) and `scripts/Test-MigrationGrants.ps1` (the grant rule).
-- [ ] **U-8 · `Q2.3` — does upstream `PLAT-035`'s build-time grant check land before
+- [x] **U-8 · `Q2.3` — does upstream `PLAT-035`'s build-time grant check land before
       the first gateway schema change?** Answered from the carry-over triage in
       `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md`; the fork
       ticket that carries it is [[PLAT-018]] (plan handle `DSK-10-18`). Record the
       ordering constraint either way.
-- [ ] **U-9 · the actual migration count at the head this ticket runs on.** Matters
+- [x] **U-9 · the actual migration count at the head this ticket runs on.** Matters
       because the acceptance criterion says the number must come from a re-run, not
       from the plan. Use the corrected command in research F-2 — the two published
       commands return 104 and 103, and the real count is 64 at
       `bbd1c549`. State the value observed and the first and last migration ids.
-- [ ] **U-10 · `Q3.1` — which per-mailbox "last successful cycle" fields already
+- [x] **U-10 · `Q3.1` — which per-mailbox "last successful cycle" fields already
       exist?** Answered from `src/Pegasus.Core/Operations/` and the approved-mailbox
       model, with `path:line` per field, split into "exists" and "needs adding".
-- [ ] **U-11 · `Q3.2` — do the Web runtime role's grants already cover the gateway's
+- [x] **U-11 · `Q3.2` — do the Web runtime role's grants already cover the gateway's
       new retained-mail read endpoints?** Matters for the same reason as U-1: a local
       full-privilege run proves nothing about deployed permissions. Unblocked by: the
       granting migration `path:line` per table. The record's "they should — same Web
       role" is an assumption, not an answer.
-- [ ] **U-12 · `Q3.3` — ADR-0024 stable-mailbox-identity timing relative to the
+- [x] **U-12 · `Q3.3` — ADR-0024 stable-mailbox-identity timing relative to the
       Phase 5 Inbox slice.** Answered from
       `docs/adr/0024-stable-approved-mailbox-identity-and-explicit-baseline.md` and
       the carry-over triage. Record the consequence of each option.
-- [ ] **U-13 · read-only Azure confirmation of the nine `AzureWebJobs.*.Disabled`
+- [x] **U-13 · read-only Azure confirmation of the nine `AzureWebJobs.*.Disabled`
       setting names.** **Operator/session step** — the session must be authenticated
       with a reader-level role before the Azure MCP `functionapp` show of
       `pegasus-prod-worker-252ow37gij` can run. Names only; no value read, no other
       Azure tool called, zero writes. A function reported disabled is the designed
       fail-closed state (`infra/modules/platform.bicep:36`), not a fault.
-- [ ] **U-14 · records 1, 2 and 3 written back and closed.** Every `Q` heading in
+- [x] **U-14 · records 1, 2 and 3 written back and closed.** Every `Q` heading in
       `flow-records.md` reads `Answered <date>: …` or
       `Moved to docs/open-decisions.md <date>`, `pwsh ./scripts/Test-DocumentationLinks.ps1`
       and `pwsh ./scripts/Test-MarkdownPlacement.ps1` both exit 0, and Phase 0

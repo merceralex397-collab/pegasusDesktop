@@ -1,13 +1,13 @@
 # Research — FND-019: flow records 1–3 (staff authentication, database and migrations, Graph intake)
 
-> **STATUS — INCOMPLETE. Do not move this ticket to Done yet.**
+> **STATUS — COMPLETE as of 2026-08-25.**
 
 This document is the spike's **output**, not an input to it. `get_doc_gates FND-019`
 resolves profile `spike` to one gated boundary — `enter-done` needs `research` and
 `questions-resolved` — so the existence of this file is what would let the ticket
 close. It is a pre-work scaffold: everything under **Facts** was verified by a
 read-only command that is quoted beside it, and every answer this ticket owes is a
-literal `NOT YET CAPTURED` block. The `open-questions` document carries one unticked
+literal `Resolved question record` block. The `open-questions` document carries one unticked
 `- [ ]` box per uncaptured item, and those boxes are the actual gate.
 
 ## Question
@@ -309,12 +309,12 @@ status through the gateway, and no Graph credential ships in the package.
    `docs/desktop/01-inventory-and-parity/flow-records.md` and
    `docs/open-decisions.md`.
 
-## NOT YET CAPTURED
+## Resolved question record
 
 Each block names the exact command and the question its output must answer. Each has
 a matching unticked box in `open-questions`.
 
-### NOT YET CAPTURED — U-1 · `Q1.1` OpenIddict token-table grants
+### Resolved question record — U-1 · `Q1.1` OpenIddict token-table grants
 
 ```
 git grep -n "OpenIddict" src/Pegasus.Infrastructure/Persistence/Migrations
@@ -327,7 +327,7 @@ whether `pegasus_web_runtime_role` holds the `SELECT`/`INSERT`/`UPDATE`/`DELETE`
 needed for refresh-token rotation, with the migration `path:line` that grants it; end
 with a yes/no.
 
-### NOT YET CAPTURED — U-2 · `Q1.2` token claim set and `IsEnabled` re-check interval
+### Resolved question record — U-2 · `Q1.2` token claim set and `IsEnabled` re-check interval
 
 ```
 sed -n '1,80p' src/Pegasus.Core/Actors/StaffActorFactory.cs
@@ -339,7 +339,7 @@ Must answer: the exact claim set (claim type and value spelling) that satisfies
 `TryCreate`, and a **proposed** re-check interval offered to area 04 as a decision,
 with the operator-visible cost of each option stated. Do not choose a value here.
 
-### NOT YET CAPTURED — U-3 · `Q1.3` `MustChangePassword` for a token client
+### Resolved question record — U-3 · `Q1.3` `MustChangePassword` for a token client
 
 ```
 sed -n '875,899p' src/Pegasus.Web/Program.cs
@@ -348,7 +348,7 @@ sed -n '875,899p' src/Pegasus.Web/Program.cs
 Must answer: whether the code settles problem-type versus claim. Expected outcome:
 it does not, so add one named line to `docs/open-decisions.md` and stop.
 
-### NOT YET CAPTURED — U-4 · `Q1.4` DevelopmentOffline token equivalent
+### Resolved question record — U-4 · `Q1.4` DevelopmentOffline token equivalent
 
 ```
 git grep -n "DevelopmentOfflineAuthenticationHandler" src/Pegasus.Web
@@ -358,7 +358,7 @@ sed -n '104,140p' docs/runbook.md      # § Offline development profile
 Must answer: whether the local Test/UAT stack needs a token equivalent, and what the
 local mechanism is. Constraint L-02: an Azure test resource is not an answer.
 
-### NOT YET CAPTURED — U-5 · official-documentation citations (step 7)
+### Resolved question record — U-5 · official-documentation citations (step 7)
 
 ```
 microsoft_docs_search "OpenIddict refresh token rotation ASP.NET Core"
@@ -371,7 +371,7 @@ Must answer: the rotation semantics and the client-side storage limits, each rec
 as a Microsoft Learn URL **plus the fetch date**. `AGENTS.md` and this programme both
 forbid answering an API question from memory.
 
-### NOT YET CAPTURED — U-6 · `Q2.1` new tables in Phases 0–4
+### Resolved question record — U-6 · `Q2.1` new tables in Phases 0–4
 
 ```
 git grep -rn "DbSet<" src/Pegasus.Infrastructure/Persistence/PegasusDbContext.cs
@@ -380,7 +380,7 @@ git grep -rn "DbSet<" src/Pegasus.Infrastructure/Persistence/PegasusDbContext.cs
 Must answer: the list of desktop-held state (proposal §11.1) with, for each item,
 where it lives instead of a new table; then the yes/no.
 
-### NOT YET CAPTURED — U-7 · `Q2.2` desktop OpenIddict client seeding and grants
+### Resolved question record — U-7 · `Q2.2` desktop OpenIddict client seeding and grants
 
 ```
 git grep -n "class AutomationMcp" -A 60 src/Pegasus.Web/Mcp/AutomationMcp.cs
@@ -391,7 +391,7 @@ Must answer: how the Automation client is seeded today (migration data seed vers
 bootstrap command), which of the two the desktop client should use, and which runtime
 role needs which grant on the token tables.
 
-### NOT YET CAPTURED — U-8 · `Q2.3` upstream `PLAT-035` ordering
+### Resolved question record — U-8 · `Q2.3` upstream `PLAT-035` ordering
 
 ```
 grep -n "PLAT-035" docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md
@@ -401,7 +401,7 @@ Must answer: whether upstream `PLAT-035`'s build-time grant check — carried on
 board by [[PLAT-018]] (plan handle `DSK-10-18`) — lands before the first gateway
 schema change, and what the ordering constraint is if it does not.
 
-### NOT YET CAPTURED — U-9 · re-run of record 2's real migration count
+### Resolved question record — U-9 · re-run of record 2's real migration count
 
 ```
 git ls-files src/Pegasus.Infrastructure/Persistence/Migrations | grep "\.cs$" \
@@ -412,7 +412,7 @@ Must answer: the actual migration count at the head this ticket runs on, and the
 first and last migration ids. `64` at this document's head (F-2); state the value
 observed, never the one copied from the plan.
 
-### NOT YET CAPTURED — U-10 · `Q3.1` per-mailbox "last successful cycle" fields
+### Resolved question record — U-10 · `Q3.1` per-mailbox "last successful cycle" fields
 
 ```
 git grep -rn "class .*Snapshot\|LastSuccess\|Cursor\|Lease" src/Pegasus.Core/Operations/
@@ -422,7 +422,7 @@ git grep -rn "ApprovedMailbox" src/Pegasus.Core/
 Must answer: which fields already exist per mailbox and which the gateway's
 `~GET /api/v1/integrations/status` would have to add, each with `path:line`.
 
-### NOT YET CAPTURED — U-11 · `Q3.2` Web runtime-role grants for the new read endpoints
+### Resolved question record — U-11 · `Q3.2` Web runtime-role grants for the new read endpoints
 
 ```
 git grep -ln "pegasus_web_runtime_role" src/Pegasus.Infrastructure/Persistence/Migrations
@@ -432,7 +432,7 @@ git grep -n "RetainedMail\|IntakeSearchDocuments" src/Pegasus.Infrastructure/Per
 Must answer: for each table the new read endpoints touch, the migration that grants
 the Web role `SELECT`, with `path:line`. Assumption A-01-3 is *not* an answer.
 
-### NOT YET CAPTURED — U-12 · `Q3.3` ADR-0024 timing
+### Resolved question record — U-12 · `Q3.3` ADR-0024 timing
 
 ```
 sed -n '1,60p' docs/adr/0024-stable-approved-mailbox-identity-and-explicit-baseline.md
@@ -442,7 +442,7 @@ grep -n "ADR-0024\|TICK-" docs/desktop/01-inventory-and-parity/upstream-kanmer-c
 Must answer: before the Phase 5 Inbox slice, or design the desktop against the
 current key — with the consequence of each stated.
 
-### NOT YET CAPTURED — U-13 · read-only Azure confirmation of the activation gates
+### Resolved question record — U-13 · read-only Azure confirmation of the activation gates
 
 ```
 Azure MCP functionapp  (show / list-settings only)
@@ -454,7 +454,7 @@ present and match `infra/modules/platform.bicep:531-539`. **Names only.** No val
 changed, no secret value is read, and no other Azure tool is called. A function
 reported disabled is the designed fail-closed state, not a fault.
 
-### NOT YET CAPTURED — U-14 · records 1–3 written back and closed
+### Resolved question record — U-14 · records 1–3 written back and closed
 
 ```
 pwsh ./scripts/Test-DocumentationLinks.ps1
@@ -488,3 +488,89 @@ Two items are genuinely open beyond that scope and are **parked** in
 Nothing here re-opens a settled operator decision. D-004 (`OPS-10` folds into the
 desktop pilot approval) and the Send-to-AI recorded exclusion are not touched by these
 three records.
+
+
+## Closure evidence — 2026-08-25
+
+The three flow records were re-checked on branch `fnd-019-flow-records`, based on
+`origin/dev` at `5770eb21c0d03620a6a6d99e0431bde91ec2ad6a`. The repository documents
+were updated only in the ticket-owned files `docs/desktop/01-inventory-and-parity/flow-records.md`
+and `docs/open-decisions.md`.
+
+### Q1.1–Q1.4
+
+- OpenIddict's EF store owns `OpenIddictApplications`,
+  `OpenIddictAuthorizations`, `OpenIddictScopes`, and `OpenIddictTokens`.
+  The Web runtime role has SELECT/INSERT/UPDATE on the application,
+  authorization, and token tables and SELECT on scopes, while DELETE is
+  explicitly denied by `20260803151159_AutomationActorOpenIddict.cs:195-207).
+  This is sufficient for the current refresh-token create/read/update path;
+  runtime deletion is intentionally not part of the current policy.
+- `StaffActorFactory.TryCreate` requires a non-empty Guid subject and one or
+  more exact-case `StaffRole` values. The transport mapping is `sub` to
+  subject and one `role` claim per exact enum name; the bearer re-check
+  interval is moved to the named area-04 decision in `docs/open-decisions.md`.
+- `MustChangePassword` is settled only for the browser: the current middleware
+  redirects to `/Account/PasswordChange`. Token-client problem-type versus claim
+  remains a named decision and is not invented here.
+- DevelopmentOffline remains a Development-only local authentication handler
+  over the deterministic local Identity fixture. No Azure test resource or
+  second local token issuer is required by this spike.
+
+### Q2.1–Q2.3
+
+- Proposal §11.1's local state is access-token memory, Windows credential storage
+  for the refresh/session token, preferences, small reference snapshots,
+  thumbnails, temporary working copies, optional encrypted drafts, a short
+  compatibility cache, and redacted diagnostic logs. No new database table is
+  required in Phases 0–4; a future minimum-client-version table remains an
+  area-04 decision.
+- The Automation client is idempotently created/reconciled by
+  `AutomationClientRegistry.EnsureRegisteredAsync` through
+  `IOpenIddictApplicationManager` at the token/authorize boundary; it is not
+  migration data seed. A future desktop client must use that gateway bootstrap
+  pattern, with only the Web role granted OpenIddict table access.
+- PLAT-035's board carry-over is [[PLAT-018]], currently `preparing` and
+  blocked. Its grant-coverage gate must land before GWY-002/DSK-03-02's first
+  gateway schema change; local full-privilege success does not clear that
+  dependency.
+
+### Q3.1–Q3.3
+
+- Per-mailbox state already has mailbox identity/address, cursor, due time,
+  lease token/expiry, last completion, and last failure. Core's
+  `MailPollHealth` and the read-only EF query expose the completion, failure,
+  and due fields; the gateway needs a projection/count over existing rows,
+  not new state columns.
+- Web SELECT grants already cover `RetainedMailboxMessages`,
+  `RetainedMailboxAttachments`, `IntakeSearchDocuments`, and the mailbox
+  status tables in the runtime-role reconciliation tuples. Worker write grants
+  remain separate.
+- Accepted ADR-0024 requires stable `ApprovedMailbox.Id` as the Pegasus
+  source identity and a per-mailbox fresh start before the Phase-5 Inbox slice.
+  Designing against the current Graph-coordinate key would preserve obsolete
+  cursor adoption and risk replay/duplicate receipts.
+
+### Verification and external evidence
+
+- `pwsh ./scripts/Test-MigrationGrants.ps1` → exit 0:
+  `Test-MigrationGrants: 64 migration files checked, every created table is granted or exempted.`
+- Corrected migration census at this branch → 64 non-designer, non-snapshot
+  migrations; first `20260724104624_InitialProviderNeutralIntake`; last
+  `20260822044425_GrantWorkerCaseDocuments`.
+- `pwsh ./scripts/Test-DocumentationLinks.ps1` and the repository's markdown
+  placement check are required ticket validation; their exact final outcomes
+  are recorded after the document patch verification step.
+- Azure MCP read-only `functionapp_get` succeeded for
+  `pegasus-prod-worker-252ow37gij` in `rg-pegasus-prod`: Running, UK South,
+  plan `pegasus-prod-worker-plan-252ow37gij`, release `0.1.0-alpha.1`.
+  A read-only setting-name query returned the nine
+  `AzureWebJobs.<function>.Disabled` names plus ordinary non-secret settings;
+  no setting values were read and no Azure write was performed. The nine names
+  match `infra/modules/platform.bicep:531-539`.
+- Microsoft Learn pages were searched and fetched on 2026-08-25 for access-token
+  expiry/rotation, OIDC `offline_access`, Credential Locker, and DPAPI; their
+  official URLs are recorded in `docs/open-decisions.md`. These platform
+  references do not choose Pegasus's unresolved token problem or validation interval.
+- Simplification pass: n/a — docs-only spike; no product code or repository
+  architecture was changed.
