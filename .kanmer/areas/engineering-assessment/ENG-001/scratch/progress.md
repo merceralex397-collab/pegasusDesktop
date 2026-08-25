@@ -3,3 +3,5 @@
 ## 2026-08-25 — implementation and validation complete on branch
 
 Deleted the invented manifest/provenance package and persistence surfaces, pinned JSON to two-space CRLF layout, scaffolded the three-column migration, and corrected FRD-07 first. Focused evidence currently passes: Core contract 8/8, LocalDB EVA persistence 8/8, full Core 916/916, architecture 99/99, migration grants 65 files, migration model check, LocalDB Up/Down/Up, docs links/placement, active-path search, and diff check. The dedicated temporary LocalDB database was removed. Independent test analysis added four focused coverage corrections; no speculative absent-caller or unrelated-manifest test was added. Next: final build/diff, commit/push/PR, then independent code review.
+
+Final rerun after test-strengthening: `dotnet build ./Pegasus.slnx --configuration Release` passed with 0 warnings/errors; full Core suite passed 917/917. The ticket report was corrected from the pre-final 916 count.

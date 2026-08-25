@@ -17,7 +17,7 @@ No enum, flag, compatibility path, Azure operation, mailbox/Box operation, relea
 | Command / check | Result |
 | --- | --- |
 | `dotnet build ./Pegasus.slnx --configuration Release` | Passed, 0 warnings/errors after scaffold analyzer correction. |
-| `dotnet test ./tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release` | Passed: 916/916. |
+| `dotnet test ./tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release` | Passed after final test changes: 917/917. |
 | `dotnet test ./tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release --filter "FullyQualifiedName~EvaBundleContractTests"` | Passed after final test changes: 8/8. |
 | `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~EvaHandoffPersistenceTests"` | Passed after final test changes: 8/8 LocalDB facts. |
 | `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release` | Passed: 99/99. |
