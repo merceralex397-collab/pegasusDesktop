@@ -41,3 +41,7 @@ Validation after this correction:
 - `dotnet build Pegasus.slnx --configuration Release --no-restore`: passed with 0 warnings and 0 errors.
 - `pwsh ./scripts/Test-MigrationGrants.ps1`: 66 migration files checked; passed.
 - `git diff --check`: passed; only line-ending normalization warnings were reported.
+
+## CI correction — 2026-08-25
+
+Exact-head run `32899041711` failed in `sql-integration (3)` because `CommittedMigrationCreatesTheSqlServerSchema` expected the pre-ticket migration list and omitted `20260825202208_CanonicalCaseMileageProvenance`; the actual database applied the migration correctly. Updated `tests/Pegasus.IntegrationTests/IntakePersistenceIntegrationTests.cs` to include that generated migration. Local rerun of the failing test passed 1/1. The correction is not merge-ready until a new exact-head CI run is green.

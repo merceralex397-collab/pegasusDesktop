@@ -22,3 +22,5 @@ The first independent review found duplicate conversion ownership and incomplete
 - [x] Correct the vehicle-suggestion acceptance writer to reuse canonical mileage normalization and persist/clear the existing kilometre provenance marker.
 - [x] Add and pass the SQL-backed kilometre-correction integration test; rerun full Core tests, Release build, migration-grant validation, and diff hygiene.
 - [ ] Obtain independent PASS review of corrected head, green exact-head CI, merge to `dev`, post-merge proof on `main`, and Kanmer closeout.
+
+- [x] Diagnose exact-head CI failure: the migration-list assertion omitted the generated canonical-mileage provenance migration; update the owned test expectation and pass the focused local rerun (1/1).

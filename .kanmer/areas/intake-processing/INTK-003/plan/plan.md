@@ -101,3 +101,7 @@ The second independent review found that vehicle-suggestion correction bypassed 
 ### Simplification pass — 2026-08-25 (correction)
 
 The correction reuses `CaseDataPolicy.Normalize`, the existing `VehicleMileagePolicy.ToMiles` owner, `SetConfirmedField`, and the existing EAV field registry. No new abstraction, route, migration, or compatibility path was introduced. The repeated removal condition is required to preserve partial Accept semantics while clearing stale provenance whenever mileage is explicitly replaced or corrected. No further behaviour-preserving simplification was identified.
+
+## CI correction — 2026-08-25
+
+Exact-head CI run `32899041711` reached terminal failure only in `sql-integration (3)`. The failing test was `IntakePersistenceIntegrationTests.CommittedMigrationCreatesTheSqlServerSchema`: the expected applied-migration list omitted the ticket's generated `20260825202208_CanonicalCaseMileageProvenance` migration, while the database correctly applied it. The migration itself was not failing. The owned integration-test expectation was updated to include the generated migration, and the same test passed locally (1/1). Browser, unit, SQL shards 1 and 2, and coverage passed in that run; the exact-head run is not accepted because shard 3 failed. Push the test correction and require a new exact-head run before merge.
