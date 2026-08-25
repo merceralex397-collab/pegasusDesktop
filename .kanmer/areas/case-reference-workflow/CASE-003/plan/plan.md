@@ -43,3 +43,9 @@ This task’s proof is the merged `dev` commit, independent review, passing docu
 ## Scope adjustment — 2026-08-25
 
 A targeted contradiction search added the existing runbook verification line and desktop parity-matrix description to step 4. They are direct consumers of the former pre-case wording and remain documentation-only.
+
+## Independent-review correction — 2026-08-25
+
+The independent reviewer found a High finding: `docs/design/README.md`, PAR-24 in the desktop parity matrix, and S11 in `vertical-slices.md` still prescribed Triage Case link/unlink behaviour. That conflicts with the direct operator decision and FRD-03's one-way, normal-gate conversion with immutable non-duplicating transfer record.
+
+Disposition: applied. The two design state tables now exercise conversion refused/pending/completed plus its transfer record. PAR-24 inventories existing link/unlink as legacy dispatcher behaviour to be replaced, while its target explicitly bans arbitrary Case link/unlink. S11 now requires conversion status/refusal/completion and bans arbitrary link/unlink. This is the smallest direct-downstream scope needed to satisfy the non-contradictory-model acceptance criterion; no UI, API, code, schema, or migration behaviour was added.
