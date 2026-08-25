@@ -145,8 +145,8 @@ public sealed class ProcessIntake(
             && (isFinalAttempt || !IntakeExceptionPolicy.IsTransientFailure(exception)))
         {
             // A non-transient reader fault is always terminal. A transient
-            // fault (I/O, timeout, database, or a dependency-unavailable
-            // adapter fault) is only terminal once the caller has no retry
+            // named dependency-unavailable adapter fault is only terminal once
+            // the caller has no retry
             // left; otherwise it propagates so the retained/queued caller
             // (DurableIntake) retries it on its bounded schedule. Retryable
             // processing must remain in processing and never allocate a
@@ -812,17 +812,7 @@ public sealed class ProcessIntake(
         _ => throw new InvalidOperationException($"Unknown intake reader result value '{(int)status}'.")
     };
 
-    private static string DecisionCode(IntakeDecision decision) => decision switch
-    {
-        IntakeDecision.CaseCreated => "case_created",
-        IntakeDecision.NeedsSorting => "needs_sorting",
-        IntakeDecision.BlockedIntake => "blocked_intake",
-        IntakeDecision.Unsupported => "unsupported",
-        IntakeDecision.OcrRequired => "ocr_required",
-        IntakeDecision.TechnicalFailure => "technical_failure",
-        IntakeDecision.ImageIntakeRegistered => "image_intake_registered",
-        _ => throw new InvalidOperationException($"Unknown intake decision value '{(int)decision}'.")
-    };
+    private static string DecisionCode(IntakeDecision decision) => IntakeDecisionCodes.ToCode(decision);
 
     private sealed record IntakeAssessment(
         IntakeDecision Decision,
