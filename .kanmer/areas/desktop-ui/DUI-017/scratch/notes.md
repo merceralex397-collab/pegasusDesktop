@@ -1,3 +1,7 @@
 2026-08-25: Used the documented upstream Kanmer fallback because DesignSync tools were unavailable; source provenance is project 710bb42f-84ed-4d82-b216-7c5d60fb5aef, Pegasus Design, repo collisionengineers/pegasus, github.md last sync 2026-08-16, upstream board snapshot a5b28111. Added screen-map.md, docs/index link, UI README link, and PAR-22 join; left docs/design/README.md and binaries untouched. Placement, documentation links (233 files), structural audit, and diff check passed. Simplification recorded as n/a — docs-only.
 
 2026-08-25: First independent review found one fidelity defect: Search source row's first column had `No prototype` instead of the literal fallback `—`. Corrected the cell and retained the no-prototype explanation in Notes. Post-fix links (233 files), placement, and diff checks passed; plan disposition and post-implementation-report recorded. Fresh review pending.
+
+2026-08-25: Fresh independent reviewer PASS on corrected commit 060dd9be; no unresolved findings. Search row preserves source literal `—` with explicit no-prototype note. PR creation is next; proof remains deferred until merged-main verification.
+
+2026-08-25: PR creation failed with exact GitHub error `GraphQL: must be a collaborator (createPullRequest)`. Review PASS and branch push are complete; ticket remains implementing until collaborator permission enables PR/CI/merge/proof.

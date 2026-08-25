@@ -45,3 +45,13 @@ Documentation implementation and local validation are complete. Commit, independ
 Independent `pegasus-desktop-reviewer` review of commit `540399d8` returned `FAIL` with one fidelity finding: the fallback source row for `Pages/Search/Index.cshtml` changed the literal first-column value `—` to `No prototype`. Corrected the row to preserve `—` verbatim and retained the explicit no-prototype explanation in the Notes column. No other finding was reported.
 
 Post-fix validation: `Test-DocumentationLinks.ps1` passed with 233 files; `Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` passed; `git diff --check` passed; the intended four-file diff remains unchanged. Fresh independent review is required before merge.
+
+## Fresh independent review — 2026-08-25
+
+`pegasus-desktop-reviewer` reviewed commit `060dd9be` and returned `PASS` with no unresolved findings. It verified the Search row's literal `—` plus explicit no-prototype reason, fallback provenance, 21 source entries, 15 replacement headings, no-desktop/no-prototype cases, SHA/link evidence, exact scope, and docs-only simplification.
+
+## Delivery blocker — 2026-08-25
+
+- Branch `dui-017-screen-map` is pushed through commit `060dd9be`; independent review is `PASS`.
+- `gh pr create --base dev --head dui-017-screen-map` failed with exact error: `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`.
+- Ticket cannot proceed to CI, merge, merged-main proof, or closeout until repository collaborator permission is available. No PR or proof is claimed.
