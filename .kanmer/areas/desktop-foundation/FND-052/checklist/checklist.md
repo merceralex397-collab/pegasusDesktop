@@ -13,3 +13,14 @@ Derived from the plan; this ticket edits only the named Kanmer ticket bodies thr
 - [x] Verification evidence is captured in proof.md after live board and repository validation.
 
 ## Progress notes
+
+## Closeout — FND-052
+
+- [x] PR merge verified — not applicable; this is board-only Kanmer work with no repository branch integration.
+- [x] proof.md finalised with live-board commands and results.
+- [x] Moved to final stage: Kanmer Done at 2026-08-25T05:03:08.723Z.
+- [x] Outcome recorded in ticket body; no follow-up, commit, PR, deployment, or Azure write.
+- [x] Main checkout used for cleanup; .worktrees/fnd-052 removed.
+- [x] Local fnd-052-board-hygiene branch deleted; no remote branch existed.
+- [x] git fetch --prune origin and git worktree prune completed.
+- [x] Ticket claim released after cleanup.
