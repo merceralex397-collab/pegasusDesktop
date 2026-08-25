@@ -6,6 +6,7 @@ title: >-
   asserting its images are complete
 status: review
 area: case-reference-workflow
+order: 10
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
@@ -37,7 +38,7 @@ commits:
   - 995bf671
 archived: false
 created: '2026-08-24T11:42:25.781Z'
-updated: '2026-08-25T06:44:08.259Z'
+updated: '2026-08-25T11:33:56.119Z'
 ---
 
 ## What

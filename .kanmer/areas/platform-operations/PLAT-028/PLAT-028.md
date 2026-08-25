@@ -6,6 +6,7 @@ title: >-
   codebase
 status: review
 area: platform-operations
+order: 100
 assignee: codex-mcp-client
 profile: chore
 stageEntered:
@@ -29,7 +30,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:47:25.327Z'
-updated: '2026-08-25T07:31:52.654Z'
+updated: '2026-08-25T11:33:56.195Z'
 ---
 
 ## What

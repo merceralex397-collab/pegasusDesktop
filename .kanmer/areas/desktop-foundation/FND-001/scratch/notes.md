@@ -3,3 +3,7 @@
 2026-08-25 — Claimed on `task/fnd-001-baseline` in `../pegasus-worktrees/fnd-001-baseline`, created from `origin/dev` at `5770eb21`. The operator accepted the current descendant `dev` head as the effective recorded baseline; no branch rewrite is permitted or planned.
 
 2026-08-25 — Verified `origin/main` (`191ddf334208b8966dc5e32f4f597e434a086233`) is an ancestor of accepted `origin/dev` (`5770eb21c0d03620a6a6d99e0431bde91ec2ad6a`). Updated `docs/desktop/README.md` and committed `8d6fc34d` (`docs: record accepted dev conversion trunk`). Validation passed: `pwsh ./scripts/Test-DocumentationLinks.ps1` (232 files) and `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD`.
+
+2026-08-25 — Pushed `task/fnd-001-baseline` at `8d6fc34d` to `origin`. Attempted `gh pr create --base dev --head task/fnd-001-baseline`; GitHub rejected it: `GraphQL: must be a collaborator (createPullRequest)`. No PR was created and no stage move was made. Smallest unblock: authenticate `gh` as a collaborator with permission to create pull requests in `merceralex397-collab/pegasusDesktop`, then create the PR against `dev`.
+
+2026-08-25 — Switched the existing GitHub CLI session from non-collaborator `collisionengineers` to the already-authenticated repository-owning account `merceralex397-collab`; PR #3 is now open against `dev`: https://github.com/merceralex397-collab/pegasusDesktop/pull/3. Awaiting independent review and required CI; no merge has been attempted.
