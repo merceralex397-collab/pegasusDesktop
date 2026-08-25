@@ -50,3 +50,13 @@ Read-only inspection used merged `origin/dev` at `b548b674e31d05de6f43eeb285a25d
 ## Operator decision — report reference — 2026-08-19
 
 The human-readable reference printed on every generated report is the existing Case/PO number (`OurReference`). DOCS-001 must not create a new outward report-reference sequence or format. The durable report aggregate still needs an internal immutable report/version identity for deterministic replay, custody, provenance, corrections, approval and Sent-evidence association; that identity is not a second business-facing reference.
+
+## Current fork re-scope — 2026-08-25
+
+Read-only check in the ticket worktree at fork `origin/dev` / HEAD `5770eb21c0d03620a6a6d99e0431bde91ec2ad6a`:
+
+- TICK-093's versioned repair-specification work is present in the fork: `git log` contains merge `560f741c Merge pull request #420 from collisionengineers/task/tick-093-versioned-repair-spec`; `src/Pegasus.Core/Assessment/RepairSpecifications.cs` and `IRepairSpecificationStore` are present, and `EfCaseAssessmentStore` composes the accepted specification.
+- No dedicated TICK-092-style accepted report-input snapshot/query or deterministic payload-hash contract was found under `src/Pegasus.Core/Reports/**` or `src/Pegasus.Core/Assessment/**`. The existing `AssessmentReportProjection` remains a field-based projection into the renderer snapshot.
+- No separate TICK-094 accepted Engineer-decision component was found. The existing report path still uses the accepted renderer engineer tuple in `AssessmentReportRendering.cs` and the report projection; that is not evidence of a new accepted-decision component.
+
+This replaces the copied 2026-08-24 prerequisite snapshot for current-fork facts. It does not authorize inventing the missing contracts; the plan's minimum-snapshot deviation remains a design choice to make only after the trigger decision is settled. No Azure, mailbox, Box, upstream, or external write was performed.

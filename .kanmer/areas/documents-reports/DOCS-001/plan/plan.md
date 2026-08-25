@@ -55,3 +55,15 @@ Deliver the Core-owned **front half** of report generation that the 208 seeded c
 - **Traps**: a new table without a `Grant*` migration fails `scripts/Test-MigrationGrants.ps1` in CI (upstream PLAT-035); reusing `CaseReportApproval` as the report record collapses generation into approval and loses the fee-note pair; rendering inside the assessment transaction cannot work because the renderer is an out-of-transaction effect; a random operation key alone is not idempotency — two callers with different keys and the same accepted input must not create two reports; and the human-readable reference on a generated report is the existing Case/PO number (`OurReference`) by operator decision of 2026-08-19 recorded in the copied `open-questions` — do not create a second outward report-number sequence.
 - **Open question carried from upstream**: the copied `open-questions` document ties the implementation plan to merged TICK-093, TICK-094 and TICK-092. Step 2 replaces "wait" with "re-derive and, if frozen, own the minimum snapshot"; record that deviation explicitly in `plan` rather than silently ignoring the upstream instruction.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
+
+## Current fork re-scope and blocker — 2026-08-25
+
+The current fork check is recorded in `research`: TICK-093's versioned repair-specification work is present at `origin/dev` commit `5770eb21c0d03620a6a6d99e0431bde91ec2ad6a`, while no dedicated TICK-092 accepted report-input snapshot/payload-hash contract or separate TICK-094 accepted Engineer-decision component is present. The implementation would therefore need to own the minimum accepted snapshot and deterministic hash if the trigger contract were otherwise settled.
+
+Implementation is paused because the governing evidence contradicts the copied operator record:
+
+- `open-questions` says the operator selected automatic generation when all required assessment details are accepted.
+- FRD-11 § Report-draft entry point normatively says the first renderer surface is reachable from one operator action, “Generate report draft”, and that action is strictly draft generation.
+- The ticket's own upstream text says “detects a complete, accepted assessment” and invokes the renderer, which is a different trigger shape from the FRD-11 operator action.
+
+These are not equivalent retry semantics. Automatic generation after an accepted snapshot versus an operator-initiated draft command changes the durable trigger boundary, idempotency command shape, and downstream gateway contract. No hybrid is inferred. The smallest unblock is an operator decision naming the trigger (automatic after accepted assessment, or operator-initiated Generate report draft) and whether a staff command may force regeneration. Until then this ticket is not implementation-ready; no product code or transient repository planning file has been changed.
