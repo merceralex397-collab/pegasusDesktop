@@ -39,3 +39,9 @@ Authorised access to the correct Claude Design project is required; .design-sync
 ## Current status
 
 Documentation implementation and local validation are complete. Commit, independent review, PR/CI, merge to `dev`, proof on merged `main`, and Kanmer closeout remain. The proof document is intentionally not written before merged-main verification per AGENTS.md.
+
+## Review disposition — 2026-08-25
+
+Independent `pegasus-desktop-reviewer` review of commit `540399d8` returned `FAIL` with one fidelity finding: the fallback source row for `Pages/Search/Index.cshtml` changed the literal first-column value `—` to `No prototype`. Corrected the row to preserve `—` verbatim and retained the explicit no-prototype explanation in the Notes column. No other finding was reported.
+
+Post-fix validation: `Test-DocumentationLinks.ps1` passed with 233 files; `Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` passed; `git diff --check` passed; the intended four-file diff remains unchanged. Fresh independent review is required before merge.
