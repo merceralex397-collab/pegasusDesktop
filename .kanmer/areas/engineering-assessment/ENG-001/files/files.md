@@ -15,20 +15,22 @@
 
 | File | Why |
 | --- | --- |
-| `docs/current-architecture.md` (`:526`) | Records the as-built export as reusing "field order, image naming, provenance and manifest". This ticket changes that as-built fact, so it owns the line. Normative FRD/operator-notes wording belongs to [[DOCS-013]] and is not touched. |
+| `docs/frd/frd-07-eva-and-external-engineering-handoff.md` | Removes the manifest/provenance mandate so the governing behavior matches the shipped JSON-plus-images package; the thirteen-key list is unchanged. |
 
 ## Tests
 
 | File | Why |
 | --- | --- |
 | `tests/Pegasus.Core.Tests/Qdos/EvaBundleContractTests.cs` | Entry lists lose the two files; every `ProvenanceContent`/`ManifestContent` assertion goes. `BusinessReadableEntryNamesAndManifestGrammarAreExact` is entirely about manifest grammar and is deleted. **New test** pinning the exported JSON bytes: 2-space indent, exact newline, 13 keys in order, and the entry list. |
-| `tests/Pegasus.Core.Tests/Qdos/CaseOperatorExportTests.cs` | `TheArchiveCarriesAllThirteenKeysEvenWhenOneIsBlank` reads `bundle.JsonContent` — still compiles, but the export path needs an entry-list assertion so "both paths ship JSON + Images only" is actually pinned. |
-| `tests/Pegasus.IntegrationTests/CustodyOutboxIntegrationTests.cs` (`:1276-1318`) | Asserts both files are present and re-derives the manifest hashes. Replaced by an exact entry-list assertion (JSON + two images, nothing else). |
 | `tests/Pegasus.IntegrationTests/EvaHandoffPersistenceTests.cs` | Removes seeds for the dropped columns and asserts the surviving archive entries and exported JSON value. |
 
 ## Deliberately not touched
 
 - `EvaBundle.Sha256` / `JsonSha256` — the revision `InputFingerprint`, the download `Content-Digest`, and the UI revision summary.
 - `EvaFieldProvenance[]` and `ValidateSource`'s use of it — an in-memory guard that the 13 fields agree with their evidence. Never a shipped file.
-- `docs/current-architecture.md` — inspected and already truthful; no edit was needed.\n- `docs/operator-notes.md`, `docs/capabilities.md`, `docs/design/README.md`, `docs/open-decisions.md`, `docs/runbook.md` — outside this ticket's scope.\n- `tests/Pegasus.Core.Tests/Qdos/CaseOperatorExportTests.cs` — absent from this repository; not created.\n- `tests/Pegasus.IntegrationTests/CustodyOutboxIntegrationTests.cs` — its manifest concept is non-EVA; not changed.
+| `docs/frd/frd-07-eva-and-external-engineering-handoff.md` | Removes the manifest/provenance mandate so the governing behavior matches the shipped JSON-plus-images package; the thirteen-key list is unchanged. |
+- `docs/current-architecture.md` — inspected and already truthful; no edit was needed.
+- `docs/operator-notes.md`, `docs/capabilities.md`, `docs/design/README.md`, `docs/open-decisions.md`, `docs/runbook.md` — outside this ticket's scope.
+- `tests/Pegasus.Core.Tests/Qdos/CaseOperatorExportTests.cs` — absent from this repository; not created.
+- `tests/Pegasus.IntegrationTests/CustodyOutboxIntegrationTests.cs` — its manifest concept is non-EVA; not changed.
 - Historic `Migrations/*.Designer.cs` snapshots — append-only history.
