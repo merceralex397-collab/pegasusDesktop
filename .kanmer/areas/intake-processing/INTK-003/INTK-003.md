@@ -28,9 +28,13 @@ blocks:
 refs:
   - docs/frd/frd-06-vehicle-and-engineering-evidence.md
 docs_todo: true
+commits:
+  - b8970c51
+prs:
+  - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/12'
 archived: false
 created: '2026-08-24T11:47:12.089Z'
-updated: '2026-08-25T20:14:25.094Z'
+updated: '2026-08-25T20:35:47.229Z'
 ---
 
 ## What
