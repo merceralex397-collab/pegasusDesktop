@@ -85,3 +85,9 @@ Independent `pegasus-desktop-reviewer` review returned `FAIL` on commit `337fba1
 - The required `post-implementation-report` has been added with the review record and validation; a fresh independent review is still required before merge.
 
 Post-fix validation: `Test-DocumentationLinks.ps1` passed with 233 files; `Test-TestMarkdownPlacement.ps1` passed; structural audit remains 9/9 threat rows, 9/9 test references, all required markers present; `git diff --check` passed.
+
+## Review and delivery status — 2026-08-25
+
+- Fresh independent `pegasus-desktop-reviewer` review of commit `79670d21` returned `PASS`: no unresolved findings; exact nine threats, seven non-goals, corrected citations, scan-time password handling, real README link, D-002/D-003 custody, post-report, and scope were verified.
+- `gh pr create --base dev --head plat-001-threat-register` failed with the exact repository permission error: `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`.
+- Ticket remains `implementing`; no PR, CI, merge, merged-main proof, or Kanmer closeout is claimed. Next action is repository collaborator permission, then PR/CI/merge and proof on merged `main`.

@@ -28,3 +28,11 @@ Documentation-only implementation of the desktop threat register and its existin
 - the README entry is a navigable Markdown link.
 
 Fresh independent review is pending. This report does not claim review approval, PR creation, CI, merge, merged-main proof, deployment, or Kanmer closeout.
+
+## Fresh independent review — 2026-08-25
+
+`pegasus-desktop-reviewer` reviewed commit `79670d21` and returned `PASS`: no unresolved findings. It verified the prior dispositions, exact nine threats, seven non-goals, D-002/D-003 custody, post-report, validation, and two-file scope.
+
+## Delivery blocker
+
+`gh pr create --base dev --head plat-001-threat-register` failed with `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`. No PR, CI, merge, merged-main proof, or closeout is claimed.
