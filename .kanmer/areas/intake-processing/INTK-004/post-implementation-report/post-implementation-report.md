@@ -25,3 +25,14 @@ Completed receipts can now be re-evaluated from their retained source. The exist
 ## Scope and authority
 
 All changes remain in the current repository and configured `pegasusDesktop` remote. No upstream remote was added or synchronized. No Azure, deployment, credential, mailbox, or external storage write was performed. The future API problem mapping remains with GWY-010; no API or desktop code was edited.
+
+## Review update — 2026-08-25
+
+Independent reviewer Turing (`01a03a6b-b65e-7d71-bf78-1740fde16235`) initially identified the dispatching-lease gap, ambiguous-source/stage-failure coverage gap, and the need to verify the new test file in the committed diff. Those findings were addressed before merge:
+
+- the guard covers both `dispatching` and `processing` future leases;
+- the focused suite now passes 7 tests, including both lease states, ambiguous source, and StageAsync failure;
+- the new test file is part of the working-tree change set and will be included in the commit;
+- the stage-before-commit/idempotent external-store disposition is recorded in the plan.
+
+The reviewer found no API, desktop, packaging, cloud-placement, accessibility, or unrelated architecture concern. Exact-head CI has not yet been run because no PR exists until this reviewed local commit is created.
