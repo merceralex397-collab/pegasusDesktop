@@ -1,0 +1,1 @@
+2026-08-25: PR #1 is MERGED into dev at merge commit 5770eb21c0d03620a6a6d99e0431bde91ec2ad6a. Kanmer moved Review -> Verifying after post-implementation-report/questions gates passed. Proof and Done remain pending merged-main validation; no dev->main promotion is authorized without literal MERGE AUTH GRANTED.
