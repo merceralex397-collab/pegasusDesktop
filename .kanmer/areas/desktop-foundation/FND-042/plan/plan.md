@@ -295,3 +295,9 @@ n/a — docs-only. The diff adds one ADR, one index row, and a focused in-place 
 
 ### Independent review follow-up — 2026-08-25
 Aquinas returned FAIL on the first review for missing ADR-0105 Appendix A headings and settled distribution facts/citation, plus the missing `password-change-required` routing in ADR-0102. These were documentation-only corrections. Commit `7b68a637` adds the required sections, exact Publisher/UNC/VPN and database-backed minimum-setting evidence, direct Microsoft Learn citation, and the password-change problem/routing decision. Re-review is required before the ticket crosses the next boundary.
+
+### Independent review — final — 2026-08-25
+Aquinas PASS: no remaining merge blockers at commit `f1e92ea525a7720eedc688e151a931cbb4944640`. The final re-review confirmed the exact ADR template heading and corrected minimum-setting evidence citation; diff is limited to the two ADRs and index, with documentation links and placement checks passing. No runtime or deployment proof claimed.
+
+### PR blocker — 2026-08-25
+`gh pr create --base dev --head fnd-042-auth-session-adrs` failed with the exact GitHub response `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`. No PR/CI/merge/proof/done claim is made. The ticket remains in Kanmer review; next action is repository collaborator permission or an authorized repository workflow path.
