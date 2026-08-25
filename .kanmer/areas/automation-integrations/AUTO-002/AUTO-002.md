@@ -2,12 +2,15 @@
 id: AUTO-002
 type: ticket
 title: 'upstream:AUTO-008 · Measure and reduce durable intake processing latency'
-status: preparing
+status: implementing
 area: automation-integrations
-assignee: ''
+assignee: codex-mcp-client
 profile: spike
 stageEntered:
   preparing: '2026-08-24T21:23:44.133Z'
+taken_at: '2026-08-25T03:15:08.491Z'
+branch: auto-002-durable-intake-latency
+worktree: .worktrees/auto-002
 labels:
   - performance
   - intake
@@ -27,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:25.722Z'
-updated: '2026-08-24T21:23:44.133Z'
+updated: '2026-08-25T03:15:08.491Z'
 ---
 
 ## What
