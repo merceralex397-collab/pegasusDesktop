@@ -247,7 +247,4 @@ behaviour.
 
 ## Simplification pass
 
-_Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over
-this branch's own diff before the PR, recorded here under a dated heading.
-Expected outcome: `n/a — docs-only`, and `n/a` outright if step 10 finds nothing
-to record and the ticket changes no repository file._
+2026-08-25 — `n/a — docs-only`. The only repository change is the six-line canonical `Deviation:` note required by the live board shape; no code or architecture was added.
