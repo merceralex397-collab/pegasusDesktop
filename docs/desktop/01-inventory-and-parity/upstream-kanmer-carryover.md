@@ -1,13 +1,17 @@
-# Upstream Kanmer board — carry-over triage
+# Historical Kanmer carry-over — in-repository disposition
 
-The original repository `collisionengineers/pegasus` is not a finished
-project: its Kanmer board still carries open work, and its `main` keeps
-moving. This document triages that board once, dated, so the fork's board
-starts with what matters and nothing is lost. Source: read-only clone of
+The original repository `collisionengineers/pegasus` was not a finished
+project at the planning baseline: its Kanmer board carried open work, and its
+`main` kept moving. This document records that historical triage once so the
+fork board could be seeded with what mattered. It is provenance, not a live
+remote or synchronization instruction. The operator has prohibited all
+upstream synchronization for the current refactor; the configured
+`pegasusDesktop` remote and live Kanmer board are the only current sources.
+Source: historical read-only clone of
 `collisionengineers/pegasus` branch `kanmer-board` at `4694067`
 ("chore(kanmer): sync board 2026-08-23T15:51:00.775Z"), read 2026-08-23.
-Ticket DSK-01-09 executes the dispositions; DSK-01-10 performs the first
-code sync.
+Ticket DSK-01-09 executed the dispositions. DSK-01-10's historical first-sync
+step is superseded by the current operator boundary and must not be executed.
 
 ## Upstream board shape
 
@@ -69,10 +73,11 @@ Recreation rule (DSK-01-09): each `desktop-screen-spec`,
 fork board in the fork area named below, with `refs` containing the
 upstream ID (`upstream:<ID>`), the original body copied verbatim into the
 ticket body, the upstream labels kept, and a link to the owning area plan.
-The 233 done and 114 archived upstream tickets are **not** recreated —
-their history stays upstream and is reachable through the `upstream`
-remote. `unchanged-backlog` tickets are not recreated either; the table is
-their register until a horizon activates them.
+The 233 done and 114 archived historical tickets are **not** recreated — their
+history remains in this document as provenance. `unchanged-backlog` tickets are
+not recreated either; the table is their historical register until an
+in-repository decision activates or archives them. No upstream remote is
+consulted to interpret this record.
 
 ## Triage table (109 open upstream tickets)
 
