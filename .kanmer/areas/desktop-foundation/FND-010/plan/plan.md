@@ -213,3 +213,11 @@ No written agreement from the owners of collisionengineers/pegasus was available
 ## Simplification pass — 2026-08-25
 
 n/a — docs-only. The branch changes only the three named governing/current-state documents; no code, abstraction, dependency, or test surface was introduced.
+
+## Independent review — 2026-08-25
+
+The independent desktop-conversion review returned **NEEDS CHANGES**. The high finding is an acceptance contradiction: the ticket's acceptance criterion asks for the 2026-08-23 D-001 date in the ADR-0100 Consequences text, while the accepted ADR-0100 body has no such date and is immutable. The ticket's own accepted-body branch says to record D-001 in **docs/operations.md** only; creating a superseding ADR merely to add a date would violate the ADR one-decision and supersession rules because D-001 has not changed. This is left as an explicit merge blocker; no ADR edit or superseding ADR was made.
+
+The reviewer also identified the D-002 consequence edit as minor scope drift because the plan said only the D-001 status cell changes. Disposition: **retained and accepted as necessary** because leaving “no open decisions remain” would contradict the newly documented pending upstream freeze; the plan and scratch record this rationale.
+
+The branch remains unmerged and the proof gate is not satisfied. PR creation is still blocked by GitHub collaborator permission (`GraphQL: must be a collaborator (createPullRequest)`).
