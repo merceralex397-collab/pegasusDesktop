@@ -30,3 +30,9 @@ The agreed target is documentation only. Existing code was inspected and has a s
 PR [#5](https://github.com/merceralex397-collab/pegasusDesktop/pull/5) targets `dev` and is currently merge-clean. An independent `pegasus-desktop-reviewer` review is in progress.
 
 GitHub currently reports an empty PR status-check rollup. This repository has previously returned zero registered Actions workflows despite containing `.github/workflows/ci.yml`; therefore no merge or proof claim is made until registered CI exists and passes.
+
+## Review update
+
+Independent re-review passed after commit `57619531` corrected the remaining stale Case link/unlink wording. The reviewer confirmed the design state tables, PAR-24, and S11 now consistently require refused/pending/completed formal-instruction conversion with its immutable transfer record, label legacy Case link/unlink as non-target, and prohibit arbitrary Case linking.
+
+PR [#5](https://github.com/merceralex397-collab/pegasusDesktop/pull/5) remains unmerged solely because GitHub exposes no registered CI workflow or status check. No proof or closeout is claimed.
