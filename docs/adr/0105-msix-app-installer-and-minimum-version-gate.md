@@ -28,9 +28,32 @@ updater. The project has three settled operational constraints:
 - C-01: repositories are private, so GitHub Releases and GitHub Pages are not a
   distribution channel.
 
-### Cloud-justification test
+## Current evidence
 
-| Question | Answer | Evidence |
+- `docs/desktop/09-release-update-and-distribution/signing-and-hosting-decision-matrix.md:64-69`
+  records that the certificate subject must equal the manifest `Publisher`
+  exactly, including fields, order, spacing and case.
+- `docs/desktop/09-release-update-and-distribution/signing-and-hosting-decision-matrix.md:152-221`
+  records the canonical UNC feed shape, SMB authentication, and the office
+  network or VPN constraint. The stable path is a DFS namespace or CNAME, not
+  a machine name or mapped drive.
+- `docs/desktop/03-gateway-api-and-data/README.md:179` and
+  `docs/desktop/04-auth-session-update-and-startup/README.md:175-186` establish
+  that the minimum client version is an audited database-backed Administrator
+  setting. `Desktop:MinimumClientVersion` is a bootstrap-only fallback; a
+  production change to that fallback is an exact-target Azure write.
+
+Microsoft Learn verification fetched 2026-08-25 confirms that the 2021
+App Installer schema is required for `ShowPrompt` and
+`UpdateBlocksActivation`; the 2017/2 schema does not support those attributes.
+It also confirms that the [`ms-appinstaller:?source=` protocol](https://learn.microsoft.com/windows/apps/package-and-deploy/distribution-feature-status)
+is disabled by default since December 2023. The distribution path therefore
+uses a direct `.appinstaller` file on the approved UNC feed and does not depend
+on that URI protocol.
+
+## Cloud-justification test
+
+| Question | Answer (yes/no) | Evidence |
 | --- | --- | --- |
 | Shared authority — must several users see and update the same state? | Yes | The approved UNC App Installer feed holds one signed channel manifest and compatibility policy for every client. |
 | Unattended execution — must it run with every desktop closed? | Yes | The approved App Installer feed is maintained on an always-on in-house Windows host, so it remains available while every desktop client is closed. |
@@ -54,6 +77,11 @@ Use two complementary enforcement layers:
    client version on authenticated requests. It fails closed with a specific
    problem response when the client is below the centrally configured minimum.
 
+The minimum-version value is an audited database-backed Administrator setting,
+not a routine Container App setting. `Desktop:MinimumClientVersion` exists only
+as a bootstrap configuration fallback; changing that fallback in production
+would require exact-target approval for the corresponding Azure write.
+
 The package mechanism performs trusted installation and best-effort on-launch
 update delivery. The gateway minimum-version gate is the unconditional,
 fail-closed protection for every launched obsolete client, including one reached
@@ -65,6 +93,9 @@ Before an internally signed package is installed, the approved signing
 certificate is trusted on the target workstation in `LocalMachine\TrustedPeople`.
 Private keys and certificate passwords remain release-process secrets and are
 never bundled with the desktop application or committed to the repository.
+The manifest `Publisher` must match the signing certificate subject exactly.
+The `.appinstaller` `Uri` is the stable canonical UNC path, and the feed is
+reachable only from the office network or VPN over SMB.
 
 ## Consequences
 
@@ -72,6 +103,10 @@ never bundled with the desktop application or committed to the repository.
   and launch path; desktop-shortcut and taskbar launches are outside
   `ShowPrompt`/`UpdateBlocksActivation` enforcement. The compatible gateway
   still rejects obsolete clients independently of App Installer behavior.
+- If the App Installer feed is unreachable, App Installer can fail open and
+  launch the package. The gateway minimum-version check is the fail-closed
+  enforcement layer; the client must not extend its 24-hour compatibility cache
+  to bypass it.
 - The client-compatibility response is a narrow contract: minimum version,
   current version, channel, and maintenance state. It is not a general update
   service.
@@ -81,7 +116,27 @@ never bundled with the desktop application or committed to the repository.
 - App Installer's forced-update setting requires a schema and Windows version
   that support it; packaging verification must prove the actual generated file.
 
-## Options considered
+## Verification
+
+The release and packaging tickets prove the generated 2021-schema
+`.appinstaller` file, exact `Publisher`/certificate-subject match, canonical
+UNC `Uri`, SMB access from the office network or VPN, and the two-layer
+minimum-version behavior. The gateway tickets prove the audited database-backed
+Administrator setting, bootstrap fallback handling, and fail-closed rejection.
+This ADR records the design and repository evidence; it does not claim a
+package release, feed publication, Azure change, or runtime acceptance.
+
+## Reversal/deprovision condition
+
+Replace this decision only through a new ADR if the in-house share cannot meet
+the network/VPN availability or access-control requirement, if the exact
+Publisher/trust rollout cannot be maintained, or if measured runtime evidence
+shows that the gateway minimum-version gate cannot remain fail-closed. Remove
+the feed or signing assets only through the release runbook after the installed
+client population and rollback path are accounted for; never by changing this
+ADR alone.
+
+## Options
 
 - **Bespoke updater:** rejected because signed MSIX/App Installer provides the
   required installation and update mechanism without another updater runtime.

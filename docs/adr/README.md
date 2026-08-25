@@ -41,6 +41,7 @@ never renumbered or reused.
 | [0029](0029-image-initiated-case-projection.md) | Image-initiated Case projection | FRD-01/02/05/06/12 |
 | [0100](0100-native-winui-3-client-in-the-fork.md) | Native WinUI 3 client in the Pegasus fork | — |
 | [0101](0101-local-execution-cloud-authority-split.md) | Local-execution / cloud-authority split | — |
+| [0102](0102-existing-pegasus-credentials-token-session.md) | Existing Pegasus credentials and desktop token session | FRD-04 |
 | [0103](0103-gateway-not-direct-database-access.md) | Gateway, not direct workstation database access | — |
 | [0104](0104-online-required-bounded-local-cache.md) | Online-required client with bounded local cache | — |
 | [0105](0105-msix-app-installer-and-minimum-version-gate.md) | Signed MSIX/App Installer and minimum-version gate | — |
