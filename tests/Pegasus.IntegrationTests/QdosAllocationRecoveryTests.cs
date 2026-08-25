@@ -381,6 +381,12 @@ public sealed class QdosAllocationRecoveryTests
         Assert.Equal(CaseLifecycleState.NotReady, afterLaterImage!.State);
         Assert.False(afterLaterImage.Completeness.Values.ImagesComplete);
         Assert.False(afterLaterImage.Completeness.Values.ImagesConfirmedByStaff);
+
+        var workflow = await services
+            .GetRequiredService<ICaseWorkflowQueries>()
+            .GetAsync(caseId, CancellationToken.None);
+        Assert.Equal(CaseDueWorkState.Scheduled, workflow?.DueWork?.State);
+        Assert.NotNull(workflow?.DueWork?.NextChaseAtUtc);
     }
 
     [Fact]

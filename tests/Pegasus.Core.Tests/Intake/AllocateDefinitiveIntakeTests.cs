@@ -211,7 +211,11 @@ public sealed class AllocateDefinitiveIntakeTests
 
         await sut.AttemptAutomaticAsync(receipt.Id, Guid.NewGuid());
 
-        return Assert.Single(accept.Requests);
+        var request = Assert.Single(accept.Requests);
+        Assert.True(request.Completeness.InstructionComplete);
+        Assert.False(request.Completeness.InstructionConfirmedByStaff);
+        Assert.False(request.Completeness.ImagesConfirmedByStaff);
+        return request;
     }
 
     private static IntakeAssetRecord Asset(
