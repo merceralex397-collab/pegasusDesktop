@@ -50,3 +50,11 @@
 - **Neighbouring import — do not collide**: the imported upstream PLAT-032 sweeps the same `Custody/` folder for duplicate routes. If both are in flight, land this one first: it is one file and one method, and PLAT-032's sweep should read the settled shape.
 - **Traps**: production is unaffected and must stay that way — a change that alters what Box resolves is a stop condition. The local store serves **both** layouts after this change; dropping the `managed/<versionId:N>` fallback would break gateway-uploaded documents, which is a worse defect than the one being fixed. Do not weaken the hash or length verification to make a path resolve. Do not add a marker or binding sidecar file to make resolution easier — `docs/current-architecture.md:528` records that the marker-file approach was deliberately removed by an operator decision. Never seed content into the local store to make a test pass; that stand-in is the thing this ticket exists to delete.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in this ticket's `plan` document.
+
+## Reproduction — 2026-08-25
+
+Added `OpenReadVersionAsyncReadsContentRetainedByLocalCaseCustody` to `tests/Pegasus.IntegrationTests/DocumentCustodyDurabilityTests.cs`. It uses the real `LocalCaseCustody` adapter to retain source bytes under the case-id custody layout, then calls `OpenReadVersionAsync` through `IDocumentContentStore` with the persisted-address shape. After correcting the initial test typing error (the method is an interface member), the focused command was:
+
+`dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~OpenReadVersionAsyncReadsContentRetainedByLocalCaseCustody" --logger "console;verbosity=minimal"`
+
+Result: expected pre-fix failure, 1 failed, 0 passed. The exception was `System.IO.FileNotFoundException: The document content is unavailable.` at `LocalDocumentContentStore.OpenReadAsync` line 97. This confirms the defect before implementation; the test remains as the green acceptance fact after the override.

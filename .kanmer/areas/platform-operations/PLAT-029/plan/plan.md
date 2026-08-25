@@ -68,3 +68,11 @@ Production is unaffected, which is why this has survived — but under L-02 "dev
 ## Simplification pass
 
 Before the PR, independently assess the branch diff for unnecessary abstractions, duplicated policy, and scope expansion; record findings and dispositions here.
+
+## Resolution strategy — 2026-08-25
+
+Choose strategy (b): resolve the occurrence-addressed local content by reading the existing `metadata.json` sidecars that `LocalCaseCustody` already writes, constrained to the verified `documents` and `images` layouts under `cases/{CaseId:N}`. The `ManagedDocumentContentAddress` does not contain the intake receipt id, and image custody directory names contain that id without the content hash; therefore hash-plus-ordinal string construction alone cannot identify every supported shape. The resolver will use the expected hash and occurrence ordinal to narrow the existing directory shapes, then require sidecar `Sha256`, `FileName`, and `MediaType` identity (and `Ordinal` for image metadata) before accepting one content path. Multiple matches fail closed as ambiguous; malformed or missing metadata for an otherwise matching custody directory fails closed. This reads the adapter's existing binding evidence; it does not add a marker or sidecar.
+
+Check the existing managed `cases/{safe case reference}/managed/{VersionId:N}/content` path first and use it unchanged when present. This preserves content written through `StoreAsync`. Only when that file is absent does the override search the local custody occurrence layouts. Both paths use the existing root guard, `FileStream` options, `VerifyAsync` SHA-256/length checks, and stable missing/corrupt failure behavior. The Box path and interface default remain unchanged.
+
+The pre-fix fact `OpenReadVersionAsyncReadsContentRetainedByLocalCaseCustody` was run on 2026-08-25 after the test compiled: it failed with `System.IO.FileNotFoundException: The document content is unavailable.` from `LocalDocumentContentStore.OpenReadAsync` line 97, despite `LocalCaseCustody` having retained the source.
