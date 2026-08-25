@@ -180,3 +180,14 @@ A live read-only check of `https://github.com/collisionengineers/pegasus.git` re
 Implemented the answer-(b) fix in `src/Pegasus.Core/Intake/IntakeAllocation.cs`: the automatic command keeps `InstructionComplete: true` from the definitive `CaseCreated` decision and observes image completeness through `InstructionEvidenceImages.Select(receipt.AssetRecords)`. Added real-path Core tests in `AllocateDefinitiveIntakeTests` for no photographs, attached photographs, inline body images, under-floor embedded images, and letterhead banners. Added the LocalDB end-to-end `AutomaticAllocationWithoutPhotographsPersistsNotReadyWithScheduledChase` fact and extended only the existing `AllocationTestData` receipt builder with optional assets.
 
 Validation completed: focused Core 12/12; full Core 921/921; focused LocalDB integration 1/1. Existing consequence coverage confirmed by `InstructionEvidenceImagesTests.SelectsAttachedImagesAndLargeEmbeddedImagesOnly`, `TheThresholdIsABoundaryNotAGuess`, `QdosTwentySixZeroZeroEightsLetterheadBannersAreNotEvidence`, and grouped-intake concurrency recovery facts. No Azure/cloud writes.
+
+## Simplification pass — 2026-08-25
+
+Applied an equivalent independent four-lens pass over `git diff origin/dev...HEAD`:
+
+- **Reuse:** retained `InstructionEvidenceImages.Select` as the single production owner; reused the existing `RecordingAcceptance`, receipt test shape, `AllocationTestData` helper, workflow query, and established image-selection tests.
+- **Simplification:** removed the asserted `AutomaticCompleteness` constant rather than wrapping it; the new behavior is one record at the existing call site. The only test helper additions are the focused asset factory and an optional `assets` argument on the existing integration receipt builder.
+- **Efficiency:** no new query, cache, abstraction, or duplicate predicate was introduced; selection operates on the already-loaded receipt asset records.
+- **Altitude:** the production comment now states the observed instruction/image boundary; tests drive `AttemptAutomaticAsync` and the persisted acceptance path rather than constructing the completeness record by hand.
+
+No behavior-preserving simplification findings remain unapplied. The initial full integration run found a correctness fixture mismatch, not a simplification finding; it was fixed by making the seeded pending command match the now-observed no-image receipt and then revalidated.
