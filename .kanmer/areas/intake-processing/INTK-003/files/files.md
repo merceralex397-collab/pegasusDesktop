@@ -58,3 +58,5 @@
 - docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md — annotate upstream INTK-026 with board [[INTK-003]].
 
 The earlier list’s infrastructure omission was stale against the actual EAV implementation and is amended here; no Web page, EVA mapping, desktop project, migration, or upstream repository is touched.
+
+- `src/Pegasus.Infrastructure/Persistence/Migrations/` — generated check-constraint-only migration for the EAV field whitelist; no data backfill and no runtime grant.

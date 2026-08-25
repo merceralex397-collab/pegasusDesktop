@@ -60,3 +60,7 @@ Convert documented kilometre mileage to canonical miles at new-case creation and
 - Because the case-data store is EAV, the implementation must update the Core contracts/policy plus CaseDataFieldNames, CaseDataSnapshotFactory, and EfCaseDataStore; no EF migration or migration-grant change is required. The field is persisted only for newly saved kilometre input; existing snapshots are not transformed.
 - The gateway already serializes CaseDataProjection, so the marker reaches the existing case payload without a route or desktop change. EVA field names remain unchanged and this ticket does not edit CaseEvaMapping.
 - The prior “blocked by first upstream sync” text is superseded by the operator’s no-upstream boundary: this branch is based on the configured origin/dev and all work remains in this repository.
+
+## Persistence correction — 2026-08-25
+
+The EAV field registry is enforced by `CK_CaseDataFields_FieldName`, so the earlier no-migration statement was incomplete. This ticket will add one generated EF migration that replaces that check constraint to include `vehicle_mileage_kilometres`; it does not add a table/column, transform existing rows, or require a runtime grant. `Test-MigrationGrants.ps1` remains a required validation and should pass unchanged.
