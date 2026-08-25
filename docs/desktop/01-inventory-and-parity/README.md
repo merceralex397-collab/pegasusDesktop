@@ -45,9 +45,9 @@ Verified on 2026-08-23 by read-only inspection of the fork at `main`
 Web surface (what the parity matrix enumerates):
 
 - `src/Pegasus.Web/Pages/**` — 53 page models, 76 `.cshtml`, ~10,800 lines;
-  base classes `Pages/Shared/StaffPageModel` (18 lines, 18 pages),
+  base classes `Pages/StaffPageModel.cs` (18 lines, 18 pages),
   `Pages/Administration/AdministrationPageModel.cs` (7 lines, 16 pages),
-  `Pages/Cases/CaseMutationPageModel.cs` (339 lines, 7 case pages),
+  `Pages/Cases/CaseMutationPageModel.cs` (339 lines, 8 case pages),
   `Pages/UploadConfirmationPageModel.cs` (82 lines, 2 pages).
 - Largest page models: `Pages/Mail/Message.cshtml.cs` 1,025 lines;
   `Pages/Cases/Assessment/Index.cshtml.cs` 740; `Pages/Cases/Create.cshtml.cs`
@@ -211,7 +211,8 @@ discovery, `chore` for board/doc mechanics.
 ## 7. Risks and traps
 
 - **Inventory by page count misses behaviour.** Handlers such as
-  `Pages/Triage/Details.cshtml.cs` `OnPostActionAsync` dispatch 13 commands
+  `Pages/Triage/Details.cshtml.cs` `OnPostActionAsync` dispatches 12 named
+  commands; its default branch rejects unsupported input
   behind one name; the matrix must list the command set, not the handler.
 - **The web app keeps moving.** Upstream is 32 commits ahead today; a matrix
   row marked `inventoried` against the fork head can be stale after a sync.
