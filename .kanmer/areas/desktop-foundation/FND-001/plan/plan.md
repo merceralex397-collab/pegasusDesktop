@@ -255,3 +255,32 @@ The operator accepts the current `origin/dev` descendant head as the effective r
 ## Simplification pass — 2026-08-25
 
 n/a — docs-only. The scoped change is one existing baseline paragraph; no new abstraction, compatibility path, or branch-management mechanism is introduced.
+
+## Post-implementation report — 2026-08-25
+
+The ticket's original branch-creation premise was superseded by the operator's accepted live topology. The repository diff is exactly one file: `docs/desktop/README.md` adds two lines recording `dev` at `5770eb21` and that the recorded `main` baseline is its ancestor. It does not edit code, workflows, settings, branches, cloud resources, or governing documents.
+
+Live ref evidence from the task worktree:
+
+- `origin/main`: `191ddf334208b8966dc5e32f4f597e434a086233`
+- `origin/dev`: `5770eb21c0d03620a6a6d99e0431bde91ec2ad6a`
+- `git merge-base --is-ancestor origin/main origin/dev`: exit 0
+- `git show -s origin/dev`: merge commit `5770eb21`, `Merge pull request #1`
+
+Validation rerun at PR #3 head `8d6fc34d`:
+
+- `pwsh ./scripts/Test-DocumentationLinks.ps1` — passed: `All relative Markdown links resolve (232 files checked).`
+- `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` — passed.
+- `git diff --check origin/dev...HEAD` — passed.
+
+The resolved `chore` profile permits only `plan` and `scratch` documents, so this report is recorded in the plan rather than inventing an unsupported pipeline document.
+
+## Independent review disposition — 2026-08-25
+
+Independent reviewer: `pegasus-desktop-reviewer` (Herschel), who did not implement the change.
+
+- **High — blocking:** GitHub has no reported checks for PR #3. `gh pr checks 3 --watch=false` returns no checks and `GET /repos/merceralex397-collab/pegasusDesktop/actions/workflows` returns `total_count: 0`, although `origin/dev` contains `.github/workflows/ci.yml`. Disposition: unresolved external CI-registration blocker; do not merge or change settings as a workaround.
+- **Medium — evidence count:** the reviewer reported a non-reproduced `226` count. The exact command was rerun in the task worktree at PR head and returned `232`; the original recorded count is retained with this exact rerun evidence.
+- **Medium — author report:** the reviewer found no separate report document. Disposition: resolved by this section in the profile-permitted plan document; `get_doc_gates FND-001` confirms that `post-implementation-report` is not an allowed document type for this `chore` ticket.
+
+Review conclusion pending re-review of this reconciliation.

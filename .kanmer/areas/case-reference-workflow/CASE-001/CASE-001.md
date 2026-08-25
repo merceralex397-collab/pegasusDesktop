@@ -13,6 +13,9 @@ stageEntered:
   preparing: '2026-08-24T21:23:44.361Z'
   review: '2026-08-25T06:06:37.232Z'
   implementing: '2026-08-25T06:17:42.877Z'
+taken_at: '2026-08-25T11:38:04.507Z'
+branch: task/case-001-observed-images
+worktree: ../pegasus-worktrees/case-001-observed-images
 labels:
   - qdos26013
   - production-defect
@@ -38,7 +41,7 @@ commits:
   - 995bf671
 archived: false
 created: '2026-08-24T11:42:25.781Z'
-updated: '2026-08-25T11:33:56.119Z'
+updated: '2026-08-25T11:38:04.507Z'
 ---
 
 ## What
