@@ -238,13 +238,20 @@ The amended acceptance is: the in-repository release boundary is documented and 
 
 ## Scope reconciliation and independent review — 2026-08-25
 
-The operator's no-upstream instruction supersedes the original upstream-freeze task. The original three-document implementation claim (`ADR-0100`, `docs/operations.md`, and `docs/desktop/README.md`) is removed from the amended scope; ADR-0100 remains unchanged and no speculative current-state statement is added. The only repository-owned implementation for this amended ticket is the operator-constraints section in `AGENTS.md). The remote and ref evidence, documentation-link validation, and exact merged-head proof are the required evidence.
+The operator's no-upstream instruction supersedes the original upstream-freeze task. The original three-document implementation claim (`ADR-0100`, `docs/operations.md`, and `docs/desktop/README.md`) is removed from the amended scope; ADR-0100 remains unchanged and no speculative current-state statement is added. The only repository-owned implementation for this amended ticket is the operator-constraints section in `AGENTS.md`. The remote and ref evidence, documentation-link validation, and exact merged-head proof are the required evidence.
 
 An independent `pegasus-desktop-reviewer` (agent `01a03a0f-4b30-7c10-962c-fca667ee3f96`, Singer) reviewed the amended ticket and returned **BLOCK**. Findings and dispositions:
 
 - Superseded upstream acceptance and verification remained visible as unchecked: disposition is to state explicitly above and in the ticket body that every earlier upstream/freeze criterion is superseded.
-- The plan claimed obsolete documentation edits: disposition is this scope reconciliation, naming only `AGENTS.md) as the owned repository change.
+- The plan claimed obsolete documentation edits: disposition is this scope reconciliation, naming only `AGENTS.md` as the owned repository change.
 - Proof is absent: expected before Done, but correctly deferred until the PR is merged and verification runs on merged `main`.
 - No current exact-head review was recorded: this section records the reviewer identity and exact finding; a post-reconciliation independent review is required before merge.
 
 The current plan is therefore docs-only and in-repository. Simplification remains `n/a — docs-only`.
+
+
+## Exact-head review record — 2026-08-25
+
+After the scope reconciliation, independent reviewer **Singer** (`pegasus-desktop-reviewer`, agent `01a03a0f-4b30-7c10-962c-fca667ee3f96`) re-reviewed the current ticket scope at repository HEAD `636c94274c24ce0f1e3fd972fa61337afc0afd5d`, the exact head of PR #9 (`https://github.com/merceralex397-collab/pegasusDesktop/pull/9`). The reviewer confirmed that the earlier upstream/freeze requirements are explicitly superseded and that proof is correctly deferred until merge. The only remaining finding was that this exact-head review record itself was missing; this section records it. The earlier review finding about `AGENTS.md)` was a documentation typo and is corrected above. No code, UI, API, packaging, cloud, or accessibility lens applies to this docs-only change.
+
+The review is now recorded for the exact PR head. A final reviewer confirmation after this record is required before merge.
