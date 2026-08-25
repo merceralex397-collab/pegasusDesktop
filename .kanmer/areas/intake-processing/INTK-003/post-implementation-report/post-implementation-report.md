@@ -53,3 +53,7 @@ After the migration-list correction, exact-head run `32900431792` failed twice i
 ## CI resolution — 2026-08-25
 
 Authorized failed-job rerun of exact-head run `32900431792` completed green on head `13ba7b41775ee83c1399eb84c17e008aa13d7a67` (PR #12). The previously failing `sql-integration (3)` completed successfully after running 290/291 assigned tests; `sql-integration-coverage` also passed. All other run checks were successful or intentionally skipped infrastructure because no deployment path changed. This resolves the CI blocker; the ticket still requires the review/verification/merge/proof/closeout sequence and must not be treated as done yet.
+
+## Merge and proof boundary — 2026-08-25
+
+PR #12 merged to configured remote `dev` as `38a7816ed2c6b91e77c46472844ce92499cfb3a5` after independent review and green exact-head CI on `13ba7b41775ee83c1399eb84c17e008aa13d7a67`. The ticket is still not done: Kanmer requires proof from merged `main`; current remote heads are `dev=38a7816e` and `main=191ddf33`. No proof was fabricated and no dev-to-main promotion was performed.

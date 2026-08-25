@@ -28,3 +28,9 @@ The first independent review found duplicate conversion ownership and incomplete
 - [ ] Exact-head CI remains blocked: run `32900431792` failed twice on the unrelated SQL Server deadlock in `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` (290/291 passed on the second attempt).
 
 - [x] Exact-head CI run 32900431792 passed on the unchanged head 13ba7b41775ee83c1399eb84c17e008aa13d7a67 after the authorized failed-job rerun; sql-integration (3) and coverage are green. Review/verification, merge, proof, and closeout remain.
+
+## Merge and proof boundary — 2026-08-25
+
+- [x] Independent review passed the corrected implementation; the owned migration-list expectation correction is on exact head `13ba7b41`.
+- [x] PR #12 merged into configured `dev` as `38a7816e` after all required checks passed.
+- [ ] Promote the exact reviewed dev commit to `main` under the repository's required literal approval, write proof on merged main, then close out Kanmer.

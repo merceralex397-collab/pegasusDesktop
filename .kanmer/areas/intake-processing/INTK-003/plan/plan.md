@@ -113,3 +113,9 @@ The corrected exact-head run `32900431792` was rerun once after the migration-ex
 ## CI resolution — 2026-08-25
 
 Authorized failed-job rerun of exact-head run `32900431792` completed green on head `13ba7b41775ee83c1399eb84c17e008aa13d7a67` (PR #12). The previously failing `sql-integration (3)` completed successfully after running 290/291 assigned tests; `sql-integration-coverage` also passed. All other run checks were successful or intentionally skipped infrastructure because no deployment path changed. This resolves the CI blocker; the ticket still requires the review/verification/merge/proof/closeout sequence and must not be treated as done yet.
+
+## Merge and proof boundary — 2026-08-25
+
+- Independent review by Parfit (agent `01a03abd-d370-72b2-b0b4-5f2c90247bdf`) passed the corrected implementation; the later commit `13ba7b41` only corrected the owned migration-list test expectation, and exact-head CI passed on that head.
+- PR #12 was merged into the configured `pegasusDesktop` remote's `dev` branch as `38a7816ed2c6b91e77c46472844ce92499cfb3a5`.
+- The remaining Kanmer gate is `proof` after verification on merged `main`. Current remote heads: `dev=38a7816e`, `main=191ddf33`. Do not write proof or move to `done` until the exact approved `dev`→`main` promotion occurs.
