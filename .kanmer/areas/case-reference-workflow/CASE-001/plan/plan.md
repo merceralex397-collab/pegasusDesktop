@@ -170,3 +170,7 @@ None strands a case: each sits in Not ready with its seven-day chase, and the
 review-readiness rule accepts staff confirmation in place of complete evidence.
 Shape 3 is the one most likely to be seen in practice and is worth an operator
 sentence if it proves annoying — a follow-up, not scope creep here.
+
+## Verify-after-sync decision — 2026-08-25
+
+A live read-only check of `https://github.com/collisionengineers/pegasus.git` returned `dev` and `main` at `7afd18037acfa78927c4b4ffdf8e0f74c7ecc688`; no `task/case-021-observed-images` ref was returned. The fork worktree HEAD is `5770eb21`. In this fork, `src/Pegasus.Core/Intake/IntakeAllocation.cs` still contains the `AutomaticCompleteness` constant with `ImagesComplete: true` at lines 224–228, and the call site passes it at line 269. Therefore the upstream fix has **NOT ARRIVED** and this ticket runs the full fix (answer b), not verification-only. Operator confirmation was not supplied; this live remote check is the recorded evidence, and no upstream or Azure write was performed.

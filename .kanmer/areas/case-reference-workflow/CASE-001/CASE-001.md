@@ -4,12 +4,15 @@ type: ticket
 title: >-
   upstream:CASE-021 · Refuse Review for a case with no images instead of
   asserting its images are complete
-status: preparing
+status: implementing
 area: case-reference-workflow
-assignee: ''
+assignee: codex-mcp-client
 profile: fix
 stageEntered:
   preparing: '2026-08-24T21:23:44.361Z'
+taken_at: '2026-08-25T05:33:44.181Z'
+branch: case-001-observed-images
+worktree: .worktrees/case-001
 labels:
   - qdos26013
   - production-defect
@@ -32,7 +35,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:42:25.781Z'
-updated: '2026-08-24T21:23:44.361Z'
+updated: '2026-08-25T05:33:44.181Z'
 ---
 
 ## What
