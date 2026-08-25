@@ -1,13 +1,17 @@
-# Upstream Kanmer board — carry-over triage
+# Historical Kanmer carry-over — in-repository disposition
 
-The original repository `collisionengineers/pegasus` is not a finished
-project: its Kanmer board still carries open work, and its `main` keeps
-moving. This document triages that board once, dated, so the fork's board
-starts with what matters and nothing is lost. Source: read-only clone of
+The original repository `collisionengineers/pegasus` was not a finished
+project at the planning baseline: its Kanmer board carried open work, and its
+`main` kept moving. This document records that historical triage once so the
+fork board could be seeded with what mattered. It is provenance, not a live
+remote or synchronization instruction. The operator has prohibited all
+upstream synchronization for the current refactor; the configured
+`pegasusDesktop` remote and live Kanmer board are the only current sources.
+Source: historical read-only clone of
 `collisionengineers/pegasus` branch `kanmer-board` at `4694067`
 ("chore(kanmer): sync board 2026-08-23T15:51:00.775Z"), read 2026-08-23.
-Ticket DSK-01-09 executes the dispositions; DSK-01-10 performs the first
-code sync.
+Ticket DSK-01-09 executed the dispositions. DSK-01-10's historical first-sync
+step is superseded by the current operator boundary and must not be executed.
 
 ## Upstream board shape
 
@@ -69,10 +73,11 @@ Recreation rule (DSK-01-09): each `desktop-screen-spec`,
 fork board in the fork area named below, with `refs` containing the
 upstream ID (`upstream:<ID>`), the original body copied verbatim into the
 ticket body, the upstream labels kept, and a link to the owning area plan.
-The 233 done and 114 archived upstream tickets are **not** recreated —
-their history stays upstream and is reachable through the `upstream`
-remote. `unchanged-backlog` tickets are not recreated either; the table is
-their register until a horizon activates them.
+The 233 done and 114 archived historical tickets are **not** recreated — their
+history remains in this document as provenance. `unchanged-backlog` tickets are
+not recreated either; the table is their historical register until an
+in-repository decision activates or archives them. No upstream remote is
+consulted to interpret this record.
 
 ## Triage table (109 open upstream tickets)
 
@@ -194,7 +199,23 @@ half), `gateway-worker-ticket` 26, `report-decision` 13,
 recreation rule; none is dropped outright — a "drop" needs the operator, and
 the only candidate is CASE-001 once Razor Pages are retired.
 
-## Code drift and the first sync
+## Operator boundary — current refactor
+
+The upstream board and remote comparison below are historical provenance from
+the planning baseline. The operator has prohibited all synchronization with
+the upstream Pegasus repository for the current refactor. No ticket may add,
+fetch, compare, merge, or push an upstream remote. All implementation and
+history work stays in this repository and uses the configured `pegasusDesktop`
+remote only. Cloud writes, deployments, credentials, and external environment
+changes are deferred until the full refactor is complete.
+
+The carry-over rows remain useful as evidence of why fork tickets exist. They
+are not instructions to perform an external sync. A ticket that previously
+required one must be amended through Kanmer to an honest in-repository scope;
+if no such scope exists, it remains blocked rather than importing external
+work.
+
+## Historical code drift and superseded first-sync plan
 
 Upstream `main` `7d6a948a` ("Merge pull request #523 from
 collisionengineers/task/qdos26012-regressions") is 32 commits ahead of the
@@ -215,10 +236,9 @@ a fast-forward. Notable upstream changes in that range (read 2026-08-23):
 - CASE-019 case export proof (`efbb2a9`); INTK-029 unlink dialog proof
   (`e035e3b`); QDOS26009 end-to-end proof (`5e52b13`).
 
-First-sync ticket (DSK-01-10, area 00 flow): add the read-only `upstream`
-remote, create `dev` per area 00, merge `upstream/main` into `dev` via a PR
-(fast-forward content, merge commit acceptable), run the full CI, promote to
-`main` by the exact-SHA procedure, then re-run the parity rows that cite
-files touched by the sync. Never push to upstream. Repeat after each
-upstream release until cutover; each sync re-runs this triage for tickets
-that changed status upstream.
+Historical first-sync plan (DSK-01-10, area 00 flow): the paragraph above
+describes the plan that was recorded before the operator boundary changed. It
+is retained for provenance and is not executable. The current disposition is
+in-repository only: no upstream remote is added or read, no external commits
+are imported, and no sync or freeze proof is required. Recreate or amend any
+needed work as a fork ticket and deliver it through the configured remote.
