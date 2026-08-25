@@ -348,7 +348,8 @@ configured read-only remote and the first sync has landed; the fork's Kanmer
 board has the areas, horizons and epics above and every DSK ticket from the
 twelve content plans created with a governing-doc reference
 (`link_doc` to an ADR/FRD or `docs_todo: true`); ADR-0100…ADR-0110 are
-accepted (ADR-0108 may be `proposed` until the Phase 7 spike); FRD-13 and
+accepted (ADR-0108 may be `proposed` until Phase 7 packaged-controller
+validation and parity); FRD-13 and
 the PRD update are merged; `docs/capabilities.md` carries the `DSK` family;
 `AGENTS.md` § ADR conventions records the reserved block (done, operator
 confirmation 2026-08-23); `docs/index.md` links everything.
@@ -369,7 +370,7 @@ no ticket can leave `backlog` without a governing doc (probe one with
 | DSK-00-04 | Create every DSK ticket from plans 01–12 with `refs`/`docs_todo`, profile, area, group and a `## Routing` block | chore | DSK-00-03 | Every ticket row in the plans exists on the board | `list_items` count equals the plan rows; `get_doc_gates` on a sample | 1 | — · `kanmer-tickets` · Kanmer `create_item`, `link_doc`, `set_ticket_doc` |
 | DSK-00-05 | Author ADR-0100, ADR-0101, ADR-0103, ADR-0104, ADR-0105, ADR-0110 (the reserved block is already confirmed and recorded in AGENTS.md § ADR conventions) | feature | — | ADRs accepted; index table updated | `Test-DocumentationLinks.ps1`; ADR frontmatter valid | 1 | `pegasus-parity-researcher` (evidence) · `kanmer-docs` · Kanmer `link_doc` |
 | DSK-00-06 | Author ADR-0102, ADR-0106, ADR-0107, ADR-0109 from the flow records of 01 | feature | 01 · DSK-01-02 | ADRs accepted with the cloud-justification table answered | Links pass; each table has six answers | 1 | `pegasus-parity-researcher` · `kanmer-docs` · Kanmer |
-| DSK-00-07 | Author ADR-0108 (WebView2 rendering) as `proposed`; accept after the Phase 7 spike | feature | 07 spike | ADR exists with evidence section pointing at the spike | Links pass | 1 | `pegasus-desktop-reviewer` · `kanmer-docs`, `microsoft-docs` · Microsoft Learn |
+| DSK-00-07 | Author ADR-0108 (WebView2 rendering) as `proposed`; accept after Phase 7 packaged-controller validation and parity | feature | 07 validation | ADR names the documented `HWND_MESSAGE` host and cites the validation/parity evidence | Links pass | 1 | `pegasus-desktop-reviewer` · `kanmer-docs`, `microsoft-docs` · Microsoft Learn |
 | DSK-00-08 | FRD-13 "Desktop operator experience" + PRD scope update + `DSK` family rows in `docs/capabilities.md` + `docs/frd/README.md`, `docs/index.md` links | feature | DSK-00-05 | FRD cites `docs/design/README.md`; capabilities rows have canonical owners | Links pass; `docs/capabilities.md` allocation summary updated | 1 | — · `kanmer-docs` · Kanmer `link_doc` |
 | DSK-00-09 | Record the release-tag convention (`gateway/r<N>`, `desktop/v<M.m.b>`) in `docs/engineering.md` § Branches and delivery and the `pegasus-release` skill | chore | DSK-00-01 | Convention documented; first gateway tag applied on the next release | `git tag --list 'gateway/*'` | 1 | `pegasus-release-packager` · `pegasus-release` · — |
 | DSK-00-10 | Record the decided D-001 (Option A, 2026-08-23 — fork is the single release source; upstream merged then frozen) in ADR-0100 consequences and `docs/operations.md`, and agree the upstream freeze with that repository's owners | chore | DSK-00-05 | Decision text with date in both files; freeze agreed and dated | Text present in both files | 1 | — · `kanmer-docs` · Kanmer |

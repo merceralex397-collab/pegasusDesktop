@@ -107,7 +107,7 @@ Repository (fork `main` @ `191ddf33`, inspected 2026-08-23):
   `terminal`, `transient`, `unknown`; terminal stops retries; metrics count
   effects, not attempts (`docs/current-architecture.md:85-90`).
 
-Official documentation (fetched 2026-08-23):
+Official documentation (retrieved 2026-08-23; invisible-host route rechecked 2026-08-24):
 
 - WebView2 printing to PDF: <https://learn.microsoft.com/microsoft-edge/webview2/how-to/print>
   and the WinRT reference for `CoreWebView2.PrintToPdfAsync` /
@@ -116,6 +116,11 @@ Official documentation (fetched 2026-08-23):
   — one print operation per WebView at a time; `PrintToPdfStreamAsync`
   returns a rewound PDF stream; settings cover margins, page size,
   backgrounds, header/footer, scale.
+- Invisible controller host: <https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2environment.createcorewebview2controllerasync>
+  documents `HWND_MESSAGE` as a valid `ParentWindow` for an invisible WebView
+  on Windows 8 and later; it will never become visible. `DSK-07-14` uses this
+  controller and validates packaged-app integration, rather than selecting a
+  host or adding a collapsed XAML control.
 - App Installer and the no-WebView rule are covered in 04 and 09; the
   proposal's own §23.2 permits an isolated WebView2 for a specific document
   render when an ADR records it and it never hosts Pegasus UI.
@@ -226,7 +231,7 @@ Routing = subagent · skills · MCP.
 | DSK-07-11 | Outbound command pattern: desktop confirms, gateway authorises and executes with idempotency key, provider message id audited (sent evidence today; seam for MAIL-17 later) | feature | 03 skeleton | Duplicate send impossible by key; draft/queued/sent/failed states distinct | Contract tests with replayed key | 5 | pegasus-gateway-dev · dotnet-webapi · Learn, Kanmer |
 | DSK-07-12 | ADR-0108 isolated WebView2 HTML→PDF rendering (scope, never-UI rule, fallback, parity gate) | chore | 00 ADR block | Accepted ADR with the §23.2 statement and reversal condition | Docs review | 1 | pegasus-desktop-reviewer · kanmer-docs · Kanmer |
 | DSK-07-13 | Share templates once: build step embeds `docs/design/assets/report-renderer/templates/*` into both `Pegasus.Infrastructure` and `Pegasus.Desktop.Infrastructure` (one source, hash-checked) | feature | 02 projects | Both assemblies embed byte-identical resources; CI fails on drift | Resource-hash test in both test projects | 1 | pegasus-release-packager · directory-build-organization · Learn |
-| DSK-07-14 | Desktop renderer: `IAssessmentReportRenderer` implementation in `Pegasus.Desktop.Infrastructure` using Scriban + isolated WebView2 (`PrintToPdfStreamAsync`) + PDFsharp post-processing; spike first whether a collapsed WinUI `WebView2` control or a `CoreWebView2Controller` on a hidden HWND is the cleaner off-screen host | feature | DSK-07-12, DSK-07-13, 02 | Renders assessment and fee note from the same snapshot; no visible UI; one render at a time; runtime-missing → named failure and gateway fallback | Golden-file tests (DSK-07-15); manual render on baseline hardware | 3 | winui-dev · winui-dev-workflow, microsoft-code-reference · Learn (WebView2 print docs), Kanmer |
+| DSK-07-14 | Desktop renderer: `IAssessmentReportRenderer` implementation in `Pegasus.Desktop.Infrastructure` using Scriban + isolated WebView2 (`PrintToPdfStreamAsync`) + PDFsharp post-processing; `CoreWebView2Controller` uses the documented invisible `HWND_MESSAGE` parent | feature | DSK-07-12, DSK-07-13, 02 | Renders assessment and fee note from the same snapshot; no visible UI; one render at a time; runtime-missing → named failure and gateway fallback | Golden-file tests (DSK-07-15); packaged-app controller smoke test and manual render on baseline hardware | 3 | winui-dev · winui-dev-workflow, microsoft-code-reference · Learn (WebView2 print docs), Kanmer |
 | DSK-07-15 | Golden-file parity suite: fixtures from the Playwright renderer (text, values, page count, key element positions within tolerance) compared with WebView2 output | feature | DSK-07-14 | All approved fixtures pass; tolerances documented; renderer tests in `tests/Pegasus.IntegrationTests/Reports/` reused for the baseline | `dotnet test` suite with fixture catalogue | 3 | pegasus-test-engineer · code-testing-agent, run-tests, assertion-quality · Learn |
 | DSK-07-16 | Report finalise endpoint: upload desktop PDF → Box custody + report record + audit, with FRD-11 finality/regeneration rules; desktop preview/finalise UX | feature | DSK-07-05, DSK-07-14 | Final document stored once; regeneration audited; web renderer path retained behind a flag until parity sign-off | Contract tests; custody integration test; UAT | 5 | pegasus-gateway-dev, winui-dev · dotnet-webapi, winui-design · Learn, Kanmer |
 | DSK-07-17 | Carry-over disposition tickets: DOCS-001, TICK-206, TICK-208, TICK-214, TICK-216, TICK-081/096/097/100, DOCS-003/004 reconciled against L-03 (which templates ship, which retire, what stays gated) | chore | DSK-07-12 | Each upstream ticket has a disposition recorded in [01 · carry-over](../01-inventory-and-parity/upstream-kanmer-carryover.md) and either a fork ticket or "unchanged backlog" | Docs review | 1 | pegasus-parity-researcher · kanmer-tickets · Kanmer |
@@ -252,7 +257,7 @@ Not applicable here: `azure-messaging` (no Service Bus/Event Hubs exist —
 
 | Risk / trap | Mitigation |
 | --- | --- |
-| WebView2 off-screen hosting: a WinUI `WebView2` control needs a XAML root; a zero-size collapsed control may still initialise, but behaviour must be proven (DSK-07-14 spike); `CoreWebView2Controller` on a hidden HWND is the fallback host | Spike first; record the chosen host in ADR-0108; keep the renderer behind `IAssessmentReportRenderer` so the host can change |
+| WebView2 off-screen hosting: Microsoft documents `HWND_MESSAGE` as the invisible parent for `CoreWebView2Controller` on Windows 8+; a collapsed XAML control is not used | `DSK-07-14` validates the fixed controller from the packaged app and records the evidence; keep the existing `IAssessmentReportRenderer` port for the gateway parity transition, not as a host-selection wrapper |
 | One print operation per WebView at a time (docs) — parallel renders throw | Same `SemaphoreSlim(1,1)` discipline as the Playwright renderer; queue renders |
 | WebView2 runtime missing or outdated on a workstation | Startup check (04) with a named install step; gateway render fallback until fixed |
 | Golden-file drift between Chromium builds (WebView2 runtime updates itself; Playwright is pinned to 1.61.0) | Tolerant comparisons (text, values, page count, positions within tolerance), fixture review on failure, not pixel equality |
