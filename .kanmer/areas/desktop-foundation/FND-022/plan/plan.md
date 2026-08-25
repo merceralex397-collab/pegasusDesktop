@@ -359,3 +359,53 @@ _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass ove
 branch's own diff before the PR, recorded here under a dated heading. Expected result
 for this ticket: `n/a — docs-only`, because the only repository diff is the single
 edit to `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md`._
+
+## Execution update — 2026-08-25
+
+### Upstream source and delta
+
+A read-only clone of `collisionengineers/pegasus` branch `kanmer-board` was refreshed outside this repository at:
+
+- head: `8566c18d59481df740abc8ea784e629f91ede6cf`
+- commit: `chore(kanmer): sync board 2026-08-25T01:28:04.859Z`
+- source date: 2026-08-25
+
+The historical coverage head `a5b28111` exists in the clone. The current head has 477 ticket folders, 245 done, 118 open/non-archived, and no archived delta in the five newly added open findings. The five newly added open tickets since `a5b28111` are upstream `CASE-023`, `DOCS-014`, `ENG-017`, `INTK-036` and `PLAT-043`. An independent `pegasus-parity-researcher` classified all five as amendments to existing owners, not imports and not drops:
+
+| Upstream finding | Fork owner | Reason |
+| --- | --- | --- |
+| `CASE-023` | [[GWY-009]] / DSK-03-09 | case notes and automatic workflow events |
+| `DOCS-014` | [[FEAT-016]] / DSK-05-16, with [[FEAT-031]] gateway coordination | shared viewer preview/download intent and custody event |
+| `ENG-017` | [[FEAT-015]] / DSK-05-15 | vehicle/EVA image eligibility and bundle content |
+| `INTK-036` | [[ENG-002]] / upstream ENG-015 | QDOS instruction-date extraction owner |
+| `PLAT-043` | [[GWY-013]] / DSK-03-13 | Triage mutation routes and Core lifecycle boundary |
+
+No later-head import or legitimate drop was identified.
+
+### Amendment audit and board updates
+
+All 21 recorded amendment handles were resolved with qualified Kanmer search and title matching. Each owner was read with `get_item`; the acceptance and implementation obligations were present. The 21 handles and resolved board owners are recorded in the verification output for this run.
+
+The five later-head amendments were applied individually through Kanmer `update_item` to the five previously unclaimed owners, using their fresh `updated` values. No worktree, branch, claim, or in-progress PR was touched. The amendments add explicit acceptance and implementation obligations for the five findings; the INTK-036 update also replaces the prior statement that bare `Date:` was out of scope, avoiding contradictory requirements.
+
+### Board audit
+
+Kanmer `get_group EPIC-014` and `list_items group:EPIC-014` still show the original 19 imports, one-for-one against the HZN-001 join table. The per-area counts remain automation-integrations 2, engineering-assessment 2, platform-operations 2, intake-processing 7, documents-reports 3, case-reference-workflow 2, desktop-ui 1, with delivery-repository, mail-communications and pr-review at zero. No duplicate import was created.
+
+The carry-over document was updated as the sole repository diff: current upstream source/head, corrected title/label recreation rule, TICK-054 re-filed as unchanged-backlog, the capability-row restriction, the 19/21/75 coverage totals, the five post-triage rows, and the five later-head amendments.
+
+## Verification update — 2026-08-25
+
+- Read-only upstream clone: `8566c18d59481df740abc8ea784e629f91ede6cf`; current open/non-archived count: 118.
+- `git merge-base --is-ancestor 8124ae2a main` → exit 0.
+- `git merge-base --is-ancestor 4d00c3b7 main` → exit 0.
+- `pwsh ./scripts/Test-DocumentationLinks.ps1` → `All relative Markdown links resolve (232 files checked).`
+- `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` → `Markdown placement passed for origin/dev..HEAD.`
+- `git diff --check` → exit 0; the only repository diff is the owned carry-over document.
+- `grep -c 'docs/capabilities.md row' docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` → exactly 1.
+
+The 21 amendment handles were title-matched after full-text search and each owner body was read with `get_item`; every owner contained both acceptance and implementation sections. The five later-head owner bodies now contain their explicit `## Upstream delta` acceptance and implementation sections.
+
+## Simplification pass — 2026-08-25
+
+n/a — docs-only. The branch changes one existing canonical carry-over document; no code, test, abstraction, dependency, or runtime surface exists to simplify. The document edit was kept to the measured five corrections plus the current-head evidence and did not create a transient repository planning file.
