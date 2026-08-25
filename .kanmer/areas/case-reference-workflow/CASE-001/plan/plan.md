@@ -293,3 +293,9 @@ The first review is recorded as BLOCK until the fresh independent review confirm
 Fresh independent reviewer Maxwell (agent 01a03a28-40ee-77f2-b464-542d08e0a4e4) reviewed the corrected two-file diff and passed the one-way replay predicate, durable pending canonicalization/hash proof, failed replay, reverse-direction conflict test, scope, and simplification. No UI, packaging, API, schema, migration, cloud, or upstream concerns apply.
 
 Committed as 737059ddc497f072b8678c8cd2f3e61aa04b6b00 (`Recover legacy automatic allocation replays`) and pushed to origin task/case-001-observed-images. PR #4 now points to this exact head, base dev. New repository-check run 32883994941 is queued for this head. The preceding run 32879516460 failed at the old head d0604850 with one timing-sensitive QDOS RegexMatchTimeoutException; it is not evidence about the new head. Merge remains gated on the new exact-head CI result.
+
+## Exact-head CI result and rerun — 2026-08-25
+
+Repository-check run 32883994941 tested exact head 737059ddc497f072b8678c8cd2f3e61aa04b6b00. Unit, browser, SQL shards 1 and 2, SQL coverage, changes, documentation, local-development-scripts, and reference-data passed. SQL shard 3 ran all 291 assigned tests and had one failure: GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns failed with a SQL deadlock victim from EfIntakeWorkStore.CompleteProcessingAsync at source line 338. The stack is outside CASE-001's two changed files and describes an existing concurrency-timing failure, not an observed-image or legacy-allocation replay assertion.
+
+The failed SQL job is being rerun at the same exact head under operator authorization. Merge remains blocked until the rerun and all required exact-head checks are green.

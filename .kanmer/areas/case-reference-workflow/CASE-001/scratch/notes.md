@@ -33,3 +33,7 @@ First independent review blocked the amendment on reverse-direction compatibilit
 ## Final review and push — 2026-08-25
 
 Maxwell passed the corrected diff. Committed 737059ddc497f072b8678c8cd2f3e61aa04b6b00 and pushed origin task/case-001-observed-images. PR #4 exact head is 737059ddc497f072b8678c8cd2f3e61aa04b6b00; repository-check run 32883994941 is queued. Await exact-head CI before merge.
+
+## Exact-head CI — 2026-08-25
+
+Run 32883994941 exact head 737059ddc497f072b8678c8cd2f3e61aa04b6b00: unit/browser/SQL 1/2/coverage/changes/docs/scripts/reference-data passed. SQL shard 3 had one unrelated deadlock in GroupedImageIntakeConcurrencyTests at EfIntakeWorkStore.CompleteProcessingAsync. Rerunning the failed job at the same head.

@@ -92,3 +92,7 @@ Fresh evidence: Release integration build passed with 0 warnings/errors; QdosAll
 ## Final review and pushed amendment — 2026-08-25
 
 Maxwell's fresh independent review passed the corrected implementation: persisted true to current false is the only legacy replay direction; pending durability/hash and reverse-direction conflict are tested; failed replay and scope/simplification pass. Commit 737059ddc497f072b8678c8cd2f3e61aa04b6b00 is pushed to origin and PR #4 now targets dev at that exact head. Repository-check run 32883994941 is queued. The old-head unit timeout (run 32879516460) remains recorded as a prior-head failure, not a green result. No merge or proof claim yet.
+
+## Exact-head CI and current blocker — 2026-08-25
+
+Run 32883994941 tested commit 737059ddc497f072b8678c8cd2f3e61aa04b6b00. Unit, browser, SQL shards 1/2, coverage, changes, documentation, scripts, and reference-data passed. SQL shard 3 failed one existing grouped-image concurrency test because EfIntakeWorkStore.CompleteProcessingAsync was selected as a SQL deadlock victim; no CASE-001 file appears in the stack. The failed job is being rerun at the same head. No merge claim yet.
