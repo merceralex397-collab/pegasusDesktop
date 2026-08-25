@@ -211,7 +211,7 @@ discovery, `chore` for board/doc mechanics.
 | Page/handler/use-case inventory, parity rows, flow records | `pegasus-parity-researcher` (read-only) | `kanmer-research` (Kanmer 0.1.0); `microsoft-docs`, `microsoft-code-reference` (Microsoft Learn plugin) for API facts | Kanmer `get_status`, `list_items`, `set_ticket_doc`, `append_scratch`; Microsoft Learn `microsoft_docs_search` |
 | Azure register verification | `pegasus-azure-auditor` (read-only) | `azure-resource-lookup`, `azure-resource-visualizer`, `azure-cost` (`microsoft/azure-skills` `1a03acfb`) | Azure MCP `group_resource_list`, `storage`, `keyvault`, `monitor`, `applicationinsights`, `sql`, `containerapps`, `functionapp`, `pricing` — list/show only |
 | Board seeding and carry-over | `pegasus-parity-researcher` | `kanmer-tickets`, `kanmer-groom`, `kanmer-setup` | Kanmer `create_item`, `create_group`, `link_doc`, `link_items`, `update_item` |
-| Upstream sync PR | `pegasus-gateway-dev` | `run-tests` (`dotnet/skills` `98f84851`) | — |
+| Historical upstream-sync route (superseded) | `pegasus-gateway-dev` | `run-tests` (`dotnet/skills` `98f84851`) | —; do not execute under the current operator boundary |
 | Baseline performance | `pegasus-ui-verifier` | `analyzing-dotnet-performance`, `dotnet-trace-collect` (`dotnet/skills`) | — |
 | Characterization gaps | `pegasus-test-engineer` | `test-gap-analysis`, `assertion-quality` (`dotnet/skills`) | — |
 | Independent review of every ticket above | `pegasus-desktop-reviewer` (read-only) | project skill `pegasus-desktop` | Microsoft Learn |
@@ -221,9 +221,10 @@ discovery, `chore` for board/doc mechanics.
 - **Inventory by page count misses behaviour.** Handlers such as
   `Pages/Triage/Details.cshtml.cs` `OnPostActionAsync` dispatch 13 commands
   behind one name; the matrix must list the command set, not the handler.
-- **The web app keeps moving.** Upstream is 32 commits ahead today; a matrix
-  row marked `inventoried` against the fork head can be stale after a sync.
-  Each row records the commit it was inventoried at.
+- **Historical code drift.** The planning baseline recorded upstream as 32
+  commits ahead; a matrix row marked `inventoried` against the fork head was
+  dated accordingly. No upstream comparison or sync is performed in the
+  current refactor.
 - **Documentation drift already exists** (`docs/operations.md:295` vs its own
   release table; `CHANGELOG.md` stopped at 2026-08-03). Treat the release
   table as authoritative and do not copy the stale line into any record.
@@ -251,7 +252,7 @@ discovery, `chore` for board/doc mechanics.
 - `docs/capabilities.md`: new `DSK` family rows are created in area 00; this
   area supplies the capability group per row.
 - `docs/current-architecture.md` / `docs/operations.md`: not changed in
-  Phase 0 (no runtime change). The drift at `docs/operations.md:295` is fixed
-  by the first upstream sync PR if upstream already fixed it, otherwise by a
-  one-line doc ticket.
+  Phase 0 (no runtime change). The drift at `docs/operations.md:295` is a
+  separate in-repository documentation disposition; it is not fixed by an
+  upstream sync under the current operator boundary.
 - ADR-0100…ADR-0110 context sections cite the flow records by anchor.
