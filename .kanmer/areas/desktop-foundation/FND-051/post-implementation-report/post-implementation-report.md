@@ -30,3 +30,8 @@ n/a — docs-only. Existing canonical documents were reused; no new document fam
 ## Independent review correction — 2026-08-25
 
 The fresh independent review required the remaining unqualified upstream-sync route and first-sync language in the Phase 0 plan to be explicitly historical/superseded. Those references are now labelled as non-executable or replaced with in-repository dispositions. The review also required this report to identify the corrected exact head and green run; it now records head 85576fe54026162b035504c5990a29f49ad8d489 and run 32887774540. Kanmer proof remains deferred until merged-main verification.
+
+
+## Final exact-head CI — 2026-08-25
+
+After the final scope correction, PR #10 points to dda7bf643dacfbd42617ba0ed7070ede979f1946. Repository-check run 32887994079 passed at that exact head; documentation, changes, local-development-scripts, and reference-data succeeded, while unrelated lanes were path-skipped. The independent reviewer confirmed no remaining merge-blocking finding. Proof remains deferred until merged-main verification.
