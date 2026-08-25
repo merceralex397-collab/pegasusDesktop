@@ -105,7 +105,7 @@ The table is the complete 46-row handoff to [[FND-015]], [[FND-016]], [[FND-017]
 | PAR-40 | Administration/Organizations/Index.cshtml.cs<br>Administration/Organizations/Edit.cshtml.cs | OnGetAsync<br>OnPostCreateAsync<br>OnPostUpdateAsync | Administration/Organizations/Index.cshtml.cs: AdministrationPageModel<br>Administration/Organizations/Edit.cshtml.cs: AdministrationPageModel | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
 | PAR-41 | Administration/Principals/Index.cshtml.cs<br>Administration/Principals/Create.cshtml.cs<br>Administration/Principals/Replace.cshtml.cs | OnGetAsync<br>OnPostCreateAsync<br>OnPostReplaceAsync | Administration/Principals/Index.cshtml.cs: AdministrationPageModel<br>Administration/Principals/Create.cshtml.cs: AdministrationPageModel<br>Administration/Principals/Replace.cshtml.cs: AdministrationPageModel | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
 | PAR-42 | Connect/Authorize.cshtml.cs | OnGetAsync<br>OnPostAcceptAsync<br>OnPostDenyAsync | Connect/Authorize.cshtml.cs: AdministrationPageModel | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
-| PAR-43 | Error.cshtml.cs<br>StatusCode.cshtml.cs | — | Error.cshtml.cs: none<br>StatusCode.cshtml.cs: none | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
+| PAR-43 | Error.cshtml.cs<br>StatusCode.cshtml.cs | OnGet<br>OnGet | Error.cshtml.cs: none<br>StatusCode.cshtml.cs: none | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
 | PAR-44 | cross-cutting policy | - | none | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
 | PAR-45 | Program.cs HTTP routes | MapHealthChecks/MapGet | none | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
 | PAR-46 | Mcp/*McpTools.cs | 35 pegasus_* tools | none | ecb9b7b40c802b5ea800a69a7a46a0875269737a |
@@ -116,9 +116,9 @@ Before and after the edit, the matrix contains 21 `inventoried` rows, 23 `not in
 
 ## Verification evidence
 
-- `git diff --check`: passed.
-- `pwsh ./scripts/Test-DocumentationLinks.ps1`: pending final run.
-- `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD`: pending final run.
+- `git diff --check origin/dev...HEAD`: passed.
+- `pwsh ./scripts/Test-DocumentationLinks.ps1`: passed (226 files checked).
+- `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD`: passed.
 - The code enumerations, HTTP-surface search, Triage history check, and raw handler output are recorded in FND-014 scratch.
 
 ## Open-question dispositions
