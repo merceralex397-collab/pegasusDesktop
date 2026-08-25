@@ -21,3 +21,7 @@
 - `git diff --check HEAD^1..HEAD` — passed (exit 0).
 
 No runtime, Azure, release, or production-deployment evidence is claimed for this Tier-1 documentation ticket.
+
+## Merge confirmation
+
+`gh pr view 1 --json state,mergedAt,url,baseRefName,headRefName` → `MERGED`, `mergedAt=2026-08-25T00:12:46Z`, base `dev`, head `fnd-005-foundation-adrs`, URL `https://github.com/merceralex397-collab/pegasusDesktop/pull/1`.

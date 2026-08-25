@@ -31,3 +31,14 @@ One box per implementation obligation. The original checklist's stale filenames 
 - 2026-08-24 — committed `fb634d1c docs: add desktop foundation ADRs` and `79bb5860 docs: clarify foundation ADR evidence`.
 - 2026-08-24 — `pwsh ./scripts/Test-DocumentationLinks.ps1` passed (232 files); `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base ecb9b7b4 -Head HEAD` passed.
 - 2026-08-24 — committed `d22c39dde51f087620e30ac1c343a2896585b114 docs: reconcile foundation ADR review`; link, placement, and placement-regression checks passed; focused independent re-review passed.
+
+## Closeout — FND-005
+
+- [x] PR merge verified: PR #1 is MERGED into dev at 2026-08-25T00:12:46Z.
+- [x] proof.md finalised with PR URL, merge commit and validation evidence.
+- [x] Moved to final stage: Kanmer Done at 2026-08-25T04:57:28.410Z.
+- [ ] Outcome recorded in ticket body (pending closeout metadata update).
+- [ ] cd out of worktree; remove .worktrees/fnd-005.
+- [ ] delete merged branch.
+- [ ] fetch --prune and worktree prune.
+- [ ] release ticket claim.
