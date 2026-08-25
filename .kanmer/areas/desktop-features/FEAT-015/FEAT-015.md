@@ -30,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:54:27.572Z'
-updated: '2026-08-25T00:29:24.240Z'
+updated: '2026-08-25T02:57:25.733Z'
 ---
 
 ## What
@@ -121,3 +121,17 @@ Tier 5 obliges route-level evidence that the lookup and handoff endpoints reach 
 ## Outcome
 
 _Filled at closeout._
+
+
+## Upstream delta — upstream ENG-017 (2026-08-25)
+
+The vehicle/EVA handoff slice also owns the cross-layer definition of which retained image counts as a vehicle photograph. The intake and export paths currently disagree on `image/*` versus JPEG/PNG eligibility.
+
+### Added acceptance
+
+- One named Core owner defines the media-type decision consumed by intake completeness and `EvaHandoffPolicy.SelectEligibleImages`; a GIF, WebP, or TIFF-only case receives the same settled answer at Review and export.
+- The handoff content test covers the non-JPEG/PNG case and proves that no second media-type list or desktop-side policy is introduced. The chosen policy is recorded before implementation if the two existing questions are intentionally distinct.
+
+### Added implementation step
+
+Characterize both current selectors, choose or escalate the product rule in the ticket's open questions, then update the single Core owner and its callers/tests. Keep the desktop bundle gate as evidence, not as a duplicate eligibility implementation; upstream ENG-017 is absorbed here.

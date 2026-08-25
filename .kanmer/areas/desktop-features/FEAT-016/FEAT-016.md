@@ -28,7 +28,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:57:08.715Z'
-updated: '2026-08-24T21:31:36.437Z'
+updated: '2026-08-25T02:57:25.542Z'
 ---
 
 ## What
@@ -115,3 +115,17 @@ Tier 7 obliges keyboard, focus, semantic-label and text-plus-colour evidence fro
 ## Outcome
 
 _Filled at closeout._
+
+
+## Upstream delta — upstream DOCS-014 (2026-08-25)
+
+The shared image/document viewer owns the distinction between preview and download, with the gateway/custody command impact coordinated through [[FEAT-031]]. Previewing must not create a completed-download custody event.
+
+### Added acceptance
+
+- A preview carries view intent through the existing download/read boundary and does not append `document_downloaded`; an explicit download still records exactly one completed download.
+- Paging through previews creates no completed-download records, while an unsupported inline media type falls back to the real download path and retains download recording.
+
+### Added implementation step
+
+Trace the `inline` intent from the viewer command through the gateway/Core custody read and extend the one existing command/store owner; add a history regression covering preview and explicit download. Do not add a second viewer, transfer service, custody event taxonomy, or download implementation.
