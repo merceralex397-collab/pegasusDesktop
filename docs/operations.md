@@ -298,7 +298,19 @@ Executed 2026-08-02 (full runbook and evidence hashes: git history,
   `src/`.** Documentation-only commits build no artifact, so they ride the
   next functional release rather than justifying one.
 
-  Every release below went through the same authorised-terminal route: build
+### Release source of truth
+
+D-001 is recorded: when the first production gateway change is needed, this
+fork becomes the single Pegasus release source; the upstream repository is
+merged and then frozen only after agreement with its owners. This record does
+not claim that the freeze has already occurred. The decision was made on
+2026-08-23 as Option A. Until the freeze is agreed and recorded, current
+production releases continue under the existing route above and the one-way
+`upstream/main` to fork `dev` sync continues after each upstream release. The
+freeze date, mechanism (read-only or archived), and responsible upstream owner
+remain pending in [Upstream repository freeze](open-decisions.md#upstream-repository-freeze).
+
+Every release below went through the same authorised-terminal route: build
   the immutable artifacts from a clean exact HEAD, validate the plan in
   `Artifact`, `PreUpload` and `PreMigration` modes, push the digest-pinned OCI
   image to the production ACR, apply any pending migration explicitly *before*

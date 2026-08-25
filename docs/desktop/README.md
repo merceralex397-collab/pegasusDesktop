@@ -44,9 +44,9 @@ They bind the plans until a recorded decision changes them.
 | L-03 | Report rendering moves to the desktop through an isolated, non-UI WebView2 HTML→PDF path; the gateway renderer is retained only until golden-file parity passes; needs ADR-0108 (reserved desktop ADR block ADR-0100…0110, see 00) | Locked | 07 |
 | L-04 | Specialist Codex subagents exist as `.codex/agents/*.toml`; every ticket names its subagent, skills, and MCP tools | Locked | 12 |
 | L-05 | Kanmer board is seeded by the implementing agent from the ticket tables in these plans; the open upstream board is triaged in 01 | Locked | 00, 01 |
-| D-001 | Release source of truth after Phase 2 | Decided 2026-08-23: Option A — the fork becomes the single release source for gateway and desktop at the first production gateway change (upstream merged in, then frozen); record in ADR-0100 consequences and `docs/operations.md` at execution (DSK-00-10) | 00 |
+| D-001 | Release source of truth after Phase 2 | Recorded in ADR-0100 § Consequences and `docs/operations.md` § Release source of truth; the freeze date and mechanism remain pending agreement with the upstream owners, and sync continues until recorded | 00 |
 | D-002 | Production code signing | **Decided 2026-08-23: option C — a self-managed certificate**, kept in-house and trusted per workstation (`LocalMachine\TrustedPeople`). With D-003 this makes the whole distribution path free of Azure resources and recurring cost; the price is a trust rollout and a rehearsed renewal (runbooks R5, R7) | 09 |
-| D-002 · consequence | Every decision is now recorded; **no open decisions remain**. The desktop distribution path (sign in-house → copy to the UNC share → App Installer over SMB) touches no Azure resource at all | Recorded | 09, 11 |
+| D-002 · consequence | The distribution decisions are recorded. The desktop distribution path (sign in-house → copy to the UNC share → App Installer over SMB) touches no Azure resource at all | Recorded | 09, 11 |
 | D-003 | Update-feed hosting | **Decided 2026-08-23: UNC file share** on an always-on in-house Windows host, served to App Installer over SMB. Driven by constraint C-01 below; costs nothing and needs **no Azure write** | 09 |
 
 ### Constraints recorded after planning began

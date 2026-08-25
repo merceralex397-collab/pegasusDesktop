@@ -330,6 +330,14 @@ instruction, so the discrepancy is recorded here rather than edited away.
 |---|---|---|---|---|
 | Manual upload deployment status | Which custody path a deployed manual upload actually writes to, and whether that satisfies "approved durable source custody" as ADR-0003 meant it. | The route is reachable in Production now. Leaving the contradiction unresolved means either an unenforced prohibition or an undocumented permission, and the release record cannot state which. | Neither enable nor disable it on this task's authority. Resolve the custody question first, then either amend ADR-0003 by operator instruction or gate `/Upload` to match it. | Is the manual upload route permitted in a deployed environment, and on what custody evidence? |
 
+## Upstream repository freeze
+
+The D-001 freeze date, mechanism (read-only or archived), and responsible
+owner for `collisionengineers/pegasus` remain pending agreement with that
+repository's owners. Until the agreement is recorded, the one-way upstream
+sync continues; this entry authorizes no freeze, archive, or repository-setting
+change.
+
 ## Azure ownership and retirement targets
 
 Azure ownership changes and retirement are separate exact-target decisions. The
