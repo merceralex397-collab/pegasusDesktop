@@ -36,7 +36,12 @@ current-architecture.md and operations.md (current state) > runbook.md, engineer
 and design/README.md (working rules within their scopes). Code plus passing tests beat any document about
 current state. On conflict: fix the losing document in the same commit you
 notice it; if the conflict is material and you cannot resolve it, put one line
-in [open decisions](open-decisions.md) and stop the affected work.
+in [open decisions](open-decisions.md) and stop the affected work. The proposal's
+authority order cites three prior documents — *Pegasus Desktop Conversion Plan*,
+*Desktop Azure Conversion Plan*, *Recommended desktop API architecture*. They
+are not present in this repository and are not retrievable; they are therefore
+not an input to any conversion ticket. Their substantive positions are
+reconciled in proposal §3.
 
 ## New Markdown files
 
