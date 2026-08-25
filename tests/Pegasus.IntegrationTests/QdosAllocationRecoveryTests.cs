@@ -209,14 +209,17 @@ public sealed class QdosAllocationRecoveryTests
             receipt.Version,
             CaseType.Inspection,
             "PENDING",
-            // The automatic route observes image completeness from the
-            // receipt's retained assets. This fixture has no photographs, so
-            // the seeded pending attempt must carry the same command or the
-            // resumed attempt is a different one.
-            new(true, false, false, false),
+            // This represents a pending attempt created before the observed
+            // image-completeness rollout. The replay computes false from the
+            // current receipt and must recover without an operation conflict.
+            new(true, true, false, false),
             null,
             receipt.InstructionDraft?.InspectionDate);
         var actor = ActionActor.SystemWorker("system-worker:intake-processing");
+        var currentCommand = command with
+        {
+            Completeness = new(true, false, false, false)
+        };
 
         await using (var scope = factory.Services.CreateAsyncScope())
         {
@@ -244,10 +247,150 @@ public sealed class QdosAllocationRecoveryTests
             Assert.True(result?.IsReplay);
         }
 
+        await using (var verificationScope = factory.Services.CreateAsyncScope())
+        {
+            var persisted = await verificationScope.ServiceProvider
+                .GetRequiredService<IIntakeAllocationStore>()
+                .GetCurrentAsync(receipt.Id, CancellationToken.None);
+            Assert.False(persisted?.Command.Completeness.ImagesComplete);
+            Assert.Equal(
+                AllocationTestData.CommandHash(
+                    IntakeAllocationAttemptKind.Automatic,
+                    currentCommand,
+                    actor,
+                    operationKey,
+                    reason),
+                persisted?.CommandHash);
+        }
+
         Assert.Equal(1, await AllocationTestData.CountAsync(factory.Services, "IntakeAllocationAttempts"));
         Assert.Equal(1, await AllocationTestData.CountAsync(factory.Services, "Cases"));
         Assert.Equal(1, await AllocationTestData.CountAsync(factory.Services, "CaseIntakeLinks"));
         Assert.Equal(1, await AllocationTestData.AllocationEventCountAsync(factory.Services));
+    }
+
+    [Fact]
+    public async Task FailedAutomaticOperationWithLegacyCompletenessReplaysWithoutConflict()
+    {
+        using var factory = new IntakeWebApplicationFactory();
+        var receipt = await AllocationTestData.StoreDefinitiveReceiptAsync(
+            factory.Services,
+            CaseType.Inspection,
+            "LEGACY");
+        var evaluationId = Guid.NewGuid();
+        var operationKey = $"intake-allocation:{evaluationId:N}";
+        const string reason = "Created automatically from a definitive authorised instruction.";
+        var command = new IntakeAllocationCommand(
+            receipt.Id,
+            receipt.Version,
+            CaseType.Inspection,
+            "LEGACY",
+            // A pre-rollout automatic attempt persisted the old asserted value.
+            new(true, true, false, false),
+            null,
+            receipt.InstructionDraft?.InspectionDate);
+        var actor = ActionActor.SystemWorker("system-worker:intake-processing");
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var store = scope.ServiceProvider.GetRequiredService<IIntakeAllocationStore>();
+            var begun = await store.BeginAsync(
+                new(
+                    IntakeAllocationAttemptKind.Automatic,
+                    command,
+                    actor,
+                    operationKey,
+                    AllocationTestData.CommandHash(
+                        IntakeAllocationAttemptKind.Automatic,
+                        command,
+                        actor,
+                        operationKey,
+                        reason),
+                    reason,
+                    null,
+                    scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow()),
+                CancellationToken.None);
+            await store.CompleteFailureAsync(
+                begun.Attempt.Id,
+                IntakeAllocationFailureKind.PrincipalUnavailable,
+                IntakeAllocationRecoveryDisposition.RetryAfterCorrection,
+                "The selected Principal is not available.",
+                scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow(),
+                new PrincipalUnavailableException("LEGACY"),
+                CancellationToken.None);
+
+            var result = await scope.ServiceProvider.GetRequiredService<IAllocateIntake>()
+                .AttemptAutomaticAsync(receipt.Id, evaluationId);
+
+            Assert.True(result?.IsReplay);
+            Assert.True(result?.IsSuppressed);
+            Assert.Equal(IntakeAllocationProjectionStatus.FailedRecoverable, result?.State.Status);
+            Assert.Equal(IntakeAllocationFailureKind.PrincipalUnavailable, result?.State.FailureKind);
+        }
+
+        Assert.Equal(1, await AllocationTestData.CountAsync(factory.Services, "IntakeAllocationAttempts"));
+        Assert.Equal(0, await AllocationTestData.CountAsync(factory.Services, "Cases"));
+    }
+
+    [Fact]
+    public async Task AutomaticReplayWithOppositeCompletenessChangeRemainsConflict()
+    {
+        using var factory = new IntakeWebApplicationFactory();
+        var receipt = await AllocationTestData.StoreDefinitiveReceiptAsync(
+            factory.Services,
+            CaseType.Inspection,
+            "CONFLICT");
+        var operationKey = $"intake-allocation:{Guid.NewGuid():N}";
+        const string reason = "Created automatically from a definitive authorised instruction.";
+        var actor = ActionActor.SystemWorker("system-worker:intake-processing");
+        var persistedCommand = new IntakeAllocationCommand(
+            receipt.Id,
+            receipt.Version,
+            CaseType.Inspection,
+            "CONFLICT",
+            new(true, false, false, false),
+            null,
+            receipt.InstructionDraft?.InspectionDate);
+        var incompatibleCommand = persistedCommand with
+        {
+            Completeness = new(true, true, false, false)
+        };
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var store = scope.ServiceProvider.GetRequiredService<IIntakeAllocationStore>();
+        await store.BeginAsync(
+            new(
+                IntakeAllocationAttemptKind.Automatic,
+                persistedCommand,
+                actor,
+                operationKey,
+                AllocationTestData.CommandHash(
+                    IntakeAllocationAttemptKind.Automatic,
+                    persistedCommand,
+                    actor,
+                    operationKey,
+                    reason),
+                reason,
+                null,
+                scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow()),
+            CancellationToken.None);
+
+        await Assert.ThrowsAsync<IntakeAllocationOperationConflictException>(() =>
+            store.BeginAsync(
+                new(
+                    IntakeAllocationAttemptKind.Automatic,
+                    incompatibleCommand,
+                    actor,
+                    operationKey,
+                    AllocationTestData.CommandHash(
+                        IntakeAllocationAttemptKind.Automatic,
+                        incompatibleCommand,
+                        actor,
+                        operationKey,
+                        reason),
+                    reason,
+                    null,
+                    scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow()),
+                CancellationToken.None));
     }
 
     [Theory]
