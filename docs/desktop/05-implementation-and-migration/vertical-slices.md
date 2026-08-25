@@ -364,7 +364,8 @@ Ticket handles are `DSK-05-nn` (see the work breakdown in
 - **Documentation**: parity rows (ten handlers + three byte pages).
 - **Rollback/compatibility**: default.
 - **Absorbs upstream**: INTK-001 (honest queued upload status), INTK-027
-  (re-evaluation after transient staging cleanup — gateway/worker fix),
+  (re-evaluation after transient staging cleanup — implemented by fork ticket
+  [[INTK-004]]; gateway/desktop consumers remain in this slice),
   INTK-033 (stranded triage-request email — worker fix), INTK-004 (labels
   reconciled with code).
 

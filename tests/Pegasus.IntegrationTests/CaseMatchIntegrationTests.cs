@@ -6,6 +6,7 @@ using Pegasus.Core.Identity;
 using Pegasus.Core.Intake;
 using Pegasus.Core.Lifecycle;
 using Pegasus.Core.Workflow;
+using Pegasus.Infrastructure.Intake;
 using Pegasus.Infrastructure.Persistence;
 
 namespace Pegasus.IntegrationTests;
@@ -98,7 +99,9 @@ public sealed class CaseMatchIntegrationTests
         var outcome = await harness.AcceptAsync("case-match-accept-4");
         var caseId = outcome.Identity.CaseId;
         var chaserReceiptId = await harness.SeedAdditionalReceiptAsync("chaser-token-1");
-        var store = new EfIntakeMutationStore(harness.Factory);
+        using var artifactStore = new FileSystemIntakeArtifactStore(
+            Path.Combine(Path.GetTempPath(), "PegasusCaseMatch", Guid.NewGuid().ToString("N")));
+        var store = new EfIntakeMutationStore(harness.Factory, artifactStore);
         var request = new AutomaticCaseAssociationRequest(
             chaserReceiptId,
             caseId,
@@ -150,7 +153,9 @@ public sealed class CaseMatchIntegrationTests
                 $"INSERT INTO IntakeManualAssociations (IntakeReceiptId, CaseId, IsActive, Version, LinkedAtUtc, UnlinkedAtUtc, ActorKind, ActorSubjectId, ActorRolesJson, Reason, LastOperationKey, MatchPolicyKey, MatchPolicyVersion) VALUES ({chaserReceiptId}, {caseId}, {false}, {1L}, {StartUtc}, {StartUtc.AddMinutes(5)}, {"Staff"}, {Guid.NewGuid().ToString()}, {"[]"}, {"Staff reversed a mistaken automatic match"}, {"case-match-association:reversed-op"}, {"qdos_case_match"}, {1})");
         }
 
-        var store = new EfIntakeMutationStore(harness.Factory);
+        using var artifactStore = new FileSystemIntakeArtifactStore(
+            Path.Combine(Path.GetTempPath(), "PegasusCaseMatch", Guid.NewGuid().ToString("N")));
+        var store = new EfIntakeMutationStore(harness.Factory, artifactStore);
         var outcomeAfterReversal = await store.AssociateFromMatchAsync(
             new(
                 chaserReceiptId,
@@ -183,7 +188,9 @@ public sealed class CaseMatchIntegrationTests
             "mail-case-association-token",
             "AB12 CDE",
             "thread-1");
-        var store = new EfIntakeMutationStore(harness.Factory);
+        using var artifactStore = new FileSystemIntakeArtifactStore(
+            Path.Combine(Path.GetTempPath(), "PegasusCaseMatch", Guid.NewGuid().ToString("N")));
+        var store = new EfIntakeMutationStore(harness.Factory, artifactStore);
         var evidence = await store.GetAsync(receiptId, CancellationToken.None);
         Assert.Equal([accepted.Identity.CaseId], Assert.IsType<AutomaticMailCaseAssociationEvidence>(evidence).RegistrationCaseIds);
 

@@ -158,7 +158,7 @@ consulted to interpret this record.
 | INTK-004 | intake-processing | backlog | chore | — | Reconcile intake decision labels and the Operations case-link claim with the code | gateway-worker-ticket | 06 (operator vocabulary), 03 | intake-processing |
 | INTK-019 | intake-processing | backlog | feature | triage, assignment, ui, operator-reported | Replace Triage "Assign to me" with Engineer selection | desktop-screen-spec | 06 (Triage detail) | desktop-ui |
 | INTK-026 | intake-processing | backlog | feature | vehicle, mileage, normalisation, case-data | Normalize kilometre case mileage to canonical miles | unchanged-backlog | — | intake-processing |
-| INTK-027 | intake-processing | backlog | fix | defect, intake, reevaluation, live-found | Make policy re-evaluation work after transient staging cleanup | gateway-worker-ticket | 07 | intake-processing |
+| INTK-027 | intake-processing | backlog | fix | defect, intake, reevaluation, live-found | Make policy re-evaluation work after transient staging cleanup | gateway-worker-ticket; fork implementation [[INTK-004]] | 07 | intake-processing |
 | INTK-031 | intake-processing | backlog | feature | extraction, audits, corpus | Identify the third-party engineer behind an audit's original report | unchanged-backlog | — | intake-processing |
 | INTK-032 | intake-processing | backlog | feature | qdos26009, extraction, audits | Fall back safely when a third-party report format cannot be read | unchanged-backlog | — | intake-processing |
 | INTK-033 | intake-processing | backlog | feature | production-defect, found-during-qa, triage | A triage-request email creates no Triage and no Unidentified item — it is stranded | gateway-worker-ticket | 07 | intake-processing |
