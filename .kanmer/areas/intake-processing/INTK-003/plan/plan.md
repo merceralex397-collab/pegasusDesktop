@@ -64,3 +64,18 @@ Convert documented kilometre mileage to canonical miles at new-case creation and
 ## Persistence correction — 2026-08-25
 
 The EAV field registry is enforced by `CK_CaseDataFields_FieldName`, so the earlier no-migration statement was incomplete. This ticket will add one generated EF migration that replaces that check constraint to include `vehicle_mileage_kilometres`; it does not add a table/column, transform existing rows, or require a runtime grant. `Test-MigrationGrants.ps1` remains a required validation and should pass unchanged.
+
+## Execution reconciliation — 2026-08-25
+
+- The implementation follows the repository's actual EAV case-data path: `CaseDataPolicy.Normalize` is the only conversion owner; `CaseDataFieldNames` and `EfCaseDataStore` persist/project the marker; the existing CaseDataProjection is the payload path. The current repository has no separate desktop gateway contract or `CaseDataSnapshotFactory` change required for this field.
+- The marker is carried by `CaseVehicleData.OriginalMileageKilometres`, and the existing Web case-details/MCP callers pass it through the existing `CaseEditableData` path. The Razor summary shows the marker for the current value; no client-side conversion or new route was added.
+- EVA mapping remains unchanged: its existing `Mileage` and `MileageUnit` fields receive the normalized canonical miles representation; the provenance marker is not added to the EVA bundle. The owning imported ENG-014/ENG-015 bundle contract is therefore untouched.
+- The assessment completeness rule is unchanged and still sees a confirmed mileage after a kilometre save because the write path stores the normalized miles value.
+- The EAV whitelist required the generated `CanonicalCaseMileageProvenance` migration. It only replaces `CK_CaseDataFields_FieldName` to admit `vehicle_mileage_kilometres`; it adds no table or column, performs no data transformation, and requires no `Grant*` entry.
+
+## Simplification pass — 2026-08-25
+
+- Reuse: retained the existing `VehicleMileageUnit` enum, `CaseField<T>`/EAV projection, `SetConfirmed` history path, existing case DTO, and existing details/MCP save route. No new endpoint, service, abstraction, or parallel conversion path was introduced.
+- Scope: the change is limited to canonical write normalization, typed provenance persistence/projection, the existing case-details display/preservation fields, the FRD/capability register, migration constraint, and focused tests. EVA fields and external/cloud paths remain unchanged.
+- Correctness simplification: replaced permissive enum parsing with explicit named-value matching so numeric enum text cannot bypass the unknown-unit fail-closed rule. Added a regression assertion for `"0"`.
+- Disposition: no further behaviour-preserving simplification was identified. The required EAV migration is proportional because the existing SQL field-name check constraint otherwise rejects the new provenance field.
