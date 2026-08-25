@@ -330,3 +330,16 @@ checker passes. It proves nothing about implementation.
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this
 branch's own diff before the PR, recorded here under a dated heading. Expected result:
 `n/a — docs-only`, since the branch adds two Markdown files and edits two more._
+
+## Execution result — 2026-08-25
+
+This ticket's co-claimed authoring work was already completed by FND-005 before FND-026 was taken. Live origin/dev verification found the exact canonical files and index rows:
+
+- docs/adr/0100-native-winui-3-client-in-the-fork.md and docs/adr/0104-online-required-bounded-local-cache.md exist at accepted status on merged dev commit 5770eb21c0d03620a6a6d99e0431bde91ec2ad6a.
+- Both ADRs contain the six required cloud-justification rows; ADR-0100 records the reserved native-client decision and leaves ADR-0014 and ADR-0016 unchanged; ADR-0104 records online-required bounded local state with no replication.
+- docs/adr/README.md contains exactly one row for ADR-0100 and one for ADR-0104.
+- pwsh ./scripts/Test-DocumentationLinks.ps1 passed: 232 files checked.
+- pwsh ./scripts/Test-TestMarkdownPlacement.ps1 passed.
+- gh pr view 1 identifies the authoring PR as merged into dev with merge commit 5770eb21c0d03620a6a6d99e0431bde91ec2ad6a.
+
+No distinct FND-026 authoring change remains. This ticket is archived as a duplicate/non-actionable authoring item, with the merged FND-005 commit and the live validation above as evidence. No dependency links were changed.
