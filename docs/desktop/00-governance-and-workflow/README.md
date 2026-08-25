@@ -58,9 +58,9 @@ read 2026-08-23):
   into `dev`, `main` is the deployed branch, promotion is an exact-SHA atomic
   fast-forward requiring the literal `MERGE AUTH GRANTED`; a GitHub
   merge/squash/rebase is not a promotion; `scripts/Test-MainBranchHistory.ps1`
-   guards `main` history on push. The accepted fork topology is `main`
-   `191ddf33` with `dev` at `5770eb21` (the merged FND-005 advancement), and
-   `main` is an ancestor of `dev`; the GitHub default branch remains `main`.
+  guards `main` history on push. The accepted fork topology is `main`
+  `191ddf33` with `dev` at `5770eb21` (the merged FND-005 advancement), and
+  `main` is an ancestor of `dev`; the GitHub default branch remains `main`.
 - Upstream `collisionengineers/pegasus` (`git ls-remote`, 2026-08-23): heads
   `dev` `499b8885`, `main` `7d6a948a`, `kanmer-board` `4694067c`. Fork `main`
   `191ddf33` **is an ancestor** of upstream `main`; upstream is **32 commits
