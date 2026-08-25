@@ -1648,6 +1648,9 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
+      "pegasus.contracts": {
+        "type": "Project"
+      },
       "pegasus.core": {
         "type": "Project"
       },
