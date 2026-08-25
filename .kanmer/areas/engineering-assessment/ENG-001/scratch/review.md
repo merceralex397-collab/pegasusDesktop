@@ -1,3 +1,5 @@
 ## 2026-08-25 — PR and CI state before independent review
 
 PR [#6](https://github.com/merceralex397-collab/pegasusDesktop/pull/6) is open, merge-clean, and targets `dev` at `0eedeca22ca1eaa4b659c4f57a5e1b7cb69836f0`. `statusCheckRollup` is empty. Live GitHub workflow inventory returns `{"total_count":0,"workflows":[]}`. Therefore CI cannot be green until an owner/admin restores or registers the repository workflow; no merge/proof claim is made.
+
+2026-08-25 review disposition: independent reviewer found no substantive code defect. Corrected the evidence wording to state that the migration is schema-reversible but data-destructive for historical ManifestContent, ProvenanceContent, and ProvenanceSha256 values; Down() recreates empty/default columns and cannot recover them. Reconciled files scope with the actual FRD-07 change, the unchanged current-architecture document, and absent/non-EVA tests. Independent local reruns were not forced because another agent held Pegasus.Core.dll. GitHub Actions workflow registration is now active; PR #6 still needs a live run on its updated head before merge.

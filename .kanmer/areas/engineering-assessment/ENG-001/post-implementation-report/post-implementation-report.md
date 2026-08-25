@@ -35,6 +35,6 @@ An independent `pegasus-test-engineer` analysis identified gaps in the first tes
 
 ## Review handoff
 
-Before a PR, independent review must assess the accepted non-additive migration consequence: old application binaries cannot generate EVA hand-offs after the three columns are dropped until they are rolled forward. Existing revisions retain their bundle/JSON/hashes and downloads still use `BundleContent`; no data is deleted from those retained fields. The archive bytes intentionally change `InputFingerprint`, so a regenerated historical input forms Revision 2 rather than reusing Revision 1.
+Independent review found no substantive code defect. The migration is **schema-reversible but data-destructive** for historical `ManifestContent`, `ProvenanceContent`, and `ProvenanceSha256` values: `Up()` deletes those values, while `Down()` recreates empty/default columns and cannot recover them. This is accepted within the pre-release scope. Retained `BundleContent`, `BundleSha256`, `JsonContent`, and `JsonSha256` remain intact, and downloads still use `BundleContent`. Old application binaries cannot generate EVA hand-offs after the columns are dropped until rolled forward. The archive bytes intentionally change `InputFingerprint`, so regenerated historical input forms Revision 2 rather than reusing Revision 1.
 
 PR, CI, merge, proof, and closeout are not yet claimed.

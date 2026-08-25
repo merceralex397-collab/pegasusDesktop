@@ -146,10 +146,7 @@ parameters rather than gaining a switch.
    additive ones. An application built before ENG-014 lists these three columns
    in its `EvaHandoffRevisions` insert, so rolling the app back behind this
    migration fails EVA hand-off *generation* until it is rolled forward again.
-   Nothing is lost and nothing else degrades — existing revisions keep their
-   bundle, JSON and hashes, and download still serves `BundleContent`. Called
-   out in the migration's own comment and in the PR for the reviewer to accept
-   or to convert into a two-step deprecate-then-drop.
+   **The migration is schema-reversible but data-destructive for removed historical `ManifestContent`, `ProvenanceContent`, and `ProvenanceSha256` values.** `Up()` deletes those values; `Down()` recreates empty/default columns and cannot recover them. This is accepted within the pre-release ticket scope. Retained `BundleContent`, `BundleSha256`, `JsonContent`, and `JsonSha256` remain intact, and downloads still serve `BundleContent`. The migration comment and PR state this explicitly.
 
 4. **A byte difference against the reference sample that is not layout.**
    `Utf8JsonWriter` escapes non-ASCII (the sample's `’` becomes `’`), and
@@ -183,3 +180,8 @@ No behavior-changing simplification remained. The temporary `PegasusEng001Migrat
 - `dotnet ef migrations add DropEvaHandoffProvenanceAndManifest --project src/Pegasus.Infrastructure --startup-project src/Pegasus.Web` scaffolded the new migration and snapshot. Its `Up` has three drops, `Down` has three restores, and no table creation.
 - Dedicated LocalDB validation applied the new migration, reverted to `20260822044425_GrantWorkerCaseDocuments`, then reapplied it. `EvaHandoffRevisions` then had exactly 13 remaining columns: `Id`, `CaseId`, `Revision`, `AcceptedCaseVersion`, `SchemaVersion`, `InputFingerprint`, `FileName`, `BundleContent`, `BundleSha256`, `JsonContent`, `JsonSha256`, `GeneratedAtUtc`, `GeneratedBy`.
 - The archive-byte change intentionally changes `InputFingerprint`: regenerated historical inputs make a new revision rather than deduping to the old one. The migration is deliberately non-additive; an older application cannot generate EVA hand-offs after it applies until rolled forward again. The migration comment records this for review.
+
+
+## Review disposition — 2026-08-25
+
+The independent review found no substantive code defect. The reviewer identified that the migration is schema-reversible but data-destructive for the three removed historical payload columns; that wording is now explicit in this plan, the post-implementation report, and PR #6. Independent local reruns were blocked by another agent's active `Pegasus.Core.dll` process and were not forcibly interrupted. Hosted CI is the required independent validation path once the restored workflow reports checks for the updated PR head.
