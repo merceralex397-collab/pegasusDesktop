@@ -43,7 +43,8 @@ The gate itself: `scripts/Test-MarkdownPlacement.ps1:2-6` declares `[Parameter(M
 
 | Body | Line | Current text |
 | --- | --- | --- |
-| `FND-046` | `:93` | `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` |
+| `FND-046` | `:76` | `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` (step) |
+| `FND-046` | `:93` | `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` (verification) |
 | `PLAT-002` | `:77` | `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` |
 | `PLAT-006` | `:73` | `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` |
 | `PLAT-006` | `:89` | `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` |
