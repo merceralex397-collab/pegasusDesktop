@@ -25,3 +25,7 @@ PR attempt from `case-001-observed-images` targeting `dev` failed with exact Git
 ## Durable replay amendment — 2026-08-25
 
 Implemented and validated the narrow legacy automatic replay recovery in EfIntakeAllocationStore.cs plus QdosAllocationRecoveryTests.cs. Release Web build passed with 0 warnings/errors; Core passed 921/921; QDOS recovery integration class passed 20/20 on LocalDB; diff check passed. Pending and failed pre-rollout completeness states are covered. Next: independent review, commit/push, exact-head CI, then merge only when all gates pass.
+
+## Review correction — 2026-08-25
+
+First independent review blocked the amendment on reverse-direction compatibility and missing durable hash proof. Narrowed the predicate, added persisted completeness/hash assertions, and added a false-to-true conflict regression. Integration build 0 warnings/errors and QdosAllocationRecoveryTests 21/21 passed. Awaiting fresh independent review.

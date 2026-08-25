@@ -82,3 +82,9 @@ Independent review found that durable automatic attempts created before observed
 - staff retry semantics and unrelated operation conflicts remain unchanged.
 
 Validation: Release Web build passed with 0 warnings/errors; Core 921/921 passed; QdosAllocationRecoveryTests 20/20 passed; git diff --check passed. No cloud, mailbox, Box, deployment, or upstream write was performed. Independent review of this amendment is still required before merge.
+
+## Review correction and revalidation — 2026-08-25
+
+The first independent review found two blockers in the durable replay amendment. The compatibility predicate was narrowed to the one real rollout direction (persisted true to current false), and the pending test now verifies the persisted completeness and exact current hash. A near-miss false-to-true regression asserts the original operation conflict remains.
+
+Fresh evidence: Release integration build passed with 0 warnings/errors; QdosAllocationRecoveryTests passed 21/21; git diff --check passed. A fresh independent review is required before merge.

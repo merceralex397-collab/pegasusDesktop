@@ -271,3 +271,19 @@ Validation from C:\\Users\\PC\\Documents\\GitHub\\pegasus-worktrees\\case-001-ob
 - The SQL run used LocalDB and no cloud, mailbox, Box, deployment, or upstream write.
 
 The required simplification disposition for this amendment is: reuse the existing BeginAsync replay/concurrency path and Map/hash conventions; keep the rollout exception as one narrow predicate rather than adding an abstraction or migration; keep both pending and failed cases in the existing recovery test class; no remaining behavior-preserving simplification finding is identified.
+
+## Independent review correction — 2026-08-25
+
+The first independent review blocked the amendment with two concrete findings: the initial predicate allowed the unsupported persisted-false to replay-true direction, and the pending test did not prove durable canonicalization. Both are resolved:
+
+- IsLegacyAutomaticCompletenessReplay now requires persisted ImagesComplete=true and replay ImagesComplete=false; the existing operation conflict remains for the reverse direction.
+- The pending replay test reloads the attempt and asserts ImagesComplete=false plus the exact current command hash.
+- AutomaticReplayWithOppositeCompletenessChangeRemainsConflict covers the near-miss and asserts IntakeAllocationOperationConflictException.
+
+Fresh validation after these corrections:
+
+- dotnet build .\\tests\\Pegasus.IntegrationTests\\Pegasus.IntegrationTests.csproj --configuration Release --no-restore — passed, 0 warnings/errors.
+- dotnet test .\\tests\\Pegasus.IntegrationTests\\Pegasus.IntegrationTests.csproj --configuration Release --no-build --no-restore --filter "FullyQualifiedName~QdosAllocationRecoveryTests" — 21/21 passed.
+- git diff --check — passed.
+
+The first review is recorded as BLOCK until the fresh independent review confirms these corrections; no merge claim is made.
