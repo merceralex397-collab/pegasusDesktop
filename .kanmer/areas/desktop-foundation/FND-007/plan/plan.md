@@ -34,3 +34,7 @@ The branch contains exactly three documentation changes: `docs/adr/0108-desktop-
 ## Simplification pass
 
 2026-08-25 — `n/a — docs-only`. The documented `HWND_MESSAGE` controller replaces the obsolete host-selection alternatives; no new abstraction, code path, or dependency is added.
+
+## Independent review — 2026-08-25
+
+PASS from `pegasus-desktop-reviewer` (agent `01a0374e-ea58-7111-8aaa-c9721c43b2b4`), no findings. The review covered the exact three-file diff against `origin/dev`, the proposed status, never-visible/never-UI boundary, `HWND_MESSAGE` controller, gateway fallback, parity gate, untouched accepted index, documentation validation, and simplification entry.

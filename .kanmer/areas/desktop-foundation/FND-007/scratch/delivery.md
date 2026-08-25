@@ -1,0 +1,1 @@
+2026-08-25 — Pushed fnd-007-webview2-adr at aa562e12. gh pr create failed with exact collaborator permission error. Independent review PASS is recorded; no PR/CI/merge/proof claim. Next: move implementing to review after fresh gate check; wait for repository PR authority.

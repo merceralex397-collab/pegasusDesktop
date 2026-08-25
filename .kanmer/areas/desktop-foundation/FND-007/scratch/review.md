@@ -1,0 +1,1 @@
+2026-08-25 — Independent pegasus-desktop-reviewer PASS, no findings. Merge of origin/dev retained exactly the three-file ticket diff. Documentation links, placement regression, diff check, proposed status, and no index row all pass. PR creation attempt follows.

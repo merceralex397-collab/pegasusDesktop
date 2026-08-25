@@ -30,3 +30,13 @@ FND-005 must merge to `dev` first so this descendant branch can be updated and o
 - [[FEAT-038]]: the only later `proposed` to `accepted` frontmatter change and accepted-index row.
 
 Those tickets are successors, not FND-007 closure conditions.
+
+## Independent review — 2026-08-25
+
+PASS from `pegasus-desktop-reviewer` (agent `01a0374e-ea58-7111-8aaa-c9721c43b2b4`), which did not implement the ticket. No findings. The reviewer confirmed plan coverage, dependency boundaries, never-visible/never-UI scope, documented `HWND_MESSAGE` usage, gateway fallback, parity gates, untouched ADR index, documentation checks, and honest `n/a — docs-only` simplification. No code or .NET test evidence is claimed.
+
+## Delivery blocker — 2026-08-25
+
+- Branch `fnd-007-webview2-adr` pushed at `aa562e12`.
+- `gh pr create --base dev` failed: `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`.
+- No PR, CI, merge, proof, or Done claim is made. The ticket remains blocked at repository integration until a collaborator-capable PR path is available.
