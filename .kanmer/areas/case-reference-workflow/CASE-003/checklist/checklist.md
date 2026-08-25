@@ -8,6 +8,6 @@
 - [x] Align directly affected TRI capability, design, runbook, and parity wording with FRD-03.
 - [x] Check the focused documentation diff and record the docs-only simplification disposition.
 - [x] Run documentation link and placement validation; record exact results.
-- [ ] Commit, push, and open the PR to `dev`.
+- [x] Commit, push, and open PR [#5](https://github.com/merceralex397-collab/pegasusDesktop/pull/5) to `dev`.
 - [ ] Obtain independent review; merge only with passing required GitHub CI.
 - [ ] After merge, verify the merged commit on `dev`, write proof, and close out through Kanmer.

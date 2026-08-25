@@ -4,12 +4,13 @@ type: ticket
 title: >-
   Triage authority · Define the T- aggregate, custody transfer, and Case
   conversion
-status: implementing
+status: review
 area: case-reference-workflow
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
   implementing: '2026-08-25T12:10:29.252Z'
+  review: '2026-08-25T12:15:11.021Z'
 taken_at: '2026-08-25T12:06:08.879Z'
 branch: task/case-003-triage-authority
 worktree: ../pegasus-worktrees/case-003-triage-authority
@@ -30,9 +31,11 @@ refs:
   - docs/frd/frd-03-triage.md
 commits:
   - 9039d3f8
+prs:
+  - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/5'
 archived: false
 created: '2026-08-25T12:04:56.725Z'
-updated: '2026-08-25T12:14:13.991Z'
+updated: '2026-08-25T12:15:11.021Z'
 ---
 
 ## What
