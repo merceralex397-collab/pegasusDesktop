@@ -37,3 +37,13 @@ The repository's L-02 `Initialize-LocalDevelopment.ps1` / `Invoke-LocalDevelopme
 ## Independent review follow-up — 2026-08-25
 
 Review result was FAIL on L-02 caller proof, concurrency coverage, the upstream-to-board annotation, and PR/CI availability. The branch now includes the concurrency and live-processing-lease duplicate tests and the `INTK-003 → [[INTK-002]]` carry-over annotation. Release validation must be rerun after these changes. L-02 proof remains unavailable because the existing local launcher fails before readiness; PR creation remains blocked by GitHub collaborator permission.
+
+## Follow-up validation — 2026-08-25
+
+Follow-up commit `338b8a51` is pushed to `origin/intk-002-recover-dispatched-work`.
+
+- `dotnet build Pegasus.slnx --no-restore --configuration Release --nologo` — passed, 0 warnings, 0 errors.
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~RecoveryTests" --logger "console;verbosity=minimal"` — 33 passed, 0 failed, 0 skipped.
+- `git diff --check` — passed before follow-up commit.
+
+The independent review findings on concurrency coverage and carry-over annotation are addressed. L-02 Azurite/Functions caller proof and PR/CI remain open blockers.

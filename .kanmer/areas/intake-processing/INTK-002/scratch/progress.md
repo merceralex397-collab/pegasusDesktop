@@ -7,3 +7,5 @@
 2026-08-25 PR checkpoint: gh pr create failed with exact GitHub error GraphQL: must be a collaborator (createPullRequest). Branch is pushed at origin/intk-002-recover-dispatched-work. post-implementation-report now records the blocker and smallest unblock. Independent pegasus-desktop-reviewer review requested against commit 65a10183; Kanmer remains implementing pending PR/review/CI.
 
 2026-08-25 independent review result: FAIL. Static implementation/threshold/scope/simplification lenses passed. Findings: L-02 caller proof missing (blocker), no PR/CI due collaborator permission (blocker), concurrency/stale-version coverage missing (high), carry-over annotation missing (medium). Follow-up added concurrent recovery race coverage, live processing-lease duplicate no-op assertion, and upstream INTK-003 -> board [[INTK-002]] annotation. L-02 and PR/CI blockers remain.
+
+2026-08-25 follow-up validation: commit 338b8a51 pushed. Release solution build passed 0 warnings/0 errors; RecoveryTests passed 33/33. Reviewer coverage and carry-over annotation findings addressed. L-02 Azurite/Functions proof and PR/CI remain blocked.
