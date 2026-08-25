@@ -201,3 +201,15 @@ sync stops — without opening the plan set.
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 (`AGENTS.md:289-297`) requires a
 pass over this branch's own diff before the PR, recorded here under a dated heading. Record
 `n/a — docs-only` for this documentation-only branch._
+
+## Execution outcome — 2026-08-25
+
+The ADR path resolved to the accepted-body case. **docs/adr/0100-native-winui-3-client-in-the-fork.md** exists on **origin/dev** at **5770eb21** with **status: accepted** and already carries the D-001 consequence. ADR-0100 was authored by [[FND-005]] and is immutable; this branch makes no ADR change and does not raise a superseding ADR.
+
+The branch records D-001's current-state consequence in **docs/operations.md** under **Release source of truth**, records that the one-way upstream sync continues until the freeze is agreed, adds the pending freeze item to **docs/open-decisions.md**, and updates the D-001 row in **docs/desktop/README.md** to point to the authoritative records. The prior planning-set statement that no open decisions remained was narrowed because the external freeze agreement is not yet recorded.
+
+No written agreement from the owners of collisionengineers/pegasus was available in this session. No date, archive/read-only mechanism, owner, repository setting, or upstream write was invented or performed. The fallback required by step 8 is therefore used: the freeze remains pending and the sync remains active.
+
+## Simplification pass — 2026-08-25
+
+n/a — docs-only. The branch changes only the three named governing/current-state documents; no code, abstraction, dependency, or test surface was introduced.
