@@ -21,9 +21,9 @@ groups:
   - HZN-001
 links: []
 docs_todo: true
-archived: false
+archived: true
 created: '2026-08-24T08:12:34.603Z'
-updated: '2026-08-24T21:21:30.533Z'
+updated: '2026-08-25T11:51:44.146Z'
 ---
 
 ## What
