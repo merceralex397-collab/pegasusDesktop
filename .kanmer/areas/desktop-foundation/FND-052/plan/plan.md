@@ -239,13 +239,8 @@ the same ownership and the same targets.
    actually inspected. Adding, not replacing: the self-test guards the
    validator and the validator guards the file, and neither substitutes for
    the other.
-5. **Add the shard arguments to the five `-VerifyPartition` call sites** —
-   `FND-046:91`, `PLAT-002:75`, `PLAT-006:71`, `PLAT-006:87` — copying
-   `TEST-003:68`'s working form
-   `-VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3`.
-   **Verify first** that `scripts/Invoke-TestShard.ps1:35-36` still declares
-   `-ShardCount` `[Parameter(Mandatory)]` with no `ParameterSetName`, which is
-   what makes it mandatory in the `Verify` set as well as `Run`.
+5. **Add the shard arguments to the five `-VerifyPartition` call sites** — `FND-046:76` (step), `FND-046:93` (verification), `PLAT-002:77` (step), `PLAT-006:73` (step), and `PLAT-006:89` (verification) — copying `TEST-003:68`'s working form `-VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3`. **Verify first** that `scripts/Invoke-TestShard.ps1:35-36` still declares `-ShardCount` `[Parameter(Mandatory)]` with no `ParameterSetName`, which is what makes it mandatory in the `Verify` set as well as `Run`.
+
 6. **Replace `PLAT-002:95`'s ellipsis** with the actual invocation from that
    same body's step 11 at `:79` — `-BaseUri`, `-ExpectedSourceRevision`,
    `-ExpectedVersion`, `-ResourceGroupName` and the rest, with the same
