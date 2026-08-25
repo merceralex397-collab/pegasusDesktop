@@ -4,7 +4,7 @@
 
 This ticket changed only Kanmer ticket-body Markdown through MCP. No repository file, source file, configuration, dependency, ticket relationship, label, group, or stage other than FND-052's own claim was changed.
 
-- Normalized the 16 live Markdown-placement command invocations to `-Base origin/dev -Head HEAD`; the separate FEAT-038 `Test-TestMarkdownPlacement.ps1` regression self-test remains unchanged.
+- Normalized the 14 pre-REL-013 ticket-body Markdown-placement command invocations to `-Base origin/dev -Head HEAD`; REL-013 received the same validator in 2 additional ticket-body invocations, for 16 total. The separate FEAT-038 `Test-TestMarkdownPlacement.ps1` regression self-test remains unchanged.
 - Added the real placement validator beside REL-013's existing regression self-test.
 - Normalized all five live `-VerifyPartition` command occurrences with `-ArtifactRoot ./artifacts/test-shards -ShardCount 3`.
 - Replaced PLAT-002's verification ellipsis with its complete production-smoke argument list.

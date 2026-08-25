@@ -50,23 +50,6 @@ The gate itself: `scripts/Test-MarkdownPlacement.ps1:2-6` declares `[Parameter(M
 
 The working form to copy is `TEST-003:68` and `TEST-003:84`. The five occurrences above are the ticket-body commands in scope; stale bare examples in other tickets' plan, research, and checklist documents are outside this body-only ticket. `scripts/Invoke-TestShard.ps1:35-36` declares `[Parameter(Mandatory)] [int] $ShardCount` with no `ParameterSetName`, so it is mandatory in the `Verify` set too.
 
-### B · `-VerifyPartition` — 5 call sites, 3 bodies
-
-| Body | Line | Current text |
-| --- | --- | --- |
-| `FND-046` | `:91` | `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition` |
-| `PLAT-002` | `:75` | `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition` (step) |
-| `PLAT-006` | `:71` | same (step) |
-| `PLAT-006` | `:87` | same (verification) |
-
-The working form to copy is `TEST-003:68` and `TEST-003:84`:
-`pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3`.
-Why it is needed: `scripts/Invoke-TestShard.ps1:35-36` declares
-`[Parameter(Mandatory)] [int] $ShardCount` **with no `ParameterSetName`**, so
-it is mandatory in the `Verify` set too — and the script's own worked example
-at `:20` is the form above. `[CmdletBinding(DefaultParameterSetName = 'Run')]`
-at `:23` means a bare call does not even land in the `Verify` set cleanly.
-
 ### C · The placeholder — 1 site, 1 body
 
 `PLAT-002:95` reads `pwsh ./scripts/Invoke-ProductionSmoke.ps1 …` with a literal ellipsis. The real invocation is in the same ticket body at `:79`; copy its complete argument list into `:95` without re-deriving it from the script.
@@ -236,7 +219,7 @@ the same ownership and the same targets.
    `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` as
    the single board-wide spelling. Do not vary it per ticket — two spellings of
    one gate is the duplication these rounds kept removing.
-3. **Apply the 16 actual command call sites** listed in inventory § A, across
+3. **Apply the 14 pre-REL-013 command call sites** listed in inventory § A, across
    `DUI-013`, `DUI-017`, `FEAT-025`, `FEAT-043`, `FND-014`, `FND-015`,
    `FND-019`, `FND-020`, `FND-023`, and `FND-042`. **Leave the four path
    references alone** — `DUI-013:47`, `DUI-017:95`, `DUI-017:171`, and
