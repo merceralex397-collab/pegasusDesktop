@@ -281,7 +281,8 @@ the record key: `Cases.List.Row.576059`. Every interactive control has one;
   (Received item, E-mail activity, Blocked).
 - AutomationIds: `Received.Header.<Field>`, `Received.Tabs.<Tab>`,
   `Received.Actions.<Action>`.
-- Upstream carry-over absorbed: INTK-001, INTK-027, INTK-033 (gateway side),
+- Upstream carry-over covered: INTK-001, INTK-027 (fork implementation [[INTK-004]]),
+  INTK-033 (gateway side),
   INTK-019 (engineer selection replaces "Assign to me" in Triage).
 
 ### Triage detail — replaces `Pages/Triage/Details.cshtml.cs` (13 actions)
