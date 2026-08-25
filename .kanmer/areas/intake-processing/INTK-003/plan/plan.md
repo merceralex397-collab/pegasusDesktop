@@ -109,3 +109,7 @@ Exact-head CI run `32899041711` reached terminal failure only in `sql-integratio
 ## CI concurrency blocker — 2026-08-25
 
 The corrected exact-head run `32900431792` was rerun once after the migration-expectation fix. It failed twice in the same existing test, `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns`, with SQL Server error 1205 (deadlock victim) during `EfIntakeWorkStore.CompleteProcessingAsync`; the second attempt again ran 290/291 assigned tests successfully. The failure is outside this ticket's changed files and is not evidence against canonical mileage. CI remains a hard merge gate; do not bypass it. Next action is a further authorized rerun or a separately owned fix for the flaky concurrency test, without expanding INTK-003 scope.
+
+## CI resolution — 2026-08-25
+
+Authorized failed-job rerun of exact-head run `32900431792` completed green on head `13ba7b41775ee83c1399eb84c17e008aa13d7a67` (PR #12). The previously failing `sql-integration (3)` completed successfully after running 290/291 assigned tests; `sql-integration-coverage` also passed. All other run checks were successful or intentionally skipped infrastructure because no deployment path changed. This resolves the CI blocker; the ticket still requires the review/verification/merge/proof/closeout sequence and must not be treated as done yet.

@@ -15,3 +15,5 @@ Corrected review findings committed as `52b00c52` and pushed to the configured `
 2026-08-25: Exact-head CI rerun 32900431792 failed sql-integration (3) on existing GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns: SQL Server deadlock victim in EfIntakeWorkStore.CompleteProcessingAsync; 290/291 tests passed. This is unrelated to canonical-mile code. Reran only failed job on same exact head; attempt is active.
 
 2026-08-25: Failed-job rerun of 32900431792 also failed sql-integration (3), same existing GroupedImageIntakeConcurrencyTests deadlock (SQL error 1205) at EfIntakeWorkStore.CompleteProcessingAsync; 290/291 assigned tests passed. Exact-head CI remains red; no merge/bypass.
+
+2026-08-25: Third authorized failed-job rerun of exact-head CI run 32900431792 passed on head 13ba7b41775ee83c1399eb84c17e008aa13d7a67. sql-integration (3) passed after 290/291 assigned tests; coverage passed; run conclusion success. CI blocker resolved. Next: fresh gates, advance one stage, then merge to dev only after all gates/review evidence.

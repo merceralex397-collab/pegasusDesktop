@@ -49,3 +49,7 @@ Exact-head run `32899041711` failed in `sql-integration (3)` because `CommittedM
 ## CI concurrency blocker — 2026-08-25
 
 After the migration-list correction, exact-head run `32900431792` failed twice in `sql-integration (3)` on the existing `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` test. Both failures were SQL Server deadlock-victim errors (1205) at `EfIntakeWorkStore.CompleteProcessingAsync`; the second attempt passed 290/291 tests. This is unrelated to the ticket's changed files. CI is not green and the PR is not merge-ready; no bypass or false green claim is allowed.
+
+## CI resolution — 2026-08-25
+
+Authorized failed-job rerun of exact-head run `32900431792` completed green on head `13ba7b41775ee83c1399eb84c17e008aa13d7a67` (PR #12). The previously failing `sql-integration (3)` completed successfully after running 290/291 assigned tests; `sql-integration-coverage` also passed. All other run checks were successful or intentionally skipped infrastructure because no deployment path changed. This resolves the CI blocker; the ticket still requires the review/verification/merge/proof/closeout sequence and must not be treated as done yet.

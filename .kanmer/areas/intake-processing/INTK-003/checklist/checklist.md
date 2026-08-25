@@ -26,3 +26,5 @@ The first independent review found duplicate conversion ownership and incomplete
 - [x] Diagnose exact-head CI failure: the migration-list assertion omitted the generated canonical-mileage provenance migration; update the owned test expectation and pass the focused local rerun (1/1).
 
 - [ ] Exact-head CI remains blocked: run `32900431792` failed twice on the unrelated SQL Server deadlock in `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` (290/291 passed on the second attempt).
+
+- [x] Exact-head CI run 32900431792 passed on the unchanged head 13ba7b41775ee83c1399eb84c17e008aa13d7a67 after the authorized failed-job rerun; sql-integration (3) and coverage are green. Review/verification, merge, proof, and closeout remain.

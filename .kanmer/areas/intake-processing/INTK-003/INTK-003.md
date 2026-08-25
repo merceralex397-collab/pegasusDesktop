@@ -2,13 +2,14 @@
 id: INTK-003
 type: ticket
 title: 'upstream:INTK-026 · Normalize kilometre case mileage to canonical miles'
-status: review
+status: verifying
 area: intake-processing
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:23:32.455Z'
   review: '2026-08-25T20:38:07.851Z'
+  verifying: '2026-08-25T21:57:09.652Z'
 taken_at: '2026-08-25T20:14:25.093Z'
 branch: task/upstream-intk-026-canonical-miles
 worktree: ../pegasus-worktrees/upstream-intk-026-canonical-miles
@@ -36,7 +37,7 @@ prs:
   - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/12'
 archived: false
 created: '2026-08-24T11:47:12.089Z'
-updated: '2026-08-25T20:47:00.854Z'
+updated: '2026-08-25T21:57:09.652Z'
 ---
 
 ## What
