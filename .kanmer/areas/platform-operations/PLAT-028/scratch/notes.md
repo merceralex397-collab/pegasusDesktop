@@ -9,3 +9,5 @@ Validation checkpoint (2026-08-25): dotnet restore passed. dotnet build ./Pegasu
 PR checkpoint (2026-08-25): branch pushed to origin/task/plat-028-duplicate-route-sweep. gh pr create targeting dev was rejected: GraphQL: must be a collaborator (createPullRequest). No PR/review/merge/proof claimed. Ticket remains review; smallest action is collaborator permission or authorized collaborator-created PR.
 
 PR checkpoint (2026-08-25 continuation): verified the existing merceralex397-collab keyring account has admin/maintain/push permission without changing credentials. Opened PR #2 into dev. The earlier active collisionengineers account was pull-only and caused the prior GraphQL blocker.
+
+Review checkpoint (2026-08-25 continuation): PR #2 is OPEN, targets dev, head 9f582036c5d304bfeea441ffb30415f71274c699, GitHub reports MERGEABLE. No review decision or status checks are present yet. Independent reviewer Huygens was assigned read-only review; merge is not authorized until review passes and required CI conditions are evidenced.
