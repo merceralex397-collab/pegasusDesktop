@@ -93,3 +93,7 @@ The sweep found one behavior-preserving consolidation: a shared inline-image pre
 - Kept the helper private and colocated with the two existing call sites. This is the smallest owner boundary that serves both EML and DOC/MSG paths.
 - Preserved all live routes and fields with current callers or required guard semantics; no speculative cleanup or compatibility path was added.
 - No unapplied behavior-preserving simplification findings remain.
+
+## Review disposition — 2026-08-25
+
+The independent `pegasus-desktop-reviewer` review identified one documentation gap in the simplification record: the direct-pass substitution for the unavailable `code-simplifier` agent was implicit but not explicit. This ticket is the required sweep, so the pass was performed directly by the implementer over the branch diff; no code-simplifier agent was available in the repository agent set. No behavior-preserving finding was left unapplied. The reviewer otherwise confirmed the roster findings, shared rule, preserved semantics, and authorized two-file scope. CI remains an external merge blocker because the repository has zero registered workflows.

@@ -38,3 +38,13 @@ The branch was pushed successfully to `origin/task/plat-028-duplicate-route-swee
 ## PR opened — 2026-08-25
 
 Using the already-authenticated `merceralex397-collab` repository account (read-only permission check confirmed admin/maintain/push; no credentials were changed), PR [#2](https://github.com/merceralex397-collab/pegasusDesktop/pull/2) was opened from `task/plat-028-duplicate-route-sweep` into `dev`. The previously active `collisionengineers` account was pull-only; this explains the earlier create failure.
+
+## Exact validation addendum — 2026-08-25
+
+- `dotnet restore ./Pegasus.slnx --locked-mode` — passed; all projects up to date, no lock drift.
+- `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release` — passed, 920 passed, 18 skipped, 0 failed, 938 total, 13m37s.
+- `git diff --stat origin/dev...HEAD` — 2 files changed, 20 insertions(+), 6 deletions(-).
+- `git diff --name-only origin/dev...HEAD` — only `src/Pegasus.Infrastructure/Intake/MimeKitPdfPigOpenXmlIntakeSourceReader.cs` and `src/Pegasus.Infrastructure/Intake/MimeKitPdfPigOpenXmlIntakeSourceReader.DocMsg.cs`.
+- `git diff --check` — passed.
+
+The independent reviewer confirmed the implementation and scope, but noted that their own full integration attempt was canceled after 6m10s; the completed exact run above is recorded as implementer-run evidence. PR #2 still has no status checks because the repository API reports `total_count: 0` registered workflows.
