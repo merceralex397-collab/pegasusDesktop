@@ -72,3 +72,16 @@ Before the PR, independently review the branch diff for reuse, unnecessary abstr
 ## Current status
 
 Documentation implementation and local validation are complete. Commit, independent review, PR/CI, merge to `dev`, proof on merged `main`, and Kanmer closeout remain.
+
+## Review disposition — 2026-08-25
+
+Independent `pegasus-desktop-reviewer` review returned `FAIL` on commit `337fba1e`. Findings and dispositions:
+
+- High: feed-compromise row used the secret-scan ticket — corrected to `[[DSK-10-05]]`, the package/manifest tampering test; `DSK-10-03` remains the shared secret-scan owner.
+- High: the register must not duplicate the committed bootstrap password. Replaced the path-only wording with an explicit scan-time source-value rule that reads the exact JSON value without copying the secret into documentation; the rule ends when [[DSK-10-02]] removes the account.
+- Medium: attachment row now cites [[DSK-10-06]] for safe paths/content validation instead of attributing those claims to limits-only references.
+- Medium: logging and provider rows now cite their owning tickets directly, removing generic area README line references.
+- Medium: the README entry is now a real `[Threat register](threat-register.md)` link.
+- The required `post-implementation-report` has been added with the review record and validation; a fresh independent review is still required before merge.
+
+Post-fix validation: `Test-DocumentationLinks.ps1` passed with 233 files; `Test-TestMarkdownPlacement.ps1` passed; structural audit remains 9/9 threat rows, 9/9 test references, all required markers present; `git diff --check` passed.
