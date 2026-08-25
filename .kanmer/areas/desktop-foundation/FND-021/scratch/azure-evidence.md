@@ -360,3 +360,34 @@ Independent drift findings agree with the local evidence: transport has azure-we
 The auditor's cost-usage read did not prove a usable spend/forecast amount. The separate read-only budget list proves currentSpend 29.50478827580924 GBP against amount 75.0 GBP; no forecast amount is asserted.
 
 Tool limitations recorded: Azure MCP keyvault secret-name call returned exactly "Operation cancelled by user (decline)"; no secret value was requested. The installed Azure MCP child schemas lack queue listing, Container App detail/revision, Function App setting-name, workspace-show, App Insights component-show, and budget commands, so safe-field Azure CLI reads supplemented those surfaces. The audit identity is over-privileged Owner rather than reader-only; a reader-scoped rerun remains required for the least-privilege criterion.
+
+### Supplemental Key Vault names-only evidence — 2026-08-25
+
+Azure MCP keyvault_secret_get returned "Operation cancelled by user (decline)" before any value was requested. A safe read-only Azure CLI fallback listed names only:
+
+```json
+[
+  "automation-mcp-client-secret",
+  "box-client-secret",
+  "box-config-json",
+  "dvla-api-key",
+  "dvsa-api-key",
+  "dvsa-client-id",
+  "dvsa-client-secret"
+]
+[]
+```
+
+The first array is secret names; the second is certificate names. No secret values were queried or recorded.
+
+### Azure MCP pricing read — 2026-08-25
+
+Read-only exact-SKU queries for Standard_LRS Storage and S0 SQL in uksouth both returned `prices: []`. No retail estimate is asserted. The budget read remains the authoritative live cost context available here: amount 75.0 GBP, currentSpend 29.50478827580924 GBP; no forecast amount was exposed. No change is proposed.
+
+### Deferred tagging approval text — 2026-08-25
+
+No tag was applied. Any future write must enumerate the exact resource IDs from the attached group inventory and be separately approved:
+
+> Request change of tags on the explicitly enumerated resource IDs in subscription e6076573-23a5-46a8-acef-7e22d264e5db, resource group rg-pegasus-prod: add or merge desktop-conversion=phase0-inventory, owner=<approved owner>, and codepath=<verified path:line>; because this is Phase 0 inventory ownership metadata and not a permission or runtime change; applied only through the approved IaC/release route after the exact-target approval; rollback by removing only those three added tag keys/values and restoring the prior tag set; approver: the operator named in the exact-target approval. Nothing else changes.
+
+This text is recorded for a future write ticket. It is not authorization and no Azure write occurred.
