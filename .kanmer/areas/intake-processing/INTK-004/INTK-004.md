@@ -4,12 +4,13 @@ type: ticket
 title: >-
   upstream:INTK-027 · Make policy re-evaluation work after transient staging
   cleanup
-status: implementing
+status: review
 area: intake-processing
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
   preparing: '2026-08-24T21:23:32.702Z'
+  review: '2026-08-25T20:13:23.068Z'
 taken_at: '2026-08-25T19:17:45.434Z'
 branch: task/upstream-intk-027-reevaluation-after-cleanup
 worktree: ../pegasus-worktrees/upstream-intk-027-reevaluation-after-cleanup
@@ -32,7 +33,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:47:12.109Z'
-updated: '2026-08-25T19:17:45.434Z'
+updated: '2026-08-25T20:13:23.068Z'
 ---
 
 ## What
