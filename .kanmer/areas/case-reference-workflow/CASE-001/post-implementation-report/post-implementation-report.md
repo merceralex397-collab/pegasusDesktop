@@ -50,3 +50,9 @@ Validation after the correction:
 - `git diff --check`: passed.
 
 The original risk remains intentional: later photographs do not rewrite allocation-time completeness; staff confirmation is the existing route out. No Azure, mailbox, Box, deployment, or release write was performed.
+
+## Final independent review and PR handoff — 2026-08-25
+
+Halley's independent re-review of `995bf671` passed after the later-receipt test and historical comment correction. The ticket files map was reconciled to document the simplification move into `AllocateDefinitiveIntakeTests.cs`; the CASE-013 policy guard remains unchanged.
+
+The branch is pushed, but `gh pr create --base dev --head case-001-observed-images` returned exactly `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`. Therefore there is no PR, CI result, merge, proof, or Kanmer closeout evidence yet.

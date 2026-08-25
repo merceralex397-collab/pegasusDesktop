@@ -206,3 +206,9 @@ Applied the bounded corrections:
 - Corrected the `IntakeAllocation` comment to state that the former route asserted image completeness and waived staff confirmation; it no longer claims all four fields were false.
 
 Revalidation: focused later-receipt integration fact 1/1; Release solution build 0 warnings/errors; full Core 921/921; Architecture 99/99; full non-corpus/non-browser integration 873 passed, 3 skipped, 876 total; `git diff --check` passed. The test reuses the existing `AllocationTestData`, `IntakeWebDriver`, image automation, and case data query; no production policy, abstraction, or unrelated file was added.
+
+## Final review and PR handoff — 2026-08-25
+
+Halley's independent re-review of `995bf671` passed. The only review warning was reconciled in the `files` document: the caller-wiring facts are owned by `AllocateDefinitiveIntakeTests.cs`; the unchanged CASE-013 policy guards remain in `AutomaticCaseReadinessTests.cs`. No implementation blocker remains.
+
+The fresh PR attempt remains externally blocked: `gh pr create --base dev --head case-001-observed-images` returned exactly `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`. The branch is pushed and independently reviewed, but no PR, CI, merge, proof, or done claim is made. Next action: repository collaborator permission or an authorized PR workflow path.
