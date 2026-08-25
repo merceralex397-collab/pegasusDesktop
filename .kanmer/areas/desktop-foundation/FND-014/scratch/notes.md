@@ -147,3 +147,5 @@ Research and matrix reconciliation completed on branch fnd-014-parity-inventory 
 Independent read-only parity audit confirmed: at HEAD, before working-tree fixes the five missing Administration prefixes were exactly Accounts/Edit, Automation/Activity, Organizations/Edit, Principals/Create, Principals/Replace; after fixes, page-model paths reconcile 53/53 with no nonexistent citations. It also independently caught PAR-43 omitting OnGet for Error and StatusCode; those handlers are now recorded. Triage file blobs at 191ddf33 and HEAD are identical, with the same 12 named cases plus default, and no commits in the range.
 
 Simplification pass: 2026-08-25 — n/a — docs-only. The branch changes only the parity matrix and its area README; no code, abstraction, dependency, or architecture was introduced. No behaviour-preserving simplification finding applies.
+
+Committed repository changes as 83e945c9 (`docs: reconcile desktop parity inventory`). Post-commit validation: `pwsh ./scripts/Test-DocumentationLinks.ps1` passed (226 files); `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` passed; `git diff --check origin/dev...HEAD` passed.
