@@ -274,3 +274,7 @@ this branch's own diff before the PR, recorded here under a dated heading.
 Expected outcome: `n/a — docs-only` if the branch carries only the merge and the
 two documentation sentences — the merge's own content is upstream's work and is
 not in scope for this pass._
+
+## Operator scope amendment — 2026-08-25
+
+The operator has prohibited all upstream synchronization. This supersedes the original sync procedure and its upstream-dependent acceptance criteria. The ticket now records the in-repository-only boundary: no upstream remote is added or fetched, no upstream commit is merged, the configured `pegasusDesktop` remote remains the only delivery remote, and the current repository baseline is preserved. Proof must show the remote configuration and the absence of any upstream operation; it must not claim an upstream sync.
