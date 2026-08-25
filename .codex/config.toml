@@ -2,6 +2,12 @@
 apps = false
 remote_plugin = false
 
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 4
+default_subagent_reasoning_effort = "medium"
+interrupt_message = true
+
 [mcp_servers.mcp_microsoftdocs]
 url = "https://learn.microsoft.com/api/mcp"
 enabled = true

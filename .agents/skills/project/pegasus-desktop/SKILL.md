@@ -36,6 +36,10 @@ scale does not apply unless a Pegasus decision adopts it.
   only); the production pilot ring is the only real-Azure validation.
 - L-03 Report rendering moves to the desktop (WebView2 HTML→PDF over the
   shared Scriban templates); the gateway renderer stays until parity passes.
+- L-04 Specialist Codex subagents exist as `.codex/agents/*.toml`; every ticket
+  names its subagent, skills and MCP tools.
+- L-05 The Kanmer board is seeded by the implementing agent from the ticket
+  tables in these plans; the open upstream board is triaged in area 01.
 - Azure: reads are free; every write is ⚠, conditional on exact-target
   approval or on D-002 (signing) / D-003 (feed hosting); nothing is
   deprovisioned before cutover, observed use, and rollback approval.

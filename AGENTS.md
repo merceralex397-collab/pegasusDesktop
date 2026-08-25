@@ -23,6 +23,10 @@ branch yourself. Your own ticket worktree is a separate thing, recorded by
 
 # Pegasus repository instructions
 
+Every Codex agent loads `.agents/skills/project/pegasus-desktop/SKILL.md`
+before task-specific guidance; `eng/skills/skills.lock.json` governs pinned
+skill revisions.
+
 Pegasus is Collision Engineers' clean-room case-management and reporting
 application. Read the Kanmer board (`.kanmer/`, via the `kanmer` tools) for current work, then the
 [documentation index](docs/index.md) for the file that owns your question and
