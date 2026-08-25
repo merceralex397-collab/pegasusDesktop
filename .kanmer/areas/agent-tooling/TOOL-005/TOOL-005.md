@@ -4,12 +4,15 @@ type: ticket
 title: >-
   DSK-12-05 · Reconcile the `pegasus-desktop` project skill and add the
   `[agents]` table to `.codex/config.toml`
-status: preparing
+status: implementing
 area: agent-tooling
-assignee: ''
+assignee: codex-mcp-client
 profile: chore
 stageEntered:
   preparing: '2026-08-24T21:21:29.823Z'
+taken_at: '2026-08-25T04:25:39.628Z'
+branch: tool-005-reconcile-agents
+worktree: .worktrees/tool-005
 labels:
   - desktop-conversion
   - plan-12
@@ -26,7 +29,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:07:44.152Z'
-updated: '2026-08-24T21:21:29.823Z'
+updated: '2026-08-25T04:25:39.629Z'
 ---
 
 ## What
