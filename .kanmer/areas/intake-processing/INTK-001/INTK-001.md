@@ -12,9 +12,6 @@ stageEntered:
   preparing: '2026-08-24T21:23:32.015Z'
   review: '2026-08-25T14:34:40.636Z'
   verifying: '2026-08-25T14:35:12.517Z'
-taken_at: '2026-08-25T13:32:11.875Z'
-branch: task/upstream-intk-002-intake-duplication
-worktree: ../pegasus-worktrees/upstream-intk-002-intake-duplication
 labels:
   - upstream-carryover
   - upstream-INTK-002
@@ -31,7 +28,7 @@ prs:
   - '7'
 archived: false
 created: '2026-08-24T11:44:22.452Z'
-updated: '2026-08-25T14:35:12.517Z'
+updated: '2026-08-25T14:50:18.792Z'
 ---
 
 ## What

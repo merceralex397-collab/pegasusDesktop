@@ -219,3 +219,7 @@ The acceptance item requiring hand-off before ADR-0100 acceptance is not applica
 ## Simplification pass — 2026-08-25
 
 n/a — docs-only. The branch contains one existing canonical-file edit, no new ADR, no duplicate note, no code, and no un-applied behavior-preserving simplification finding.
+
+## Post-merge baseline refresh — 2026-08-25
+
+Refreshed after PR #8 merged into current `dev` at `c91565467dee9145486a6cb0a59779701ec97ea9`. The earlier execution comparison against `5770eb21` is historical evidence only. Current `origin/dev...fnd-013-prior-documents-note` still contains only `docs/index.md`; `git diff --check` passes. The proof remains intentionally deferred until the change is present on merged `main`.

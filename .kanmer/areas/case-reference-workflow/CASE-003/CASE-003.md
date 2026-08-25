@@ -12,9 +12,6 @@ stageEntered:
   implementing: '2026-08-25T12:10:29.252Z'
   review: '2026-08-25T12:15:11.021Z'
   verifying: '2026-08-25T14:44:44.466Z'
-taken_at: '2026-08-25T12:06:08.879Z'
-branch: task/case-003-triage-authority
-worktree: ../pegasus-worktrees/case-003-triage-authority
 labels:
   - triage
   - governing-docs
@@ -36,7 +33,7 @@ prs:
   - '5'
 archived: false
 created: '2026-08-25T12:04:56.725Z'
-updated: '2026-08-25T14:44:44.466Z'
+updated: '2026-08-25T14:50:19.063Z'
 ---
 
 ## What
