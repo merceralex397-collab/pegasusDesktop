@@ -74,3 +74,27 @@ Land the four upstream INTK-002 duplication chores server-side on the fork: adap
 - dotnet test tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --filter "FullyQualifiedName~FileSystemIntakeArtifactStoreTests|FullyQualifiedName~DependencyDirectionTests.WebCompositionDoesNotOwnTheWorkerIntakeProcessor" — 2 passed.
 - dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~RecoveryTests.TransientProcessingFailureSchedulesARetry" — 1 passed in 29 seconds.
 - git diff --check — passed; warnings only noted that Git would normalize patched LF files to repository CRLF on a future touch.
+
+## Review remediation — 2026-08-25
+
+The independent review initially failed the branch and identified:
+- EF retry exhaustion still throwing InvalidOperationException;
+- the architecture check not proving live Web DI absence;
+- one Operations failure-code comparison still spelling technical_failure;
+- Recovery fixture coverage still naming the removed raw io fault;
+- cleanup masking risk.
+
+All required findings are resolved:
+- EfIntakeReceiptStore now throws IntakeVersionConflictException after retry exhaustion.
+- DependencyDirectionTests guards the Web assembly against Pegasus.Worker and Azure.Storage.Queues references/types, and QdosIntakeWebTests now exercises the real Web host and asserts both ProcessQueuedIntake and IProcessQueuedIntake are absent from its service provider.
+- EfOperationsStore derives the technical-failure code from IntakeDecisionCodes.
+- The Recovery exhaustion fixture uses the named dependency-unavailable exception; the policy test asserts named dependency/version faults are transient while raw IOException and TimeoutException are not.
+- FileSystemIntakeArtifactStore cleanup is best-effort and cannot replace a primary operation exception.
+
+## Final verification — 2026-08-25
+
+- dotnet build Pegasus.slnx --configuration Release --no-restore -p:MSBuildNodeReuse=false — passed; Core, Infrastructure, Web, Worker, ArchitectureTests, IntegrationTests all built with 0 warnings and 0 errors.
+- dotnet test tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~ProcessIntakeTests|FullyQualifiedName~IntakeDecisionCodesTests" -p:MSBuildNodeReuse=false — 46 passed.
+- dotnet test tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build -p:MSBuildNodeReuse=false — 101 passed.
+- dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~RecoveryTests" -p:MSBuildNodeReuse=false — 27 passed in 2m17s.
+- dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~QdosIntakeWebTests.ReadableManualUploadStagesPendingWorkAndOpensItsStatusPage" -p:MSBuildNodeReuse=false — 1 passed in 42s; live Web DI absence assertions passed.
