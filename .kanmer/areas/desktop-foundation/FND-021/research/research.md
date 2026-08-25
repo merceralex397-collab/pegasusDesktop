@@ -724,3 +724,13 @@ WARNING: This command is in preview and under development. Reference and support
 ]
 
 ```
+
+### Independent pegasus-azure-auditor result — 2026-08-25
+
+The bounded auditor made no file, Kanmer, or Azure mutations and exposed no secret values. It independently confirmed the pinned subscription/tenant/RG, all declared resources, both storage accounts with public access disabled, the four queues, the healthy single Web revision, nine Worker Disabled setting names, 0.1 GB/day workspace cap, App Insights workspace-based/DisableLocalAuth/90-day retention, ACR Basic/admin disabled, SQL S0/250 GB, and budget amount 75 GBP.
+
+Independent drift findings agree with the local evidence: transport has azure-webjobs-hosts and azure-webjobs-secrets support containers; SQL has codex-current-machine-20260812 and dev-machine-1 firewall rules; the live descendant-scope RBAC read has 26 assignments including Key Vault grants, user/duplicate grants, Key Vault Secrets Officer, and Azure Service Bus Data Sender; ACA diagnostic settings read empty despite the declared Bicep resource; SQL master is platform-managed and omitted from the application register; App Insights retention is 90 days.
+
+The auditor's cost-usage read did not prove a usable spend/forecast amount. The separate read-only budget list proves currentSpend 29.50478827580924 GBP against amount 75.0 GBP; no forecast amount is asserted.
+
+Tool limitations recorded: Azure MCP keyvault secret-name call returned exactly "Operation cancelled by user (decline)"; no secret value was requested. The installed Azure MCP child schemas lack queue listing, Container App detail/revision, Function App setting-name, workspace-show, App Insights component-show, and budget commands, so safe-field Azure CLI reads supplemented those surfaces. The audit identity is over-privileged Owner rather than reader-only; a reader-scoped rerun remains required for the least-privilege criterion.
