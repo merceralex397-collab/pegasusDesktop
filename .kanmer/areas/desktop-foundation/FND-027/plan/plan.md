@@ -354,3 +354,9 @@ The independent review found that a root `Directory.Packages.props` and the root
 Resolved by adding the smallest explicit boundary at `scripts/email-eval-desktop/`: a nested `Directory.Packages.props` sets `ManagePackageVersionsCentrally=false`, and a nested `Directory.Build.props` imports the repository defaults then sets `RestorePackagesWithLockFile=false`. No evaluator project or package declaration was changed. `dotnet msbuild` confirms both properties are false for the evaluator test project; its restore passed and its Release test run passed 9/9. This preserves the ADR-0016 independent tool boundary while leaving the seven `Pegasus.slnx` projects under the new central policy.
 
 The simplification reviewer’s only correctness finding is therefore dispositioned and no longer blocks merge. The central package list was also corrected to the repository skill’s case-insensitive alphabetical order; no package or version changed as a result.
+
+## Independent review — 2026-08-25
+
+`pegasus-desktop-reviewer` (Sagan; agent `01a03755-c9dc-7bd3-bd5f-ba931c95415e`) independently reviewed the exact `origin/dev...HEAD` diff, acceptance criteria, CPM report, nested evaluator boundary, seven lock files, CI cache/runbook changes, simplification pass, and validation evidence. Verdict: **PASS**; no finding blocks merge.
+
+The reviewer noted one low, documentation-only issue: the historical broad grep example in the plan can match fixture XML strings at `tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs:96-98`. The actual project-file-only check returned no versioned `PackageReference` attributes. This does not affect implementation or merge; future evidence uses the scoped `*.csproj` check.
