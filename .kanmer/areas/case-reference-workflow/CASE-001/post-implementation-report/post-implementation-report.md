@@ -33,3 +33,20 @@ After merge, `kanmer-verify` should run on merged `main` (or the repository's me
 - `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "Category!=Corpus&Category!=Browser"`
 - `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release`
 - confirm the merged diff remains limited to the three scoped files and no runtime/deployment proof is inferred from local tests.
+
+## Independent review correction and revalidation — 2026-08-25
+
+The independent review identified that the earlier report overstated the grouped-intake coverage: the existing grouped tests did not exercise a later photograph arriving after an instruction case was allocated. That gap is now closed by `QdosAllocationRecoveryTests.PhotographsArrivingAfterAllocationDoNotRewriteAllocationCompleteness`.
+
+The new LocalDB fact allocates an image-free instruction, verifies `NotReady` and `ImagesComplete=false`, processes a later photograph through the existing upload/Worker automation path, verifies the image receipt is registered and associated with the case, and verifies the case remains image-incomplete and staff-unconfirmed. The inaccurate production comment about the former four fields was also corrected.
+
+Validation after the correction:
+
+- focused later-receipt integration fact: 1/1 passed;
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore`: passed, 0 warnings/errors;
+- `dotnet test ./tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release --no-build`: 921/921 passed;
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build`: 99/99 passed;
+- full non-corpus/non-browser integration: 873 passed, 3 skipped, 876 total;
+- `git diff --check`: passed.
+
+The original risk remains intentional: later photographs do not rewrite allocation-time completeness; staff confirmation is the existing route out. No Azure, mailbox, Box, deployment, or release write was performed.

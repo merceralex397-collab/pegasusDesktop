@@ -195,3 +195,14 @@ No behavior-preserving simplification findings remain unapplied. The initial ful
 ## PR handoff blocker — 2026-08-25
 
 The branch `case-001-observed-images` is pushed at commit `29c1b83b030f402c349576e6fc4f7e1ab1184430` and the required post-implementation report is written. `gh pr create --base dev --head case-001-observed-images` failed with the exact response `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`. No PR, CI, merge, or proof claim is made. The next action is repository collaborator permission or an authorized PR workflow path.
+
+## Independent review disposition — 2026-08-25
+
+Hilbert's independent review of commit `29c1b83b030f402c349576e6fc4f7e1ab1184430` found one blocker and one warning. The cited grouped-image test covered image-intake reconciliation but did not allocate an image-free instruction case, process a later image receipt, and assert the case completeness state. The production comment also inaccurately described the former four-field value as all false.
+
+Applied the bounded corrections:
+
+- Added `QdosAllocationRecoveryTests.PhotographsArrivingAfterAllocationDoNotRewriteAllocationCompleteness`. It allocates a definitive instruction with no retained photographs, asserts `NotReady` and `ImagesComplete=false`, processes a later photograph through the Worker-shaped upload/automation path, asserts automatic image registration and association to the case, then asserts the case remains `NotReady`, image-incomplete, and staff-unconfirmed.
+- Corrected the `IntakeAllocation` comment to state that the former route asserted image completeness and waived staff confirmation; it no longer claims all four fields were false.
+
+Revalidation: focused later-receipt integration fact 1/1; Release solution build 0 warnings/errors; full Core 921/921; Architecture 99/99; full non-corpus/non-browser integration 873 passed, 3 skipped, 876 total; `git diff --check` passed. The test reuses the existing `AllocationTestData`, `IntakeWebDriver`, image automation, and case data query; no production policy, abstraction, or unrelated file was added.
