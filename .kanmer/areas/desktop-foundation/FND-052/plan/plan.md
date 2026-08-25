@@ -1,6 +1,6 @@
 # Plan — FND-052: groom the seeded board
 
-**Diff estimate: 22 Kanmer ticket bodies, ~45 edited lines. No repository file
+**Diff estimate: 22 Kanmer ticket bodies, ~49 edited lines. No repository file
 changes at all.**
 
 Derived from the measured inventory below, not asserted. The unit here is a
@@ -18,14 +18,14 @@ row below was measured against the board store on 2026-08-24 with `grep -n`,
 `grep -c` and `sed -n`, reading **ticket bodies only** (`<ID>.md`), never the
 `plan/` or `files/` documents beside them.
 
-### A · The Markdown placement gate — 17 call sites, 11 bodies
+### A · The Markdown placement gate — 16 actual command call sites, 11 bodies
 
 | Body | Call sites (bare) | Line numbers |
 | --- | --- | --- |
 | `DUI-013` | 2 | `:73` (step), `:89` (verification) |
 | `DUI-017` | 2 | `:129`, `:145` |
 | `FEAT-025` | 1 | `:81` |
-| `FEAT-038` | 2 | `:69`, `:83` |
+| `FEAT-038` | 0 | Its `Test-TestMarkdownPlacement.ps1` regression self-test is not a gate invocation; leave it unchanged. |
 | `FEAT-043` | 2 | `:72`, `:91` |
 | `FND-014` | 1 | `:102` |
 | `FND-015` | 1 | `:88` |
@@ -34,11 +34,12 @@ row below was measured against the board store on 2026-08-24 with `grep -n`,
 | `FND-023` | 2 | `:76`, and `:154` inside the embedded `DSK-01-13` specification |
 | `FND-042` | 2 | `:80`, `:97` |
 
-**17 invocations.** Ten of them are `## Verification` lines, exactly as the body
-says. `grep -c` over those eleven bodies returns **21** hits, not 17: the extra
-four — `DUI-013:47`, `DUI-017:95`, `DUI-017:171`, `FEAT-025:41` — are *path
-references* in Source-of-truth and evidence prose, not commands. **Leave those
-four alone**; adding arguments to a path reference is noise.
+**16 invocations.** Ten of them are `## Verification` lines, exactly as the body
+says. The four known path references — `DUI-013:47`, `DUI-017:95`,
+`DUI-017:171`, and `FEAT-025:41` — are *path references* in Source-of-truth
+and evidence prose, not commands. **Leave those four alone**; adding arguments
+to a path reference is noise. The separate `FEAT-038` self-test is also
+intentionally unchanged.
 
 The gate itself: `scripts/Test-MarkdownPlacement.ps1:2-6` declares
 `[Parameter(Mandatory)][string] $Base` and `[Parameter(Mandatory)][string]
@@ -110,13 +111,13 @@ adds the real validator **beside** it, not instead of it.
 
 | Group | Bodies | Edits |
 | --- | --- | --- |
-| A placement gate | 11 | 17 |
+| A placement gate | 11 | 16 |
 | B `-VerifyPartition` | 3 (`FND-046`, `PLAT-002`, `PLAT-006`) | 4 |
 | C placeholder | 1 (`PLAT-002`, already counted) | 1 |
 | D ambiguous ids | 7 (`FEAT-043` already counted) | 19 |
 | E dangling/namespace links | 1 | 6 |
 | F `REL-013` validator | 1 | 2 |
-| **Distinct** | **22** | **45** |
+| **Distinct** | **22** | **49** |
 
 ### Measured and deliberately not touched
 
@@ -238,12 +239,13 @@ the same ownership and the same targets.
    `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` as
    the single board-wide spelling. Do not vary it per ticket — two spellings of
    one gate is the duplication these rounds kept removing.
-3. **Apply it to the 17 call sites** listed in inventory § A, across
-   `DUI-013`, `DUI-017`, `FEAT-025`, `FEAT-038`, `FEAT-043`, `FND-014`,
-   `FND-015`, `FND-019`, `FND-020`, `FND-023`, `FND-042`. **Leave the four
-   path references alone** — `DUI-013:47`, `DUI-017:95`, `DUI-017:171`,
-   `FEAT-025:41` name the script as evidence, not as a command, and `grep -c`
-   will report 21 hits where only 17 are call sites. Note `FND-023:154` is
+3. **Apply the 16 actual command call sites** listed in inventory § A, across
+   `DUI-013`, `DUI-017`, `FEAT-025`, `FEAT-043`, `FND-014`, `FND-015`,
+   `FND-019`, `FND-020`, `FND-023`, and `FND-042`. **Leave the four path
+   references alone** — `DUI-013:47`, `DUI-017:95`, `DUI-017:171`, and
+   `FEAT-025:41` name the script as evidence, not as a command. The separate
+   `FEAT-038` `Test-TestMarkdownPlacement.ps1` self-test is not a gate call and
+   remains unchanged. Note `FND-023:154` is
    inside that body's embedded `DSK-01-13` specification; it is a call site and
    is in scope.
 4. **While in `REL-013`, add the real validator beside the self-test.**
@@ -369,10 +371,10 @@ consistency only".
 
 ## Simplification pass
 
-_Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over
-this branch's own diff before the PR, recorded here under a dated heading. This
-ticket changes no repository file, so the expected record is
-**`n/a — board-only`** (body Guardrails)._
+2026-08-25 — **n/a — board-only.** The ticket changes only Kanmer ticket bodies
+through MCP; there is no repository diff to simplify. The live inventory
+corrections were scope-preserving namespace and measurement fixes, not
+behavioural changes.
 
 
 ## Live inventory correction — 2026-08-25
