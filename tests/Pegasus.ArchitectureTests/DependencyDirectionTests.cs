@@ -88,6 +88,19 @@ public sealed class DependencyDirectionTests
     }
 
     [Fact]
+    public void ContractsProjectHasNoDependencies()
+    {
+        var root = FindRepositoryRoot();
+        var document = XDocument.Load(Path.Combine(root, "src/Pegasus.Contracts/Pegasus.Contracts.csproj"));
+
+        Assert.DoesNotContain(
+            document.Descendants(),
+            element => element.Name.LocalName is
+                "PackageReference" or "ProjectReference" or "FrameworkReference");
+        Assert.Empty(ProjectReferences(root, "src/Pegasus.Contracts/Pegasus.Contracts.csproj"));
+    }
+
+    [Fact]
     public void CoreDirectDependencyGuardDetectsForbiddenAndAllowedFixtures()
     {
         var document = XDocument.Parse(
@@ -142,6 +155,7 @@ public sealed class DependencyDirectionTests
             // FND-029, FND-030, FND-031, and FND-038 extend this exact list as
             // their projects are added to Pegasus.slnx.
             [
+                "src/Pegasus.Contracts/Pegasus.Contracts.csproj",
                 "src/Pegasus.Core/Pegasus.Core.csproj",
                 "src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj",
                 "src/Pegasus.Web/Pegasus.Web.csproj",
@@ -162,6 +176,7 @@ public sealed class DependencyDirectionTests
 
         Assert.Equal(
             [
+                "src/Pegasus.Contracts/Pegasus.Contracts.csproj",
                 "src/Pegasus.Core/Pegasus.Core.csproj",
                 "src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj",
                 "src/Pegasus.Web/Pegasus.Web.csproj",
