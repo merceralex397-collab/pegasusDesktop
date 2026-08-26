@@ -251,3 +251,14 @@ Execution is therefore a review/reconciliation of the canonical file, never a se
 ## Simplification pass — 2026-08-26
 
 n/a — docs-only. The change is limited to the canonical ADR clauses required by Area 09; no abstraction, helper, duplicate index row, or unrelated documentation is introduced.
+
+## Implementation checkpoint — 2026-08-26
+
+The canonical ADR now has an appended Area 09 release contract covering the explicit 2021 schema and update attributes, package version 1.<minor>.<build>.0, the single identity and pilot/prod ring model, rollback with ForceUpdateFromAnyVersion, the 2026-08-23 D-002/D-003 date, and the no-Azure/no-recurring-cost consequence. Validation passed:
+
+- git diff --check
+- git diff --name-only — only docs/adr/0105-msix-app-installer-and-minimum-version-gate.md
+- pwsh -NoProfile -File ./scripts/Test-DocumentationLinks.ps1 — passed; all relative Markdown links resolve (235 files checked)
+- pwsh -NoProfile -File ./scripts/Test-TestMarkdownPlacement.ps1 — passed
+- Get-ChildItem docs/adr -Filter 0105* — exactly one file
+- docs/adr/README.md — existing ADR-0105 row unchanged

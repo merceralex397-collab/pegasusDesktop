@@ -1,0 +1,1 @@
+2026-08-26 — Implementation checkpoint: appended the missing Area 09 release contract to the canonical ADR-0105 only. git diff --check and both documentation gates passed; exactly one ADR-0105 file and the existing index row remain.
