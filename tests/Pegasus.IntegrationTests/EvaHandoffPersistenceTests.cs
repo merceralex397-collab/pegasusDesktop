@@ -315,13 +315,16 @@ public sealed class EvaHandoffPersistenceTests
 
             Assert.Equal(GenerateEvaHandoffOutcome.Generated, generated.Outcome);
             Assert.NotNull(generated.Bundle);
-            using var provenance = JsonDocument.Parse(generated.Bundle.ProvenanceContent);
-            Assert.Contains(
-                image.OccurrenceId,
-                provenance.RootElement
-                    .GetProperty("images")
-                    .EnumerateArray()
-                    .Select(item => item.GetProperty("occurrenceId").GetGuid()));
+            using (var archive = new ZipArchive(
+                       new MemoryStream(generated.Bundle.Content), ZipArchiveMode.Read))
+            {
+                var entry = Assert.Single(archive.Entries, item =>
+                    item.FullName.EndsWith(" intake-damage.jpg", StringComparison.Ordinal));
+                using var entryStream = entry.Open();
+                using var contentStream = new MemoryStream();
+                entryStream.CopyTo(contentStream);
+                Assert.Equal(content, contentStream.ToArray());
+            }
 
             var reportSource = new EfAssessmentReportProjectionSource(
                 factory,
