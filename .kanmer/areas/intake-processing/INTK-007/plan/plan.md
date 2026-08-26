@@ -138,3 +138,12 @@ The inherited upstream carry-over text is provenance and repository evidence onl
 Implementation source is the configured `origin` remote for this repository (the PegasusDesktop repository), based on `origin/dev`. Carry the fix in this repository regardless of the upstream branch state. Replace the prior sync-recheck acceptance item with: **the in-repository implementation and its acceptance criteria are verified on the merged PegasusDesktop `main` result**.
 
 The documentation note originally describing addition to an upstream-sync re-check list is amended to record INTK-007 as an in-repository carry-over owned by this board; it must not prescribe or imply a future upstream operation. No cloud, mailbox, Box, credential, deployment, or upstream write is in scope.
+
+## Governing docs and current-state checks
+
+- `docs/frd/frd-03-triage.md` is the linked behavior authority: the exact accepted route classification starts Triage work; a usable VRM opens Triage and a missing VRM remains Unidentified.
+- `docs/frd/frd-09-provider-and-intermediary-routes.md` is the linked route authority: QDOS predicates remain route-owned and fail closed on ambiguity; this change does not add a second classifier or route.
+- `docs/operator-notes.md` was read as binding business truth and is not edited; its Stage 0 rule already states the VRM branch.
+- `docs/capabilities.md` was checked: TRI-02 remains the canonical owner and its owner does not move, so no capabilities-registry edit is required.
+- `docs/open-decisions.md` is updated because its inactive-matcher statement is superseded by the accepted route-owned implementation.
+- No upstream operation is required or permitted. No cloud, mailbox, Box, credential, deployment, or external write is required.
