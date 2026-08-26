@@ -13,9 +13,6 @@ stageEntered:
   review: '2026-08-26T17:00:34.278Z'
   verifying: '2026-08-26T17:27:53.462Z'
   done: '2026-08-26T17:31:31.518Z'
-taken_at: '2026-08-26T16:12:18.164Z'
-branch: task/upstream-intk-033-triage-from-intake
-worktree: ../pegasus-worktrees/upstream-intk-033-triage-from-intake
 labels:
   - production-defect
   - found-during-qa
@@ -44,7 +41,7 @@ prs:
   - '21'
 archived: false
 created: '2026-08-24T11:52:39.628Z'
-updated: '2026-08-26T17:32:09.945Z'
+updated: '2026-08-26T17:34:40.819Z'
 ---
 
 ## What

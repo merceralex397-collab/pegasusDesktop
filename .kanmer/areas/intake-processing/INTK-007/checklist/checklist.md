@@ -62,11 +62,17 @@ template needed work.
 
 ## Closeout — INTK-007
 
-- [ ] PR merge verified (`gh pr view --json state,mergedAt`)
-- [ ] proof.md finalised (PR URL + merge date appended)
+- [x] PR merge verified (`gh pr view --json state,mergedAt`) — PR #21 is MERGED at 2026-08-26T17:27:26Z
+- [x] proof.md finalised (PR URL + merge date appended)
 - [x] Moved to final stage
-- [ ] Outcome recorded in ticket body (PR link, follow-ups)
-- [ ] cd out of worktree; `git worktree remove` ticket worktree
-- [ ] `git branch -d` ticket branch
-- [ ] `git fetch --prune` + `git worktree prune`
-- [ ] `take_ticket action: "release"`
+- [x] Outcome recorded in ticket body (PR link, follow-ups)
+- [x] cd out of worktree; `git worktree remove` ticket worktree — removed; temporary detached proof worktree also removed after stopping identified stale build-server locks
+- [x] `git branch -d` ticket branch — deleted locally and from configured origin
+- [x] `git fetch --prune` + `git worktree prune`
+- [x] `take_ticket action: "release"
+
+
+Closeout completed: the ticket branch/worktrees were cleaned and only then was the claim released.
+
+
+Closeout completed: the ticket branch/worktrees were cleaned and only then was the claim released.
