@@ -9,3 +9,5 @@
 2026-08-26 FND-029 review disposition: corrected malformed commit evidence to `0a3d23becc5a1038ab166effafd5203847bc3b5c` and appended a current-head simplification pass covering the server-filter and architecture-expectation additions. Fresh review otherwise found scope, implementation, and local validation sound. PR #26 exact-head CI run `33014659206` is still pending; no merge.
 
 2026-08-26 final FND-029 review: fresh independent reviewer PASS. Confirmed current-head simplification pass covers Pegasus.Server.slnf and DependencyDirectionTests additions; corrected SHA `0a3d23becc5a1038ab166effafd5203847bc3b5c` matches git; PR #26 exact head is CLEAN/MERGEABLE; CI run 33014659206 green for all required lanes, SQL shards 1-3, browser, unit, and coverage. Ready to merge to dev; proof deferred until main.
+
+2026-08-26 post-merge: PR #26 merged to dev at b5a3a6e87388db20d4c38226b4a5297e8f400145. ls-remote confirms main remains 3b1737de2a27f84aa1bea03bf2c34d41d5a8006a. Ticket moved review->verifying after gates; proof deliberately not written because main does not contain the merge. Fresh exact main-promotion authorization is required.

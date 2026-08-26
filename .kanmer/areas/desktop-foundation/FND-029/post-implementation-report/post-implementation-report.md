@@ -56,3 +56,7 @@ Independent review identified a malformed recorded SHA. Correct commit evidence 
 ## Final independent review and CI — 2026-08-26
 
 Fresh independent review returned **PASS**. It confirmed current-head simplification coverage, valid commit evidence, completed deferred server-filter work, scope/dependency boundaries, and acceptance coverage. Exact-head PR #26 (`0a3d23becc5a1038ab166effafd5203847bc3b5c`) is `MERGEABLE`/`CLEAN`. CI run `33014659206` is green across all required lanes, including unit, browser, SQL shards 1–3, and coverage; infrastructure was correctly skipped. Local server-filter restore/build and architecture tests 110/110 passed. Historical pending CI wording is superseded. FND-029 is ready to merge to `dev`; no proof is written before merged `main`.
+
+## Merge-to-dev boundary — 2026-08-26
+
+PR #26 is merged to `dev` at `b5a3a6e87388db20d4c38226b4a5297e8f400145`. Remote-head evidence: `origin/dev=b5a3a6e87388db20d4c38226b4a5297e8f400145`; `origin/main=3b1737de2a27f84aa1bea03bf2c34d41d5a8006a`. The ticket cannot yet satisfy merged-main proof, so no proof or done transition is claimed. Required next action: exact-SHA promotion to `main` with fresh required authorization, then run the Kanmer verify/closeout sequence.
