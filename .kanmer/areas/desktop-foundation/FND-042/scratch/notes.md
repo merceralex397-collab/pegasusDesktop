@@ -1,1 +1,3 @@
 2026-08-26 PR handoff: repository permission is restored. Opened PR #18 targeting dev from fnd-042-auth-session-adrs at exact head f1e92ea525a7720eedc688e151a931cbb4944640. Independent Aquinas re-review is PASS; docs-only validation is recorded in scratch/validation.
+
+2026-08-26 merge evidence: PR #18 merged into dev at merge commit 61227d6b22268748f2f802965e11d38a26e67dc2 after Aquinas independent re-review PASS and all applicable docs-only checks passed (changes, documentation, local-development-scripts, reference-data; code lanes skipped by path). Ticket remains Verifying pending proof on merged main; no proof fabricated.
