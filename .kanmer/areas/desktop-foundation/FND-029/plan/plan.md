@@ -291,3 +291,7 @@ Validation on exact head \`0a3d23becc5a1038ab166effafd5203847bc3b5c5\`:
 - PR #26 is open against \`dev\`; exact-head CI and fresh independent review are pending.
 
 The change remains limited to the FND-029 Contracts project integration and its architecture expectation. No cloud, upstream, credential, Worker, API, or desktop implementation change was made.
+
+## Current-head simplification pass — 2026-08-26
+
+The synchronized branch diff includes the required `Pegasus.Server.slnf` registration and the matching `DependencyDirectionTests` expectation added in commit `0a3d23becc5a1038ab166effafd5203847bc3b5c`. Independent review rechecked the current head. **Reuse:** the server filter remains the existing FND-028 entry point and the architecture test remains the existing exact-list assertion; no new abstraction or duplicate project-registration mechanism was introduced. **Simplification:** the fix is one filter entry plus one expected-list entry; no broader solution or project-file redesign was made. **Efficiency:** the existing filter keeps the Linux server build focused; the Contracts project remains dependency-free and uses no new package. **Altitude:** no unrelated source, endpoint, or host changes were added. **Disposition:** no behavior-preserving simplification change is warranted; the evidence is now current for the complete branch diff.

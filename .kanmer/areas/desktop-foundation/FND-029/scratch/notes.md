@@ -5,3 +5,5 @@
 2026-08-25 PR handoff blocker: gh pr create --base dev --head fnd-029-pegasus-contracts failed with exact GraphQL error `must be a collaborator (createPullRequest)`. Branch remains implementing; no stage move attempted. Smallest external action: grant the authenticated GitHub identity collaborator/createPullRequest permission or have an authorized collaborator open the PR. Independent review passed before this attempt.
 
 2026-08-26: merged current origin/dev as 17d49224. FND-028's Pegasus.Server.slnf omitted Contracts; added Contracts to filter and exact architecture expectation in 0a3d23be, pushed to PR #26. Server filter build 0 warnings/0 errors, architecture 110/110 passed, full solution Release build 0 warnings/0 errors, worktree clean. Fresh independent review and PR CI pending.
+
+2026-08-26 FND-029 review disposition: corrected malformed commit evidence to `0a3d23becc5a1038ab166effafd5203847bc3b5c` and appended a current-head simplification pass covering the server-filter and architecture-expectation additions. Fresh review otherwise found scope, implementation, and local validation sound. PR #26 exact-head CI run `33014659206` is still pending; no merge.
