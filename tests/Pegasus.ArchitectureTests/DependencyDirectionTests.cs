@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Pegasus.Core;
@@ -138,6 +139,8 @@ public sealed class DependencyDirectionTests
             .ToArray();
 
         Assert.Equal(
+            // FND-029, FND-030, FND-031, and FND-038 extend this exact list as
+            // their projects are added to Pegasus.slnx.
             [
                 "src/Pegasus.Core/Pegasus.Core.csproj",
                 "src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj",
@@ -150,6 +153,34 @@ public sealed class DependencyDirectionTests
             projectPaths);
         Assert.DoesNotContain(projectPaths, path =>
             path.StartsWith("workspaces/", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void ServerSolutionFilterContainsExactlyTheServerProjects()
+    {
+        var projectPaths = ReadServerSolutionFilterProjects(FindRepositoryRoot());
+
+        Assert.Equal(
+            [
+                "src/Pegasus.Core/Pegasus.Core.csproj",
+                "src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj",
+                "src/Pegasus.Web/Pegasus.Web.csproj",
+                "src/Pegasus.Worker/Pegasus.Worker.csproj",
+                "tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj",
+                "tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj",
+                "tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj"
+            ],
+            projectPaths);
+    }
+
+    [Fact]
+    public void ServerSolutionFilterExcludesWindowsTargetedProjects()
+    {
+        var projectPaths = ReadServerSolutionFilterProjects(FindRepositoryRoot());
+
+        Assert.DoesNotContain(projectPaths, path =>
+            path.StartsWith("src/Pegasus.Desktop", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("tests/Pegasus.Desktop", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -515,6 +546,21 @@ public sealed class DependencyDirectionTests
             .Select(include => Path.GetFileNameWithoutExtension(include?.Replace('\\', '/')))
             .Where(name => name is not null)
             .Cast<string>()
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static string[] ReadServerSolutionFilterProjects(string root)
+    {
+        using var document = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "Pegasus.Server.slnf")));
+
+        return document
+            .RootElement
+            .GetProperty("solution")
+            .GetProperty("projects")
+            .EnumerateArray()
+            .Select(project => project.GetString()?.Replace('\\', '/')
+                ?? throw new InvalidOperationException("Server solution filter contains a non-string project entry."))
             .Order(StringComparer.Ordinal)
             .ToArray();
     }

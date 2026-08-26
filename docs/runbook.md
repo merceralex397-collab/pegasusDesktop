@@ -36,6 +36,8 @@ either platform.
 Hosted workflow runner choices and their evidence limits are owned by
 [the executable CI workflow](../.github/workflows/ci.yml). Linux development
 is supported by these procedures; record the platform actually exercised.
+On Linux, restore, build, and test the server-only entry point
+`Pegasus.Server.slnf`; on Windows, use the full `Pegasus.slnx` solution.
 
 ### Platform capability differences
 
@@ -297,7 +299,9 @@ cloud write.
 
 ## Locked restore, build, and test
 
-Run focused owning projects while iterating. Before delivery, run the canonical solution commands exactly (`--locked-mode` enforces the committed package locks):
+Run focused owning projects while iterating. Before delivery, run the platform's canonical entry point exactly (`--locked-mode` enforces the committed package locks):
+
+On Windows, use the full solution:
 
 ```powershell
 dotnet restore ./Pegasus.slnx --locked-mode
@@ -305,8 +309,18 @@ dotnet build ./Pegasus.slnx --configuration Release --no-restore
 dotnet test ./Pegasus.slnx --configuration Release --no-build --filter "Category!=Corpus"
 ```
 
-These commands are identical on both platforms; `pwsh` runs them either way.
-Package versions are centralized in `Directory.Packages.props`; after a version change, regenerate the lock files with `dotnet restore ./Pegasus.slnx --force-evaluate` before running the locked restore.
+On Linux, substitute the server-only filter so Windows-targeted desktop projects are not restored or built:
+
+```powershell
+dotnet restore ./Pegasus.Server.slnf --locked-mode
+dotnet build ./Pegasus.Server.slnf --configuration Release --no-restore
+dotnet test ./Pegasus.Server.slnf --configuration Release --no-build --filter "Category!=Corpus&Category!=Browser"
+```
+
+`pwsh` runs either platform's commands. Package versions are centralized in
+`Directory.Packages.props`; when package versions change, regenerate the relevant
+lock files with the matching entry point and `--force-evaluate` before running the
+locked restore.
 
 The focused forms are below; the two integration filters are a complement pair, so
 their union with the two unit projects is exactly the canonical selection:
