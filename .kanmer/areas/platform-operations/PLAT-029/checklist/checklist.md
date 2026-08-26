@@ -26,3 +26,13 @@
 - [ ] CI green and PR merged to `dev`.
 - [ ] Merged-main proof written.
 - [ ] Kanmer closeout completed.
+
+## CI contract refresh — 2026-08-26
+
+- [x] PR compile failure diagnosed against the current `dev` contract; obsolete `EvaBundle.ProvenanceContent` assertion removed.
+- [x] Task branch synchronized with `origin/dev` in `013fba28` and correction pushed in `7d761ed6`.
+- [x] Current-contract focused test passed 1/1.
+- [x] Affected integration set passed 42, with 1 pre-existing corpus-dependent skip and 0 failures.
+- [x] Release solution build passed with 0 warnings and 0 errors using shared compilation disabled.
+- [ ] Fresh independent review of exact head `7d761ed6`.
+- [ ] Local Start/Smoke and operator-visible retained-content journey; launcher failure remains documented.

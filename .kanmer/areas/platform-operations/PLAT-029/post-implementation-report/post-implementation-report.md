@@ -61,3 +61,15 @@ PR #25 is open against `dev`. Fresh independent review is in progress. The code/
 Added and passed `IntakeRetainedImageIsReadByEvaAndAssessmentReportProjection` (1/1). The test writes the image through `LocalCaseCustody`'s existing intake-retained attachment layout, then reads it through both `EvaHandoffStore` generation and `EfAssessmentReportProjectionSource`; no managed-layout seeding is used. The combined affected integration set passed 42 tests with 1 pre-existing corpus-dependent skip and 0 failures. Release solution build passed with 0 warnings and 0 errors. This closes the independent review's missing report/EVA consumer-coverage finding.
 
 The exact prescribed local Start command still fails before readiness in the existing launcher at line 1482 because the launched process path is empty; the failed run was stopped cleanly. Start/Smoke and the operator-visible journey remain unproven.
+
+## CI contract refresh — 2026-08-26
+
+PR run \`33012366372\` was a truthful failure, not a transient runner outage: the stale task branch's new test referenced \`EvaBundle.ProvenanceContent\`, which current \`dev\` no longer exposes. The task branch was synchronized with \`origin/dev\` in merge commit \`013fba28\`; the test now reads the generated archive's retained image entry under the current EVA contract. Correction commit \`7d761ed6\` is pushed to PR #25.
+
+Current local evidence on \`7d761ed6\`:
+
+- focused retained-reader test: 1 passed, 0 failed;
+- affected integration set: 42 passed, 1 pre-existing corpus-dependent skip, 0 failed;
+- Release solution build with shared compilation disabled: 0 warnings, 0 errors.
+
+A fresh independent review is pending for \`7d761ed6\`. PR merge is not claimed. The existing local Start command still fails before readiness at line 1482 while recording an empty launched-process path; Start/Smoke and the operator-visible journey remain unproven and require the local-development stack owner to resolve the launcher defect. No out-of-scope script, Worker, API, cloud, mailbox, Box, or upstream change was made.

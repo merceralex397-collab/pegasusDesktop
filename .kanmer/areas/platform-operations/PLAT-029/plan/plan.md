@@ -106,3 +106,15 @@ The pre-fix fact `OpenReadVersionAsyncReadsContentRetainedByLocalCaseCustody` wa
 ## Reader-consumer coverage — 2026-08-26
 
 The independent review identified that report and EVA consumers had only managed-layout coverage. Added `IntakeRetainedImageIsReadByEvaAndAssessmentReportProjection` to `tests/Pegasus.IntegrationTests/EvaHandoffPersistenceTests.cs`. It uses `LocalCaseCustody.RetainAcceptedIntakeAttachmentAsync` to write an intake-retained image occurrence, then proves the same occurrence-layout bytes are consumed by `EvaHandoffStore` generation and `EfAssessmentReportProjectionSource`. The focused test passed: 1 passed, 0 failed. The combined affected integration set then passed: 42 passed, 1 pre-existing corpus-dependent skip, 0 failed. `dotnet build Pegasus.slnx --configuration Release --no-restore --nologo` passed with 0 warnings and 0 errors. The local Start/Smoke launcher failure remains open and no operator journey is claimed.
+
+## CI contract refresh — 2026-08-26
+
+- PR run \`33012366372\` failed in browser, unit, and all SQL integration shards because the PR merge ref compiled \`tests/Pegasus.IntegrationTests/EvaHandoffPersistenceTests.cs:318\` against current \`dev\`, where \`EvaBundle.ProvenanceContent\` was removed by the current EVA contract. The local branch had been stale and still contained that property, so the earlier local build was not representative of the PR merge ref.
+- Merged \`origin/dev\` into this task branch as \`013fba28\`, then replaced the obsolete property assertion with a current-contract archive-content assertion. No Core, Box, LocalCaseCustody, Worker, API, cloud, or upstream files were changed.
+- Committed and pushed the correction as \`7d761ed6\`.
+- Focused current-contract test: 1 passed, 0 failed.
+- Affected integration set with \`-p:UseSharedCompilation=false\`: 42 passed, 1 pre-existing corpus-dependent skip, 0 failed.
+- \`dotnet build Pegasus.slnx --configuration Release --no-restore -p:UseSharedCompilation=false --nologo\`: passed, 0 warnings, 0 errors.
+- The first local retry encountered a shared VBCSCompiler lock; the successful retry disabled shared compilation and did not terminate or alter the shared compiler.
+- The prior independent review was against \`dcfaf5ad\` and correctly identified the then-uncommitted assertion plus the Start/Smoke blocker. The assertion is now committed. A fresh independent review is requested for exact head \`7d761ed6\`.
+- The exact prescribed local Start/Smoke acceptance remains open: the existing launcher fails before readiness at \`Invoke-LocalDevelopment.ps1:1482\` because the launched process path is empty. This is outside PLAT-029's allowed source scope and is not masked by this ticket.
