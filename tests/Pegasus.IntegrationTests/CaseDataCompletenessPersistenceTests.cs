@@ -187,6 +187,43 @@ public sealed class CaseDataCompletenessPersistenceTests
     }
 
     [Fact]
+    public async Task SavingKilometreMileageStoresCanonicalMilesAndRoundTripsTheOriginalValue()
+    {
+        await using var harness = await CaseDataHarness.CreateAsync();
+        var initial = await harness.GetRequiredDataAsync();
+        Assert.Null(initial.Vehicle.OriginalMileageKilometres?.Current);
+
+        var lease = await harness.AcquireLeaseAsync(
+            initial.Version,
+            harness.StaffActor,
+            "lease-kilometre-mileage");
+        var saved = await harness.SaveCase.ExecuteAsync(
+            new(
+                harness.CaseId,
+                initial.Version,
+                harness.StaffActor,
+                "save-kilometre-mileage",
+                "Confirmed the documented kilometre mileage",
+                lease.Token,
+                new(
+                    VehicleMileage: 100_000,
+                    VehicleMileageUnit: "Kilometres")),
+            CancellationToken.None);
+
+        Assert.Equal(62_137, saved.Vehicle.Mileage.Confirmed?.Value);
+        Assert.Equal("Miles", saved.Vehicle.MileageUnit.Confirmed?.Value);
+        Assert.Equal(100_000, saved.Vehicle.OriginalMileageKilometres?.Confirmed?.Value);
+
+        var reloaded = await harness.GetRequiredDataAsync();
+        Assert.Equal(saved.Vehicle.Mileage, reloaded.Vehicle.Mileage);
+        Assert.Equal(saved.Vehicle.MileageUnit, reloaded.Vehicle.MileageUnit);
+        Assert.Equal(
+            saved.Vehicle.OriginalMileageKilometres,
+            reloaded.Vehicle.OriginalMileageKilometres);
+        Assert.Equal(1, await harness.HistoryCountAsync());
+    }
+
+    [Fact]
     public async Task MissingWrongHolderWrongTokenAndExpiredLeasesNeverOverwrite()
     {
         await using var harness = await CaseDataHarness.CreateAsync();

@@ -164,14 +164,15 @@ The available evidence establishes review-visible uncertainty, but not an
 accepted numeric confidence score, threshold, or alternative confidence
 display. None should be inferred.
 
-The QDOS intake-to-Triage matcher remains the inactive
-`NoAcceptedIntakeTriageMatcher`: the downstream behavior is complete (accepted
-match evidence creates exactly one replay-safe Triage and multiple matches fail
-closed), so only the match predicates are missing. Activation needs the named
-predicates, exclusions, and ambiguity outcome accepted under this section, and
-is a deliberate change to a named, versioned matcher — the Production
-composition test pins the inactive matcher so it can never be activated as a
-side effect of composition.
+The QDOS intake-to-Triage route is owned by the accepted
+`qdos_mail_classification` policy. Its classified
+`pre-instruction-emails/triage-request` result is the trigger; `ProcessIntake`
+derives exactly one strong `AcceptedTriageMatch` evidence entry from that
+classification, preserving the policy key, version, matched predicate, detail,
+and source. The route never enters normal case allocation. The former
+`IIntakeTriageMatcher` / `NoAcceptedIntakeTriageMatcher` port is retired rather
+than activated, so the production composition test pins the classification
+route and no second policy owner can be introduced by composition.
 
 The QDOS-direct automatic incoming-case matching predicates and their
 conservative outcomes are accepted and owned by

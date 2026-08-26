@@ -162,6 +162,7 @@ else if (Model.ProposedValues.Count > 0)
                 <label>Vehicle model<input name="vehicleModel" maxlength="100" value="@data.Vehicle.Model.Confirmed?.Value" /></label>
                 <label>Mileage<input type="number" min="0" name="vehicleMileage" value="@data.Vehicle.Mileage.Confirmed?.Value" /></label>
                 <label>Mileage unit<input name="vehicleMileageUnit" maxlength="20" value="@data.Vehicle.MileageUnit.Confirmed?.Value" /></label>
+                <input type="hidden" name="vehicleMileageKilometres" value="@data.Vehicle.OriginalMileageKilometres?.Confirmed?.Value" />
                 <label>Incident date<input type="date" name="incidentDate" value="@data.Accident.IncidentDate.Confirmed?.Value.ToString("yyyy-MM-dd")" /></label>
                 <label>Contact name<input name="contactName" maxlength="300" value="@data.Contact.Name.Confirmed?.Value" /></label>
                 <label>Contact email<input type="email" name="contactEmailAddress" maxlength="320" value="@data.Contact.EmailAddress.Confirmed?.Value" /></label>

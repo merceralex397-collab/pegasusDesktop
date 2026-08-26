@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -110,9 +111,6 @@ public sealed class EvaHandoffPersistenceTests
                 BundleSha256 = sha256,
                 JsonContent = "{}"u8.ToArray(),
                 JsonSha256 = new string('b', 64),
-                ProvenanceContent = "{}"u8.ToArray(),
-                ProvenanceSha256 = new string('c', 64),
-                ManifestContent = "manifest"u8.ToArray(),
                 GeneratedAtUtc = Now,
                 GeneratedBy = "staff:test"
             });
@@ -254,16 +252,10 @@ public sealed class EvaHandoffPersistenceTests
 
             Assert.Equal(GenerateEvaHandoffOutcome.Generated, generated.Outcome);
             Assert.NotNull(generated.Bundle);
-            using var provenance = JsonDocument.Parse(generated.Bundle.ProvenanceContent);
-            var generatedOccurrenceIds = provenance.RootElement
-                .GetProperty("images")
-                .EnumerateArray()
-                .Select(image => image.GetProperty("occurrenceId").GetGuid())
-                .ToArray();
+            using var archive = new ZipArchive(new MemoryStream(generated.Bundle.Content), ZipArchiveMode.Read);
             Assert.Equal(
-                [first.OccurrenceId, second.OccurrenceId],
-                generatedOccurrenceIds);
-            Assert.DoesNotContain(excluded.OccurrenceId, generatedOccurrenceIds);
+                ["EVA-QDOS001.json", "Images/002 first.jpg", "Images/004 second.jpg"],
+                archive.Entries.Select(entry => entry.FullName));
         }
         finally
         {
@@ -387,7 +379,7 @@ public sealed class EvaHandoffPersistenceTests
     }
 
     [Fact]
-    public async Task StaffCorrectedVehicleRegistrationIsReportedAsCorrectedInGeneratedBundle()
+    public async Task StaffCorrectedVehicleRegistrationIsExportedInGeneratedJson()
     {
         await using var database = await LocalDbTestDatabase.CreateAsync();
         var factory = Factory(database.ConnectionString);
@@ -427,12 +419,8 @@ public sealed class EvaHandoffPersistenceTests
                 caseId, 7, actor, "eva:staff-corrected-vehicle", "Prepare Review handoff.", lease));
 
             Assert.Equal(GenerateEvaHandoffOutcome.Generated, generated.Outcome);
-            using var provenance = JsonDocument.Parse(generated.Bundle!.ProvenanceContent);
-            var vrmField = provenance.RootElement
-                .GetProperty("fields")
-                .EnumerateArray()
-                .Single(field => field.GetProperty("name").GetString() == "VRM");
-            Assert.Equal("corrected", vrmField.GetProperty("status").GetString());
+            using var json = JsonDocument.Parse(generated.Bundle!.JsonContent);
+            Assert.Equal("AB12CDE", json.RootElement.GetProperty("VRM").GetString());
         }
         finally
         {

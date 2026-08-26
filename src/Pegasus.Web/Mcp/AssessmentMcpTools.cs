@@ -333,7 +333,8 @@ internal sealed class AssessmentMcpTools(
                         ?? current.Inspection.Deadline.Confirmed?.Value,
                     inspectionAddress ?? current.Inspection.Address.Confirmed?.Value,
                     ParseInspectionMode(inspectionMode)
-                        ?? current.Inspection.Mode.Confirmed?.Value);
+                        ?? current.Inspection.Mode.Confirmed?.Value,
+                    current.Vehicle.OriginalMileageKilometres?.Confirmed?.Value);
                 var saved = await saveCase.ExecuteAsync(
                     new(
                         caseId,

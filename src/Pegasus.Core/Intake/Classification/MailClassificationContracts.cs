@@ -51,7 +51,7 @@ public static class MailTaxonomy
             [ReceivedMailFamily.PostReportEmails] =
                 ["query", "dispute", "amendment-request"],
             [ReceivedMailFamily.PreInstructionEmails] =
-                ["triage-request", "pre-formal-instruction-request", "images-received"],
+                [MailCategory.TriageRequestSubtype, "pre-formal-instruction-request", "images-received"],
             [ReceivedMailFamily.InternalCc] = []
         }.ToImmutableDictionary();
 
@@ -101,6 +101,7 @@ public sealed record MailCategory
 {
     public const int OtherNameMaxLength = 200;
     public const int OtherReasoningMaxLength = 1000;
+    public const string TriageRequestSubtype = "triage-request";
 
     private MailCategory(
         MailDirection direction,
@@ -129,6 +130,11 @@ public sealed record MailCategory
     public string? OtherReasoning { get; }
 
     public bool IsOther => OtherName is not null;
+
+    public bool IsTriageRequest =>
+        Direction == MailDirection.Received
+        && ReceivedFamily == ReceivedMailFamily.PreInstructionEmails
+        && string.Equals(Subtype, TriageRequestSubtype, StringComparison.Ordinal);
 
     public string Name =>
         OtherName
@@ -256,6 +262,10 @@ public sealed record MailClassificationResult(
     CaseType? CaseType = null,
     StandaloneAuditReportEvaluation? StandaloneAuditReport = null)
 {
+    public bool IsTriageRequest =>
+        Outcome == MailClassificationOutcome.Classified
+        && Category?.IsTriageRequest == true;
+
     public static MailClassificationResult Classified(
         MailCategory category,
         IReadOnlyList<MailClassificationPredicateResult> predicates,

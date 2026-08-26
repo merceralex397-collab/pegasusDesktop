@@ -75,6 +75,23 @@ A GitHub merge/rebase/squash is **not** this and does not replace it. A failed
 preflight, a rejected transaction or an unequal read-back **stops the release** —
 never repair it with a rebase, reset or force push.
 
+## 2.1 Apply immutable release tags
+
+After the read-back confirms that `origin/main` equals the promoted SHA, apply
+the tags on `main` only. `gateway/r<N>` uses the release number recorded in
+`docs/operations.md` § Production environment; `desktop/v<M.m.b>` equals the
+MSIX package version. Tags are immutable: never move or delete a pushed tag.
+
+```bash
+git tag -a gateway/r<N> <promoted-sha> -m "Gateway release <N>"
+git push origin gateway/r<N>
+git tag -a desktop/v<M.m.b> <promoted-sha> -m "Desktop release <M.m.b>"
+git push origin desktop/v<M.m.b>
+```
+
+CI builds an unsigned MSIX on every PR and builds and signs on `main` tags
+only. Publishing to the production feed remains a runbook-controlled step.
+
 ## 3. Build immutable artifacts
 
 From a clean tree at the exact promoted SHA:

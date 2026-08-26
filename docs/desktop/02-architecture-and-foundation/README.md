@@ -241,7 +241,7 @@ area `desktop-foundation` (prefix `FND`) unless noted; horizon group
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | DSK-02-01 | Author ADR-0100 (native WinUI 3 client in the fork; new projects) and ADR-0104 (online-required) | chore | 00 ADR block agreed | ADRs `proposed`→`accepted`, frontmatter per AGENTS.md, linked from `docs/adr/README.md` | `scripts/Test-DocumentationLinks.ps1` | 1 | `pegasus-desktop-reviewer` · `kanmer-docs` · Kanmer `link_doc` |
 | DSK-02-02 | Introduce `Directory.Packages.props` (CPM) and enforce lock files for all projects | chore | — | All `PackageReference` versions centralised; `RestorePackagesWithLockFile` everywhere; `dotnet restore --locked-mode` green on Windows and Linux | CI `repository-check` green; `git diff` shows no version literals left in csproj | 1 | `pegasus-release-packager` · `convert-to-cpm`, `directory-build-organization` · Microsoft Learn |
-| DSK-02-03 | Add `Pegasus.Server.slnf` and extend the solution architecture test | chore | DSK-02-02 | Linux `dotnet build Pegasus.Server.slnf` green; `ApplicationSolutionExcludesSourceWorkspaces` updated to the new project set | CI ubuntu job uses the slnf; Windows job uses slnx | 1 | `pegasus-release-packager` · `directory-build-organization`, `binlog-failure-analysis` · — |
+| DSK-02-03 | Add `Pegasus.Server.slnf` and extend the solution architecture test | chore | DSK-02-02 | Server filter exists, lists the server projects, and builds locally; `ApplicationSolutionExcludesSourceWorkspaces` remains exact for the current application solution | Local server-filter build and architecture facts; CI lane wiring is DSK-02-15 / TEST-013 | 1 | `pegasus-release-packager` · `directory-build-organization`, `binlog-failure-analysis` · — |
 | DSK-02-04 | Create `src/Pegasus.Contracts` with envelope types (paging, problem details, concurrency token, operation key) | feature | DSK-02-01 | Project builds with zero non-BCL references; first DTOs are those 03's compatibility endpoint needs | `Pegasus.Api.ContractTests` serialization round-trip | 2 | `pegasus-gateway-dev` · `dotnet-webapi`, `microsoft-code-reference` · Microsoft Learn |
 | DSK-02-05 | Scaffold `src/Pegasus.Desktop` (`dotnet new winui-mvvm`), x64, packaged, self-contained, pinned WinAppSDK 2.x | feature | DSK-02-01, DSK-02-02 | Builds with `BuildAndRun.ps1`; launches with package identity; no `AnyCPU`; `Package.appxmanifest` identity placeholders documented | `BuildAndRun.ps1 -SkipRun` then `winapp run` log; screenshot | 1 | `winui-dev` · `winui-setup`, `winui-dev-workflow`, `winui-design` · Microsoft Learn |
 | DSK-02-06 | Create `src/Pegasus.Desktop.Infrastructure` (HTTP pipeline via `IHttpClientFactory`, headers `X-Pegasus-Client-Version`/`X-Correlation-Id`, DPAPI credential store, bounded cache, diagnostics writer) | feature | DSK-02-04, DSK-02-05 | Interfaces live in Desktop.Infrastructure or Core; no Infrastructure/EF/Azure references | Architecture test + unit tests for credential store round-trip | 2 | `winui-dev` · `winui-dev-workflow`, `microsoft-code-reference` · Microsoft Learn (`ProtectedData`) |
@@ -277,8 +277,10 @@ area `desktop-foundation` (prefix `FND`) unless noted; horizon group
   `NoWarn`/`GeneratedCodeAttribute` handling rather than relaxing the repo
   policy.
 - **Linux build break**: a Windows TFM in `Pegasus.slnx` fails Linux
-  restores; the slnf decision above is the mitigation; the Linux release
-  script must switch to the slnf in the same ticket.
+  restores; the slnf decision above is the mitigation. DSK-02-03 owns the
+  server entry point and its local executable proof. Ubuntu CI wiring is owned
+  by DSK-02-15 / TEST-013. `Build-ReleaseArtifacts.ps1` publishes the Web and
+  Worker project files directly, so it has no solution argument to switch.
 - **Lock files with Windows-only packages**: `packages.lock.json` for the
   desktop projects is RID/TFM specific; CI must restore with the same RID.
 - **`BuildAndRun.ps1` injects a temporary `Directory.Build.props`** into the

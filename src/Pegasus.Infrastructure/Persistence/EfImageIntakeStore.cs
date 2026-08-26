@@ -148,7 +148,7 @@ public sealed class EfImageIntakeStore(
                 "The registering intake evaluation revision does not exist for the receipt.");
         }
 
-        if (receipt.Decision != EfIntakeReceiptStore.ToCode(IntakeDecision.NeedsSorting)
+        if (receipt.Decision != IntakeDecisionCodes.ToCode(IntakeDecision.NeedsSorting)
             || !ImageIntakeLifecycleRules.IsImageOnlyMaterial(
                 receipt.InstructionDraft is not null,
                 EfIntakeReceiptStore.DeserializeFields(receipt.FieldsJson).Length,
@@ -216,7 +216,7 @@ public sealed class EfImageIntakeStore(
 
         var beforeVersion = receipt.Version;
         var beforeJson = Snapshot(receipt);
-        receipt.Decision = EfIntakeReceiptStore.ToCode(IntakeDecision.ImageIntakeRegistered);
+        receipt.Decision = IntakeDecisionCodes.ToCode(IntakeDecision.ImageIntakeRegistered);
         receipt.DecisionReason =
             $"Image intake {reference} was registered for this image-only material.";
         receipt.FailureCode = null;
@@ -313,7 +313,7 @@ public sealed class EfImageIntakeStore(
             .ToArrayAsync(cancellationToken);
         foreach (var receipt in receipts)
         {
-            if (receipt.Decision != EfIntakeReceiptStore.ToCode(IntakeDecision.NeedsSorting)
+            if (receipt.Decision != IntakeDecisionCodes.ToCode(IntakeDecision.NeedsSorting)
                 || !ImageIntakeLifecycleRules.IsImageOnlyMaterial(
                     receipt.InstructionDraft is not null,
                     EfIntakeReceiptStore.DeserializeFields(receipt.FieldsJson).Length,
@@ -324,7 +324,7 @@ public sealed class EfImageIntakeStore(
 
             var beforeVersion = receipt.Version;
             var beforeJson = Snapshot(receipt);
-            receipt.Decision = EfIntakeReceiptStore.ToCode(IntakeDecision.ImageIntakeRegistered);
+            receipt.Decision = IntakeDecisionCodes.ToCode(IntakeDecision.ImageIntakeRegistered);
             receipt.DecisionReason =
                 $"Image intake {imageIntakeReference} was registered for this image-only material.";
             receipt.FailureCode = null;
@@ -446,14 +446,14 @@ public sealed class EfImageIntakeStore(
             item => item.Id == intakeReceiptId,
             cancellationToken);
         if (receipt is null
-            || receipt.Decision != EfIntakeReceiptStore.ToCode(IntakeDecision.NeedsSorting))
+            || receipt.Decision != IntakeDecisionCodes.ToCode(IntakeDecision.NeedsSorting))
         {
             return;
         }
 
         var beforeVersion = receipt.Version;
         var beforeJson = Snapshot(receipt);
-        receipt.Decision = EfIntakeReceiptStore.ToCode(IntakeDecision.ImageIntakeRegistered);
+        receipt.Decision = IntakeDecisionCodes.ToCode(IntakeDecision.ImageIntakeRegistered);
         receipt.DecisionReason =
             $"Image intake {registration.ImageIntakeReference} remains registered for this image-only material.";
         receipt.FailureCode = null;
@@ -779,7 +779,7 @@ public sealed class EfImageIntakeStore(
             intake.OriginReceiptId,
             intake.SubmissionGroupId,
             cancellationToken);
-        var registeredDecision = EfIntakeReceiptStore.ToCode(IntakeDecision.ImageIntakeRegistered);
+        var registeredDecision = IntakeDecisionCodes.ToCode(IntakeDecision.ImageIntakeRegistered);
         // The image rule's owner is ImageIntakeLifecycle.IsImageOnlyMaterial;
         // this projection cites its prefix because SQL cannot run it.
         var rows = await context.IntakeAssets

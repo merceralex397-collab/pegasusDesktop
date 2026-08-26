@@ -148,6 +148,19 @@ API, licence, exact response fields, credentials, rate/limit behavior, error
 contract, target, or caller proof. Those items remain activation gates.
 Vehicle enrichment does not activate valuation behavior.
 
+#### Documented kilometre mileage
+
+When staff save documented mileage in kilometres, Core converts it once on the
+case-data write path using `0.6213711922` and midpoint rounding away from zero.
+The persisted case value and existing mileage unit are canonical miles, while
+the typed kilometre value is retained as `OriginalMileageKilometres` provenance
+beside it. A missing unit means miles. An unrecognised nonblank unit is refused;
+no existing persisted case is transformed, and no read-time or batch conversion
+exists. The existing case DTO carries both values so the gateway and desktop
+consumers render one canonical figure with its compact kilometre marker without
+performing another conversion. EVA field names and bundle ownership are
+unchanged.
+
 ### Professional engineering findings and correction
 
 **Settled operator truth:** the Collision Engineers Engineer report is definitive for the case.
