@@ -47,3 +47,11 @@ Follow-up commit `338b8a51` is pushed to `origin/intk-002-recover-dispatched-wor
 - `git diff --check` — passed before follow-up commit.
 
 The independent review findings on concurrency coverage and carry-over annotation are addressed. L-02 Azurite/Functions caller proof and PR/CI remain open blockers.
+
+## Current-tree validation checkpoint — 2026-08-26
+
+- Merged current configured `origin/dev` into the ticket branch without upstream synchronization; the branch remains limited to the ticket's intended recovery change relative to `origin/dev`.
+- `dotnet build Pegasus.slnx --configuration Release --no-restore --nologo -nr:false -p:UseSharedCompilation=false` — passed with 0 warnings and 0 errors.
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore --no-build --filter "FullyQualifiedName~RecoveryTests" --logger "console;verbosity=minimal"` — 35 passed, 0 failed, 0 skipped.
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore --no-build --filter "FullyQualifiedName~GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns" --logger "console;verbosity=minimal"` — 1 passed, 0 failed, 0 skipped after the current `origin/dev` merge.
+- The required L-02 Azurite/Functions-host caller journey is still not claimed. The repository launcher fails before readiness because `Start-OwnedLauncher` reads an empty PowerShell-owned `Process.Path`; LocalDB-backed tests do not prove the Azurite timer/queue journey.

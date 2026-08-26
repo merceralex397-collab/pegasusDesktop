@@ -4,13 +4,14 @@ type: ticket
 title: >-
   upstream:INTK-003 · Recover dispatched intake work whose queue message never
   arrives
-status: implementing
+status: review
 area: intake-processing
-order: 80
+order: 90
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
   preparing: '2026-08-24T21:23:32.235Z'
+  review: '2026-08-26T19:42:08.024Z'
 taken_at: '2026-08-25T03:28:00.675Z'
 branch: intk-002-recover-dispatched-work
 worktree: .worktrees/intk-002
@@ -30,7 +31,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:44:22.475Z'
-updated: '2026-08-26T11:34:00.996Z'
+updated: '2026-08-26T19:42:08.024Z'
 ---
 
 ## What
