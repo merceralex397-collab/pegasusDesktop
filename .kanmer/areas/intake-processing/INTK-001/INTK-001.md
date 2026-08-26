@@ -6,6 +6,7 @@ title: >-
   decision-code table, Web-composition assertion, leftover port
 status: verifying
 area: intake-processing
+order: 80
 assignee: codex-mcp-client
 profile: chore
 stageEntered:
@@ -28,7 +29,7 @@ prs:
   - '7'
 archived: false
 created: '2026-08-24T11:44:22.452Z'
-updated: '2026-08-26T11:09:56.829Z'
+updated: '2026-08-26T11:21:58.940Z'
 ---
 
 ## What

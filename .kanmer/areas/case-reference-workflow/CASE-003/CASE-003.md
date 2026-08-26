@@ -6,6 +6,7 @@ title: >-
   conversion
 status: verifying
 area: case-reference-workflow
+order: 50
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
@@ -33,7 +34,7 @@ prs:
   - '5'
 archived: false
 created: '2026-08-25T12:04:56.725Z'
-updated: '2026-08-25T14:50:19.063Z'
+updated: '2026-08-26T11:21:58.919Z'
 ---
 
 ## What
