@@ -1,0 +1,1 @@
+2026-08-26 PR handoff: repository permission is restored. Opened PR #18 targeting dev from fnd-042-auth-session-adrs at exact head f1e92ea525a7720eedc688e151a931cbb4944640. Independent Aquinas re-review is PASS; docs-only validation is recorded in scratch/validation.
