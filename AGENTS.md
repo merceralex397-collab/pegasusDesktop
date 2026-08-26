@@ -331,3 +331,29 @@ own `origin/dev`-based task branch may merge `origin/main` and deliver that
 merge through its reviewed PR to `dev`; it never permits a direct `dev` update
 and expires as that PR merges. Never force-push, rewrite `dev` or `main`,
 stash/reset/clean another person's work, or stage beyond the task.
+
+## Current operator constraints
+
+The operator confirmed these delivery boundaries for the current refactor:
+
+- The current coordinator is the only active implementer. Kanmer claims assigned
+  to `codex-mcp-client` are coordinated work in this session; do not infer a
+  separate human implementer from that label. Independent subagent review is
+  sufficient when the reviewer did not implement the change, and its identity,
+  exact head and findings must be recorded in the owning ticket.
+- CI reruns are authorized. A rerun must still be tied to the exact PR head and
+  its result recorded; a green run from another SHA is not evidence.
+- `corpus/` is present and is the testing corpus for this refactor. Preserve
+  its existing immutable/local testing boundary; do not publish or modify the
+  corpus.
+- Do not fetch, merge, push to, or otherwise synchronize with the upstream
+  Pegasus repository. All implementation and history work stays in this
+  repository and uses the configured `pegasusDesktop` remote only. Any ticket
+  that requires an upstream sync must be amended through Kanmer to an honest
+  in-repository scope, or remain blocked if no such scope exists.
+- Cloud writes, deployments, releases, credentials and external environment
+  changes are not permitted until the full refactor is complete. Read-only
+  checks remain allowed where a ticket requires them.
+- The operator has authorized promotion to `main` for this session. The
+  repository's exact-SHA promotion procedure and the literal `MERGE AUTH
+  GRANTED` gate immediately before the update remain mandatory.

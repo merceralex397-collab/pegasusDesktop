@@ -62,6 +62,27 @@ internal sealed partial class EfIntakeAllocationStore(
         {
             if (!string.Equals(existing.CommandHash, request.CommandHash, StringComparison.Ordinal))
             {
+                if (IsLegacyAutomaticCompletenessReplay(existing, request))
+                {
+                    var isPending = existing.Status == ToCode(IntakeAllocationAttemptStatus.Pending);
+                    if (isPending)
+                    {
+                        // The observed-image rollout changes only this field. A
+                        // pending attempt has not produced an outcome yet, so
+                        // align its durable command with the replay that will
+                        // execute it before the existing acceptance path runs.
+                        existing.ImagesComplete = request.Command.Completeness.ImagesComplete;
+                        existing.CommandHash = request.CommandHash;
+                        await context.SaveChangesAsync(cancellationToken);
+                        await transaction.CommitAsync(cancellationToken);
+                    }
+
+                    return new(
+                        Map(existing),
+                        IsReplay: true,
+                        IsSuppressed: !isPending);
+                }
+
                 throw new IntakeAllocationOperationConflictException();
             }
 
@@ -111,6 +132,35 @@ internal sealed partial class EfIntakeAllocationStore(
         await transaction.CommitAsync(cancellationToken);
         return new(Map(entity), IsReplay: false, IsSuppressed: false);
     }
+
+    private static bool IsLegacyAutomaticCompletenessReplay(
+        IntakeAllocationAttemptEntity existing,
+        BeginIntakeAllocationAttempt request) =>
+        existing.Kind == ToCode(IntakeAllocationAttemptKind.Automatic)
+        && request.Kind == IntakeAllocationAttemptKind.Automatic
+        && existing.Status is "pending" or "failed"
+        && existing.IntakeReceiptId == request.Command.ReceiptId
+        && existing.ExpectedReceiptVersion == request.Command.ExpectedReceiptVersion
+        && string.Equals(
+            existing.CaseType,
+            request.Command.CaseType is null ? null : ToCode(request.Command.CaseType.Value),
+            StringComparison.Ordinal)
+        && string.Equals(existing.PrincipalCode, request.Command.PrincipalCode, StringComparison.Ordinal)
+        && existing.InstructionComplete == request.Command.Completeness.InstructionComplete
+        && existing.ImagesComplete
+        && !request.Command.Completeness.ImagesComplete
+        && existing.InstructionConfirmedByStaff == request.Command.Completeness.InstructionConfirmedByStaff
+        && existing.ImagesConfirmedByStaff == request.Command.Completeness.ImagesConfirmedByStaff
+        && existing.StandaloneAuditEvidenceId == request.Command.StandaloneAuditEvidenceId
+        && existing.AcceptedInspectionDeadline == request.Command.AcceptedInspectionDeadline
+        && existing.ActorKind == request.Actor.Kind.ToString()
+        && existing.ActorSubjectId == request.Actor.SubjectId
+        && string.Equals(
+            existing.ActorRolesJson,
+            JsonSerializer.Serialize(request.Actor.Roles.OrderBy(role => role), JsonOptions),
+            StringComparison.Ordinal)
+        && string.Equals(existing.OperationKey, request.OperationKey, StringComparison.Ordinal)
+        && string.Equals(existing.Reason, request.Reason, StringComparison.Ordinal);
 
     internal static async Task<IntakeAllocationAttempt> CompleteSuccessInTransactionAsync(
         PegasusDbContext context,

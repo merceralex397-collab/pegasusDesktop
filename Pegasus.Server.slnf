@@ -1,0 +1,14 @@
+{
+  "solution": {
+    "path": "Pegasus.slnx",
+    "projects": [
+      "src\\Pegasus.Core\\Pegasus.Core.csproj",
+      "src\\Pegasus.Infrastructure\\Pegasus.Infrastructure.csproj",
+      "src\\Pegasus.Web\\Pegasus.Web.csproj",
+      "src\\Pegasus.Worker\\Pegasus.Worker.csproj",
+      "tests\\Pegasus.ArchitectureTests\\Pegasus.ArchitectureTests.csproj",
+      "tests\\Pegasus.Core.Tests\\Pegasus.Core.Tests.csproj",
+      "tests\\Pegasus.IntegrationTests\\Pegasus.IntegrationTests.csproj"
+    ]
+  }
+}

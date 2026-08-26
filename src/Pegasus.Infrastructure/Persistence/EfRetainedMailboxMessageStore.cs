@@ -764,7 +764,7 @@ internal sealed class EfRetainedMailboxMessageStore(
                     row.AttachmentCount,
                     receipt is null
                         ? null
-                        : EfIntakeReceiptStore.ParseDecision(receipt.Decision),
+                        : IntakeDecisionCodes.Parse(receipt.Decision),
                     receipt?.Id,
                     // The manual acceptance route writes a CaseIntakeLinks row;
                     // the automatic allocation route records its created case on

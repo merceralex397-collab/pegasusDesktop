@@ -231,8 +231,11 @@ public sealed partial class MimeKitPdfPigOpenXmlIntakeSourceReader
                 continue;
             }
 
-            var isInlineImage = format == SourceFormat.Image
-                && (attachment.IsInline || !string.IsNullOrWhiteSpace(attachment.ContentId));
+            var isInlineImage = IsInlineImage(
+                format,
+                isExplicitAttachment: false,
+                isInlineDisposition: attachment.IsInline,
+                contentId: attachment.ContentId);
             var attachmentNumber = ++limits.AttachmentCount;
             var attachmentLabel = $"{sourceLabel}, attachment {attachmentNumber}: {fileName}";
             result.Assets.Add(new(
