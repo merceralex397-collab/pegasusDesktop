@@ -46,3 +46,5 @@ invariant genuinely holds, and the triage exception is its own named test.
 Corpus reading narrowed fault 3: the body-phrase template carries a labelled
 `Registration:` line and was already extracted correctly. Only the subject
 template needed work.
+
+**2026-08-26 execution amendment** — upstream sync/re-check is removed as a prerequisite. Work is performed only in the PegasusDesktop repository from `origin/dev`; upstream material is retained as read-only provenance. No upstream, cloud, mailbox, Box, credential, deployment, or external write is permitted.

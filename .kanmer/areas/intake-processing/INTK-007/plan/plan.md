@@ -130,3 +130,11 @@ Negative tests worth pinning: a message carrying *both* tells classifies
 - **A triage request that also looks like an instruction.** Cannot happen: two
   category candidates resolve to `Ambiguous`, which is neither a case nor a
   Triage. Pinned as a test.
+
+## Execution amendment — 2026-08-26
+
+The inherited upstream carry-over text is provenance and repository evidence only. Per the current operator boundary, this ticket must not fetch, compare, merge, or sync any upstream repository or branch. The upstream commit and source snapshot are therefore not a prerequisite and no upstream re-check will be performed.
+
+Implementation source is the configured `origin` remote for this repository (the PegasusDesktop repository), based on `origin/dev`. Carry the fix in this repository regardless of the upstream branch state. Replace the prior sync-recheck acceptance item with: **the in-repository implementation and its acceptance criteria are verified on the merged PegasusDesktop `main` result**.
+
+The documentation note originally describing addition to an upstream-sync re-check list is amended to record INTK-007 as an in-repository carry-over owned by this board; it must not prescribe or imply a future upstream operation. No cloud, mailbox, Box, credential, deployment, or upstream write is in scope.

@@ -1,0 +1,1 @@
+2026-08-26 scope amendment: inherited upstream sync/re-check instructions are superseded. INTK-007 will be implemented and verified entirely in PegasusDesktop from origin/dev. The upstream snapshot/commit is read-only provenance; no upstream fetch, compare, merge, sync, or push is permitted. No cloud, mailbox, Box, credential, deployment, or external write is in scope.
