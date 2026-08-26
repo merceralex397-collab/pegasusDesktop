@@ -371,3 +371,11 @@ The amended ticket is an in-repository documentation and evidence record only:
 ### Simplification pass
 
 2026-08-26 — n/a — docs/evidence-only amendment; the branch adds no code or repository file diff, abstraction, compatibility path, or dependency.
+
+## Review correction — 2026-08-26
+
+The original upstream-sync implementation, verification, acceptance, and follow-up sections above are historical and non-executable. The current operator scope in this plan and the replacement ticket body are authoritative. The earlier generic simplification wording is likewise superseded by the single current disposition below.
+
+The exact command was rerun in `task/dsk-01-10-inrepo-boundary` at `38a7816ed2c6b91e77c46472844ce92499cfb3a5`, with `HEAD == origin/dev`. Its output was: `All relative Markdown links resolve (234 files checked).` and `Markdown placement passed for origin/dev..HEAD.` `git diff --check` exited 0. This is the current validation count for the proof; no earlier estimate is used.
+
+Current simplification disposition: 2026-08-26 — n/a — evidence/documentation-only amendment with an empty repository diff; no code, abstraction, compatibility path, dependency, or external operation.
