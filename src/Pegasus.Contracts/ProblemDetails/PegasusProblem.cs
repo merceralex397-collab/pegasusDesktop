@@ -3,6 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace Pegasus.Contracts.ProblemDetails;
 
+/// <summary>
+/// RFC 9457 problem details with a correlation identifier and typed version
+/// extensions. The body never carries payload dumps or infrastructure detail;
+/// this is the boundary documented by
+/// <c>src/Pegasus.Web/Mcp/AutomationMcpErrors.cs:7-15</c>.
+/// </summary>
 [JsonConverter(typeof(PegasusProblemJsonConverter))]
 public sealed record PegasusProblem
 {
@@ -43,9 +49,16 @@ public sealed record PegasusProblem
     [JsonIgnore]
     public Dictionary<string, object?> Extensions { get; set; } = [];
 
+    /// <summary>
+    /// The server's current version for a version-conflict response. This is
+    /// typed because <c>CaseVersionConflictException</c> exposes
+    /// <c>ActualVersion</c>, while both lease exceptions expose
+    /// <c>CaseVersion</c> (<c>CaseWorkflowContracts.cs:125-149</c>).
+    /// </summary>
     [JsonIgnore]
     public string? CurrentVersion => GetExtensionString("currentVersion");
 
+    /// <summary>The minimum client version accepted by the server.</summary>
     [JsonIgnore]
     public string? MinimumVersion => GetExtensionString("minimumVersion");
 
