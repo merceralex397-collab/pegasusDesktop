@@ -62,3 +62,9 @@ Replace the committed `Bootstrap:VerificationAccount` block in `src/Pegasus.Web/
 ## Simplification pass
 
 Before the PR, independently review the branch diff for reuse, unnecessary abstraction, duplicated policy, and scope expansion; record findings and dispositions here.
+
+## Local evidence and operator hold — 2026-08-26
+
+The own branch is based on `origin/dev` at `fff7e14178f1be6e3d4f2fbc5a5401799ba69409`; the worktree is clean and no product code has been changed. Read-only inspection confirms `src/Pegasus.Web/appsettings.json` still has `UserName` and a password under `Bootstrap:VerificationAccount`, with no `Removed` value. `src/Pegasus.Web/Program.cs:686-687` already enters reconciliation when either `UserName` or `Removed` is configured, and `:1016-1028` deletes the named account and returns before creation logic. `docs/operations.md:768-775` still records the production account and its disclosed-password warning.
+
+The required next edit and deployment are held by the operator boundary: no cloud/deployment writes are permitted until the full refactor is complete, and the ticket itself requires exact-target go-live confirmation before implementation. No configuration, documentation, release, or cloud change is being claimed.

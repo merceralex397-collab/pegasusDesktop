@@ -1,0 +1,1 @@
+2026-08-26 checkpoint: local read-only evidence confirms the plaintext verification username/password remain in appsettings.json; Program.cs already supports Removed-only deletion. Created open questions for exact go-live/deployment authorization and post-release credential-free handback. No code, documentation, deployment, cloud, or credential write performed.
