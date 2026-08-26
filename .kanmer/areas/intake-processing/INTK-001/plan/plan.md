@@ -98,3 +98,17 @@ All required findings are resolved:
 - dotnet test tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build -p:MSBuildNodeReuse=false — 101 passed.
 - dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~RecoveryTests" -p:MSBuildNodeReuse=false — 27 passed in 2m17s.
 - dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~QdosIntakeWebTests.ReadableManualUploadStagesPendingWorkAndOpensItsStatusPage" -p:MSBuildNodeReuse=false — 1 passed in 42s; live Web DI absence assertions passed.
+
+## CI remediation — 2026-08-26
+
+The exact-head release CI run 32965992828 exposed a supported concurrency path that the original implementation did not name at the adapter boundary. In `EfIntakeWorkStore.CompleteProcessingAsync`, SQL Server deadlock 1205 was surfaced by EF as `InvalidOperationException → DbUpdateException → SqlException`; `DurableIntake` therefore recorded `unexpected_intake_processing_failure` instead of scheduling the bounded retry required for concurrent grouped intake.
+
+The remediation stays within this ticket's existing Infrastructure/IntegrationTests scope:
+
+- `EfIntakeWorkStore.CompleteProcessingAsync` translates provider concurrency failures already identified by `IsRetryableConcurrencyFailure` into the existing `IntakeVersionConflictException` domain fault.
+- `GroupedImageIntakeConcurrencyTests.ProcessWithDeadlockRetryAsync` recognizes the same deadlock when EF wraps it, preserving the test's intended bounded retry around deliberately concurrent deliveries.
+- No CI workflow, retry budget, migration, cloud state, or operator-facing vocabulary changed.
+
+Focused validation:
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns" --no-restore --logger "trx;LogFileName=grouped-image-intake-after-translation.trx" --logger "console;verbosity=normal" -p:MSBuildNodeReuse=false` — passed (1 test, 1m 4s).
+- The preceding run against the helper-only change failed with `unexpected_intake_processing_failure`, and its TRX recorded SQL error 1205 through the EF wrapper; that failure is retained as diagnosis, not success evidence.
