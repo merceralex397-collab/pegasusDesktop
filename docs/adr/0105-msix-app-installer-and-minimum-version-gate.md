@@ -1,9 +1,9 @@
 ---
 id: ADR-0105
-status: accepted
+status: superseded
 date: 2026-08-24
 supersedes: []
-superseded_by: []
+superseded_by: [ADR-0031]
 related_capabilities: []
 related_frd: []
 tags: [desktop, msix, app-installer, release]
