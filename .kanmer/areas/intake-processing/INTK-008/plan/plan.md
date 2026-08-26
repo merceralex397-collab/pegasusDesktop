@@ -42,3 +42,11 @@ Make `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossR
 ## Simplification pass
 
 To be recorded after implementation over this branch's own diff. The intended result is a single small exception-chain predicate local to the existing helper; no reusable cross-production abstraction is justified by one test caller.
+
+## Scope decision — 2026-08-26
+
+The test-only approach was rejected after implementation evidence. The existing `ProcessQueuedIntake` catches the wrapped deadlock at `src/Pegasus.Core/Intake/DurableIntake.cs:573-596`; because `IntakeExceptionPolicy.IsTransientFailure` does not recognize the provider exception, it marks the work item terminally failed before the test helper can retry. The focused test after the attempted catch failed at iteration 0 with `State=Failed` and `FailureCode=unexpected_intake_processing_failure`.
+
+A correct fix must classify the provider deadlock in the production intake fault boundary and is already within the active ownership scopes of `INTK-001` (`IntakeExceptionPolicy` fault taxonomy) and `INTK-002` (`EfIntakeWorkStore.cs`). This ticket must not overlap those active claims. The test-only patch was reverted and the branch is clean at `origin/dev`.
+
+Disposition: non-actionable duplicate/scope correction. Archive this diagnostic ticket with the evidence above; do not mark it done and do not merge a test-only workaround.
