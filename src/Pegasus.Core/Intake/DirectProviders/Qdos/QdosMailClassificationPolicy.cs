@@ -102,7 +102,7 @@ public sealed partial class QdosMailClassificationPolicy : IMailClassificationPo
         {
             candidates.Add(MailCategory.Received(
                 ReceivedMailFamily.PreInstructionEmails,
-                "triage-request",
+                MailCategory.TriageRequestSubtype,
                 isReplyContext: isReplyPrefixed));
         }
 

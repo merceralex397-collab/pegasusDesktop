@@ -307,7 +307,29 @@ public sealed class ProcessIntake(
             or IntakeDecision.OcrRequired
             or IntakeDecision.TechnicalFailure
         && !(receipt.Decision == IntakeDecision.NeedsSorting
-            && ImageIntakeLifecycleRules.IsImageOnlyMaterial(receipt));
+            && (ImageIntakeLifecycleRules.IsImageOnlyMaterial(receipt)
+                || receipt.MailClassificationDecision?.IsTriageRequest == true));
+
+    private static IntakeEvidence CreateAcceptedTriageMatchEvidence(
+        MailClassificationResult classification)
+    {
+        var predicate = classification.Predicates.SingleOrDefault(candidate =>
+            candidate.Key == "body.triage-only-request" && candidate.Matched);
+        if (predicate is null)
+        {
+            throw new InvalidOperationException(
+                "A classified QDOS Triage request must have its accepted body predicate.");
+        }
+
+        return new(
+            IntakeEvidenceSource.EmailBody,
+            IntakeEvidenceStrength.Strong,
+            IntakeEvidenceFinding.AcceptedTriageMatch,
+            predicate.Key,
+            predicate.Detail,
+            classification.PolicyKey,
+            classification.PolicyVersion);
+    }
 
     internal static RegisterUnidentifiedRequest BuildUnidentifiedRegistrationRequest(IntakeReceipt receipt) =>
         new(
@@ -519,10 +541,31 @@ public sealed class ProcessIntake(
             reason = "Competing candidate cases match this message; the association requires manual sorting.";
         }
 
+        var triageClassification = mailClassificationDecision?.IsTriageRequest == true
+            ? mailClassificationDecision
+            : null;
+        var isTriageRequest = triageClassification is not null;
+        if (decision == IntakeDecision.CaseCreated && isTriageRequest)
+        {
+            decision = IntakeDecision.NeedsSorting;
+            reason = "A Triage request is pre-case work; no case is created from it.";
+        }
+
+        var evidence = new List<IntakeEvidence>(
+            readerEvidence.Length
+            + policyResult.Evidence.Count
+            + (isTriageRequest ? 1 : 0));
+        evidence.AddRange(readerEvidence);
+        evidence.AddRange(policyResult.Evidence);
+        if (isTriageRequest)
+        {
+            evidence.Add(CreateAcceptedTriageMatchEvidence(triageClassification!));
+        }
+
         return new(
             decision,
             reason,
-            [.. readerEvidence, .. policyResult.Evidence],
+            evidence,
             policyResult.Fields,
             policyResult.InstructionDraft,
             policyResult.MissingFields,
