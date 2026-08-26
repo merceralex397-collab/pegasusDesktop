@@ -58,3 +58,7 @@ A second independent reviewer returned NEEDS CHANGES. The Relates and terminolog
 - ForceUpdateFromAnyVersion must be described using the canonical App Installer XML element/value form, not as an attribute.
 
 The review confirmed exact local validation, one-file scope, no unsupported runtime/cloud claims, and correct docs-only simplification evidence.
+
+## Governance correction — 2026-08-26
+
+The first implementation path was rejected by independent review because it edited accepted ADR-0105 in place. The branch now preserves ADR-0105's body unchanged, records only its supersession metadata, adds ADR-0031 as the complete release contract using the next free number below ADR-0100, and updates the index current/superseded views. ADR-0031 also scopes the cloud table to feed versus gateway and uses the canonical ForceUpdateFromAnyVersion XML element. Final repository commit: be26313f; the PR head and CI must be checked at this exact SHA.

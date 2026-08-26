@@ -280,3 +280,7 @@ The same review requires two non-governance corrections if the chosen route reta
 ## Governance resolution — 2026-08-26
 
 The independent review's accepted-ADR blocker is resolved by the repository's prescribed superseding-ADR route, not by amending the published body. ADR-0105's body will be restored byte-for-byte to the merged accepted record; only its frontmatter will record status superseded and superseded_by ADR-0031. ADR-0031 is the next free number below ADR-0100, as required for a superseding decision when the native-desktop reserved block ADR-0100–ADR-0110 has no free slot. It will carry the complete Area 09 release decision, including the corrected feed-versus-gateway cloud table and canonical XML element wording. The index will move ADR-0105 to its superseded table and add ADR-0031 to the accepted table. This is a governance-preserving correction, not a product choice or a second ADR-0105.
+
+## Governance correction implementation — 2026-08-26
+
+Commit be26313f implements the valid superseding route. ADR-0105's body is byte-identical to origin/dev; only status superseded and superseded_by ADR-0031 changed. New ADR-0031 is the next free non-reserved number and carries the complete Area 09 release contract. The index moves 0105 to the superseded table and adds 0031 to the accepted table. The new ADR separates feed and gateway cloud scope and writes ForceUpdateFromAnyVersion as the XML element/value form. Local link and placement gates passed after the correction.

@@ -34,3 +34,11 @@
 - [ ] Scope cloud justification separately to feed and gateway.
 - [ ] Use the canonical ForceUpdateFromAnyVersion XML element/value wording.
 - [ ] Re-review the final exact PR head and only then merge.
+
+## Governance correction — 2026-08-26
+
+- [x] Restore the accepted ADR-0105 body and record only supersession metadata.
+- [x] Add ADR-0031 as the complete corrected release contract.
+- [x] Update the ADR index current/superseded views without a duplicate ADR-0105.
+- [x] Scope feed versus gateway cloud evidence and use canonical XML element wording.
+- [ ] Obtain passing exact-head CI and independent re-review of be26313f.
