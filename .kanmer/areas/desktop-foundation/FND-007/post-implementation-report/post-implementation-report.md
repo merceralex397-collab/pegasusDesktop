@@ -40,3 +40,7 @@ PASS from `pegasus-desktop-reviewer` (agent `01a0374e-ea58-7111-8aaa-c9721c43b2b
 - Branch `fnd-007-webview2-adr` pushed at `aa562e12`.
 - `gh pr create --base dev` failed: `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`.
 - No PR, CI, merge, proof, or Done claim is made. The ticket remains blocked at repository integration until a collaborator-capable PR path is available.
+
+## Closeout correction — 2026-08-26
+
+The earlier collaborator/PR creation blocker is superseded. PR #13 was created and merged into `dev` at `d4c17fdd`. Exact-head CI run `32897874831` passed all applicable docs-only lanes; independent review passed. Read-only checks against `origin/main` `80d9f96d` confirm ADR-0108 is present with `status: proposed`, the fixed `HWND_MESSAGE` wording and source-plan corrections are present, and `docs/adr/README.md` has no ADR-0108 row. No renderer, cloud, deployment or upstream operation is claimed.

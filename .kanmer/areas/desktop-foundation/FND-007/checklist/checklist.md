@@ -10,9 +10,9 @@
 
 ## Remaining Phase 0 delivery
 
-- [ ] After [[FND-005]] merges, update this branch from `dev` and confirm its PR contains only the three FND-007 documentation files.
-- [ ] Open the scoped PR to `dev`, obtain independent review, and merge through the repository workflow.
-- [ ] When that delivery reaches `main`, write FND-007 proof of the merged proposed ADR, no ADR index row, review, and documentation checks; then close FND-007.
+- [x] After [[FND-005]] merged, the branch was updated and PR #13 contained only the three FND-007 documentation files.
+- [x] Open the scoped PR to `dev`, obtain independent review, and merge through the repository workflow (PR #13).
+- [x] When that delivery reached `main`, write FND-007 proof of the merged proposed ADR, no ADR index row, review, and documentation checks; then close FND-007.
 
 ## Explicit Phase 7 hand-off
 
