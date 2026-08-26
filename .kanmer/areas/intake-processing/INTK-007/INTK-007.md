@@ -6,6 +6,7 @@ title: >-
   Unidentified item — it is stranded
 status: done
 area: intake-processing
+order: 190
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
@@ -41,7 +42,7 @@ prs:
   - '21'
 archived: false
 created: '2026-08-24T11:52:39.628Z'
-updated: '2026-08-26T17:34:40.819Z'
+updated: '2026-08-26T19:32:40.568Z'
 ---
 
 ## What
