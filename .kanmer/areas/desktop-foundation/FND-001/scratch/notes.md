@@ -7,3 +7,5 @@
 2026-08-25 — Pushed `task/fnd-001-baseline` at `8d6fc34d` to `origin`. Attempted `gh pr create --base dev --head task/fnd-001-baseline`; GitHub rejected it: `GraphQL: must be a collaborator (createPullRequest)`. No PR was created and no stage move was made. Smallest unblock: authenticate `gh` as a collaborator with permission to create pull requests in `merceralex397-collab/pegasusDesktop`, then create the PR against `dev`.
 
 2026-08-25 — Switched the existing GitHub CLI session from non-collaborator `collisionengineers` to the already-authenticated repository-owning account `merceralex397-collab`; PR #3 is now open against `dev`: https://github.com/merceralex397-collab/pegasusDesktop/pull/3. Awaiting independent review and required CI; no merge has been attempted.
+
+2026-08-26 — Closeout evidence: PR #3 merged dev at aa733928; final independent re-review PASS and exact CI run 32849827677 green at head 1a78a16f. Current origin/main contains the resulting baseline/topology documentation (later boundary wording may supersede the initial SHA sentence). Proof written; ready for verifying→done gate.
