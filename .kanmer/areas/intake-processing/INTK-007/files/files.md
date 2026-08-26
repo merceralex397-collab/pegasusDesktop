@@ -44,3 +44,12 @@ arrive.
 | `docs/capabilities.md` | Canonical-owner row if the triage capability's owner moves. Check, do not assume. |
 
 `docs/operator-notes.md` is **not** edited — it already says the rule.
+
+## Implementation additions — 2026-08-26
+
+- `src/Pegasus.Core/Intake/Classification/MailClassificationContracts.cs` and `src/Pegasus.Core/Intake/DirectProviders/Qdos/QdosMailClassificationPolicy.cs` — centralise and consume the QDOS triage-request subtype.
+- `src/Pegasus.Core/Intake/ReconcileUnidentifiedDestinations.cs` — allow the processing pass to resolve an existing open Unidentified item to the Triage it just created; the existing Case/Image paths remain unchanged.
+- `tests/Pegasus.Core.Tests/Intake/ReconcileUnidentifiedDestinationsTests.cs` — pin Triage-target resolution and null target reference.
+- `tests/Pegasus.IntegrationTests/QdosTriageIntegrationTests.cs` — exercise the real default classification route for known and missing registration branches.
+
+No desktop, Web API, cloud, mailbox, Box, deployment, or upstream files were changed.

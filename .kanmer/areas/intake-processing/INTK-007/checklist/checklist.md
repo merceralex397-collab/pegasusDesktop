@@ -1,22 +1,22 @@
 # Checklist
 
-- [ ] Name the triage-request category once; both literal copies use it
-- [ ] A classified triage request is `NeedsSorting`, never `CaseCreated`
-- [ ] One `AcceptedTriageMatch` evidence entry derived from the classification
-- [ ] `IIntakeTriageMatcher`, `NoAcceptedIntakeTriageMatcher`, `IntakeTriageMatch` deleted
-- [ ] DI registration and extraction-policy parameter removed; policy version 5 → 6
-- [ ] Subject registration rule; vehicle rule stops swallowing the label
-- [ ] Triage created when a registration is known
-- [ ] Unidentified registered when it is not, and not when a Triage was created
-- [ ] Core tests: decision, evidence, both branches, both subject spacings, ambiguity
-- [ ] Four integration suites moved off the `AcceptedTriageMatchPolicy` stub
-- [ ] Production composition test pins the active route
-- [ ] `docs/open-decisions.md` triage-matcher paragraph closed
-- [ ] FRD-03, FRD-09, `qdos.md`, `capabilities.md` updated
-- [ ] Release build green
-- [ ] Core tests green
-- [ ] Integration tests green (CI shards on the exact SHA)
-- [ ] Simplification pass over the branch diff, recorded in the plan
+- [x] Name the triage-request category once; classification and operational routing use the shared constant
+- [x] A classified triage request is `NeedsSorting`, never `CaseCreated`
+- [x] One `AcceptedTriageMatch` evidence entry derived from the classification
+- [x] `IIntakeTriageMatcher`, `NoAcceptedIntakeTriageMatcher`, `IntakeTriageMatch` deleted
+- [x] DI registration and extraction-policy parameter removed; policy version 5 → 6
+- [x] Subject registration rule; vehicle rule stops swallowing the label
+- [x] Triage created when a registration is known
+- [x] Unidentified registered when it is not, and not when a Triage was created
+- [x] Core tests: decision, evidence, both branches, both subject spacings, ambiguity
+- [x] Existing downstream integration suites retain their valid contract fixtures; new QdosTriageIntegrationTests cover the real default route (scope deviation documented below)
+- [x] Production composition test pins the active route
+- [x] `docs/open-decisions.md` triage-matcher paragraph closed
+- [x] FRD-03, FRD-09, `qdos.md`, and `capabilities.md` checked; capabilities owner remains TRI-02 and required updates were applied elsewhere
+- [x] Release build green
+- [x] Core tests green
+- [x] Local non-Corpus/non-Browser integration tests green; exact-head CI is a PR gate
+- [x] Simplification pass over the branch diff, recorded in the plan
 - [ ] PR into `dev`, independent review, merge
 - [ ] Proof on merged `main`
 
@@ -29,10 +29,9 @@ to move four integration suites off the `AcceptedTriageMatchPolicy` stub. I did
 not. Those suites test the downstream contract — replay safety, multi-match
 fail-closed, case association — and that contract is unchanged, so the stub is
 still a valid way to reach it. Rewriting them would have been a large diff for
-no added proof. Instead a new suite,
-`tests/Pegasus.IntegrationTests/TriageFromIntakeIntegrationTests.cs`, drives the
-**real** classification path end to end and proves both branches of the
-operator's rule. Three tests, green first run.
+no added proof. Instead the existing `QdosTriageIntegrationTests` class now
+drives the real default classification path end to end and proves both branches
+of the operator's rule.
 
 Also changed and worth a reviewer's eye:
 `ProcessIntakeTests.ClassificationIsRecordedOnlyAndNeverChangesTheIntakeDecision`
@@ -48,3 +47,5 @@ Corpus reading narrowed fault 3: the body-phrase template carries a labelled
 template needed work.
 
 **2026-08-26 execution amendment** — upstream sync/re-check is removed as a prerequisite. Work is performed only in the PegasusDesktop repository from `origin/dev`; upstream material is retained as read-only provenance. No upstream, cloud, mailbox, Box, credential, deployment, or external write is permitted.
+
+**2026-08-26 validation** — `dotnet restore` passed; `dotnet build --configuration Release` passed with 0 warnings and 0 errors; full Core tests passed 935/935; targeted SQL integration passed 19/19; full non-Corpus/non-Browser integration passed 886/886 with 2 expected skips. Final simplification changes were revalidated by a final 119/119 focused Core pass and 19/19 targeted SQL integration pass.

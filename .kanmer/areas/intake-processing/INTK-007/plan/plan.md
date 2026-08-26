@@ -147,3 +147,14 @@ The documentation note originally describing addition to an upstream-sync re-che
 - `docs/capabilities.md` was checked: TRI-02 remains the canonical owner and its owner does not move, so no capabilities-registry edit is required.
 - `docs/open-decisions.md` is updated because its inactive-matcher statement is superseded by the accepted route-owned implementation.
 - No upstream operation is required or permitted. No cloud, mailbox, Box, credential, deployment, or external write is required.
+
+## Simplification pass — 2026-08-26
+
+Independent read-only pass by Ohm reviewed the branch diff against `origin/dev` (`fff7e141`) across reuse, simplification, efficiency, and altitude/scope.
+
+- **Reuse:** leave as-is. The implementation reuses the existing classification policy, `IsUkRegistration`, image-only deferral, and the returned `TriageRecord`; retiring the no-op matcher removes an unused abstraction.
+- **Simplification:** applied. Cached the triage classification in `triageClassification`/`isTriageRequest` rather than reevaluating it; removed the unnecessary two-argument `ResolveForReceiptAsync` compatibility overload and updated its test caller.
+- **Efficiency:** no finding. Passing the newly created `TriageRecord` into reconciliation avoids a second Triage lookup and the existing open-item discriminator remains first.
+- **Altitude/scope:** applied. Accepted evidence derivation is explicit for the one currently accepted QDOS predicate `body.triage-only-request` rather than a broad future predicate convention. Corrected `qdos.md` to say classification predicate. No unrelated findings were left unapplied.
+
+The pass did not identify any required behaviour change beyond these applied simplifications.
