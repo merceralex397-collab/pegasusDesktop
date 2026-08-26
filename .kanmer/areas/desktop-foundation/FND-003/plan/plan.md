@@ -248,3 +248,15 @@ behaviour.
 ## Simplification pass
 
 2026-08-25 — `n/a — docs-only`. The only repository change is the six-line canonical `Deviation:` note required by the live board shape; no code or architecture was added.
+
+## Live board verification recheck — 2026-08-26
+
+Fresh Kanmer MCP evidence (server `0.3.3`, `sha256Short=03196057`) reports the effective board root `C:\\Users\\PC\\Documents\\GitHub\\pegasusDesktop\\.worktrees\\kanmer`, repository root `C:\\Users\\PC\\Documents\\GitHub\\pegasusDesktop`, format `3`, source `file`, and no listing warnings. The repository check is `upToDate=true`; its only stale entry is informational `board-config=compensated` because the runtime falls back to current shipped defaults.
+
+- `list_board`: exactly 16 expected areas and prefixes: `pr-review/PR`, `mail-communications/MAIL`, `automation-integrations/AUTO`, `documents-reports/DOCS`, `engineering-assessment/ENG`, `intake-processing/INTK`, `platform-operations/PLAT`, `delivery-repository/DELIV`, `case-reference-workflow/CASE`, `desktop-foundation/FND`, `gateway-api/GWY`, `desktop-ui/DUI`, `desktop-features/FEAT`, `release-desktop/REL`, `testing/TEST`, `agent-tooling/TOOL`.
+- `list_groups`: exactly 25 non-archived groups (`EPIC-001`…`EPIC-014`, `HZN-001`…`HZN-011)); `EPIC-014` is the deliberate carry-over group.
+- `get_group_doc(context.md)` returned content for all 25 groups. Repository paths cited by group bodies were checked present; EPIC-011 and EPIC-012 cite `HZN-001/board-conventions.md § 2 "Deviation to note"`.
+- Gate probes: chore `FND-003` requires `plan` and `questions-resolved` before done proof; feature `AUTO-001` requires governing-doc, research, files, plan, checklist and questions-resolved before implementation, and post-implementation-report before review.
+- Current board movement has left backlog at 0 and the `desktop-conversion` label on 209 active tickets. This is a live post-seed board, not a re-seed; no group or ticket was created during this verification.
+
+PR #19 (`fnd-003-board-shape`) is merged into `dev` at merge commit `fff7e14178f1be6e3d4f2fbc5a5401799ba69409`; repository-check run `32981200637` passed its applicable documentation/changes lanes at the exact PR head. The ticket's proof remains intentionally unwritten until the reviewed `dev` history is promoted to `main`, as required by the repository Kanmer workflow.
