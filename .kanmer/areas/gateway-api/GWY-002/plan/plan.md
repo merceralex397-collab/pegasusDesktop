@@ -298,8 +298,7 @@ The `proof` document is produced from these command logs:
 
 ## Simplification pass
 
-_Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this branch's own
-diff before the PR, recorded here under a dated heading._
+_Completed on 2026-08-27; see the dated `## Simplification pass` heading below._
 
 ## Implementation checkpoint — 2026-08-27
 
@@ -307,7 +306,7 @@ Implemented the planned gateway composition, path-scoped exception handler, corr
 
 The planned `IStartupFilter` throwing-endpoint harness was not used. The production group intentionally contains no endpoint, and adding a test-only route through minimal-host startup would require a production-facing test hook or alter route composition. The fallback named in step 10 is therefore used: `DesktopGatewayProblemTests` directly invoke the internal handler for every mapping branch, while `DesktopGatewayCompositionTests` exercise the real `WebApplicationFactory` composition and machine-surface behavior. This keeps production scope unchanged and preserves branch-complete coverage.
 
-Focused validation completed: `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DesktopGateway" -nr:false` — 11 passed, 0 failed, 0 skipped.
+Focused validation completed: `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DesktopGateway" -nr:false` — 19 passed, 0 failed, 0 skipped.
 
 ## Simplification pass — 2026-08-27
 
@@ -316,3 +315,14 @@ Focused validation completed: `dotnet test ./tests/Pegasus.IntegrationTests/Pega
 - **Efficiency:** the initial logging call triggered repository analyzers `CA1848` and `CA1873`; it was replaced with a source-generated `LoggerMessage` delegate. No unnecessary per-request allocation or logging-template parsing remains.
 - **Clarity/altitude:** exception branches are ordered before their `InvalidOperationException` base type, and the path-scoped handler is composed only when the feature gate is open. No business rules, authentication, authorization, or client-version policy were added outside their owning tickets.
 - **Disposition:** no behavior-preserving simplification findings remain unapplied. The documented direct-handler test fallback is retained because the production group intentionally has no endpoint and adding a test-only production hook would expand scope.
+
+
+## Review remediation — 2026-08-27
+
+Hilbert's independent review identified evidence and boundary gaps. Remediated them before merge:
+
+- The closed-gate composition theory now issues the required `GET /api/v1/anything` and asserts 404 for both absent and explicit-false configurations.
+- The enabled composition fact now proves an unmatched API request returns `application/problem+json`, the `not-found` type, and the supplied correlation ID rather than the Razor `/status/404` page.
+- The enabled path branch now applies correlation middleware before the path-scoped exception handler and a path-scoped status-code writer, so unmatched API 404s and pre-endpoint failures receive the same correlation/problem boundary as matched endpoints. The endpoint filter remains attached for later routes and reuses the middleware's correlation value.
+- A test-only `IStartupFilter` appends a throwing middleware after the application pipeline, allowing the real host's path-scoped exception handler to be exercised without a production route or hook. The direct handler facts remain as branch-level coverage.
+- Focused validation after remediation: 19 passed, 0 failed, 0 skipped.

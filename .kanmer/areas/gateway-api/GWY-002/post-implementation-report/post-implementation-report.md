@@ -25,3 +25,15 @@ The plan's test-only startup-filter endpoint was not used. Because this ticket i
 ## Review and delivery handoff
 
 The branch is pushed to the configured `origin` remote as `task/desktop-gateway-group`. The next required action is opening the PR to `dev`, obtaining independent review from an agent that did not implement the ticket, and waiting for exact-head CI before merging.
+
+## Review remediation — 2026-08-27
+
+Hilbert's independent review was initially FAIL. Before merge, the findings were remediated:
+
+- both closed-gate configurations now issue and assert the required HTTP 404;
+- the enabled composition fact asserts a typed `not-found` RFC 9457 body and correlation ID for an unmatched API request;
+- the real host now applies path-scoped correlation middleware and status-code problem handling, while the endpoint filter remains attached for later matched routes;
+- a test-only startup-filter middleware exercises the real path-scoped exception handler for all seven mappings without adding a production endpoint or hook;
+- the focused suite was rerun after these changes: 19 passed, 0 failed, 0 skipped.
+
+The stale plan placeholder and test-count inconsistency were corrected in the plan document. Hilbert's review findings are therefore addressed pending the final exact-head CI result.
