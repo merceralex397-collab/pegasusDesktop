@@ -276,3 +276,18 @@ Corrective validation:
 - Documentation links and Markdown placement scripts — both passed (232 links checked).
 
 The reviewer’s read-only full rerun was constrained by unrelated temporary-directory ACL failures; the serial local full test and canonical build are green.
+
+## FND-028 synchronization and server-filter completion — 2026-08-26
+
+The previously deferred server-filter registration is now executable because current \`origin/dev\` contains \`Pegasus.Server.slnf\` from FND-028. The task branch merged \`origin/dev\` as \`17d49224\`. Inspection showed that the filter and its architecture expectation both omitted \`src/Pegasus.Contracts/Pegasus.Contracts.csproj\`; no duplicate filter was created. Added that single project entry to \`Pegasus.Server.slnf\` and to \`ServerSolutionFilterContainsExactlyTheServerProjects\`, then committed/pushed \`0a3d23be\`.
+
+Validation on exact head \`0a3d23becc5a1038ab166effafd5203847bc3b5c5\`:
+
+- \`dotnet restore ./Pegasus.Server.slnf --locked-mode\` — passed.
+- \`dotnet build ./Pegasus.Server.slnf --configuration Release --no-restore --nologo\` — passed, 0 warnings, 0 errors.
+- \`dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build --logger 'console;verbosity=minimal'\` — 110 passed, 0 failed, 0 skipped.
+- \`dotnet build ./Pegasus.slnx --configuration Release --no-restore -p:UseSharedCompilation=false --nologo\` — passed, 0 warnings, 0 errors.
+- \`git diff --check\` — passed; the FND-029 worktree is clean.
+- PR #26 is open against \`dev\`; exact-head CI and fresh independent review are pending.
+
+The change remains limited to the FND-029 Contracts project integration and its architecture expectation. No cloud, upstream, credential, Worker, API, or desktop implementation change was made.

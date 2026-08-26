@@ -34,3 +34,17 @@ Updated validation after commit `54ade310`:
 - `pwsh ./scripts/Test-TestMarkdownPlacement.ps1` — passed.
 
 The branch is committed and pushed as `54ade310`; fresh independent review of the committed diff is pending. The FND-028-owned `Pegasus.Server.slnf` registration remains explicitly deferred because the file is absent from `origin/dev`.
+
+## FND-028 synchronization and server-filter completion — 2026-08-26
+
+Current \`origin/dev\` now includes the FND-028-owned \`Pegasus.Server.slnf\`. The FND-029 branch synchronized with it in \`17d49224\`; the filter was then corrected to include \`src/Pegasus.Contracts/Pegasus.Contracts.csproj\`, with the matching exact architecture expectation. That correction is committed and pushed as \`0a3d23becc5a1038ab166effafd5203847bc3b5c5\`.
+
+Evidence:
+
+- server-filter locked restore passed;
+- server-filter Release build passed with 0 warnings and 0 errors;
+- full architecture suite passed: 110 passed, 0 failed, 0 skipped;
+- full solution Release build passed with 0 warnings and 0 errors using shared compilation disabled;
+- worktree is clean and PR #26 is open against \`dev\`.
+
+The required fresh independent review and PR CI are pending. No merge or proof is claimed yet.
