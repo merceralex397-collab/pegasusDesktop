@@ -278,3 +278,19 @@ not in scope for this pass._
 ## Operator scope amendment — 2026-08-25
 
 The operator has prohibited all upstream synchronization. This supersedes the original sync procedure and its upstream-dependent acceptance criteria. The ticket now records the in-repository-only boundary: no upstream remote is added or fetched, no upstream commit is merged, the configured `pegasusDesktop` remote remains the only delivery remote, and the current repository baseline is preserved. Proof must show the remote configuration and the absence of any upstream operation; it must not claim an upstream sync.
+
+## In-repository validation — 2026-08-26
+
+- `git remote -v` — passed: the only configured remote is `origin` for `merceralex397-collab/pegasusDesktop`; no upstream remote exists.
+- `git config --get-regexp "^remote\."` — passed: only `remote.origin.url` and its fetch refspec are configured.
+- `git for-each-ref refs/remotes` — passed: only `origin/*` remote-tracking refs exist; no `upstream/*` refs exist.
+- `git rev-parse HEAD origin/dev origin/main` — passed: this no-change branch and both configured release refs are at `3b1737de2a27f84aa1bea03bf2c34d41d5a8006a`.
+- `pwsh -NoProfile -File ./scripts/Test-DocumentationLinks.ps1` — passed; 236 files checked.
+- `pwsh -NoProfile -File ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` — passed; no Markdown placement violations.
+- `git diff --check` and `git status --short` — passed; the branch has no changes relative to `origin/dev` and no whitespace errors.
+
+The historical upstream-sync acceptance items are superseded by the operator scope amendment. They are not checked off and no upstream operation is claimed. The current repository governance boundary is already present in `AGENTS.md` under `Current operator constraints` and in `docs/desktop/README.md` under `Current operator boundary`.
+
+## Simplification pass — 2026-08-26
+
+n/a — documentation/governance-only. No branch diff was necessary: the required in-repository-only rule is already recorded in the current governance documents, and adding a second statement would duplicate the one-list/one-owner rule. The ticket's proof will cite those existing files and the remote/history checks above.
