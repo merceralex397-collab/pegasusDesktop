@@ -4,12 +4,15 @@ type: ticket
 title: >-
   DSK-10-02 · Retire the committed bootstrap verification account before desktop
   go-live
-status: preparing
+status: implementing
 area: platform-operations
-assignee: ''
+assignee: codex-mcp-client
 profile: fix
 stageEntered:
   preparing: '2026-08-24T21:21:13.849Z'
+taken_at: '2026-08-26T15:17:12.298Z'
+branch: task/dsk-10-02-retire-verification-account
+worktree: ../pegasus-worktrees/dsk-10-02-retire-verification-account
 labels:
   - desktop-conversion
   - plan-10
@@ -23,7 +26,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:05:04.687Z'
-updated: '2026-08-25T00:12:14.104Z'
+updated: '2026-08-26T15:17:12.298Z'
 ---
 
 ## What
