@@ -4,9 +4,9 @@ type: ticket
 title: >-
   upstream:TICK-018 · DOC-02 — Store source emails, instruction documents,
   images, correspondence, and reports in Box
-status: preparing
+status: implementing
 area: documents-reports
-assignee: ''
+assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:22:05.562Z'
@@ -30,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:20.436Z'
-updated: '2026-08-24T21:22:05.562Z'
+updated: '2026-08-26T15:16:30.471Z'
 ---
 
 ## What

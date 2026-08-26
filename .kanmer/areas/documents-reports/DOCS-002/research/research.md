@@ -24,3 +24,12 @@ Assessment 2026-08-20, after INTK-014 (PR #462, merged to dev) and against produ
 
 - Decide the correspondence/report automatic-retention contract: most likely the same durable outbox convention (new work kinds keyed on the association/sent-evidence row), reusing `BoxCaseCustody`/`BoxDocumentContentStore`; failure behaviour must follow FRD-05 (explicit failure + staff retry for case-scoped custody).
 - Any live Box verification uses only the approved disposable test subtree (`docs/operations.md#approved-box-integration-test-target`) — `requires-live-approval` label stands.
+
+## Live recheck — 2026-08-26
+
+- The branch is `task/upstream-tick-018-correspondence-custody`, based on `origin/dev` at `fff7e14178f1be6e3d4f2fbc5a5401799ba69409`; the own worktree is `../pegasus-worktrees/upstream-tick-018-correspondence-custody`. It is clean and no product code has been changed.
+- `src/Pegasus.Core/Custody/ExternalWorkProcessing.cs:6-13` defines the current durable work-kind strings; `:82-95` routes only the four existing custody kinds to the custody processor and fails closed for unknown kinds. `src/Pegasus.Infrastructure/Persistence/EfQueuedCustodyProcessor.cs:35-40` repeats the supported-custody-kind guard before loading work, so a new kind must be added consistently at both boundaries.
+- `src/Pegasus.Infrastructure/Persistence/EfIntakeMutationStore.cs:313-385` contains the staff `LinkAsync` association transaction; the current mutation records/replaces the association but no durable custody work is enqueued in that method. The automatic association path is a separate method later in the same store and must be rechecked before implementation.
+- `src/Pegasus.Infrastructure/Persistence/PegasusDbContext.cs:489-504` shows `ExternalWorkItems.OperationKey` has a unique index, supporting deterministic idempotency keys. `:760-781` and `:1241-1258` show `SentEmailEvidenceEntity` is a SQL-only entity with its own unique operation key and no custody-work relation.
+- Existing case custody uses the existing durable outbox and adapters; no second scheduling or Box credential path is justified. The local worktree is the only implementation source; no upstream sync is permitted.
+- The ticket's required live Box verification is an external write even when restricted to the approved disposable subtree. Current operator policy forbids cloud/deployment writes until the full refactor is complete, so this evidence cannot be produced by the agent in this run.
