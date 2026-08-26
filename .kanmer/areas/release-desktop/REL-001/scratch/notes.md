@@ -1,1 +1,3 @@
 2026-08-26 — Implementation checkpoint: appended the missing Area 09 release contract to the canonical ADR-0105 only. git diff --check and both documentation gates passed; exactly one ADR-0105 file and the existing index row remain.
+
+2026-08-26 main verification: origin/main is 80d9f96d64b1dfbeea4658adfc99351f71b303d7, containing PR #22's merged ADR reconciliation. Git object checks confirmed ADR-0031 and ADR-0105 are present; ADR-0031 is accepted and supersedes ADR-0105, while ADR-0105 is superseded by ADR-0031. `git diff --check 36dccd8fa1c883c38977b6721d86b745c45c9a94 80d9f96d64b1dfbeea4658adfc99351f71b303d7` passed. Branch validations and final independent review/CI are recorded in the plan and post-implementation report. Ready for proof and closeout.
