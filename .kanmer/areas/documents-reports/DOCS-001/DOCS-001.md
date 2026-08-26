@@ -35,11 +35,12 @@ docs_todo: true
 commits:
   - ff24adb9
   - 116a5896
+  - bb263b20
 prs:
-  - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/14'
+  - '14'
 archived: false
 created: '2026-08-24T11:41:20.415Z'
-updated: '2026-08-26T10:31:01.015Z'
+updated: '2026-08-26T11:09:10.162Z'
 ---
 
 ## What

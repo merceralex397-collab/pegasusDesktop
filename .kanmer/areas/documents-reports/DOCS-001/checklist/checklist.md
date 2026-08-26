@@ -42,3 +42,7 @@ Implementation and independent review are complete on the local branch; PR, merg
 - [x] Fresh independent review by Bernoulli passed with no actionable findings.
 - [x] Final targeted validation passed: Release build 0/0, 26/26 report Core tests, 23/23 focused integration/report/web/renderer/migration tests, 930/930 full Core tests, 101/101 architecture tests, and 69/69 migration grants.
 - [ ] Full repository integration suite remains open because 886 passed, 2 skipped, and the unrelated `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` test failed with SQL deadlock 1205 at `EfIntakeWorkStore.CompleteProcessingAsync` line 338.
+
+## Exact-head CI blocker — 2026-08-26
+
+- [ ] PR #14 head `bb263b20` required CI is fully green. Browser 49/49, unit, infrastructure, repository checks, SQL shards 1 and 3, and coverage passed; SQL shard 2 failed and its authorized rerun failed identically on the unrelated intake deadlock at `EfIntakeWorkStore.CompleteProcessingAsync:338`.

@@ -41,3 +41,7 @@ The pass reused the existing Core readiness policy/ports, existing document-cust
 ## Final review checkpoint — 2026-08-26
 
 Bernoulli independently reviewed the final diff and returned PASS with no actionable findings. The review verified exact report-version retry binding, canonical retry payloads, shared operator labels and office-time formatting, removal of duplicate explanatory/empty-state copy, and the report store's idempotency, concurrency, template, recovery, terminal, and grant controls.
+
+## Exact-head CI blocker — 2026-08-26
+
+PR #14 exact head `bb263b20a49af1375d2823ce5c4a803dd66bdc39` was validated by run `32959758190`. Browser passed 49/49; unit, infrastructure, changes, documentation, local-development-scripts, reference-data, SQL shards 1 and 3, and SQL coverage passed. SQL shard 2 failed, and the authorized failed-job rerun also failed, both on `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns`: SQL Server deadlock 1205 at `EfIntakeWorkStore.CompleteProcessingAsync` line 338, through `DurableIntake.ProcessQueuedIntake`. This is the same unrelated intake concurrency failure reproduced in the local suite; no DOCS-001 report path appears in either stack. The PR remains unmerged because repository policy requires green required CI. The intake deadlock must be resolved by its owning work or explicitly accepted by the owning ticket before DOCS-001 can merge.
