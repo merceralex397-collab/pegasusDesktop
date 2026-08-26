@@ -13,19 +13,25 @@
 - [x] Keep the three finality boundaries apart, as FRD-11 requires: generation is a draft; approval is a human act bound to a stored artifact identity and hash; sending is proved only by retained exact Sent evidence. A generated version is never rendered as approved, issued, sent or received. Version-specific approval and Sent association are not built here — they belong to the imported `upstream:TICK-208`, which sequences after this ticket.
 - [x] Test in the projects that exist on the fork. `tests/Pegasus.Core.Tests` — readiness fails closed on each missing or unaccepted input with the named requirement; the logical key is deterministic; a changed accepted payload or template yields a successor version; correction never mutates a predecessor. `tests/Pegasus.IntegrationTests` — following `CaseWorkflowPersistenceTests.cs`, `DocumentCustodyDurabilityTests.cs` and `CustodyOutboxIntegrationTests.cs`: exact replay returns the same report and stores nothing new, two concurrent callers produce one version, a crash between database commit and content write leaves no half-report, and the migration preserves existing approvals.
 - [ ] Verify on the local stack only (L-02) — no Azure and no Box write. Then run the simplification pass over this branch diff, record it under a dated `## Simplification pass` heading in this ticket's `plan` document, and open the PR into `dev`.
-- [ ] An incomplete, unaccepted or ambiguous assessment cannot produce a report on **either** the draft or the register path, and the refusal names each outstanding requirement rather than collapsing into one generic message.
-- [ ] One accepted input plus template version produces exactly one report version; an exact replay returns or reconciles to it and creates no second version.
-- [ ] The case retains an immutable report version identity, hash, template/payload versions, provenance and custody state for the assessment and fee-note artifacts as a fixed pair.
-- [ ] A correction or addendum appends a successor version and leaves every earlier artifact, its provenance and its approval untouched.
-- [ ] Generation is never rendered or recorded as approval, issue, sending or external receipt.
-- [ ] Readiness has exactly one owner in `src/Pegasus.Core`; no second required-field list exists in Web, Infrastructure or the desktop.
-- [ ] The new tables carry their runtime-role grants and `scripts/Test-MigrationGrants.ps1` passes.
-- [ ] The trigger question of step 3 is answered by the operator and recorded before the trigger is implemented.
-- [ ] A complete accepted assessment produces a deterministic report through the composed application path.
-- [ ] Incomplete or ambiguous assessment data cannot render.
-- [ ] The case retains immutable reference/version/hash/provenance and idempotent retry behavior.
-- [ ] Report generation does not count as approval, sending, or external receipt.
+- [x] An incomplete, unaccepted or ambiguous assessment cannot produce a report on **either** the draft or the register path, and the refusal names each outstanding requirement rather than collapsing into one generic message.
+- [x] One accepted input plus template version produces exactly one report version; an exact replay returns or reconciles to it and creates no second version.
+- [x] The case retains an immutable report version identity, hash, template/payload versions, provenance and custody state for the assessment and fee-note artifacts as a fixed pair.
+- [x] A correction or addendum appends a successor version and leaves every earlier artifact, its provenance and its approval untouched.
+- [x] Generation is never rendered or recorded as approval, issue, sending or external receipt.
+- [x] Readiness has exactly one owner in `src/Pegasus.Core`; no second required-field list exists in Web, Infrastructure or the desktop.
+- [x] The new tables carry their runtime-role grants and `scripts/Test-MigrationGrants.ps1` passes.
+- [x] The trigger question of step 3 is answered by the operator and recorded before the trigger is implemented.
+- [x] A complete accepted assessment produces a deterministic report through the composed application path.
+- [x] Incomplete or ambiguous assessment data cannot render.
+- [x] The case retains immutable reference/version/hash/provenance and idempotent retry behavior.
+- [x] Report generation does not count as approval, sending, or external receipt.
 
 ## Progress notes
 
 Implementation is complete on the local branch; final full-suite verification, independent review, PR, merge, and Kanmer closeout remain tracked as separate gates.
+
+
+## Validation checkpoint — 2026-08-26
+
+- Targeted DOCS-001 validation passed: Release build (0 warnings/errors), 26/26 Core report tests, 13/13 focused integration/web/renderer/migration tests, 930/930 Core tests, 101/101 architecture tests, and migration grants for 68/68 migration files.
+- Full local integration validation was run but is not marked green: 883 passed, 2 skipped, 1 failed. The sole failure is the unrelated `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` SQL deadlock 1205 at `EfIntakeWorkStore.CompleteProcessingAsync` line 338; it reproduced independently. The full-stack verification checkbox remains open until this repository-level failure is resolved or separately accepted by the owning ticket.

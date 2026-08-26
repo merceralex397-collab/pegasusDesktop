@@ -88,3 +88,10 @@ _To be completed against the branch diff before opening the PR._
 - Kept report persistence in one focused store and one focused Core aggregate file; the only new retry state is the three-attempt policy required by the ticket.
 - Removed the redundant imported/non-imported total-labour renderer branch and excluded only request metadata (report date and optimistic case-version token) from the logical-key hash. Selected repair-specification identity remains part of the accepted payload.
 - The independent review findings about date-boundary replay, selected estimate identity, version guards, concurrency, pending metadata recovery, validation, retry terminal state, shared readiness, and misleading UI text were applied. No known behaviour-preserving simplification finding remains unapplied.
+
+## Validation checkpoint — 2026-08-26
+
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false` — passed with 0 warnings and 0 errors.
+- Targeted report evidence — 26/26 Core report tests and 13/13 focused integration/web/renderer/migration tests passed; the full Core suite passed 930/930, architecture tests passed 101/101, and `scripts/Test-MigrationGrants.ps1` passed for all 68 migration files.
+- The full local integration command `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --no-restore --filter "Category!=Corpus&Category!=Browser"` completed with 883 passed, 2 skipped, and 1 failure in 12m 8s. The sole failure is unrelated to DOCS-001: `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` fails with SQL Server deadlock 1205 at `EfIntakeWorkStore.CompleteProcessingAsync` line 338. The exact test reproduced independently in 46s with detailed logging. No DOCS-001 report path appears in that failure stack.
+- This is not claimed as a green full-suite result. Task-specific validation is green; the unrelated intake deadlock remains a repository-level validation blocker to record in the post-implementation report.
