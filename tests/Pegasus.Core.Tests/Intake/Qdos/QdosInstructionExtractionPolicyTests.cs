@@ -299,6 +299,29 @@ public sealed class QdosInstructionExtractionPolicyTests
             Assert.IsType<InstructionDraft>(result.InstructionDraft).VehicleRegistration);
     }
 
+    [Theory]
+    [InlineData("Engineer Triage - Our Claim Reference 46384/1 , Vehicle Registration YD14VGJ", "YD14VGJ")]
+    [InlineData("Engineer Triage - Our Claim Reference : 46246/1 - Vehicle Registration : VO75DFJ", "VO75DFJ")]
+    public void SubjectTriageRegistrationSupportsBothProviderSpacings(
+        string subject,
+        string expectedRegistration)
+    {
+        var result = new QdosInstructionExtractionPolicy().Extract(
+            ReadableWithSubject(subject),
+            ProcessedAtUtc,
+            QdosContext);
+
+        var registration = Assert.Single(
+            result.Fields,
+            field => field.Name == "Vehicle registration");
+        Assert.Equal(expectedRegistration, registration.SuggestedValue);
+        Assert.Equal(
+            expectedRegistration,
+            Assert.IsType<InstructionDraft>(result.InstructionDraft).VehicleRegistration);
+        Assert.Null(
+            Assert.Single(result.Fields, field => field.Name == "Vehicle description").SuggestedValue);
+    }
+
     [Fact]
     public void FlattenedLineWithTwoLabelledFieldsSplitsAtTheSecondLabel()
     {
