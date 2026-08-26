@@ -4,7 +4,7 @@ type: ticket
 title: >-
   upstream:INTK-002 · Intake duplication chores: adapter-wide fault naming, one
   decision-code table, Web-composition assertion, leftover port
-status: implementing
+status: verifying
 area: intake-processing
 order: 80
 assignee: codex-mcp-client
@@ -28,11 +28,13 @@ blocks:
 docs_todo: true
 commits:
   - e430e9b801687f486094b4b3e08eb627df4f42f1
+  - 5373d9c1dba15c7a27baa037669697f906f82b89
 prs:
   - '7'
+  - '16'
 archived: false
 created: '2026-08-24T11:44:22.452Z'
-updated: '2026-08-26T12:26:01.350Z'
+updated: '2026-08-26T13:12:32.289Z'
 ---
 
 ## What
