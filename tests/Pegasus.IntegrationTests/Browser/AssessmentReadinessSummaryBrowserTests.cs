@@ -48,7 +48,7 @@ public sealed class AssessmentReadinessSummaryBrowserTests
         Assert.Equal(200, response.Status);
 
         // Exactly one itemised list on the whole page: the readiness panel's
-        // disclosure owns it, the report-draft card only references the count.
+        // disclosure owns it, and the report-draft panel does not repeat it.
         var itemisedLists = support.Page.Locator(".blocker-list");
         Assert.Equal(1, await itemisedLists.CountAsync());
         var items = itemisedLists.Locator(".blocker");
@@ -61,14 +61,11 @@ public sealed class AssessmentReadinessSummaryBrowserTests
         Assert.Equal(itemCount, chipCount);
         Assert.Matches(@"^\d+ issues detected$", chipText.Trim());
 
-        // The report-draft "Not ready" card names the same count and points
-        // back to the readiness panel instead of repeating the list.
-        var notReadyText = await support.Page.Locator(".status-card--attention", new()
-        {
-            HasText = "Not ready"
-        }).InnerTextAsync();
-        Assert.Contains($"{chipCount} issues detected", notReadyText, StringComparison.Ordinal);
-        Assert.Contains("see Readiness above", notReadyText, StringComparison.Ordinal);
+        // The report-draft panel is intentionally absent for this not-ready
+        // fixture; the readiness panel is the sole owner of the blockers.
+        var reportDraft = support.Page.Locator("section[aria-labelledby='report-draft-title']");
+        Assert.Equal(0, await reportDraft.Locator(".status-card--attention").CountAsync());
+        Assert.DoesNotContain("see Readiness above", await reportDraft.InnerTextAsync(), StringComparison.Ordinal);
 
         // Collapsed by default: the disclosure content is not visible.
         Assert.False(await items.First.IsVisibleAsync());
