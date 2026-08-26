@@ -1,1 +1,3 @@
 2026-08-25 operator scope amendment applied: upstream synchronization is prohibited; this ticket is now limited to an in-repository boundary and proof. No upstream or cloud/deployment write was performed.
+
+2026-08-26 — Took ticket on task/dsk-01-10-inrepo-boundary. Confirmed the historical upstream-sync plan is superseded by the operator boundary. No upstream remote was added/read/fetched; only configured origin (pegasusDesktop) exists. Branch is unchanged at origin/dev 38a7816ed2c6b91e77c46472844ce92499cfb3a5. Validation passed: git diff --check; Test-DocumentationLinks.ps1 (234 files); Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD. Appended authoritative scope amendment and simplification disposition to plan. Awaiting independent review before proof/closeout.

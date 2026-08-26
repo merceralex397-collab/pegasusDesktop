@@ -346,3 +346,28 @@ This ticket is now an in-repository record only:
 - Record the in-repository baseline and this boundary in the owned repository documentation and Kanmer proof.
 
 The amended acceptance is: the repository-only source boundary is documented, no upstream operation is performed, and downstream tickets proceed from the current in-repository baseline.
+
+## Operator scope amendment — 2026-08-26 (authoritative)
+
+The operator's current repository boundary supersedes the historical first-sync procedure above. This ticket must not add, read, compare, fetch, merge, or push an upstream remote, and it must not import external commits. All work remains in this repository and uses the configured `pegasusDesktop` remote (Kanmer's `origin`).
+
+The amended ticket is an in-repository documentation and evidence record only:
+
+- The historical upstream comparison remains provenance; it is not an executable requirement.
+- The repository already records the boundary in `docs/desktop/README.md` § Current operator boundary, `docs/desktop/01-inventory-and-parity/README.md` row DSK-01-10, and `upstream-kanmer-carryover.md` § Operator boundary — current refactor.
+- The current baseline is the branch's exact `origin/dev` head `38a7816ed2c6b91e77c46472844ce92499cfb3a5`, checked 2026-08-26. The configured remote is the only remote; no `upstream` remote is present.
+- No repository file change is required by this amendment because the boundary documentation is already present on `origin/dev`. The ticket's implementation diff is therefore empty; Kanmer documents and proof are the material deliverable.
+- Cloud writes, deployments, credentials, external environment changes, and upstream synchronization remain out of scope until the full refactor is complete.
+
+### Amended acceptance and verification
+
+- The in-repository-only boundary is stated in the owned desktop planning documents.
+- `git remote -v` shows only the configured `pegasusDesktop` remote; no upstream operation was performed.
+- `git diff --check` passes.
+- `pwsh ./scripts/Test-DocumentationLinks.ps1` passes: all relative Markdown links resolve (234 files checked).
+- `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` passes.
+- No code, external history, deployment, or runtime claim is made.
+
+### Simplification pass
+
+2026-08-26 — n/a — docs/evidence-only amendment; the branch adds no code or repository file diff, abstraction, compatibility path, or dependency.
