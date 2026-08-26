@@ -19,3 +19,10 @@ One box per plan step, in plan order. The last box produces `proof`.
 ## Progress notes
 
 (append with `set_ticket_doc(doc: "checklist", append: true)`)
+
+## Progress notes
+
+- [x] Steps 1–2: repository orientation, gate check/take, Microsoft Learn API-shape verification, Contracts reference confirmation, and architecture-test update.
+- [x] Steps 3–8: gateway constants/options, composition extensions, Program wiring, problem mapping, correlation/client-version filters, and Razor machine-surface guard implemented.
+- [x] Focused DesktopGateway validation: 11 passed, 0 failed, 0 skipped.
+- [x] Step 10 fallback recorded in the plan: direct handler tests cover all mappings because the production route group intentionally has no endpoint.

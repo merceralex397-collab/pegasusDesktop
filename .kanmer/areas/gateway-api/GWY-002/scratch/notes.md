@@ -1,0 +1,1 @@
+2026-08-27: Implementation checkpoint. Focused DesktopGateway tests passed 11/11. The documented direct-handler fallback covers all exception branches because the production route group intentionally has no endpoint.

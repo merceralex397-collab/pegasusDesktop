@@ -300,3 +300,11 @@ The `proof` document is produced from these command logs:
 
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this branch's own
 diff before the PR, recorded here under a dated heading._
+
+## Implementation checkpoint — 2026-08-27
+
+Implemented the planned gateway composition, path-scoped exception handler, correlation/client-version filter registration, safe problem mapping, Web → Contracts reference, architecture expectation, and current-state documentation. Microsoft Learn verification confirmed the .NET 10 `MapGroup`, endpoint-filter, `AddProblemDetails`, `IExceptionHandler`, and `UseExceptionHandler` shapes.
+
+The planned `IStartupFilter` throwing-endpoint harness was not used. The production group intentionally contains no endpoint, and adding a test-only route through minimal-host startup would require a production-facing test hook or alter route composition. The fallback named in step 10 is therefore used: `DesktopGatewayProblemTests` directly invoke the internal handler for every mapping branch, while `DesktopGatewayCompositionTests` exercise the real `WebApplicationFactory` composition and machine-surface behavior. This keeps production scope unchanged and preserves branch-complete coverage.
+
+Focused validation completed: `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DesktopGateway" -nr:false` — 11 passed, 0 failed, 0 skipped.
