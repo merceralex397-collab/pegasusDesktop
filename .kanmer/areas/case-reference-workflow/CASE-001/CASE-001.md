@@ -14,9 +14,6 @@ stageEntered:
   review: '2026-08-25T06:06:37.232Z'
   implementing: '2026-08-25T06:17:42.877Z'
   verifying: '2026-08-26T14:29:15.164Z'
-taken_at: '2026-08-25T11:38:04.507Z'
-branch: task/case-001-observed-images
-worktree: ../pegasus-worktrees/case-001-observed-images
 labels:
   - qdos26013
   - production-defect
@@ -38,15 +35,16 @@ refs:
   - docs/frd/frd-01-case-identity-and-lifecycle.md
 docs_todo: true
 commits:
-  - 29c1b83b030f402c349576e6fc4f7e1ab1184430
+  - 29c1b83b
   - 995bf671
   - d0604850
-  - 737059ddc497f072b8678c8cd2f3e61aa04b6b00
+  - 737059dd
+  - 12826efa
 prs:
   - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/4'
 archived: false
 created: '2026-08-24T11:42:25.781Z'
-updated: '2026-08-26T14:29:15.164Z'
+updated: '2026-08-26T14:29:44.453Z'
 ---
 
 ## What
