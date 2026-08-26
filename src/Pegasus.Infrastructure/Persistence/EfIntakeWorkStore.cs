@@ -308,36 +308,43 @@ public sealed class EfIntakeWorkStore(
         CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        await using var transaction = await context.Database.BeginTransactionAsync(
-            IsolationLevel.Serializable,
-            cancellationToken);
-        var item = await context.IntakeWorkItems.SingleOrDefaultAsync(item =>
-            item.Id == workItemId && item.LeaseToken == leaseToken,
-            cancellationToken)
-            ?? throw new InvalidOperationException("The intake work item lease was lost before completion.");
-        var stagedReceiptId = item.StagedReceiptId;
-        var revision = (await context.IntakeEvaluations
-            .Where(evaluation => evaluation.StagedReceiptId == stagedReceiptId)
-            .Select(evaluation => (int?)evaluation.Revision)
-            .MaxAsync(cancellationToken) ?? 0) + 1;
-        var evaluation = new IntakeEvaluationEntity
+        try
         {
-            Id = Guid.NewGuid(),
-            StagedReceiptId = item.StagedReceiptId,
-            ProcessedReceiptId = processedReceiptId,
-            Revision = revision,
-            EvaluatedAtUtc = completedAtUtc
-        };
-        context.IntakeEvaluations.Add(evaluation);
-        item.State = ToCode(IntakeWorkState.Completed);
-        item.ProcessedReceiptId = processedReceiptId;
-        item.CompletedAtUtc = completedAtUtc;
-        item.LeaseToken = null;
-        item.LeaseExpiresAtUtc = null;
-        item.FailureCode = null;
-        await context.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-        return Map(evaluation);
+            await using var transaction = await context.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable,
+                cancellationToken);
+            var item = await context.IntakeWorkItems.SingleOrDefaultAsync(item =>
+                item.Id == workItemId && item.LeaseToken == leaseToken,
+                cancellationToken)
+                ?? throw new InvalidOperationException("The intake work item lease was lost before completion.");
+            var stagedReceiptId = item.StagedReceiptId;
+            var revision = (await context.IntakeEvaluations
+                .Where(evaluation => evaluation.StagedReceiptId == stagedReceiptId)
+                .Select(evaluation => (int?)evaluation.Revision)
+                .MaxAsync(cancellationToken) ?? 0) + 1;
+            var evaluation = new IntakeEvaluationEntity
+            {
+                Id = Guid.NewGuid(),
+                StagedReceiptId = item.StagedReceiptId,
+                ProcessedReceiptId = processedReceiptId,
+                Revision = revision,
+                EvaluatedAtUtc = completedAtUtc
+            };
+            context.IntakeEvaluations.Add(evaluation);
+            item.State = ToCode(IntakeWorkState.Completed);
+            item.ProcessedReceiptId = processedReceiptId;
+            item.CompletedAtUtc = completedAtUtc;
+            item.LeaseToken = null;
+            item.LeaseExpiresAtUtc = null;
+            item.FailureCode = null;
+            await context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return Map(evaluation);
+        }
+        catch (Exception exception) when (IsRetryableConcurrencyFailure(exception))
+        {
+            throw new IntakeVersionConflictException();
+        }
     }
 
     public async Task<IntakeEvaluationRevision?> GetCompletedEvaluationAsync(

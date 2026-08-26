@@ -13,6 +13,20 @@ Planning baseline: fork `merceralex397-collab/pegasusDesktop`, branch `main`
 at `191ddf33`, 2026-08-23. Upstream `collisionengineers/pegasus` `main` was
 32 commits ahead at `7d6a948a` on that date
 (see [01 · upstream carry-over](01-inventory-and-parity/upstream-kanmer-carryover.md)).
+The conversion trunk is `dev` at `86fae775`, accepted on 2026-08-25; the
+recorded `main` baseline is an ancestor of that head.
+
+## Current operator boundary
+
+The operator has prohibited all synchronization with the upstream Pegasus
+repository for this refactor. The historical upstream baseline and carry-over
+evidence remain readable for provenance, but no ticket may add, fetch, compare,
+merge, or push an upstream remote. All implementation and history work stays
+in this repository and uses the configured `pegasusDesktop` remote only.
+Cloud writes, deployments, credentials, and external environment changes are
+deferred until the full refactor is complete. A historical plan step that says
+otherwise is superseded by this boundary and must be amended in Kanmer before
+the ticket is worked.
 
 ## Reading order
 

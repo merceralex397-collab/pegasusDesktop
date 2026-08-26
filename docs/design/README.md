@@ -44,7 +44,7 @@ This order was settled by the operator on 2026-08-04 and shipped in releases
 (`Operations → Intake → Triage → Cases → Administration → Search`): Search
 merged into Cases, which has the identical backing query; the combined intake
 screen split into Inbox and Upload; and `Triage` stopped naming a route while
-keeping its settled meaning as a pre-case entity inside Queues.
+keeping its settled meaning as a separate Triage aggregate inside Queues.
 
 Operations is the staff-wide information workspace. It contains three sections:
 retryable external work, active internally generated upload links, and
@@ -476,7 +476,7 @@ Administration (admin-only) + user controls` (operator decision 2026-08-04).
 Search merged into Cases, which has the identical backing query; the former
 combined intake screen split into Inbox and Upload; Queues is the
 pre-engineer-assignment work viewer carrying Not ready, Review, Held and
-Triage — the first three Case stages, the fourth a separate pre-case entity.
+Triage — the first three Case stages, the fourth a separate Triage aggregate.
 `Triage` no longer names a screen, nav item, title or route, and its settled
 meaning is unchanged.
 
@@ -663,11 +663,11 @@ Policy-specific email predicates and acceptance evidence remain open gates for o
 
 ### Triage
 
-Triage is a distinct inbox classification/label and separate pre-case record, never a case state. The UI implements the [Core-owned normal workflow and completion evidence](../frd/frd-03-triage.md#normal-workflow-and-completion-evidence) rather than defining another transition policy.
+Triage is a distinct inbox classification/label and separate Triage aggregate, never a normal Case state or Case/PO allocation. The UI implements the [Core-owned normal workflow and completion evidence](../frd/frd-03-triage.md#normal-workflow-and-completion-evidence) rather than defining another transition policy.
 
-The detail workspace presents the normal sequence from registration-gated `Needs sorting`, through `Open`, missing-information correspondence, and an accepted finding, to exact reply-chain evidence and `Completed`. It must show acknowledgement, information request, or other ordinary correspondence as non-completing activity; display missing, ambiguous, unapproved, or technically failed reply evidence; and expose `Cancelled` as the separately named end without finding/reply.
+The detail workspace presents the normal sequence from registration-gated Unidentified work, through `Open`, missing-information correspondence, and an accepted finding, to exact reply-chain evidence and `Completed`. It must show acknowledgement, information request, or other ordinary correspondence as non-completing activity; display missing, ambiguous, unapproved, or technically failed reply evidence; and expose `Cancelled` as the separately named end without finding/reply.
 
-Finding correction/replacement, new response, reasoned reopen, and optional later Case link/unlink/relink remain visible in permanent history. The Case link is reference-only: Triage findings do not alter Case/PO, reference, lifecycle, final outcome, Engineer report, or Audit identity. Assignee remains optional, with no due date or chaser UI.
+Finding correction/replacement, new response, reasoned reopen, and later formal-instruction conversion remain visible in permanent history. Conversion creates a linked normal Case only through its normal gates and shows the immutable evidence-transfer record; Triage findings do not alter Case/PO, reference, lifecycle, final outcome, Engineer report, or Audit identity. Assignee remains optional, with no due date or chaser UI.
 
 ### Case
 
@@ -768,7 +768,7 @@ The History panel is a read-only presentation of the [Core-owned permanent actio
 | Queries | Loading; empty; current success; stale with last-good time; partial; unavailable; failed/retry; unauthenticated; disabled; stale-role; denied |
 | Mutations | Validation; confirmation; success; denied; stale version; lease lost; dependency unavailable; idempotent/replayed result; conflict and recovery |
 | Intake | Empty/oversize; replay; retention/custody failure; Ready for case allocation; Needs sorting; Unsupported; missing/integrity asset; evidence missing/contradictory; reasoned Blocked intake/resolve/retry; every acceptance path; refusal with no case/reference; upload token expired/revoked/cross-request/limit/abuse result |
-| Triage | Registration missing; unassigned/assigned; every named state; missing/ambiguous/unapproved/technical reply evidence; finding replacement/correction/new response; cancel/reopen/link/unlink/relink |
+| Triage | Registration missing; unassigned/assigned; every named state; missing/ambiguous/unapproved/technical reply evidence; finding replacement/correction/new response; cancel/reopen; formal-instruction conversion refused, pending, or completed with its immutable transfer record |
 | Case | Not ready/chasing; Review; Held/preserved interval; due/overdue; chaser last-outcome/next-action; gate refusal; physical address/Image Based Assessment; VRM and vehicle/MOT suggestion/no-result/stale/unavailable/failure; independent finding correction; documents locked; Box/external-effect states; EVA proxy/revision limitation; report generated/custodied/sent/externally received distinction; report evidence absent/ambiguous/manual/exact; every terminal outcome; archive; reopened; Created-in-error nonreopenable; lease held/expired/lost/stale |
 
 ## Accessibility
@@ -1020,7 +1020,7 @@ Every protected route and action visibly handles unauthenticated, disabled-sessi
 
 **Intake** presents the immutable source occurrence and its derived evidence separately from the editable candidate and accepted Case projection; matching conflict, ambiguity, manual association, reversal, and reassociation remain visible rather than rewriting the source. The evidence pane retains the exact `All`/`Instructions`/`Images` filters. Opening source evidence or supporting detail preserves the current list/detail position and every unsaved candidate edit; returning restores the Intake or Case-detail context without silently discarding or replacing proposed values. Controls invoke the Core-owned [source and Case association](../frd/frd-02-intake-and-source-identity.md#matching-conflicts-and-reversible-association) and [mandatory pre-case gate](../frd/frd-02-intake-and-source-identity.md#mandatory-pre-case-gates) contracts. The result view shows provenance, attachments/images, suggestions, validation, conflicts, origin, dispatch/retry state, the accepted `Review` or incomplete `Not ready` Case, or the explicit reason no case/reference exists.
 
-**Triage** remains visually and navigationally distinct from a Case and from generic inbox sorting. Its list/detail workspace presents the registration gate, assignee, named findings and states, missing/ambiguous reply evidence, replacement history, completion/cancellation, reopen, and optional later Case association. Core owns the [normal Triage workflow and completion evidence](../frd/frd-03-triage.md#normal-workflow-and-completion-evidence); the design must distinguish ordinary acknowledgement or information correspondence from the exact reply-chain evidence required to complete the workflow.
+**Triage** remains visually and navigationally distinct from a normal Case and from generic inbox sorting. Its list/detail workspace presents the registration gate, immutable T-reference, assignee, named findings and states, missing/ambiguous reply evidence, replacement history, completion/cancellation, reopen, and later formal-instruction conversion to a linked normal Case. Core owns the [normal Triage workflow and completion evidence](../frd/frd-03-triage.md#normal-workflow-and-completion-evidence); the design must distinguish ordinary acknowledgement or information correspondence from the exact reply-chain evidence required to complete the workflow.
 
 **Case** keeps Case/PO, principal, registration, [Inspection, standalone Audit, or Inspection + Audit identity](../frd/frd-01-case-identity-and-lifecycle.md#case-types), workflow state, due date, and EVA proxy limitation visible. It presents the accepted Case projection alongside source/provenance, data, documents/images, parties and inspection address, vehicle/MOT, tasks/reminders, outbound evidence, external-work states, and permanent history. Core owns [principal and historical case-party identity](../frd/frd-01-case-identity-and-lifecycle.md#principal-reference-organisation-and-case-party-identity), [lifecycle closure and correspondence](../frd/frd-01-case-identity-and-lifecycle.md#lifecycle-closure-and-correspondence), [outbound correspondence evidence](../frd/frd-08-email-mailbox-and-background-processing.md#outbound-correspondence-evidence), and one-case [edit authority and recovery](../frd/frd-01-case-identity-and-lifecycle.md#case-edit-authority-and-recovery). The workspace identifies the active editor and stale version, becomes read-only after lease loss or named closure, and offers only the authorised retry/reopen/reacquire routes; one control mutates one current Case at a time.
 
@@ -1053,7 +1053,7 @@ An intake row always presents received date above received time and its precise 
 | Queries | loading; empty; success; stale/partial with last-good time; transient error/retry; unauthenticated/disabled/stale-role/denied |
 | Mutations | validation; confirmation; success; denied; stale version; lease lost; dependency unavailable; idempotent/replayed result; conflict and recovery |
 | Intake | empty/oversize; replay; retention/custody failure; Ready for case allocation; Unidentified; Unsupported; missing/integrity asset; evidence missing/contradictory; Blocked intake reason/resolve/retry; every acceptance path; refusal with no case/reference |
-| Triage | registration missing; unassigned/assigned; every named state; missing/ambiguous/unapproved/technical reply evidence; finding replacement/correction/new response; cancel/reopen/link/unlink/relink |
+| Triage | registration missing; unassigned/assigned; every named state; missing/ambiguous/unapproved/technical reply evidence; finding replacement/correction/new response; cancel/reopen; formal-instruction conversion refused, pending, or completed with its immutable transfer record |
 | Case | Not ready/chasing; Review; Held/preserved interval; due/overdue; gate refusal; documents locked; Box/external-effect states; EVA proxy limitation; report evidence absent/ambiguous/manual/exact; every terminal outcome; archive; reopened; Created-in-error nonreopenable; lease held/expired/lost/stale |
 
 The UI presents the [Core-owned permanent action history](../frd/frd-04-parties-accounts-and-access.md#permanent-action-history) with enough actor, time, outcome, reason, and before/after context to understand each business event. Routine views, refresh/polling, retries, leases/heartbeats, and adapter/Worker mechanics stay out of the operational history panel.
@@ -1091,8 +1091,8 @@ Cases and authorised Administration (operator decision 2026-08-04). Operations
 is a scoped staff workspace in the implementation; its documentation does not
 prove a deployed or released route. Search merged into Cases, which has the
 identical backing query; the combined intake screen split into Inbox and Upload;
-`Triage` no longer names a route while keeping its settled meaning as a pre-case
-entity inside Queues. Each comparison direction uses the same focused-flow set.
+`Triage` no longer names a route while keeping its settled meaning as a separate
+Triage aggregate inside Queues. Each comparison direction uses the same focused-flow set.
 Production email allocated `Next / 0.3.0` appears only after its gates; every
 deferred `Next` or `Later` capability carries its exact target in the [capability
 inventory](../capabilities.md#capabilities). Deferred capabilities have no alpha
@@ -1209,18 +1209,19 @@ history, other upload, token-management function, or external account. Success
 proves request-local custody only, not case creation, Box custody, EVA handoff,
 report generation, or external delivery.
 
-**Triage:** distinct inbox classification/label plus dedicated pre-case
-list/detail; never a case state. Missing registration goes to `Needs sorting`;
+**Triage:** distinct inbox classification/label plus dedicated Triage
+aggregate list/detail; never a normal Case state or Case/PO allocation. Missing registration goes to Unidentified;
 Open/Awaiting information/Finding recorded/Completed/Cancelled; two
 independently optional findings, with at least one required before Finding
 recorded/Completed: Roadworthiness = Roadworthy/Unroadworthy and Assessment =
-Repairable/Total loss. A case's `has Triage` is Boolean/reference-only. Triage
-findings are reference-only and do not affect Case/PO/reference, workflow,
-professional findings, final outcome, Engineer report, Audit suffix/allocation,
-fee, invoice, or any other case decision. Exact reply-chain evidence;
-reasoned pre-send replacement and post-send superseding finding/new response;
-optional assignee; reasoned case link. Reopen returns to Open and preserves the
-prior finding/reply. No due/chaser UI.
+Repairable/Total loss. A later formal instruction passes the normal Case gates
+before creating a linked normal Case and moving evidence through an immutable,
+non-duplicating transfer record. Triage findings do not affect Case/PO/reference,
+workflow, professional findings, final outcome, Engineer report, Audit
+suffix/allocation, fee, invoice, or any other case decision. Exact reply-chain
+evidence; reasoned pre-send replacement and post-send superseding finding/new
+response; optional assignee. Reopen returns to Open and preserves the prior
+finding/reply. No due/chaser UI.
 
 **Case:** read-only until an explicit edit lease. The persistent header keeps
 Case/PO, principal, registration, type/secondary Audit identity, state,

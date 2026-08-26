@@ -58,8 +58,9 @@ read 2026-08-23):
   into `dev`, `main` is the deployed branch, promotion is an exact-SHA atomic
   fast-forward requiring the literal `MERGE AUTH GRANTED`; a GitHub
   merge/squash/rebase is not a promotion; `scripts/Test-MainBranchHistory.ps1`
-  guards `main` history on push. The fork has **only `main`** (no `dev`, no
-  tags; `git branch -a`, `git tag`, 2026-08-23).
+  guards `main` history on push. The accepted fork topology is `main`
+  `191ddf33` with `dev` at `5770eb21` (the merged FND-005 advancement), and
+  `main` is an ancestor of `dev`; the GitHub default branch remains `main`.
 - Upstream `collisionengineers/pegasus` (`git ls-remote`, 2026-08-23): heads
   `dev` `499b8885`, `main` `7d6a948a`, `kanmer-board` `4694067c`. Fork `main`
   `191ddf33` **is an ancestor** of upstream `main`; upstream is **32 commits
@@ -183,7 +184,8 @@ Azure", "the web app does it", "it may scale later" are not answers.
 Keep the `AGENTS.md` shape — the release skill, the CI history guard and the
 review rules already assume it — with four fork-specific additions:
 
-1. **Create `dev` from `main` now.** `task/<slug>` → PR → `dev` (CI green +
+1. **Record the existing `dev` trunk.** `dev` was created from `main` and now
+   records the accepted head `5770eb21`; new `task/<slug>` branches → PR → `dev` (CI green +
    independent review) → exact-SHA promotion to `main` with
    `MERGE AUTH GRANTED`. No long-lived `desktop-conversion` branch: the
    fork's `dev`/`main` *are* the conversion trunk (the proposal's isolation
@@ -260,6 +262,12 @@ the fork board's `feature`/`fix`/`chore`/`spike` with the `questions-resolved`
 gate; `get_doc_gates <id>` is authoritative, never `board.yml`. Every
 conversion ticket is `feature` unless it is a pure defect (`fix`), hygiene
 (`chore`) or a timeboxed investigation (`spike`).
+
+**Deviation:** plan folders `10-security-observability-performance` (18 PLAT
+tickets) and `11-azure-disposition` (9 PLAT tickets) share the existing
+`platform-operations` area; the realised board also contains deliberate
+`EPIC-014` for the upstream carry-over batch. The area and group decisions are
+recorded in `HZN-001/board-conventions.md` § 2.
 
 ### Ticket template (proposal §25 → Kanmer documents)
 
@@ -346,7 +354,8 @@ configured read-only remote and the first sync has landed; the fork's Kanmer
 board has the areas, horizons and epics above and every DSK ticket from the
 twelve content plans created with a governing-doc reference
 (`link_doc` to an ADR/FRD or `docs_todo: true`); ADR-0100…ADR-0110 are
-accepted (ADR-0108 may be `proposed` until the Phase 7 spike); FRD-13 and
+accepted (ADR-0108 may be `proposed` until Phase 7 packaged-controller
+validation and parity); FRD-13 and
 the PRD update are merged; `docs/capabilities.md` carries the `DSK` family;
 `AGENTS.md` § ADR conventions records the reserved block (done, operator
 confirmation 2026-08-23); `docs/index.md` links everything.
@@ -361,13 +370,13 @@ no ticket can leave `backlog` without a governing doc (probe one with
 
 | ID | Title | Profile | Depends on | Acceptance | Verification | Tier | Routing |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| DSK-00-01 | Create `dev` from `main`; record the baseline commit in `docs/desktop/README.md` | chore | — | `dev` exists at the baseline SHA; AGENTS.md workflow unchanged | `git branch --list dev`; `git rev-parse dev main` equal | 1 | (operator or `winui-dev`) · `pegasus-desktop` project skill · Kanmer `get_status` |
+| DSK-00-01 | Record the accepted `dev` trunk and baseline relationship in `docs/desktop/README.md` | chore | — | `dev=5770eb21` is recorded; `main=191ddf33` is an ancestor; AGENTS.md workflow unchanged | `git show -s origin/dev`; `git merge-base --is-ancestor origin/main origin/dev` exits 0 | 1 | (operator or `winui-dev`) · `pegasus-desktop` project skill · Kanmer `get_status` |
 | DSK-00-02 | Add read-only `upstream` remote; first one-way sync (32 commits) via PR into `dev`; never push upstream | chore | DSK-00-01 | `upstream/main` merged into `dev` and promoted; CI green | `git merge-base --is-ancestor <fork-main> upstream/main`; `repository-check` green | 1 | `pegasus-desktop-reviewer` reviews the sync diff · — · Kanmer |
 | DSK-00-03 | Seed the fork board: areas, HZN phases, EPIC per area plan, `context.md` per group | chore | — | `get_status` lists the 16 areas and 24 groups | Kanmer `list_board`, `list_groups` | 1 | — · `kanmer-setup`, `kanmer-tickets` · Kanmer `create_group`, `create_item` |
 | DSK-00-04 | Create every DSK ticket from plans 01–12 with `refs`/`docs_todo`, profile, area, group and a `## Routing` block | chore | DSK-00-03 | Every ticket row in the plans exists on the board | `list_items` count equals the plan rows; `get_doc_gates` on a sample | 1 | — · `kanmer-tickets` · Kanmer `create_item`, `link_doc`, `set_ticket_doc` |
 | DSK-00-05 | Author ADR-0100, ADR-0101, ADR-0103, ADR-0104, ADR-0105, ADR-0110 (the reserved block is already confirmed and recorded in AGENTS.md § ADR conventions) | feature | — | ADRs accepted; index table updated | `Test-DocumentationLinks.ps1`; ADR frontmatter valid | 1 | `pegasus-parity-researcher` (evidence) · `kanmer-docs` · Kanmer `link_doc` |
 | DSK-00-06 | Author ADR-0102, ADR-0106, ADR-0107, ADR-0109 from the flow records of 01 | feature | 01 · DSK-01-02 | ADRs accepted with the cloud-justification table answered | Links pass; each table has six answers | 1 | `pegasus-parity-researcher` · `kanmer-docs` · Kanmer |
-| DSK-00-07 | Author ADR-0108 (WebView2 rendering) as `proposed`; accept after the Phase 7 spike | feature | 07 spike | ADR exists with evidence section pointing at the spike | Links pass | 1 | `pegasus-desktop-reviewer` · `kanmer-docs`, `microsoft-docs` · Microsoft Learn |
+| DSK-00-07 | Author ADR-0108 (WebView2 rendering) as `proposed`; accept after Phase 7 packaged-controller validation and parity | feature | 07 validation | ADR names the documented `HWND_MESSAGE` host and cites the validation/parity evidence | Links pass | 1 | `pegasus-desktop-reviewer` · `kanmer-docs`, `microsoft-docs` · Microsoft Learn |
 | DSK-00-08 | FRD-13 "Desktop operator experience" + PRD scope update + `DSK` family rows in `docs/capabilities.md` + `docs/frd/README.md`, `docs/index.md` links | feature | DSK-00-05 | FRD cites `docs/design/README.md`; capabilities rows have canonical owners | Links pass; `docs/capabilities.md` allocation summary updated | 1 | — · `kanmer-docs` · Kanmer `link_doc` |
 | DSK-00-09 | Record the release-tag convention (`gateway/r<N>`, `desktop/v<M.m.b>`) in `docs/engineering.md` § Branches and delivery and the `pegasus-release` skill | chore | DSK-00-01 | Convention documented; first gateway tag applied on the next release | `git tag --list 'gateway/*'` | 1 | `pegasus-release-packager` · `pegasus-release` · — |
 | DSK-00-10 | Record the decided D-001 (Option A, 2026-08-23 — fork is the single release source; upstream merged then frozen) in ADR-0100 consequences and `docs/operations.md`, and agree the upstream freeze with that repository's owners | chore | DSK-00-05 | Decision text with date in both files; freeze agreed and dated | Text present in both files | 1 | — · `kanmer-docs` · Kanmer |

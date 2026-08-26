@@ -70,4 +70,15 @@ For mail on the accepted QDOS direct route only:
 
 This pulls the QDOS-direct subset of MAIL-09 forward to `Now / 0.1.0-alpha.1`. General multi-provider association, the classified-email workspace, and every other route's matchers remain allocated `Next / 0.3.0`.
 
+### Accepted QDOS triage-request route
+
+The accepted QDOS message-type policy owns the automatic Triage trigger. A
+classified `pre-instruction-emails/triage-request` is pre-case work: it never
+enters normal case allocation and produces one strong `AcceptedTriageMatch`
+evidence entry derived from the classification policy key, version, matched
+predicate, detail, and source. A usable vehicle registration opens the Triage;
+without one, the retained receipt is registered as Unidentified after the
+Triage attempt. Ambiguous or unclassified messages fail closed and produce no
+automatic Triage. No second intake-triage matcher is composed.
+
 Consequences: the predicates are Core-owned, code-versioned policy (`QdosCaseMatchPolicy`, the shared eliminator in `EvaluateIntakeCaseMatch`); a behaviour change is a version bump, never a silent redefinition, and any normalization change requires an explicit rebuild of the derived match index. The match index is a read model of accepted case data maintained in the same transaction by every case-data writer — case acceptance, staff case-data save, vehicle-suggestion confirmation, and Created in error replacement creation — all through one shared projector. The predecessor's false-registration shapes (`AND2`, `OCTOBER`, postcode outward codes, `X5 NOW`) are pinned as negative tests. No generic rule engine, rule table, or admin editor is introduced; a second provider's matcher needs its own operator-accepted predicates and policy.

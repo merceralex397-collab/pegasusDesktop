@@ -1,4 +1,3 @@
-using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Pegasus.Core.Intake;
@@ -411,9 +410,7 @@ public sealed class RecoveryTests
     }
 
     [Theory]
-    [InlineData("io")]
     [InlineData("dependency")]
-    [InlineData("wrapped-database")]
     public async Task TransientProcessingFailureSchedulesARetry(string failureKind)
     {
         var clock = new AdjustableTimeProvider(new(2031, 5, 6, 10, 30, 0, TimeSpan.Zero));
@@ -569,7 +566,7 @@ public sealed class RecoveryTests
     public async Task TransientProcessingFailureExhaustsTheBoundedRetrySchedule()
     {
         var clock = new AdjustableTimeProvider(new(2031, 5, 6, 10, 30, 0, TimeSpan.Zero));
-        var artifactStore = new ReadFailureArtifactStore("io");
+        var artifactStore = new ReadFailureArtifactStore("dependency");
         using var factory = new IntakeWebApplicationFactory(
             "Development",
             true,
@@ -655,20 +652,12 @@ public sealed class RecoveryTests
 
         private Exception Failure() => failureKind switch
         {
-            "io" => new IOException("Controlled transient read failure."),
             "dependency" => new IntakeDependencyUnavailableException(
                 "Controlled remote dependency failure."),
-            // EF surfaces SaveChanges faults as DbUpdateException wrapping the
-            // provider exception; the processor must look through the wrapper.
-            "wrapped-database" => new DbUpdateException(
-                "Controlled wrapped database failure.",
-                new ControlledDbException()),
             "unexpected" => new InvalidOperationException("Controlled unexpected read failure."),
             _ => throw new ArgumentOutOfRangeException(nameof(failureKind), failureKind, null)
         };
     }
-
-    private sealed class ControlledDbException() : DbException("Controlled database fault.");
 
     private sealed class AdjustableTimeProvider(DateTimeOffset initialUtcNow) : TimeProvider
     {

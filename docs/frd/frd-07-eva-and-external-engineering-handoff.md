@@ -8,10 +8,9 @@
 **Accepted focused-alpha boundary:** EVA remains the authoritative external
 engineering/report workflow. Pegasus performs no EVA network call. It
 deterministically serializes UTF-8 JSON in the exact 13-key order below,
-includes every custody-confirmed eligible Case-vehicle image, and writes a
-SHA-256 manifest over the JSON and image identities and bytes. Stable manifest
-ordering exists only for reproducible package integrity; Pegasus owns no EVA
-presentation, selection, or report-image order.
+includes every custody-confirmed eligible Case-vehicle image, and produces no
+companion manifest or provenance file. Pegasus owns no EVA presentation,
+selection, or report-image order.
 The two retained populated EVA JSON examples are immutable
 reference evidence for the field shape; they do not supply credentials or
 activate an adapter.
@@ -39,10 +38,12 @@ assignment, which remain EVA-owned events. An image/document upload into
 Pegasus, Box custody, or the presence of a report PDF is not this handoff and is
 not external delivery evidence.
 
-Successful focused manual generation makes the complete JSON, all-eligible-image, and manifest bundle available for immediate staff download. Download proves neither EVA receipt nor report delivery and does not change Case state.
+Successful focused manual generation makes the complete JSON and all eligible
+images available for immediate staff download. Download proves neither EVA
+receipt nor report delivery and does not change Case state.
 The container format is intentionally unspecified: its selection must evaluate
 whether a single archive is the clearest usable representation without changing
-the exact package contents, manifest, or manual-handoff boundary.
+the exact JSON-and-image package contents or manual-handoff boundary.
 
 The focused handoff readiness review keeps four source-labelled inputs distinct:
 the saved source email, vehicle images, valuation evidence, and initial

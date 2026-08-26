@@ -350,6 +350,7 @@ public sealed class EfCaseDataStore(
         SetConfirmed(context, snapshot, CaseDataFieldNames.VehicleModel, CaseDataCodes.Text, data.VehicleModel, actor, now);
         SetConfirmed(context, snapshot, CaseDataFieldNames.VehicleMileage, CaseDataCodes.Integer, Integer(data.VehicleMileage), actor, now);
         SetConfirmed(context, snapshot, CaseDataFieldNames.VehicleMileageUnit, CaseDataCodes.Text, data.VehicleMileageUnit, actor, now);
+        SetConfirmed(context, snapshot, CaseDataFieldNames.VehicleMileageKilometres, CaseDataCodes.Integer, Integer(data.VehicleMileageKilometres), actor, now);
         SetConfirmed(context, snapshot, CaseDataFieldNames.AccidentCircumstances, CaseDataCodes.Text, data.AccidentCircumstances, actor, now);
         SetConfirmed(context, snapshot, CaseDataFieldNames.IncidentDate, CaseDataCodes.Date, Date(data.IncidentDate), actor, now);
         SetConfirmed(context, snapshot, CaseDataFieldNames.ContactName, CaseDataCodes.Text, data.ContactName, actor, now);
@@ -441,7 +442,8 @@ public sealed class EfCaseDataStore(
         ConfirmedDate(snapshot, CaseDataFieldNames.InspectionDate),
         ConfirmedDate(snapshot, CaseDataFieldNames.InspectionDeadline),
         ConfirmedText(snapshot, CaseDataFieldNames.InspectionAddress),
-        ConfirmedInspectionMode(snapshot, CaseDataFieldNames.InspectionMode));
+        ConfirmedInspectionMode(snapshot, CaseDataFieldNames.InspectionMode),
+        ConfirmedLong(snapshot, CaseDataFieldNames.VehicleMileageKilometres));
 
     private static string? ConfirmedText(CaseDataSnapshotEntity snapshot, string name) =>
         Confirmed(snapshot, name)?.Value;
@@ -618,7 +620,8 @@ public sealed class EfCaseDataStore(
             TextField(snapshot, CaseDataFieldNames.VehicleMake),
             TextField(snapshot, CaseDataFieldNames.VehicleModel),
             LongField(snapshot, CaseDataFieldNames.VehicleMileage),
-            TextField(snapshot, CaseDataFieldNames.VehicleMileageUnit)),
+            TextField(snapshot, CaseDataFieldNames.VehicleMileageUnit),
+            LongField(snapshot, CaseDataFieldNames.VehicleMileageKilometres)),
         new(
             DateField(snapshot, CaseDataFieldNames.IncidentDate),
             TextField(snapshot, CaseDataFieldNames.AccidentCircumstances)),

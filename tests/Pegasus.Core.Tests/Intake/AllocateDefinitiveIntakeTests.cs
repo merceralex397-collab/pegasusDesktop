@@ -22,6 +22,70 @@ public sealed class AllocateDefinitiveIntakeTests
     }
 
     [Fact]
+    public async Task AutomaticAllocationWithoutPhotographsRecordsImagesIncomplete()
+    {
+        var request = await AllocateAsync();
+
+        Assert.False(request.Completeness.ImagesComplete);
+    }
+
+    [Fact]
+    public async Task AutomaticAllocationWithAttachedPhotographRecordsImagesComplete()
+    {
+        var request = await AllocateAsync(Asset(
+            IntakeAssetKind.Attachment,
+            IntakeAssetDisposition.Attachment,
+            "image/jpeg",
+            90_000,
+            1_200,
+            800));
+
+        Assert.True(request.Completeness.ImagesComplete);
+    }
+
+    [Fact]
+    public async Task AutomaticAllocationWithInlineBodyImageDoesNotCountAsPhotograph()
+    {
+        var request = await AllocateAsync(Asset(
+            IntakeAssetKind.InlineImage,
+            IntakeAssetDisposition.Inline,
+            "image/png",
+            90_000,
+            1_200,
+            800));
+
+        Assert.False(request.Completeness.ImagesComplete);
+    }
+
+    [Fact]
+    public async Task AutomaticAllocationWithSmallEmbeddedPdfImageDoesNotCountAsPhotograph()
+    {
+        var request = await AllocateAsync(Asset(
+            IntakeAssetKind.EmbeddedImage,
+            IntakeAssetDisposition.Embedded,
+            "image/jpeg",
+            InstructionEvidenceImages.EmbeddedPhotographMinimumBytes - 1,
+            1_200,
+            800));
+
+        Assert.False(request.Completeness.ImagesComplete);
+    }
+
+    [Fact]
+    public async Task AutomaticAllocationWithLetterheadBannerDoesNotCountAsPhotograph()
+    {
+        var request = await AllocateAsync(Asset(
+            IntakeAssetKind.EmbeddedImage,
+            IntakeAssetDisposition.Embedded,
+            "image/png",
+            110_783,
+            1_990,
+            437));
+
+        Assert.False(request.Completeness.ImagesComplete);
+    }
+
+    [Fact]
     public async Task FailedAutomaticAttemptIsDurableAndIsNotRetriedInBackground()
     {
         var receipt = Receipt(CaseType.Inspection, "MISSING");
@@ -137,7 +201,48 @@ public sealed class AllocateDefinitiveIntakeTests
         Assert.Contains("does not match", error.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static IntakeReceipt Receipt(CaseType caseType, string principalCode) => new(
+    private static async Task<AcceptIntakeRequest> AllocateAsync(
+        params IntakeAssetRecord[] assets)
+    {
+        var receipt = Receipt(CaseType.Inspection, "QDOS", assets);
+        var store = new RecordingAllocationStore();
+        var accept = new RecordingAcceptance();
+        var sut = new AllocateIntake(new ReceiptQueries(receipt), store, accept, TimeProvider.System);
+
+        await sut.AttemptAutomaticAsync(receipt.Id, Guid.NewGuid());
+
+        var request = Assert.Single(accept.Requests);
+        Assert.True(request.Completeness.InstructionComplete);
+        Assert.False(request.Completeness.InstructionConfirmedByStaff);
+        Assert.False(request.Completeness.ImagesConfirmedByStaff);
+        return request;
+    }
+
+    private static IntakeAssetRecord Asset(
+        IntakeAssetKind kind,
+        IntakeAssetDisposition disposition,
+        string mediaType,
+        long contentLength,
+        int width,
+        int height) => new(
+            Guid.NewGuid(),
+            "instruction evidence",
+            $"evidence-{Guid.NewGuid():N}.jpg",
+            mediaType,
+            kind,
+            disposition,
+            contentLength,
+            Guid.NewGuid().ToString("N"),
+            $"intake/{Guid.NewGuid():N}",
+            null,
+            null,
+            width,
+            height);
+
+    private static IntakeReceipt Receipt(
+        CaseType caseType,
+        string principalCode,
+        IReadOnlyList<IntakeAssetRecord>? assets = null) => new(
         Guid.NewGuid(),
         "retained-instruction.pdf",
         "application/pdf",
@@ -159,6 +264,7 @@ public sealed class AllocateDefinitiveIntakeTests
         "1",
         "test-policy",
         1,
+        Assets: assets,
         MailRouteDecision: new(
             MailRouteDisposition.Accepted,
             new(principalCode, MailRouteKind.DirectProvider, principalCode),

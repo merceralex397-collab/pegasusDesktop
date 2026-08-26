@@ -87,6 +87,15 @@ public sealed class ProcessIntakeTests
     }
 
     [Fact]
+    public void ExceptionPolicyRecognizesOnlyNamedIntakeTransientFaults()
+    {
+        Assert.True(IntakeExceptionPolicy.IsTransientFailure(new IntakeDependencyUnavailableException("dependency")));
+        Assert.True(IntakeExceptionPolicy.IsTransientFailure(new IntakeVersionConflictException()));
+        Assert.False(IntakeExceptionPolicy.IsTransientFailure(new IOException("raw I/O")));
+        Assert.False(IntakeExceptionPolicy.IsTransientFailure(new TimeoutException("raw timeout")));
+    }
+
+    [Fact]
     public async Task ReaderOutOfMemoryIsPropagatedWithoutPersistence()
     {
         var reader = new StubReader((_, _) => throw new OutOfMemoryException());
@@ -103,15 +112,16 @@ public sealed class ProcessIntakeTests
     public async Task FirstAttemptTransientReaderFailurePropagatesWithoutAllocatingUnidentified()
     {
         // Retryable processing must remain in processing: a transient reader
-        // fault (timeout, I/O, dependency-unavailable) on an attempt that the
+        // named dependency-unavailable fault on an attempt that the
         // queued caller can still retry must not be persisted as a terminal
         // receipt, and must therefore never allocate a U-reference.
-        var reader = new StubReader((_, _) => throw new TimeoutException("transient reader outage"));
+        var reader = new StubReader((_, _) => throw new IntakeDependencyUnavailableException(
+            "transient reader outage"));
         var store = new RecordingStore();
         var registerUnidentified = new RecordingRegisterUnidentified();
         var sut = CreateSut(reader, store, registerUnidentified: registerUnidentified);
 
-        await Assert.ThrowsAsync<TimeoutException>(() => sut.ExecuteRetainedAsync(
+        await Assert.ThrowsAsync<IntakeDependencyUnavailableException>(() => sut.ExecuteRetainedAsync(
             CreateSource(),
             "retained-storage-key",
             replaceExisting: false,
@@ -128,7 +138,8 @@ public sealed class ProcessIntakeTests
         // fault must still resolve to a terminal technical-failure receipt so
         // custody is not silently stranded, and that terminal outcome is what
         // registers the Unidentified reference.
-        var reader = new StubReader((_, _) => throw new TimeoutException("transient reader outage"));
+        var reader = new StubReader((_, _) => throw new IntakeDependencyUnavailableException(
+            "transient reader outage"));
         var store = new RecordingStore();
         var registerUnidentified = new RecordingRegisterUnidentified();
         var sut = CreateSut(reader, store, registerUnidentified: registerUnidentified);
@@ -696,11 +707,10 @@ public sealed class ProcessIntakeTests
     }
 
     [Fact]
-    public async Task ClassificationIsRecordedOnlyAndNeverChangesTheIntakeDecision()
+    public async Task NonTriageClassificationIsRecordedOnlyAndNeverChangesTheIntakeDecision()
     {
-        // The same message processed with and without the classification
-        // policy must land on the identical decision: a classification is a
-        // recorded observation, never a queue, Triage, or destination change.
+        // A non-Triage classification remains an observation and does not
+        // alter the instruction decision.
         IntakeSourceReadResult ReadResult() => Readable(
             transportEvidence:
             [
@@ -708,14 +718,18 @@ public sealed class ProcessIntakeTests
                     IntakeEvidenceSource.Sender,
                     "instructions@qdosassist.co.uk",
                     IntakeSenderIdentityKind.Transport,
-                    "outer message")
+                    "outer message"),
+                new(
+                    IntakeEvidenceSource.Subject,
+                    "Automatic reply: out of office",
+                    SourceLabel: "message subject")
             ],
             content:
             [
                 new(
                     IntakeEvidenceSource.EmailBody,
                     "message body",
-                    "Triage Only Request. Please find attached our client's images.")
+                    "Please find attached our client's images.")
             ]);
         IntakeSource Source(string key) => CreateSource() with
         {

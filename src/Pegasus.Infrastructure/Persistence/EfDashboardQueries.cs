@@ -121,7 +121,7 @@ internal sealed class EfDashboardQueries(IDbContextFactory<PegasusDbContext> con
         // with a Needs sorting receipt sitting one click away in the Inbox.
         // The store owns the code, so the count asks it rather than spelling
         // the string a second time and inviting the same drift back.
-        var needsSorting = EfIntakeReceiptStore.ToCode(IntakeDecision.NeedsSorting);
+        var needsSorting = IntakeDecisionCodes.ToCode(IntakeDecision.NeedsSorting);
         var needsSortingCount = await context.IntakeReceipts
             .AsNoTracking()
             .CountAsync(item => item.Decision == needsSorting, cancellationToken);

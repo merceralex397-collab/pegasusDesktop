@@ -13,6 +13,8 @@ using Pegasus.Core.ImageIntake;
 using Pegasus.Core.Intake;
 using Pegasus.Core.Operations;
 using Pegasus.Core.Triage;
+using Pegasus.Core.Tasks;
+using Pegasus.Core.Workflow;
 using Pegasus.Infrastructure.Persistence;
 using Pegasus.Web.Authentication;
 using Pegasus.Web.Mcp;
@@ -207,14 +209,17 @@ public sealed class QdosAllocationRecoveryTests
             receipt.Version,
             CaseType.Inspection,
             "PENDING",
-            // CASE-013: the automatic route records the instruction and its
-            // images as complete, because its own precondition establishes
-            // that. The seeded pending attempt must carry the same command or
-            // the resumed attempt is a different one.
+            // This represents a pending attempt created before the observed
+            // image-completeness rollout. The replay computes false from the
+            // current receipt and must recover without an operation conflict.
             new(true, true, false, false),
             null,
             receipt.InstructionDraft?.InspectionDate);
         var actor = ActionActor.SystemWorker("system-worker:intake-processing");
+        var currentCommand = command with
+        {
+            Completeness = new(true, false, false, false)
+        };
 
         await using (var scope = factory.Services.CreateAsyncScope())
         {
@@ -242,10 +247,150 @@ public sealed class QdosAllocationRecoveryTests
             Assert.True(result?.IsReplay);
         }
 
+        await using (var verificationScope = factory.Services.CreateAsyncScope())
+        {
+            var persisted = await verificationScope.ServiceProvider
+                .GetRequiredService<IIntakeAllocationStore>()
+                .GetCurrentAsync(receipt.Id, CancellationToken.None);
+            Assert.False(persisted?.Command.Completeness.ImagesComplete);
+            Assert.Equal(
+                AllocationTestData.CommandHash(
+                    IntakeAllocationAttemptKind.Automatic,
+                    currentCommand,
+                    actor,
+                    operationKey,
+                    reason),
+                persisted?.CommandHash);
+        }
+
         Assert.Equal(1, await AllocationTestData.CountAsync(factory.Services, "IntakeAllocationAttempts"));
         Assert.Equal(1, await AllocationTestData.CountAsync(factory.Services, "Cases"));
         Assert.Equal(1, await AllocationTestData.CountAsync(factory.Services, "CaseIntakeLinks"));
         Assert.Equal(1, await AllocationTestData.AllocationEventCountAsync(factory.Services));
+    }
+
+    [Fact]
+    public async Task FailedAutomaticOperationWithLegacyCompletenessReplaysWithoutConflict()
+    {
+        using var factory = new IntakeWebApplicationFactory();
+        var receipt = await AllocationTestData.StoreDefinitiveReceiptAsync(
+            factory.Services,
+            CaseType.Inspection,
+            "LEGACY");
+        var evaluationId = Guid.NewGuid();
+        var operationKey = $"intake-allocation:{evaluationId:N}";
+        const string reason = "Created automatically from a definitive authorised instruction.";
+        var command = new IntakeAllocationCommand(
+            receipt.Id,
+            receipt.Version,
+            CaseType.Inspection,
+            "LEGACY",
+            // A pre-rollout automatic attempt persisted the old asserted value.
+            new(true, true, false, false),
+            null,
+            receipt.InstructionDraft?.InspectionDate);
+        var actor = ActionActor.SystemWorker("system-worker:intake-processing");
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var store = scope.ServiceProvider.GetRequiredService<IIntakeAllocationStore>();
+            var begun = await store.BeginAsync(
+                new(
+                    IntakeAllocationAttemptKind.Automatic,
+                    command,
+                    actor,
+                    operationKey,
+                    AllocationTestData.CommandHash(
+                        IntakeAllocationAttemptKind.Automatic,
+                        command,
+                        actor,
+                        operationKey,
+                        reason),
+                    reason,
+                    null,
+                    scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow()),
+                CancellationToken.None);
+            await store.CompleteFailureAsync(
+                begun.Attempt.Id,
+                IntakeAllocationFailureKind.PrincipalUnavailable,
+                IntakeAllocationRecoveryDisposition.RetryAfterCorrection,
+                "The selected Principal is not available.",
+                scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow(),
+                new PrincipalUnavailableException("LEGACY"),
+                CancellationToken.None);
+
+            var result = await scope.ServiceProvider.GetRequiredService<IAllocateIntake>()
+                .AttemptAutomaticAsync(receipt.Id, evaluationId);
+
+            Assert.True(result?.IsReplay);
+            Assert.True(result?.IsSuppressed);
+            Assert.Equal(IntakeAllocationProjectionStatus.FailedRecoverable, result?.State.Status);
+            Assert.Equal(IntakeAllocationFailureKind.PrincipalUnavailable, result?.State.FailureKind);
+        }
+
+        Assert.Equal(1, await AllocationTestData.CountAsync(factory.Services, "IntakeAllocationAttempts"));
+        Assert.Equal(0, await AllocationTestData.CountAsync(factory.Services, "Cases"));
+    }
+
+    [Fact]
+    public async Task AutomaticReplayWithOppositeCompletenessChangeRemainsConflict()
+    {
+        using var factory = new IntakeWebApplicationFactory();
+        var receipt = await AllocationTestData.StoreDefinitiveReceiptAsync(
+            factory.Services,
+            CaseType.Inspection,
+            "CONFLICT");
+        var operationKey = $"intake-allocation:{Guid.NewGuid():N}";
+        const string reason = "Created automatically from a definitive authorised instruction.";
+        var actor = ActionActor.SystemWorker("system-worker:intake-processing");
+        var persistedCommand = new IntakeAllocationCommand(
+            receipt.Id,
+            receipt.Version,
+            CaseType.Inspection,
+            "CONFLICT",
+            new(true, false, false, false),
+            null,
+            receipt.InstructionDraft?.InspectionDate);
+        var incompatibleCommand = persistedCommand with
+        {
+            Completeness = new(true, true, false, false)
+        };
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var store = scope.ServiceProvider.GetRequiredService<IIntakeAllocationStore>();
+        await store.BeginAsync(
+            new(
+                IntakeAllocationAttemptKind.Automatic,
+                persistedCommand,
+                actor,
+                operationKey,
+                AllocationTestData.CommandHash(
+                    IntakeAllocationAttemptKind.Automatic,
+                    persistedCommand,
+                    actor,
+                    operationKey,
+                    reason),
+                reason,
+                null,
+                scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow()),
+            CancellationToken.None);
+
+        await Assert.ThrowsAsync<IntakeAllocationOperationConflictException>(() =>
+            store.BeginAsync(
+                new(
+                    IntakeAllocationAttemptKind.Automatic,
+                    incompatibleCommand,
+                    actor,
+                    operationKey,
+                    AllocationTestData.CommandHash(
+                        IntakeAllocationAttemptKind.Automatic,
+                        incompatibleCommand,
+                        actor,
+                        operationKey,
+                        reason),
+                    reason,
+                    null,
+                    scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow()),
+                CancellationToken.None));
     }
 
     [Theory]
@@ -279,6 +424,112 @@ public sealed class QdosAllocationRecoveryTests
         Assert.Equal(1, await AllocationTestData.CountAsync(factory.Services, "ExternalWorkItems"));
         Assert.Equal(0, await AllocationTestData.CountAsync(factory.Services, "Triage"));
         Assert.Equal(1, await AllocationTestData.AllocationEventCountAsync(factory.Services));
+    }
+
+    [Fact]
+    public async Task AutomaticAllocationWithoutPhotographsPersistsNotReadyWithScheduledChase()
+    {
+        using var factory = new IntakeWebApplicationFactory();
+        var principal = $"N{Guid.NewGuid():N}"[..12].ToUpperInvariant();
+        await AllocationTestData.SeedPrincipalAsync(factory.Services, principal);
+        var receipt = await AllocationTestData.StoreDefinitiveReceiptAsync(
+            factory.Services,
+            CaseType.Inspection,
+            principal,
+            assets: []);
+
+        IntakeAllocationResult result;
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            result = Assert.IsType<IntakeAllocationResult>(
+                await scope.ServiceProvider.GetRequiredService<IAllocateIntake>()
+                    .AttemptAutomaticAsync(receipt.Id, Guid.NewGuid()));
+        }
+
+        var caseId = Assert.IsType<Guid>(result.State.CaseId);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var workflow = await scope.ServiceProvider
+                .GetRequiredService<ICaseWorkflowQueries>()
+                .GetAsync(caseId, CancellationToken.None);
+
+            Assert.Equal(CaseLifecycleState.NotReady, workflow?.State);
+            Assert.Equal(CaseDueWorkState.Scheduled, workflow?.DueWork?.State);
+            Assert.NotNull(workflow?.DueWork?.NextChaseAtUtc);
+        }
+    }
+
+    [Fact]
+    public async Task PhotographsArrivingAfterAllocationDoNotRewriteAllocationCompleteness()
+    {
+        using var factory = new IntakeWebApplicationFactory(
+            "Development",
+            true,
+            useIntegrationTestAuthentication: true,
+            recognitionEngine: new FakeVrmRecognitionEngine("AB12CDE"));
+        using var client = IntakeWebDriver.CreateClient(factory);
+        var principal = $"N{Guid.NewGuid():N}"[..12].ToUpperInvariant();
+        await AllocationTestData.SeedPrincipalAsync(factory.Services, principal);
+        var instruction = await AllocationTestData.StoreDefinitiveReceiptAsync(
+            factory.Services,
+            CaseType.Inspection,
+            principal,
+            assets: []);
+
+        Guid caseId;
+        await using (var allocationScope = factory.Services.CreateAsyncScope())
+        {
+            var allocation = await allocationScope.ServiceProvider
+                .GetRequiredService<IAllocateIntake>()
+                .AttemptAutomaticAsync(instruction.Id, Guid.NewGuid());
+            caseId = Assert.IsType<Guid>(allocation?.State.CaseId);
+
+            var data = await allocationScope.ServiceProvider
+                .GetRequiredService<ICaseDataQueries>()
+                .GetAsync(caseId, CancellationToken.None);
+            Assert.NotNull(data);
+            Assert.Equal(CaseLifecycleState.NotReady, data!.State);
+            Assert.False(data.Completeness.Values.ImagesComplete);
+            Assert.False(data.Completeness.Values.ImagesConfirmedByStaff);
+        }
+
+        var laterImage = await IntakeWebDriver.UploadAndProcessAsync(
+            factory,
+            client,
+            "later-photograph.png",
+            "image/png",
+            Convert.FromBase64String(MultiFormatFixture.TinyPngBase64),
+            Guid.NewGuid().ToString("N"));
+        var laterReceiptId = IntakeWebDriver.ReceiptId(laterImage);
+
+        await using var assertScope = factory.Services.CreateAsyncScope();
+        var services = assertScope.ServiceProvider;
+        var laterReceipt = await services
+            .GetRequiredService<IIntakeReceiptQueries>()
+            .GetAsync(laterReceiptId, CancellationToken.None);
+        Assert.NotNull(laterReceipt);
+        Assert.Equal(IntakeDecision.ImageIntakeRegistered, laterReceipt!.Decision);
+        Assert.Equal(caseId, laterReceipt.CurrentCaseId);
+
+        var imageDetail = await services
+            .GetRequiredService<IImageIntakeQueries>()
+            .GetByOriginReceiptAsync(laterReceiptId, CancellationToken.None);
+        Assert.NotNull(imageDetail);
+        Assert.Equal(caseId, imageDetail!.AssociatedCaseId);
+
+        var afterLaterImage = await services
+            .GetRequiredService<ICaseDataQueries>()
+            .GetAsync(caseId, CancellationToken.None);
+        Assert.NotNull(afterLaterImage);
+        Assert.Equal(CaseLifecycleState.NotReady, afterLaterImage!.State);
+        Assert.False(afterLaterImage.Completeness.Values.ImagesComplete);
+        Assert.False(afterLaterImage.Completeness.Values.ImagesConfirmedByStaff);
+
+        var workflow = await services
+            .GetRequiredService<ICaseWorkflowQueries>()
+            .GetAsync(caseId, CancellationToken.None);
+        Assert.Equal(CaseDueWorkState.Scheduled, workflow?.DueWork?.State);
+        Assert.NotNull(workflow?.DueWork?.NextChaseAtUtc);
     }
 
     [Fact]
@@ -1530,7 +1781,8 @@ internal static class AllocationTestData
         string principalCode,
         MailRouteEvaluationResult? routeDecision = null,
         MailClassificationResult? classificationDecision = null,
-        CaseMatchEvaluationResult? caseMatchDecision = null)
+        CaseMatchEvaluationResult? caseMatchDecision = null,
+        IReadOnlyList<IntakeAssetRecord>? assets = null)
     {
         var token = Guid.NewGuid().ToString("N");
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
@@ -1562,6 +1814,7 @@ internal static class AllocationTestData
                 "1",
                 "qdos-test-policy",
                 1,
+                Assets: assets,
                 MailRouteDecision: routeDecision ?? new(
                     MailRouteDisposition.Accepted,
                     new(principalCode, MailRouteKind.DirectProvider, principalCode),

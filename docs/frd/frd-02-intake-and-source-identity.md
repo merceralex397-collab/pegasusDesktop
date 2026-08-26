@@ -101,6 +101,20 @@ effect. Staff can inspect Received,
 Processing, Complete, or Failed by the staged receipt identifier; failure wording
 is bounded and does not disclose exception or infrastructure detail.
 
+### Re-evaluating a completed receipt
+
+Re-evaluation uses the retained source asset, not the temporary staged copy. A
+completed evaluation may have deleted its staged copy by design; before queueing
+the work again, the mutation must find exactly one retained source asset, verify
+its recorded length and hash against the receipt, read the retained bytes through
+the existing artifact store, verify the bytes, and re-stage them under the
+existing staged-receipt identity. Only then may the work item become `pending`.
+
+If the retained source is missing, corrupt, ambiguous, or cannot be re-staged,
+the command fails closed before changing the receipt, work item, version, or
+mutation history. A valid re-evaluation remains replay-safe and keeps the
+Worker as the sole processing owner.
+
 ### Mandatory pre-case gates
 
 Before creating a case or allocating a reference, Pegasus must establish:

@@ -14,7 +14,8 @@ using Pegasus.Core.Workflow;
 namespace Pegasus.Infrastructure.Persistence;
 
 internal sealed class EfIntakeMutationStore(
-    IDbContextFactory<PegasusDbContext> contextFactory)
+    IDbContextFactory<PegasusDbContext> contextFactory,
+    IIntakeArtifactStore artifactStore)
     : IIntakeMutationStore, IAutomaticCaseAssociationStore,
       IAutomaticMailCaseAssociationEvidenceQueries
 {
@@ -184,7 +185,7 @@ internal sealed class EfIntakeMutationStore(
             {
                 if (request.Kind == IntakeResolutionKind.Block)
                 {
-                    receipt.Decision = EfIntakeReceiptStore.ToCode(IntakeDecision.BlockedIntake);
+                    receipt.Decision = IntakeDecisionCodes.ToCode(IntakeDecision.BlockedIntake);
                     receipt.DecisionReason = request.Reason.Trim();
                     receipt.FailureCode = "blocked_intake";
                     receipt.FailureReason = request.Reason.Trim();
@@ -206,7 +207,7 @@ internal sealed class EfIntakeMutationStore(
                 var missing = InstructionDraftCompleteness
                     .MissingIdentityCriticalFieldNames(correctedDraft);
                 var canBecomeCase = missing.Count == 0;
-                receipt.Decision = EfIntakeReceiptStore.ToCode(
+                receipt.Decision = IntakeDecisionCodes.ToCode(
                     canBecomeCase ? IntakeDecision.CaseCreated : IntakeDecision.BlockedIntake);
                 receipt.DecisionReason = canBecomeCase
                     ? "The intake correction produced a reviewable instruction draft."
@@ -249,7 +250,7 @@ internal sealed class EfIntakeMutationStore(
                     token)
                     ?? throw new InvalidDataException(
                         "The intake receipt does not have durable evaluation work.");
-                if (workItem.State == "processing"
+                if ((workItem.State is "dispatching" or "processing")
                     && workItem.LeaseExpiresAtUtc is { } leaseExpiresAtUtc
                     && leaseExpiresAtUtc > occurredAtUtc)
                 {
@@ -257,12 +258,51 @@ internal sealed class EfIntakeMutationStore(
                         "The intake receipt is already being evaluated.");
                 }
 
+                var sourceAssets = receipt.Assets
+                    .Where(item => item.Kind == "source" && item.Disposition == "source")
+                    .ToArray();
+                if (sourceAssets.Length != 1)
+                {
+                    throw new IntakeArtifactIntegrityException();
+                }
+
+                var sourceAsset = sourceAssets[0];
+                if (sourceAsset.ContentLength != receipt.SourceLength
+                    || !string.Equals(
+                        sourceAsset.ContentHash,
+                        receipt.SourceHash,
+                        StringComparison.OrdinalIgnoreCase)
+                    || string.IsNullOrWhiteSpace(sourceAsset.StorageKey))
+                {
+                    throw new IntakeArtifactIntegrityException();
+                }
+
+                var sourceContent = await artifactStore.ReadAsync(
+                    sourceAsset.StorageKey,
+                    token)
+                    ?? throw new IntakeArtifactIntegrityException();
+                if (sourceContent.Length != receipt.SourceLength
+                    || !string.Equals(
+                        Convert.ToHexString(SHA256.HashData(sourceContent.Span)),
+                        receipt.SourceHash,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new IntakeArtifactIntegrityException();
+                }
+
+                await artifactStore.StageAsync(
+                    stagedReceiptId,
+                    receipt.SourceHash,
+                    sourceContent,
+                    occurredAtUtc,
+                    token);
+
                 workItem.State = "pending";
                 workItem.DueAtUtc = occurredAtUtc;
                 workItem.LeaseToken = null;
                 workItem.LeaseExpiresAtUtc = null;
                 workItem.FailureCode = null;
-                receipt.Decision = EfIntakeReceiptStore.ToCode(IntakeDecision.BlockedIntake);
+                receipt.Decision = IntakeDecisionCodes.ToCode(IntakeDecision.BlockedIntake);
                 receipt.DecisionReason = "A policy re-evaluation of the retained source is queued.";
                 receipt.FailureCode = "reevaluation_pending";
                 receipt.FailureReason = null;
