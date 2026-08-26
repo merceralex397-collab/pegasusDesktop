@@ -21,3 +21,9 @@ From a clean detached worktree at merged `origin/main` commit `36dccd8fa1c883c38
 ## Scope boundary
 
 The implementation and proof are repository-only. No upstream synchronization, cloud write, mailbox/Box write, deployment, credential change, or release operation was performed. The `corpus/` directory was not modified or published.
+
+## Closeout traceability
+
+- Pull request: [#21](https://github.com/merceralex397-collab/pegasusDesktop/pull/21)
+- Merged: 2026-08-26T17:27:26Z
+- Final merge commit: `36dccd8fa1c883c38977b6721d86b745c45c9a94`

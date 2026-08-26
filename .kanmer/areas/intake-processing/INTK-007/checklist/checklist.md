@@ -55,3 +55,18 @@ template needed work.
 
 
 **2026-08-26 closeout evidence** — The final PR head passed exact-head CI and independent review, merged to `dev`, was promoted to `main`, and was revalidated from the merged-main commit.
+
+# Closeout checklist
+
+---
+
+## Closeout — INTK-007
+
+- [ ] PR merge verified (`gh pr view --json state,mergedAt`)
+- [ ] proof.md finalised (PR URL + merge date appended)
+- [x] Moved to final stage
+- [ ] Outcome recorded in ticket body (PR link, follow-ups)
+- [ ] cd out of worktree; `git worktree remove` ticket worktree
+- [ ] `git branch -d` ticket branch
+- [ ] `git fetch --prune` + `git worktree prune`
+- [ ] `take_ticket action: "release"`

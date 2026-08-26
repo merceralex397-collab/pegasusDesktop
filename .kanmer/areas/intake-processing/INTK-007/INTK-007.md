@@ -39,11 +39,12 @@ commits:
   - c85e1f1e33e3b7159c70ecf58c294379734300ba
   - e37c8fce6e77e8239f4e524c482230bfd0c63130
   - c25099f92681db991a0003146991b676d1c8b82b
+  - 36dccd8fa1c883c38977b6721d86b745c45c9a94
 prs:
   - '21'
 archived: false
 created: '2026-08-24T11:52:39.628Z'
-updated: '2026-08-26T17:31:31.518Z'
+updated: '2026-08-26T17:32:09.945Z'
 ---
 
 ## What
@@ -257,4 +258,11 @@ Tier 1 obliges the composition fact proving one policy owner and no surviving ma
 
 ## Outcome
 
-_Filled at closeout._
+Delivered in PegasusDesktop and promoted to `main` through PR #21: https://github.com/merceralex397-collab/pegasusDesktop/pull/21
+
+- Merge commit: `36dccd8fa1c883c38977b6721d86b745c45c9a94`.
+- Exact-head CI: run 32992629383 passed at `c25099f92681db991a0003146991b676d1c8b82b`.
+- Independent review: Gibbs PASS with no findings.
+- Merged-main proof: Release build 0 warnings/errors, Core 935/935, focused integration 19/19, and `git diff --check` passed.
+- Follow-up work remains represented by the existing downstream tickets [[FEAT-011]], [[FEAT-012]], and [[GWY-013]]; this ticket's implementation is complete.
+- No upstream synchronization, cloud/deployment write, mailbox/Box write, credential change, or release operation was performed.
