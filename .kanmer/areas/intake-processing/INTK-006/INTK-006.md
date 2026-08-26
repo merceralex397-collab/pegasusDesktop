@@ -10,9 +10,6 @@ assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:23:33.118Z'
-taken_at: '2026-08-26T15:13:57.812Z'
-branch: task/upstream-intk-032-unreadable-report-fallback
-worktree: ../pegasus-worktrees/upstream-intk-032-unreadable-report-fallback
 labels:
   - qdos26009
   - extraction
@@ -29,7 +26,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:50:33.940Z'
-updated: '2026-08-26T15:13:57.812Z'
+updated: '2026-08-26T15:15:14.825Z'
 ---
 
 ## What
