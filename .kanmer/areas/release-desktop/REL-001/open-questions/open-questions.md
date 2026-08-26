@@ -15,3 +15,7 @@
 - **Whether ADR-0105 should have been ADR-0030, the next free number.** Not open: settled by the operator on 2026-08-23, who confirmed the reserved block ADR-0100–ADR-0110.
 - **FRD-13.** Not open and not this ticket's: [[FND-008]] owns it; REL-001 may only refer to it as a future pointer.
 - **D-002 and D-003.** Not open and not to be re-evaluated; both were decided by the operator on 2026-08-23.
+
+## Governance resolution — 2026-08-26
+
+The accepted-ADR immutability finding is not an unresolved product question. Existing repository governance supplies the route: preserve the accepted ADR-0105 body, mark its status superseded in frontmatter, and record the complete corrected release decision in next-free ADR-0031. The reserved native-desktop block has no free number; ADR-0031 is therefore allocated under AGENTS.md's superseding-ADR rule for numbers below ADR-0100. No operator decision is being invented.

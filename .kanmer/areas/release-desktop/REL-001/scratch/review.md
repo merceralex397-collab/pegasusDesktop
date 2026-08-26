@@ -11,3 +11,5 @@ The second independent reviewer returned NEEDS CHANGES at commit 62e8e680, then 
 The review also confirmed the Relates section and file-name wording were fixed, exact local documentation checks passed, the one-file scope is otherwise correct, and no runtime/cloud/packaging claim is made. PR #22 remains open and must not be merged until the governance conflict is resolved.
 
 Second independent review (2026-08-26) returned NEEDS CHANGES. Blocking: accepted ADR body was edited in place against AGENTS.md/docs/adr/README.md immutability; cloud table needs feed-versus-gateway scope; ForceUpdateFromAnyVersion must be stated as the canonical XML element/value form. Relates and package-manifest wording fixes are in 17c87e51. PR #22 stays unmerged pending governance resolution.
+
+2026-08-26 — Governance route selected from AGENTS.md: restore ADR-0105 body unchanged, mark it superseded, create next-free ADR-0031 as the complete corrected release decision, and update the ADR index. No reserved 0100–0110 slot is free; no new ADR-0105 will be created.
