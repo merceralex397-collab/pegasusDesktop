@@ -294,3 +294,15 @@ The historical upstream-sync acceptance items are superseded by the operator sco
 ## Simplification pass — 2026-08-26
 
 n/a — documentation/governance-only. No branch diff was necessary: the required in-repository-only rule is already recorded in the current governance documents, and adding a second statement would duplicate the one-list/one-owner rule. The ticket's proof will cite those existing files and the remote/history checks above.
+
+## Independent review — 2026-08-26
+
+Faraday (`pegasus-desktop-reviewer`) independently reviewed the amended no-change ticket and returned **PASS**. The review verified:
+
+- `AGENTS.md:349-356` and `docs/desktop/README.md:19-29` contain the operator's no-upstream, in-repository-only boundary.
+- Only `origin` points to `merceralex397-collab/pegasusDesktop`; no `upstream` remote or `refs/remotes/upstream/*` exists.
+- `HEAD`, `origin/dev`, and `origin/main` all equal `3b1737de2a27f84aa1bea03bf2c34d41d5a8006a`; there is no branch diff or whitespace error.
+- The documentation links, Markdown placement, and recorded regression checks pass.
+- No PR or reviewed merge is required because the amended ticket has no repository diff.
+
+The only closure action is to add this Kanmer `proof` document; the original upstream-sync criteria remain superseded and are not claimed.
