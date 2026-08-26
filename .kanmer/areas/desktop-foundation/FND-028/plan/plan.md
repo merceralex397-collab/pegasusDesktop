@@ -282,3 +282,15 @@ Current operator scope supersedes any historical upstream-sync wording in inheri
 The independent `pegasus-desktop-reviewer` initially returned FAIL: the new Supported platform paragraph named `Pegasus.Server.slnf` for Linux, but the Locked restore/build/test section still presented `Pegasus.slnx` commands as identical on both platforms. This was a valid medium finding and blocked merge.
 
 Corrective change: `docs/runbook.md` now gives separate Windows commands for `Pegasus.slnx` and Linux commands for `Pegasus.Server.slnf`, and states that lock-file regeneration uses the matching entry point. Documentation links, Markdown placement, and `git diff --check` were rerun successfully. A fresh independent review is required before PR creation.
+
+## Independent review correction and scope reconciliation — 2026-08-26
+
+The first independent review returned FAIL with one high and two medium findings. The high finding was a real inconsistency between this ticket's explicit guardrail (CI belongs to FND-040 / TEST-013 and the release script is not this ticket's surface) and the Area 02 plan's DSK-02-03 row/trap, which still required Ubuntu CI wiring and a release-script solution switch.
+
+The canonical Area 02 plan is amended in this PR: DSK-02-03 now owns the server filter, its local executable/architecture proof, and the platform runbook; Ubuntu CI wiring is explicitly deferred to DSK-02-15 / TEST-013. The release script was rechecked and publishes the Web and Worker project files directly, with no solution argument, so no switch is possible or required. The Linux-build trap now records both ownership facts. This keeps the CI and release-script changes out of the ticket's stated scope and makes the deferral explicit rather than silently omitting an acceptance condition.
+
+The review's medium findings were addressed:
+- the JSON reader now throws on a null/non-string project entry instead of filtering malformed entries;
+- the Linux canonical test command excludes the separately gated Browser category.
+
+The final diff is four files rather than the initial three-file estimate: the added canonical-plan reconciliation and the two bounded correctness edits are now included in the estimate. No CI, release script, upstream remote, cloud, or production operation was added.
