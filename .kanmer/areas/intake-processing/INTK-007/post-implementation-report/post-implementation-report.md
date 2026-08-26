@@ -34,3 +34,9 @@ The four existing downstream integration suites retain their valid accepted-matc
 ## Remaining delivery gates
 
 PR #21 requires exact-head CI and independent review before merge into `dev`. After merge, verification must run on merged `main` and write `proof.md` before Kanmer closeout.
+
+## Exact-head CI — 2026-08-26
+
+Because the PR event did not register a workflow run, the existing `repository-check` workflow was given its authorized manual `workflow_dispatch` trigger in commit `c25099f92681db991a0003146991b676d1c8b82b`. Manual run [32992629383](https://github.com/merceralex397-collab/pegasusDesktop/actions/runs/32992629383) ran at that exact head and passed all jobs: local-development-scripts, changes, documentation, reference-data, browser, unit, infrastructure, sql-integration (1), sql-integration (2), sql-integration (3), and sql-integration-coverage.
+
+This resolves the prior exact-head CI-only review finding. Independent re-review of the final PR head, merge to `dev`, merged-`main` verification, and `proof.md` remain outstanding.

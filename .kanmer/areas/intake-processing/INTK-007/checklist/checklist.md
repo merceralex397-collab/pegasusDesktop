@@ -17,6 +17,7 @@
 - [x] Core tests green
 - [x] Local non-Corpus/non-Browser integration tests green; exact-head CI is a PR gate
 - [x] Simplification pass over the branch diff, recorded in the plan
+- [x] Exact-head GitHub Actions run 32992629383 passed for commit `c25099f92681db991a0003146991b676d1c8b82b`; all repository-check jobs, including browser, three SQL shards, coverage, unit, infrastructure, documentation, changes, reference-data, and local-development-scripts, passed
 - [ ] PR into `dev`, independent review, merge
 - [ ] Proof on merged `main`
 
@@ -49,3 +50,5 @@ template needed work.
 **2026-08-26 execution amendment** — upstream sync/re-check is removed as a prerequisite. Work is performed only in the PegasusDesktop repository from `origin/dev`; upstream material is retained as read-only provenance. No upstream, cloud, mailbox, Box, credential, deployment, or external write is permitted.
 
 **2026-08-26 validation** — `dotnet restore` passed; `dotnet build --configuration Release` passed with 0 warnings and 0 errors; full Core tests passed 935/935; targeted SQL integration passed 19/19; full non-Corpus/non-Browser integration passed 886/886 with 2 expected skips. Final simplification changes were revalidated by a final 119/119 focused Core pass and 19/19 targeted SQL integration pass.
+
+**2026-08-26 exact-head CI** — Added the repository's existing `repository-check` workflow_dispatch trigger so the exact PR head could be validated after pull_request event registration failed to create a run. Manual run 32992629383 passed at commit `c25099f92681db991a0003146991b676d1c8b82b`; this does not substitute for independent review or merged-main proof.
