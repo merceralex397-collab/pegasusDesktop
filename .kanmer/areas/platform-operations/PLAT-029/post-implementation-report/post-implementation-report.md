@@ -73,3 +73,9 @@ Current local evidence on \`7d761ed6\`:
 - Release solution build with shared compilation disabled: 0 warnings, 0 errors.
 
 A fresh independent review is pending for \`7d761ed6\`. PR merge is not claimed. The existing local Start command still fails before readiness at line 1482 while recording an empty launched-process path; Start/Smoke and the operator-visible journey remain unproven and require the local-development stack owner to resolve the launcher defect. No out-of-scope script, Worker, API, cloud, mailbox, Box, or upstream change was made.
+
+## Validation refresh — 2026-08-26 (synchronized branch)
+
+The synchronized branch's Core suite passed 935 tests with 0 failures and 0 skips using the repository-required Release configuration and shared-compilation-disabled retry. The task worktree is clean at \`7d761ed6dbe66fd274bac3701618980499bf0a47\`. The main checkout's pre-existing user change was not touched.
+
+PR #25 replacement CI run \`33013301879\` is still in progress: browser, unit, changes, documentation, local-development-scripts, reference-data, and SQL shard 2 are green; SQL shards 1 and 3 remain pending.

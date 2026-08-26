@@ -118,3 +118,9 @@ The independent review identified that report and EVA consumers had only managed
 - The first local retry encountered a shared VBCSCompiler lock; the successful retry disabled shared compilation and did not terminate or alter the shared compiler.
 - The prior independent review was against \`dcfaf5ad\` and correctly identified the then-uncommitted assertion plus the Start/Smoke blocker. The assertion is now committed. A fresh independent review is requested for exact head \`7d761ed6\`.
 - The exact prescribed local Start/Smoke acceptance remains open: the existing launcher fails before readiness at \`Invoke-LocalDevelopment.ps1:1482\` because the launched process path is empty. This is outside PLAT-029's allowed source scope and is not masked by this ticket.
+
+## Validation refresh — 2026-08-26 (synchronized branch)
+
+- \`dotnet test ./tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release --no-restore -p:UseSharedCompilation=false --logger 'console;verbosity=minimal'\` — 935 passed, 0 failed, 0 skipped.
+- The branch worktree is clean after \`7d761ed6\`; the main checkout's pre-existing user modification to \`tests/Pegasus.IntegrationTests/VehicleWorkflowTerminalTests.cs\` remains untouched.
+- PR #25's exact head is \`7d761ed6dbe66fd274bac3701618980499bf0a47\`; its replacement CI run \`33013301879\` has browser, unit, changes, documentation, local-development-scripts, and reference-data green; SQL shards 1 and 3 are still in progress, with shard 2 green.
