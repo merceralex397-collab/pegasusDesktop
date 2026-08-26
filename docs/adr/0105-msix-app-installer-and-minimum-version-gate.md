@@ -99,7 +99,7 @@ reachable only from the office network or VPN over SMB.
 
 ### Area 09 release contract
 
-The package manifest uses the App Installer 2021 schema
+The App Installer file uses the 2021 schema
 (`http://schemas.microsoft.com/appx/appinstaller/2021`). Its launch update
 settings are `OnLaunch HoursBetweenUpdateChecks="0"`, `ShowPrompt="true"`,
 `UpdateBlocksActivation="true"`, and `AutomaticBackgroundTask`. These settings
@@ -127,6 +127,15 @@ D-002 (self-managed certificate) and D-003 (UNC feed) were decided on
 recurring service cost. The accepted operational trade-offs are per-machine
 certificate trust rollout and rehearsed renewal, and update checks that work
 only on the office network or VPN.
+
+## Relates
+
+- ADR-0007 — the gateway's existing authorised-terminal release route is
+  unchanged.
+- ADR-0014 — Test/UAT remains local; this decision does not create an Azure
+  test feed or environment.
+- FRD-13 — the future desktop gateway compatibility contract, to be authored
+  by [[DSK-00-08]] (FND-008); this ADR does not claim that FRD-13 exists yet.
 
 ## Consequences
 
