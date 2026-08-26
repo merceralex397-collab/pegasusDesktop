@@ -224,3 +224,9 @@ The hard pre-writing dependency was rechecked before taking the ticket. `git ls-
 - Read-only configured-remote refresh: `git fetch origin`; no upstream remote was accessed.
 - `origin/dev` is `fff7e14178f1be6e3d4f2fbc5a5401799ba69409`. The required ADR files are present there: `docs/adr/0102-existing-pegasus-credentials-token-session.md` with `status: accepted` (delivered by FND-042 merge `61227d6b`), and `docs/adr/0108-desktop-webview2-report-rendering.md` with `status: proposed` (delivered by FND-007 merge `d4c17fdd`). ADR-0100, ADR-0104 and ADR-0105 are also present.
 - FND-005 is live `done`; FND-007's PR #13 is merged to `dev`; FND-006's remaining ADR ownership does not remove any ADR required by this ticket. The former missing-ADR stop condition is therefore cleared. Proceed in-repository with the planned FRD/PRD/capability documentation work; do not perform upstream synchronization, cloud writes or deployment.
+
+## Allocation evidence review — 2026-08-26
+
+A bounded read-only parity pass enumerated the smallest non-speculative family as 18 durable outcomes: native shell/navigation; diagnostics; gateway contract; generated client; compatibility gate; sign-in/session; forced update; intake/transfer; document custody; vehicle lookup; local report rendering; packaging; update distribution; rollback; first installation; administrator health; resource disposition register; and post-cutover deprovision checklist. The area plans support these outcomes and explicitly do not support one capability row per screen.
+
+The same pass found no authoritative horizon or target-release assignment for these 18 rows. The existing `docs/capabilities.md` semantics make `Not planned` the permanent-boundary horizon and `unallocated` the permanent-boundary release value, so assigning those values to planned desktop outcomes would be false. Exact allocation remains an operator product decision; no repository or upstream sync is a substitute for that decision.

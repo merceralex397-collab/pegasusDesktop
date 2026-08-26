@@ -320,3 +320,7 @@ Before taking FND-008, the required ADR gate was rerun against `origin/dev`. Pre
 ## Dependency recheck — 2026-08-26
 
 The earlier 2026-08-25 dependency stop is superseded by a live configured-remote check. On `origin/dev` `fff7e14178f1be6e3d4f2fbc5a5401799ba69409`, ADR-0102 exists with `status: accepted` (FND-042 merge `61227d6b`) and ADR-0108 exists with `status: proposed` (FND-007 PR #13 merge `d4c17fdd`); ADR-0100, ADR-0104 and ADR-0105 are present. FND-005 is `done`. The ticket may proceed from its own `origin/dev`-based worktree. This recheck used only the configured `pegasusDesktop` remote; no upstream sync, cloud write or deployment is permitted.
+
+## Allocation decision gate — 2026-08-26
+
+The implementation cannot truthfully fill the three derived allocation views until the operator chooses the DSK rows' horizon and first-introduction target release. The 18-row family set is evidenced by the area plans; the allocation values are not. Do not use `Not planned`/`unallocated` as a placeholder because the registry defines those as permanent boundaries. Resume the registry step after the operator supplies the allocation, then recompute all totals.
