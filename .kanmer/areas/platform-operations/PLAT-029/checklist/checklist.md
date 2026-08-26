@@ -44,3 +44,9 @@
 - [ ] Local Start, Smoke, and retained-content operator journey — **not satisfied**; launcher owner TEST-017 must resolve `scripts/Invoke-LocalDevelopment.ps1:1482` first.
 
 Reviewer non-blocking recommendation: add physical retained-occurrence corruption and wrong-length assertions.
+
+## Latest validation — 2026-08-26
+
+- [x] Exact launcher failure reproduced on synchronized head: run `027034dad28d4083aa43509a54a8a2b0`, `Invoke-LocalDevelopment.ps1:1482`, empty `Process.Path` during immediate startup inspection.
+- [x] Exact-head PR CI restart requested for run `33013301879`; same-head run is in progress.
+- [ ] Launcher fix, Start/Smoke, fresh independent review, merge, and proof remain open; launcher ownership is TEST-017.

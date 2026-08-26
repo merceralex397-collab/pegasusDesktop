@@ -83,3 +83,9 @@ PR #25 replacement CI run \`33013301879\` is still in progress: browser, unit, c
 ## Independent review — 2026-08-26
 
 Fresh independent review of `7d761ed6dbe66fd274bac3701618980499bf0a47` returned **FAIL**. The exact local Start gate still fails at `scripts/Invoke-LocalDevelopment.ps1:1482` after successful Initialize (run `104b63f9...`), so Smoke and the retained-content operator journey were not run. Exact-head PR run `33013301879` completed `cancelled` because SQL shard 3 was cancelled; it is not green CI. Review otherwise passed scope, implementation, and simplification. A medium non-blocking test-strengthening suggestion was made for physical retained-occurrence corruption and length mismatch. PLAT-029 remains in review with no merge, verification, or proof evidence.
+
+## Validation checkpoint — 2026-08-26 (fresh launcher reproduction)
+
+- Exact prescribed `pwsh ./scripts/Invoke-LocalDevelopment.ps1 -Action Start` was rerun with SDK 10.0.302 on head `7d761ed6dbe66fd274bac3701618980499bf0a47`; it failed before readiness at `scripts/Invoke-LocalDevelopment.ps1:1482` while recording the Web launcher, with `GetFullPath` receiving an empty process path. New run: `027034dad28d4083aa43509a54a8a2b0`.
+- A read-only equivalent reproduced the mechanism: immediate `System.Diagnostics.Process.Path` can be empty during child-process startup, so the existing launcher treats a startup race as fatal. This fix belongs to the local-development lifecycle owner TEST-017 and is outside PLAT-029's declared source scope; no script change was made.
+- Exact-head PR #25 CI run `33013301879` was restarted with `gh run rerun` and is currently in progress at the same SHA. Start/Smoke, independent review pass, merge, and merged-main proof remain open.
