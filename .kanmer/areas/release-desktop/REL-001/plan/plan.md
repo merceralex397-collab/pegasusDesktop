@@ -266,3 +266,13 @@ The canonical ADR now has an appended Area 09 release contract covering the expl
 ## Review response — 2026-08-26
 
 Independent review initially returned NEEDS CHANGES for the missing ADR-0014/FRD-13 Relates section and ambiguous “package manifest” wording. Commit 17c87e51 adds the required Relates section and names the App Installer file distinctly from Package.appxmanifest. The review scope remains one documentation file and no product decision or runtime claim was added.
+
+## Review disposition — 2026-08-26
+
+Independent review by an agent that did not implement REL-001 returned NEEDS CHANGES. The Relates and terminology findings were fixed in commit 17c87e51. The remaining blocking findings are the accepted-ADR immutability conflict, missing feed-versus-gateway scope in the cloud table, and inaccurate rollback XML terminology. The first finding is a governance decision, not a CI failure: AGENTS.md and docs/adr/README.md require accepted bodies to remain immutable and require a new superseding ADR for changed decisions, while this ticket's inherited plan says to extend the canonical file in place. The PR stays unmerged until the operator supplies an explicit governance amendment or a valid superseding-ADR route is identified without consuming another reserved ADR number.
+
+## Review blocker — 2026-08-26
+
+The independent reviewer found that the implementation path conflicts with the governing accepted-ADR rule. AGENTS.md:79-89 and docs/adr/README.md:10-14 state that published accepted ADR bodies are immutable and a changed decision must use a new superseding ADR. REL-001's inherited ownership note says to extend ADR-0105 in place. These instructions conflict; the reviewer correctly requires an explicit governance amendment or a valid superseding route before merge. Do not merge PR #22 while this is unresolved.
+
+The same review requires two non-governance corrections if the chosen route retains this content: scope the cloud table separately to the feed and gateway, and write ForceUpdateFromAnyVersion as the canonical XML element/value. The Relates section and App Installer-file terminology are already fixed in 17c87e51.

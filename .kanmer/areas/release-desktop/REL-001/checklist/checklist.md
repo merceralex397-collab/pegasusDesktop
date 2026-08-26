@@ -18,3 +18,19 @@
 - 2026-08-26 — branch task/rel-001-adr-0105-reconciliation taken in C:\Users\PC\Documents\GitHub\pegasus-worktrees\rel-001-adr-0105-reconciliation.
 - 2026-08-26 — appended the Area 09 release contract; local documentation checks passed.
 - 2026-08-26 — PR #22 opened. Independent review found two findings; commit 17c87e51 fixes both and PR CI is being rechecked at the new exact head.
+
+## Review findings — 2026-08-26
+
+- [x] Fix the missing Relates section and distinguish the App Installer file from Package.appxmanifest (17c87e51).
+- [ ] Resolve the accepted-ADR immutability conflict before merge; do not merge the in-place edit under the current AGENTS.md rule.
+- [ ] Scope the cloud-justification evidence separately to the feed and gateway.
+- [ ] Correct ForceUpdateFromAnyVersion to the canonical XML element/value form.
+- [ ] Obtain a passing independent re-review at the final exact PR head.
+
+## Independent review — 2026-08-26
+
+- [x] Address missing Relates section and ambiguous App Installer terminology in 17c87e51.
+- [ ] Obtain governance amendment or select a valid superseding-ADR route; do not merge PR #22 before this is resolved.
+- [ ] Scope cloud justification separately to feed and gateway.
+- [ ] Use the canonical ForceUpdateFromAnyVersion XML element/value wording.
+- [ ] Re-review the final exact PR head and only then merge.

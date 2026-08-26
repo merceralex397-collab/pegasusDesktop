@@ -38,3 +38,23 @@ The independent reviewer identified two blocking clarity/completeness findings. 
 - Changed “package manifest” to “App Installer file” so it cannot be confused with Package.appxmanifest.
 
 The documentation-link and Markdown-placement gates were rerun after the fix and passed. The PR head is now 17c87e51; CI must be rechecked at that exact head.
+
+## Independent review — 2026-08-26
+
+The second independent reviewer returned NEEDS CHANGES at commit 62e8e680, then identified the same scope on the final PR head. Blocking findings:
+
+1. The branch edits a published status: accepted ADR in place, contrary to AGENTS.md and docs/adr/README.md, which require immutable accepted bodies and a new superseding ADR for a changed decision. This requires an explicit governance amendment or a valid superseding-ADR route; no merge is authorized under the current record.
+2. The six-row cloud-justification table is not scoped to feed versus gateway. The next revision must make the feed answers and the gateway central-enforcement answer explicit, without inventing an Azure requirement.
+3. ForceUpdateFromAnyVersion must be described as the App Installer XML element/value form, matching the canonical template, not as an attribute.
+
+The review also confirmed the Relates section and file-name wording were fixed, exact local documentation checks passed, the one-file scope is otherwise correct, and no runtime/cloud/packaging claim is made. PR #22 remains open and must not be merged until the governance conflict is resolved.
+
+## Independent review disposition — 2026-08-26
+
+A second independent reviewer returned NEEDS CHANGES. The Relates and terminology findings were addressed in 17c87e51, but the following blockers remain:
+
+- The branch modifies a published status: accepted ADR in place. AGENTS.md and docs/adr/README.md require accepted bodies to remain immutable and require a new superseding-ADR route for a changed decision. This needs an explicit governance amendment or a valid superseding ADR; PR #22 must not merge under the current record.
+- The cloud-justification table must explicitly scope feed versus gateway. Feed answers must not be conflated with the gateway's central enforcement rationale.
+- ForceUpdateFromAnyVersion must be described using the canonical App Installer XML element/value form, not as an attribute.
+
+The review confirmed exact local validation, one-file scope, no unsupported runtime/cloud claims, and correct docs-only simplification evidence.
