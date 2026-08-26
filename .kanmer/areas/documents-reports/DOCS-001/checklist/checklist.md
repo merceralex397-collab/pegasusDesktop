@@ -28,10 +28,17 @@
 
 ## Progress notes
 
-Implementation is complete on the local branch; final full-suite verification, independent review, PR, merge, and Kanmer closeout remain tracked as separate gates.
+Implementation and independent review are complete on the local branch; PR, merge, proof, and Kanmer closeout remain tracked as separate gates.
 
 
 ## Validation checkpoint — 2026-08-26
 
-- Targeted DOCS-001 validation passed: Release build (0 warnings/errors), 26/26 Core report tests, 13/13 focused integration/web/renderer/migration tests, 930/930 Core tests, 101/101 architecture tests, and migration grants for 68/68 migration files.
-- Full local integration validation was run but is not marked green: 883 passed, 2 skipped, 1 failed. The sole failure is the unrelated `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` SQL deadlock 1205 at `EfIntakeWorkStore.CompleteProcessingAsync` line 338; it reproduced independently. The full-stack verification checkbox remains open until this repository-level failure is resolved or separately accepted by the owning ticket.
+- Targeted DOCS-001 validation passed: Release build (0 warnings/errors), 26/26 Core report tests, 23/23 focused integration/web/renderer/migration tests, 930/930 Core tests, 101/101 architecture tests, and migration grants for 69/69 migration files.
+- Full local integration validation was run but is not marked green: 886 passed, 2 skipped, 1 failed. The sole failure is the unrelated `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` SQL deadlock 1205 at `EfIntakeWorkStore.CompleteProcessingAsync` line 338; it reproduced independently. The full-stack verification checkbox remains open until this repository-level failure is resolved or separately accepted by the owning ticket.
+
+
+## Final review checkpoint — 2026-08-26
+
+- [x] Fresh independent review by Bernoulli passed with no actionable findings.
+- [x] Final targeted validation passed: Release build 0/0, 26/26 report Core tests, 23/23 focused integration/report/web/renderer/migration tests, 930/930 full Core tests, 101/101 architecture tests, and 69/69 migration grants.
+- [ ] Full repository integration suite remains open because 886 passed, 2 skipped, and the unrelated `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` test failed with SQL deadlock 1205 at `EfIntakeWorkStore.CompleteProcessingAsync` line 338.

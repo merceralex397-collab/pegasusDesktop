@@ -4,12 +4,13 @@ type: ticket
 title: >-
   upstream:DOCS-001 · Trigger report generation from complete accepted
   assessments and retain immutable report references
-status: implementing
+status: review
 area: documents-reports
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:22:05.347Z'
+  review: '2026-08-26T10:28:08.400Z'
 taken_at: '2026-08-26T07:45:42.803Z'
 branch: task/upstream-docs-001-report-aggregate
 worktree: ../pegasus-worktrees/upstream-docs-001-report-aggregate
@@ -33,7 +34,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:20.415Z'
-updated: '2026-08-26T07:45:42.803Z'
+updated: '2026-08-26T10:28:08.400Z'
 ---
 
 ## What

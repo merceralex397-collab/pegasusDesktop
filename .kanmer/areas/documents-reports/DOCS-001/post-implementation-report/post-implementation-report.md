@@ -14,10 +14,10 @@
 
 - `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false` — passed with 0 warnings and 0 errors.
 - Core report-focused tests — 26/26 passed.
-- Focused integration/web/renderer/migration tests — 13/13 passed.
+- Focused integration/web/renderer/migration tests — 23/23 passed.
 - Full Core suite — 930/930 passed.
 - Architecture suite — 101/101 passed.
-- `scripts/Test-MigrationGrants.ps1` — 68/68 migration files passed.
+- `scripts/Test-MigrationGrants.ps1` — 69/69 migration files passed.
 - Full local integration command:
   `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --no-restore --filter "Category!=Corpus&Category!=Browser"`
   completed with 883 passed, 2 skipped, and 1 failed in 12m 8s.
@@ -32,7 +32,12 @@ The pass reused the existing Core readiness policy/ports, existing document-cust
 
 ## Review and delivery state
 
-- Fresh independent review of the final diff: pending.
+- Fresh independent review of the final diff: PASS by Bernoulli; no actionable findings.
 - PR and merge: pending.
 - Kanmer verification proof: pending and will be written only after merge on the required target branch.
 - Known blocker: the unrelated full integration deadlock above prevents claiming a green repository-wide integration suite. DOCS-001 targeted validation is green; the intake test must be owned and resolved separately or explicitly accepted by its owning ticket before the full-stack checkbox can be closed.
+
+
+## Final review checkpoint — 2026-08-26
+
+Bernoulli independently reviewed the final diff and returned PASS with no actionable findings. The review verified exact report-version retry binding, canonical retry payloads, shared operator labels and office-time formatting, removal of duplicate explanatory/empty-state copy, and the report store's idempotency, concurrency, template, recovery, terminal, and grant controls.
