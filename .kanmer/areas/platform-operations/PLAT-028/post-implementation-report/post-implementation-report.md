@@ -52,3 +52,12 @@ The independent reviewer confirmed the implementation and scope, but noted that 
 ## Current state correction — 2026-08-25
 
 The initial `Branch and commit` PR line and the historical `PR blocker` section describe the pre-PR state and the failed attempt under the pull-only CLI account. They are superseded by the later `PR opened`, `Exact validation addendum`, and review entries: PR #2 is currently open at head `9f582036c5d304bfeea441ffb30415f71274c699`, targeting `dev`; review returned NEEDS CHANGES only for CI/evidence conditions, which have been addressed except for the external CI-registration blocker.
+
+## Merged-main closeout — 2026-08-26
+
+- PR #2 was merged into `dev` at merge commit `bbc2d8f5b10815d1744ad510c6508de975958eff`; the PR head was `9f582036c5d304bfeea441ffb30415f71274c699`.
+- Exact-head GitHub Actions run `32879509769` for the PR passed every applicable lane: changes, documentation, local-development-scripts, reference-data, unit, browser, sql-integration shards 1–3, and sql-integration-coverage. The infrastructure lane was correctly skipped.
+- The configured remote's `main` and `dev` both resolve to `3b1737de2a27f84aa1bea03bf2c34d41d5a8006a`; the PR head is an ancestor of `main`.
+- The merged `main` source contains the shared `IsInlineImage` rule in the EML reader and calls it from both the EML and DOC/MSG partials. The post-merge source check found no Pages, Worker, API-contract, Azure, mailbox, or Box change.
+- Independent review findings were addressed before merge; the reviewer confirmed the scope, preserved semantics, and simplification record. The only canceled broad hosted invocation remains explicitly non-passing evidence.
+- No cloud, deployment, mailbox, Box, upstream, or credential write was performed.
