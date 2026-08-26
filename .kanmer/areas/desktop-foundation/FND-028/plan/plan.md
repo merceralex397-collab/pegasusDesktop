@@ -243,3 +243,9 @@ Linux workstation, or an explicit "Linux not exercised; Windows only" line in th
 
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this
 branch's own diff before the PR, recorded here under a dated heading._
+
+## Mechanism verification — 2026-08-26
+
+Microsoft Learn search was refreshed before implementation. The official solution-filters page says the filter uses a JSON solution object with a relative solution path and project paths relative to the solution, with escaped backslashes; it also notes `.slnx` support in MSBuild 17.12 and later. The official dotnet sln page says .slnf is accepted as a solution-file argument and that .slnf support was added in .NET SDK 9.0.3xx. Sources: https://learn.microsoft.com/visualstudio/msbuild/solution-filters?view=visualstudio#solution-filter-files and https://learn.microsoft.com/dotnet/core/tools/dotnet-sln#commands (fetched 2026-08-26).
+
+The documentation does not explicitly guarantee a .slnf solution.path targeting .slnx. The repository pins SDK 10.0.302, so the planned empirical restore/build is the authority for that one compatibility point. The implementation will first use the planned Pegasus.Server.slnf over Pegasus.slnx; if the command fails specifically because that relationship is unsupported, use only the pre-approved Pegasus.Server.slnx alternative and record the exact error here.
