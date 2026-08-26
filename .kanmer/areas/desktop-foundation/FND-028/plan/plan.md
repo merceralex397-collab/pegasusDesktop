@@ -249,3 +249,30 @@ branch's own diff before the PR, recorded here under a dated heading._
 Microsoft Learn search was refreshed before implementation. The official solution-filters page says the filter uses a JSON solution object with a relative solution path and project paths relative to the solution, with escaped backslashes; it also notes `.slnx` support in MSBuild 17.12 and later. The official dotnet sln page says .slnf is accepted as a solution-file argument and that .slnf support was added in .NET SDK 9.0.3xx. Sources: https://learn.microsoft.com/visualstudio/msbuild/solution-filters?view=visualstudio#solution-filter-files and https://learn.microsoft.com/dotnet/core/tools/dotnet-sln#commands (fetched 2026-08-26).
 
 The documentation does not explicitly guarantee a .slnf solution.path targeting .slnx. The repository pins SDK 10.0.302, so the planned empirical restore/build is the authority for that one compatibility point. The implementation will first use the planned Pegasus.Server.slnf over Pegasus.slnx; if the command fails specifically because that relationship is unsupported, use only the pre-approved Pegasus.Server.slnx alternative and record the exact error here.
+
+## Execution and validation — 2026-08-26
+
+The refreshed Microsoft Learn evidence was settled empirically: `Pegasus.Server.slnf` with `solution.path` set to `Pegasus.slnx` is accepted by the pinned .NET SDK.
+
+Commands and results in `C:\Users\PC\Documents\GitHub\pegasus-worktrees\server-solution-filter`:
+
+- `dotnet restore ./Pegasus.Server.slnf --locked-mode` — exit 0; restore completed in 4.4s.
+- `dotnet build ./Pegasus.Server.slnf --configuration Release --no-restore` — exit 0; 7 projects built successfully in 90.9s.
+- `dotnet sln ./Pegasus.Server.slnf list` — listed exactly the seven intended server projects.
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~ServerSolutionFilter"` — 2 passed, 0 failed.
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build` — 103 passed, 0 failed.
+- `pwsh ./scripts/Test-DocumentationLinks.ps1` — all relative Markdown links resolved; 235 files checked.
+- `pwsh ./scripts/Test-MarkdownPlacement.ps1 -Base origin/dev -Head HEAD` — passed.
+- `git diff --check` — passed; only normal Windows line-ending warnings were emitted.
+
+The release script inspection remains unchanged: it publishes the Web and Worker project files directly and does not name a solution, so no release-script edit is required. The implementation did not edit `Pegasus.slnx`, CI, release scripts, Azure, or any upstream remote.
+
+## Simplification pass — 2026-08-26
+
+- Reuse: the existing `FindRepositoryRoot()` helper and the existing exact-solution architecture-test location were reused; no new test fixture, abstraction, or project was introduced.
+- Simplification: the filter is one small root JSON file over the existing `Pegasus.slnx`; a duplicate solution and a second build mechanism were not added.
+- Efficiency: the two facts parse the same authoritative filter once per test and use ordinal normalized paths; no production code or runtime behavior is involved.
+- Altitude: the runbook states only the platform-to-entry-point rule and leaves prerequisites, CI, and release routing to their owning tickets.
+- Disposition: no behavior-preserving simplification was identified or left unapplied.
+
+Current operator scope supersedes any historical upstream-sync wording in inherited ticket material. This ticket performed no upstream operation and only used the configured `origin` remote.
