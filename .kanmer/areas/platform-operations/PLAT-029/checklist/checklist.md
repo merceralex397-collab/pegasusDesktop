@@ -36,3 +36,11 @@
 - [x] Release solution build passed with 0 warnings and 0 errors using shared compilation disabled.
 - [ ] Fresh independent review of exact head `7d761ed6`.
 - [ ] Local Start/Smoke and operator-visible retained-content journey; launcher failure remains documented.
+
+## Independent review — 2026-08-26
+
+- [ ] Independent review passes — **FAIL**: exact Start/Smoke gate failed; exact-head CI run `33013301879` cancelled on SQL shard 3.
+- [ ] Full exact-head CI is green — **not satisfied**; rerun required.
+- [ ] Local Start, Smoke, and retained-content operator journey — **not satisfied**; launcher owner TEST-017 must resolve `scripts/Invoke-LocalDevelopment.ps1:1482` first.
+
+Reviewer non-blocking recommendation: add physical retained-occurrence corruption and wrong-length assertions.

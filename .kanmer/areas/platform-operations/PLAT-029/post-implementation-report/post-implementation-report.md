@@ -79,3 +79,7 @@ A fresh independent review is pending for \`7d761ed6\`. PR merge is not claimed.
 The synchronized branch's Core suite passed 935 tests with 0 failures and 0 skips using the repository-required Release configuration and shared-compilation-disabled retry. The task worktree is clean at \`7d761ed6dbe66fd274bac3701618980499bf0a47\`. The main checkout's pre-existing user change was not touched.
 
 PR #25 replacement CI run \`33013301879\` is still in progress: browser, unit, changes, documentation, local-development-scripts, reference-data, and SQL shard 2 are green; SQL shards 1 and 3 remain pending.
+
+## Independent review — 2026-08-26
+
+Fresh independent review of `7d761ed6dbe66fd274bac3701618980499bf0a47` returned **FAIL**. The exact local Start gate still fails at `scripts/Invoke-LocalDevelopment.ps1:1482` after successful Initialize (run `104b63f9...`), so Smoke and the retained-content operator journey were not run. Exact-head PR run `33013301879` completed `cancelled` because SQL shard 3 was cancelled; it is not green CI. Review otherwise passed scope, implementation, and simplification. A medium non-blocking test-strengthening suggestion was made for physical retained-occurrence corruption and length mismatch. PLAT-029 remains in review with no merge, verification, or proof evidence.
