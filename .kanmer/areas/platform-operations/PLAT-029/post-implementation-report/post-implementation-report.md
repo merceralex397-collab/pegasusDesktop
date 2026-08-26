@@ -55,3 +55,9 @@ The required SDK is now available at the task-local path `C:\\Users\\PC\\AppData
 The exact prescribed `Invoke-LocalDevelopment.ps1 -Action Start` command then failed before readiness at line 1482 while recording the launched process: `GetFullPath` received an empty process path. The failed run was `6b86d27dffba4f9a9fa8cffb35da877e`; its manifest and logs remain under the run-owned artifact directory, and `-Action Stop -RunId 6b86d27dffba4f9a9fa8cffb35da877e` completed successfully. Consequently no Start/Smoke success or retained-content operator journey is claimed.
 
 PR #25 is open against `dev`. Fresh independent review is in progress. The code/test evidence remains as recorded above; the launcher failure is outside this ticket's permitted source scope and requires resolution in the local-development stack owner before PLAT-029 can close.
+
+## Reader-consumer coverage — 2026-08-26
+
+Added and passed `IntakeRetainedImageIsReadByEvaAndAssessmentReportProjection` (1/1). The test writes the image through `LocalCaseCustody`'s existing intake-retained attachment layout, then reads it through both `EvaHandoffStore` generation and `EfAssessmentReportProjectionSource`; no managed-layout seeding is used. The combined affected integration set passed 42 tests with 1 pre-existing corpus-dependent skip and 0 failures. Release solution build passed with 0 warnings and 0 errors. This closes the independent review's missing report/EVA consumer-coverage finding.
+
+The exact prescribed local Start command still fails before readiness in the existing launcher at line 1482 because the launched process path is empty; the failed run was stopped cleanly. Start/Smoke and the operator-visible journey remain unproven.
