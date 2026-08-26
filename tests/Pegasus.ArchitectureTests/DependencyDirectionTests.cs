@@ -40,6 +40,18 @@ public sealed class DependencyDirectionTests
         "Pegasus.Worker"
     ];
 
+    private static readonly string[] ForbiddenContractsDependencyPrefixes =
+    [
+        "Microsoft.AspNetCore",
+        "Microsoft.EntityFrameworkCore",
+        "Microsoft.WindowsAppSDK",
+        "Microsoft.UI.Xaml",
+        "Pegasus.Core",
+        "Pegasus.Infrastructure",
+        "Pegasus.Web",
+        "Pegasus.Worker"
+    ];
+
     [Fact]
     public void CoreHasNoInfrastructureOrHostDependencies()
     {
@@ -98,6 +110,12 @@ public sealed class DependencyDirectionTests
             element => element.Name.LocalName is
                 "PackageReference" or "ProjectReference" or "FrameworkReference");
         Assert.Empty(ProjectReferences(root, "src/Pegasus.Contracts/Pegasus.Contracts.csproj"));
+
+        var references = typeof(Pegasus.Contracts.ContractConventions).Assembly.GetReferencedAssemblies();
+
+        Assert.DoesNotContain(
+            references,
+            reference => IsForbiddenContractsDependency(reference.Name ?? string.Empty));
     }
 
     [Fact]
@@ -533,6 +551,11 @@ public sealed class DependencyDirectionTests
 
     private static bool IsForbiddenCoreDependency(string assemblyName) =>
         ForbiddenCoreDependencyPrefixes.Any(prefix =>
+            assemblyName.Equals(prefix, StringComparison.Ordinal) ||
+            assemblyName.StartsWith($"{prefix}.", StringComparison.Ordinal));
+
+    private static bool IsForbiddenContractsDependency(string assemblyName) =>
+        ForbiddenContractsDependencyPrefixes.Any(prefix =>
             assemblyName.Equals(prefix, StringComparison.Ordinal) ||
             assemblyName.StartsWith($"{prefix}.", StringComparison.Ordinal));
 
