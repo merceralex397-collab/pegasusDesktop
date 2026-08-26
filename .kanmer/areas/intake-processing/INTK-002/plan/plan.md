@@ -94,3 +94,13 @@ Follow-up completed on this branch:
 - Annotated upstream `INTK-003` in `docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md` with fork board `[[INTK-002]]`.
 
 The L-02 proof and PR/CI findings remain open. The reviewer correctly notes that the current LocalDB tests do not prove Azurite, the Functions timer, queue loss, restart, or real duplicate delivery. No claim of those tiers is made.
+
+## Acceptance and review disposition — 2026-08-26
+
+- The exact PR head `56fb9b05c9609e08bf14a2e26f71e6d9b8ed5e1f` now has completed-success CI run `33006548735`; the required repository checks are green.
+- The independent review passed the static implementation, scope, threshold, and simplification lenses. Its delivery gate remains open because the required L-02 Azurite/Functions-host caller journey has not been demonstrated.
+- The scripted local-stack attempt still fails before readiness because the existing PowerShell launcher observes an empty `Process.Path`. A direct exact-worktree attempt reached Functions metadata discovery only after a normal build, then failed in the Worker language process because `EfStaffAccountAdministration` requires unregistered `UserManager<PegasusIdentityUser>` services. This is an existing Worker composition defect outside this ticket's allowed file scope.
+- The L-02 acceptance item remains intentionally unresolved. LocalDB recovery tests and green CI do not substitute for queue loss, timer redispatch, and one-time processing proof against Azurite and the Functions host.
+- Non-blocking review suggestions (direct active-lease untouched coverage and nonzero AttemptCount preservation) are recorded for follow-up; the existing tests already cover the core optimistic concurrency behavior and zero-attempt preservation required by this ticket.
+
+Next action: resolve the Worker/local-stack composition failure under its owning ticket or a narrowly scoped follow-up, then rerun the exact L-02 journey against this branch before merge.
