@@ -231,3 +231,14 @@ step 2, with its date.
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over
 this branch's own diff before the PR, recorded here under a dated heading.
 Expected outcome: `n/a — docs-only`._
+
+## Implementation checkpoint — 2026-08-26
+
+- The highest recorded production gateway release is `Release 20` in `docs/operations.md`; the next release number for the first tag is therefore `21`.
+- Added the immutable tag convention and CI consequence to `docs/engineering.md` § Branches and delivery.
+- Added the post-promotion `gateway/r<N>` and `desktop/v<M.m.b>` tag commands to both byte-identical release skill copies (`.agents/skills/pegasus-release/SKILL.md` and `.codex/skills/pegasus-release/SKILL.md`). The duplicate was synchronized rather than left divergent; its later removal remains [[TOOL-004]]'s ownership.
+- `git tag --list 'gateway/*' 'desktop/*'` is empty. No production gateway release occurred during this task, so the first `gateway/r21` tag and its `docs/operations.md` release-row record are intentionally pending the next authorized production release. They are not claimed as complete here.
+
+## Simplification pass — 2026-08-26
+
+The diff was reviewed for reuse, duplication, scope, efficiency and altitude. The documentation change adds one compact engineering rule; the release skill copies are kept byte-identical to avoid two routes diverging; no workflow, packaging, deployment, feed, Azure, or version-generation change was added. No further behavior-preserving simplification was identified.
