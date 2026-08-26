@@ -33,3 +33,9 @@
 - Hilbert completed a fresh independent review of PR #27 at exact head `ed4e2776c8529d2d4d170b6fab52fd20d39594b4`.
 - Verdict: implementation PASS; the prior XML-documentation omission is fully remediated. The review confirms `PagingLimits.cs` documents lower endpoint caps and ListIntake’s 100 limit, `PegasusProblem.cs` documents the safe RFC 9457 boundary and typed-version rationale, and `MutationEnvelope.cs` documents body placement, `desk:<guid>`, validation ownership, and the 200-character exception.
 - Review found no remaining plan, scope, implementation, or simplification gap. The review is not merge approval yet only because exact-head CI run `33021359764` remains in progress for SQL shards 1 and 3; all other jobs are green.
+
+## Exact-head CI completion — 2026-08-26
+
+- Workflow `repository-check` run `33021359764` completed successfully for exact head `ed4e2776c8529d2d4d170b6fab52fd20d39594b4`.
+- Green jobs: local-development-scripts, changes, documentation, reference-data, unit, infrastructure, SQL integration shards 1/2/3, browser, and sql-integration-coverage.
+- Independent review is implementation PASS. The PR is now eligible for merge into `dev`; no endpoint behavior, deployment, Azure, or release claim is made.
