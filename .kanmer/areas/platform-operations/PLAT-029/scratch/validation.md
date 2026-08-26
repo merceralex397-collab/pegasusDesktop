@@ -5,3 +5,5 @@
 - Exact-head PR #25 CI run `33013301879` was explicitly restarted with `gh run rerun`; it is currently in progress at the same SHA. Start/Smoke, review, merge, and proof remain open.
 
 - Owned failed run `027034dad28d4083aa43509a54a8a2b0` was cleaned with `pwsh ./scripts/Invoke-LocalDevelopment.ps1 -Action Stop -RunId 027034dad28d4083aa43509a54a8a2b0`; manifest is now `Stopped`.
+
+- CI completion checkpoint: restarted exact-head run `33013301879` completed `success` for SHA `7d761ed6dbe66fd274bac3701618980499bf0a47`; all required jobs passed and infrastructure skipped. This removes the prior CI cancellation only. The local launcher failure remains the sole PLAT-029 implementation-evidence blocker.

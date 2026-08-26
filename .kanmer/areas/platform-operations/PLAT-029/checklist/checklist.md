@@ -50,3 +50,8 @@ Reviewer non-blocking recommendation: add physical retained-occurrence corruptio
 - [x] Exact launcher failure reproduced on synchronized head: run `027034dad28d4083aa43509a54a8a2b0`, `Invoke-LocalDevelopment.ps1:1482`, empty `Process.Path` during immediate startup inspection.
 - [x] Exact-head PR CI restart requested for run `33013301879`; same-head run is in progress.
 - [ ] Launcher fix, Start/Smoke, fresh independent review, merge, and proof remain open; launcher ownership is TEST-017.
+
+## CI completion — 2026-08-26
+
+- [x] Exact-head CI rerun `33013301879` passed at `7d761ed6dbe66fd274bac3701618980499bf0a47`; all required changes, documentation, local-script, reference-data, unit, browser, SQL shard, and coverage jobs passed; infrastructure skipped.
+- [ ] Local launcher fix, Start/Smoke, fresh independent review, merge, and proof remain open.
