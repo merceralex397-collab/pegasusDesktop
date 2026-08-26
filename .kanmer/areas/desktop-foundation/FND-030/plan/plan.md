@@ -360,3 +360,25 @@ The `proof` document is produced from these five outputs.
 
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this branch's own
 diff before the PR, recorded here under a dated heading._
+
+## Toolchain and prerequisite detection — 2026-08-26
+
+Read-only detection was run in the FND-030 worktree before any product file was written:
+
+- `dotnet --list-sdks` — `10.0.204`, `10.0.303`; SDK requirement satisfied.
+- `winapp --version` — `0.3.1`; minimum `0.3) satisfied.
+- `dotnet new list winui | Select-String 'winui-mvvm'` — WinUI MVVM template found.
+- `HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock\AllowDevelopmentWithoutDevLicense` — `1); Developer Mode enabled.
+- ADR-0100 exists and is accepted; `Directory.Packages.props` exists from FND-027.
+- `Pegasus.Server.slnf` is absent on `origin/dev` because FND-028 is not merged yet; the later proof must state that Linux remains Windows-only until FND-028 lands.
+
+No installation, UAC elevation, certificate operation, cloud write, deployment, or upstream operation was attempted.
+
+## Operator handback — pending before file creation
+
+FND-030 requires the operator to confirm the permanent package identity before writing the manifest:
+
+- `Identity/@Name`: the current area assumption is `CollisionEngineers.Pegasus`, but the ticket requires explicit confirmation.
+- `Identity/@Publisher`: the exact distinguished name matching the subject of the self-managed production certificate is not present in the repository and cannot be inferred.
+
+No project files have been written until both values are confirmed verbatim.
