@@ -112,3 +112,22 @@ The remediation stays within this ticket's existing Infrastructure/IntegrationTe
 Focused validation:
 - `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns" --no-restore --logger "trx;LogFileName=grouped-image-intake-after-translation.trx" --logger "console;verbosity=normal" -p:MSBuildNodeReuse=false` — passed (1 test, 1m 4s).
 - The preceding run against the helper-only change failed with `unexpected_intake_processing_failure`, and its TRX recorded SQL error 1205 through the EF wrapper; that failure is retained as diagnosis, not success evidence.
+
+## Review remediation — 2026-08-26
+
+The independent review identified three required corrections and all are addressed:
+
+- The translation catch now encloses the entire serializable `CompleteProcessingAsync` transaction, including lease lookup and revision read, while remaining filtered to the existing provider-concurrency predicate.
+- The outer concurrency-test helper retains only its original direct-`SqlException` retry; it no longer recognizes EF wrappers, so an adapter leak cannot be hidden.
+- `IntakePersistenceIntegrationTests.CompletionPassesThroughNonTransientProviderFailure` injects a disposable SQL trigger and proves a non-1205 provider error (SQL error 334) is not mapped to `IntakeVersionConflictException`.
+
+Simplification disposition: retain the existing `IsRetryableConcurrencyFailure` predicate and the direct test retry. No new abstraction, retry budget, configuration, workflow lane, or compatibility path was added.
+
+Final local validation on the current diff:
+- `dotnet restore Pegasus.slnx` — passed.
+- `dotnet build Pegasus.slnx --configuration Release --no-restore -p:MSBuildNodeReuse=false` — passed; 0 warnings, 0 errors.
+- `dotnet test tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build -p:MSBuildNodeReuse=false` — 101 passed.
+- `dotnet test tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release --filter "FullyQualifiedName~ProcessIntakeTests|FullyQualifiedName~IntakeDecisionCodesTests" -p:MSBuildNodeReuse=false` — 46 passed.
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns" -p:MSBuildNodeReuse=false` — 1 passed; final TRX observed 26 SQL 1205 errors and no unexpected-failure record.
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~IntakePersistenceIntegrationTests.CompletionPassesThroughNonTransientProviderFailure" -p:MSBuildNodeReuse=false` — 1 passed; provider error 334 remained non-translated.
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~RecoveryTests" -p:MSBuildNodeReuse=false` — 27 passed.
