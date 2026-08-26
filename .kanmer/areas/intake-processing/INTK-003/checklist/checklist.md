@@ -9,7 +9,7 @@
 - [x] Leave EVA field names/bundle ownership unchanged and record the consequence in the plan.
 - [x] Add FRD-06 and capability-register requirements; no new route, table, column, batch, read-time conversion, data backfill, Azure write, or cloud/deployment activity.
 - [x] Validate corrected source: focused Core/VehicleWorkflow tests (36/36), full Core tests (927/927), case-data persistence tests (5/5), Release build (0 warnings/errors), migration grants (66 migrations checked), and diff hygiene.
-- [ ] Independent review of corrected head, PR/CI, merge to `dev`, post-merge proof on `main`, and Kanmer closeout remain to be completed.
+- [x] Independent review of corrected head, PR/CI, merge to `dev`, post-merge proof on `main`, and Kanmer closeout completed.
 
 ## Evidence notes
 
@@ -21,11 +21,11 @@ The first independent review found duplicate conversion ownership and incomplete
 
 - [x] Correct the vehicle-suggestion acceptance writer to reuse canonical mileage normalization and persist/clear the existing kilometre provenance marker.
 - [x] Add and pass the SQL-backed kilometre-correction integration test; rerun full Core tests, Release build, migration-grant validation, and diff hygiene.
-- [ ] Obtain independent PASS review of corrected head, green exact-head CI, merge to `dev`, post-merge proof on `main`, and Kanmer closeout.
+- [x] Obtain independent PASS review of corrected head, green exact-head CI, merge to `dev`, post-merge proof on `main`, and Kanmer closeout.
 
 - [x] Diagnose exact-head CI failure: the migration-list assertion omitted the generated canonical-mileage provenance migration; update the owned test expectation and pass the focused local rerun (1/1).
 
-- [ ] Exact-head CI remains blocked: run `32900431792` failed twice on the unrelated SQL Server deadlock in `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` (290/291 passed on the second attempt).
+- [x] Diagnose and resolve the exact-head CI blocker: run `32900431792` initially failed twice on the unrelated SQL Server deadlock; the authorized rerun passed on the unchanged reviewed head.
 
 - [x] Exact-head CI run 32900431792 passed on the unchanged head 13ba7b41775ee83c1399eb84c17e008aa13d7a67 after the authorized failed-job rerun; sql-integration (3) and coverage are green. Review/verification, merge, proof, and closeout remain.
 
@@ -33,4 +33,4 @@ The first independent review found duplicate conversion ownership and incomplete
 
 - [x] Independent review passed the corrected implementation; the owned migration-list expectation correction is on exact head `13ba7b41`.
 - [x] PR #12 merged into configured `dev` as `38a7816e` after all required checks passed.
-- [ ] Promote the exact reviewed dev commit to `main` under the repository's required literal approval, write proof on merged main, then close out Kanmer.
+- [x] Promote the exact reviewed dev commit to `main` under the repository's required literal approval, write proof on merged main, then close out Kanmer.

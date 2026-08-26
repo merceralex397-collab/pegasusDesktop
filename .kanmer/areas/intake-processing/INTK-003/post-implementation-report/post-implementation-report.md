@@ -57,3 +57,7 @@ Authorized failed-job rerun of exact-head run `32900431792` completed green on h
 ## Merge and proof boundary — 2026-08-25
 
 PR #12 merged to configured remote `dev` as `38a7816ed2c6b91e77c46472844ce92499cfb3a5` after independent review and green exact-head CI on `13ba7b41775ee83c1399eb84c17e008aa13d7a67`. The ticket is still not done: Kanmer requires proof from merged `main`; current remote heads are `dev=38a7816e` and `main=191ddf33`. No proof was fabricated and no dev-to-main promotion was performed.
+
+## Merged-main closeout — 2026-08-26
+
+PR #12 head `13ba7b41775ee83c1399eb84c17e008aa13d7a67` is now present in the promoted main history. Read-back after the authorized exact-SHA promotion is `origin/main=origin/dev=3b1737de2a27f84aa1bea03bf2c34d41d5a8006a`; `git merge-base --is-ancestor` succeeds for the PR head. Merged-main inspection confirms the canonical mileage normalization, typed kilometre provenance, the FRD-06 requirement, and the no-backfill boundary. Proof is recorded in the Kanmer proof document. No upstream, cloud, deployment, or external write was performed.

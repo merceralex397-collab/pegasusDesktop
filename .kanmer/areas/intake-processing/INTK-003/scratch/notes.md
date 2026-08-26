@@ -19,3 +19,5 @@ Corrected review findings committed as `52b00c52` and pushed to the configured `
 2026-08-25: Third authorized failed-job rerun of exact-head CI run 32900431792 passed on head 13ba7b41775ee83c1399eb84c17e008aa13d7a67. sql-integration (3) passed after 290/291 assigned tests; coverage passed; run conclusion success. CI blocker resolved. Next: fresh gates, advance one stage, then merge to dev only after all gates/review evidence.
 
 2026-08-25: PR #12 merged into configured remote dev as merge commit 38a7816ed2c6b91e77c46472844ce92499cfb3a5 at 21:57:25Z. PR head 13ba7b41775ee83c1399eb84c17e008aa13d7a67; base dev; required checks green. Ticket remains verifying because proof must be written after verification on merged main, and dev-to-main promotion requires the exact operator approval phrase.
+
+Merged-main verification complete: PR #12 head 13ba7b41775ee83c1399eb84c17e008aa13d7a67 is an ancestor of origin/main=origin/dev=3b1737de2a27f84aa1bea03bf2c34d41d5a8006a. Final local validation, Parfit PASS review, exact CI rerun 32900431792, and canonical-mile/provenance inspection are recorded in proof.
