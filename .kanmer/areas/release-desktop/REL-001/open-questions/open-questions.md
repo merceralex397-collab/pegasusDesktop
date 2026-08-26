@@ -1,37 +1,17 @@
-# Open questions — REL-001 (plan handle `DSK-09-01`): ADR-0105 ownership
+# Open questions — REL-001 (plan handle DSK-09-01): ADR-0105 ownership
 
 ## Resolved
 
-- [x] **Which claimant authors `docs/adr/0105-msix-app-installer-and-minimum-version-gate.md`?**
+- [x] **Which claimant authors docs/adr/0105-msix-app-installer-and-minimum-version-gate.md?**
 
-  **Answered 2026-08-24 by the operator: [[FND-005]] owns ADR-0105.** [[REL-001]] is not an alternative author. It reviews the single FND-005-owned ADR against the Area-09 distribution and minimum-version-gate requirements, and extends that one file only if a genuinely missing release requirement is identified. It must never create a second file for ADR-0105.
+  **Answered 2026-08-24 by the operator: [[FND-005]] owns ADR-0105.** [[REL-001]] reviews the single FND-005-owned ADR against Area 09 and extends that one file only if a genuinely missing release requirement is identified. It must never create a second file.
 
-  This supersedes the former “first claimant to be worked” tie-break. Before implementation, record the review/extension outcome in this ticket's plan so the execution shape remains explicit.
+- [x] **Has the FND-005-owned ADR-0105 file been authored, and what is REL-001's resulting review/extension scope?**
 
-## Unresolved
-
-- [ ] **Has the FND-005-owned ADR-0105 file been authored, and what is REL-001's resulting review/extension scope?**
-
-  The ownership decision is resolved, but the current file state must still be checked immediately before this ticket is implemented. Run both checks and record their dated result in the plan:
-
-  - `mcp__kanmer__search_items ADR-0105`
-  - `ls docs/adr/0105*`
-
-  If the FND-005 file exists, compare it with Area 09 §3 and record only genuinely missing distribution or minimum-version-gate clauses to extend in place. If FND-005 is actively authoring it, coordinate rather than race. Do not re-open ownership or create another ADR-0105 path.
+  **Answered 2026-08-26 by live repository/Kanmer checks:** FND-005 and FND-042 both reference the canonical file, and FND-005 is done; no active ADR-0105 authoring ticket exists. The file exists on both origin/dev and origin/main at 36dccd8fa1c883c38977b6721d86b745c45c9a94; the index has one ADR-0105 row. The existing ADR covers the two-layer split, D-002, D-003, C-01, and the cloud table, but omits Area 09 §3's explicit 2021-schema/update attributes, package version 1.<minor>.<build>.0 with build/revision rule, pilot/prod channel identity and ring-change rule, and rollback's ForceUpdateFromAnyVersion. REL-001's bounded scope is to append those already-settled clauses to the canonical ADR only, without a second ADR or index change. No product decision remains open.
 
 ## Parked (explicitly deferred)
 
-- **Whether ADR-0105 should have been ADR-0030, the next free number.** Not open: settled by
-  the operator on 2026-08-23, who confirmed the reserved block ADR-0100–ADR-0110 for the
-  conversion precisely so a one-way sync from the still-active upstream ADR sequence cannot
-  collide. Recorded at `AGENTS.md:80-88`. Plan step 3 re-reads that sentence before using
-  0105; it is a confirmation, not a question.
-
-- **FRD-13.** Not open, and not this ticket's: `docs/frd/README.md` lists FRD-01…FRD-12 and
-  [[FND-008]] (plan handle `DSK-00-08`) authors FRD-13. A decision a named sibling ticket
-  owns is a scope boundary, not an open question. Plan step 8 writes the forward pointer as
-  prose with no relative link, so `scripts/Test-DocumentationLinks.ps1` stays green.
-
-- **D-002 (self-managed certificate) and D-003 (in-house UNC share).** Not open and not to be
-  re-opened — both decided by the operator on 2026-08-23. The ADR records them; it does not
-  re-evaluate them.
+- **Whether ADR-0105 should have been ADR-0030, the next free number.** Not open: settled by the operator on 2026-08-23, who confirmed the reserved block ADR-0100–ADR-0110.
+- **FRD-13.** Not open and not this ticket's: [[FND-008]] owns it; REL-001 may only refer to it as a future pointer.
+- **D-002 and D-003.** Not open and not to be re-evaluated; both were decided by the operator on 2026-08-23.

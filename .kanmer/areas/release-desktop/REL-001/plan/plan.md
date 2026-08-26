@@ -236,3 +236,18 @@ evidence in every row. That reading is the acceptance criterion the commands can
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this
 branch's own diff before the PR, recorded here under a dated heading. This branch is
 expected to be documentation-only, so the expected record is `n/a — docs-only`._
+
+## Reconciliation — 2026-08-26
+
+The live ownership/file check resolved the remaining factual question:
+
+- Kanmer search_items ADR-0105 found FND-005 done with the canonical ADR ref and FND-042 done with the same ref; no active authoring ticket was found.
+- origin/dev and origin/main are both 36dccd8fa1c883c38977b6721d86b745c45c9a94, and git cat-file -e origin/dev:docs/adr/0105-msix-app-installer-and-minimum-version-gate.md succeeds.
+- The canonical ADR is accepted and its index row already exists. It covers the two-layer enforcement, fail-open/fail-closed split, D-002, D-003, C-01, and the six-question table.
+- The comparison against Area 09 §3 found four omitted release decisions: explicit 2021-schema/update attributes including AutomaticBackgroundTask; package version 1.<minor>.<build>.0 with CI run/build and revision 0; one identity with pilot/ and prod/ feeds and reinstall-based ring changes; and rollback's ForceUpdateFromAnyVersion="true".
+
+Execution is therefore a review/reconciliation of the canonical file, never a second ADR-0105. The repository diff will be documentation-only and will not touch the ADR index, code, scripts, CI, operations, Azure, or upstream. The added text records the already-settled Area 09 decisions and does not claim package generation, deployment, or runtime proof. If the accepted-ADR rule is interpreted as forbidding even this explicitly owned clarification, stop before editing and record the governance conflict; do not invent a new ADR number.
+
+## Simplification pass — 2026-08-26
+
+n/a — docs-only. The change is limited to the canonical ADR clauses required by Area 09; no abstraction, helper, duplicate index row, or unrelated documentation is introduced.
