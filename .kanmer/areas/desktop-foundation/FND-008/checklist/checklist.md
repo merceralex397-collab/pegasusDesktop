@@ -34,3 +34,7 @@ than rewriting.
 ## Progress notes
 
 (append with `set_ticket_doc(doc: "checklist", append: true)`)
+
+## Progress notes
+
+- 2026-08-26: Rechecked the required ADR files on configured `origin/dev` after FND-042 and FND-007 delivery. ADR-0102 is accepted; ADR-0108 is present and proposed; ADR-0100/0104/0105 are present. The stale missing-ADR stop is cleared. Work remains in-repository only; no upstream sync, cloud write or deployment.

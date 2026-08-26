@@ -218,3 +218,9 @@ technical decision (`docs/frd/README.md:4-8`).
 ## Live dependency recheck — 2026-08-25
 
 The hard pre-writing dependency was rechecked before taking the ticket. `git ls-tree -r --name-only origin/dev docs/adr` and the working tree list show these reserved ADR files present: ADR-0100, ADR-0101, ADR-0103, ADR-0104 and ADR-0105. ADR-0102 and ADR-0108 are absent. Live Kanmer reads FND-005 `done`, FND-006 `preparing` with no delivery commit, and FND-007 `review` with a claimed branch. Because FRD-13 must cite ADR-0102 and ADR-0108 by relative path and the ticket's own step 1 makes missing ADRs a stop condition, FND-008 is not taken and no worktree, branch or product/document implementation was created. Smallest unblock: FND-006 and FND-007 must deliver the missing ADR files into `dev` (with FND-007's proposed status preserved) before this ticket can be taken.
+
+## Live dependency recheck — 2026-08-26 (supersedes the 2026-08-25 stop)
+
+- Read-only configured-remote refresh: `git fetch origin`; no upstream remote was accessed.
+- `origin/dev` is `fff7e14178f1be6e3d4f2fbc5a5401799ba69409`. The required ADR files are present there: `docs/adr/0102-existing-pegasus-credentials-token-session.md` with `status: accepted` (delivered by FND-042 merge `61227d6b`), and `docs/adr/0108-desktop-webview2-report-rendering.md` with `status: proposed` (delivered by FND-007 merge `d4c17fdd`). ADR-0100, ADR-0104 and ADR-0105 are also present.
+- FND-005 is live `done`; FND-007's PR #13 is merged to `dev`; FND-006's remaining ADR ownership does not remove any ADR required by this ticket. The former missing-ADR stop condition is therefore cleared. Proceed in-repository with the planned FRD/PRD/capability documentation work; do not perform upstream synchronization, cloud writes or deployment.

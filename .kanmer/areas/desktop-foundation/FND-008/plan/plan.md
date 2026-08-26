@@ -316,3 +316,7 @@ Expected outcome for this ticket: `n/a — docs-only`._
 ## Dependency stop — 2026-08-25
 
 Before taking FND-008, the required ADR gate was rerun against `origin/dev`. Present: `docs/adr/0100-native-winui-3-client-in-the-fork.md`, `0101-local-execution-cloud-authority-split.md`, `0103-gateway-not-direct-database-access.md`, `0104-online-required-bounded-local-cache.md`, and `0105-msix-app-installer-and-minimum-version-gate.md`. Missing: ADR-0102 and ADR-0108. Live Kanmer confirms FND-006 remains `preparing` and FND-007 remains `review`/claimed. This is the plan's explicit stop condition, so no take, worktree, branch, document implementation, or speculative link was made. Recheck after those two ADR deliveries land in `dev`; the smallest unblock is their reviewed delivery, not a ticket-local workaround.
+
+## Dependency recheck — 2026-08-26
+
+The earlier 2026-08-25 dependency stop is superseded by a live configured-remote check. On `origin/dev` `fff7e14178f1be6e3d4f2fbc5a5401799ba69409`, ADR-0102 exists with `status: accepted` (FND-042 merge `61227d6b`) and ADR-0108 exists with `status: proposed` (FND-007 PR #13 merge `d4c17fdd`); ADR-0100, ADR-0104 and ADR-0105 are present. FND-005 is `done`. The ticket may proceed from its own `origin/dev`-based worktree. This recheck used only the configured `pegasusDesktop` remote; no upstream sync, cloud write or deployment is permitted.
