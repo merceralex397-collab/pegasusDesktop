@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Pegasus.Core.Identity;
 using Pegasus.Web.AiWork;
+using Pegasus.Web.Api;
 using Pegasus.Web.Mcp;
 using Pegasus.Web.Pages.Uploads;
 using Azure.Core;
@@ -244,6 +245,7 @@ if ((localDocumentCustodyConfigured || productionProfile)
 // flag is absent nothing below registers and no /mcp or /connect/token route
 // exists. An explicitly configured deployment may enable it in Production.
 var automationMcpOptions = AutomationMcpOptions.TryCreate(builder.Configuration);
+var desktopGatewayOptions = DesktopGatewayOptions.TryCreate(builder.Configuration);
 
 // The Send to AI hand-off (AI-09) follows the same gate pattern: absent by
 // default, DevelopmentOffline-only, and without it the assessment panel
@@ -626,6 +628,10 @@ if (automationMcpOptions is not null)
 {
     builder.Services.AddPegasusAutomationMcp(automationMcpOptions, productVersion);
 }
+if (desktopGatewayOptions is not null)
+{
+    builder.Services.AddPegasusDesktopGateway(desktopGatewayOptions);
+}
 if (sendToAiOptions is not null)
 {
     builder.Services.AddPegasusSendToAi(sendToAiOptions);
@@ -750,6 +756,13 @@ if (productionProfile)
 app.UseWhen(
     context => !IsMachineSurface(context.Request.Path),
     branch => branch.UseStatusCodePagesWithReExecute("/status/{0}"));
+
+if (desktopGatewayOptions is not null)
+{
+    app.UseWhen(
+        context => context.Request.Path.StartsWithSegments(DesktopGateway.BasePath),
+        branch => branch.UseExceptionHandler(new ExceptionHandlerOptions()));
+}
 
 if (!app.Environment.IsDevelopment())
 {
@@ -962,6 +975,10 @@ if (automationMcpOptions is not null)
 {
     app.MapPegasusAutomationMcp();
 }
+if (desktopGatewayOptions is not null)
+{
+    app.MapPegasusDesktopGateway();
+}
 
 app.Run();
 
@@ -974,7 +991,8 @@ static bool IsMachineSurface(PathString path) =>
     path.StartsWithSegments("/health")
     || path.StartsWithSegments("/diagnostics")
     || path.StartsWithSegments(AutomationMcp.McpEndpointPath)
-    || path.Equals(AutomationMcp.TokenEndpointPath, StringComparison.OrdinalIgnoreCase);
+    || path.Equals(AutomationMcp.TokenEndpointPath, StringComparison.OrdinalIgnoreCase)
+    || path.StartsWithSegments(DesktopGateway.BasePath);
 
 /// <summary>
 /// Creates, updates, or removes the disposable UI-verification Administrator.

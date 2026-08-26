@@ -118,6 +118,12 @@ in force here:
 
 - `/health/live` reports liveness.
 - `/health/ready` invokes the registered database health check.
+- `/api/v1` is the versioned native-desktop gateway route group. It is
+  composed only when `Features:DesktopGateway` is enabled; when the flag is
+  absent or false, no `/api/v1` route is mapped. The group currently provides
+  the shared correlation and problem-details boundary for later endpoint
+  tickets; authentication and endpoint capabilities are added by those
+  tickets.
 - These endpoints are technical probes, not evidence of a product mutation or external integration.
 
 ### Worker callers
@@ -517,6 +523,13 @@ A first Document Intelligence caller may submit only persisted scan-like PDF pag
 ### Provider API and Automation MCP
 
 Provider API and Automation MCP are separate Web ingress boundaries. They must invoke the same Core business actions as staff UI or Worker callers rather than introducing parallel policy engines. The provider API's exact client, actor, authentication, and activation evidence remain separately gated.
+
+The native desktop gateway is a third Web ingress boundary at `/api/v1`,
+composed in the existing `Pegasus.Web` host behind `Features:DesktopGateway`.
+Its route group supplies correlation identifiers and RFC 9457 problem details;
+endpoint authentication, authorization and business projections remain owned by
+the later gateway tickets. This source-state entry does not establish that the
+feature flag is enabled in any deployed environment.
 
 The Automation MCP ingress is implemented in `Pegasus.Web` per ADR-0011, ADR-0013 clause 10, and ADR-0026: `ActorKind.Automation` is a Core actor granted exactly the ordinary casework surface (every administration, system-work, and request-upload right is denied and unknown rights fail closed), one seeded OpenIddict registration authenticates the single vendor-neutral Automation client by client credentials or, for external connectors with administrator-configured redirect URIs, by authorization code with PKCE after Administrator consent (ADR-0027), and a streamable-HTTP MCP endpoint at `/mcp` exposes 35 typed tools wrapping existing Core case, intake, Unidentified, Triage, document, assessment, and mail use cases with per-area scopes (`automation.cases`, `automation.intake`, `automation.documents`, `automation.assessment`, `automation.mail`). Unidentified receipt/group detail and exact-member source download use the retained intake owners; Triage reads, source retrieval, lifecycle, evidence, and Case association use the same queries, commands, integrity checks, versions, replay rules, and Case leases as staff. Explicit named-Engineer assignment remains separately tracked by INTK-019 and no actor-relative assignment shortcut is exposed. Automation writes are direct writes with logging parity: they present the same edit lease, operation-key replay, and version guard as staff saves, they renew that lease through the same Core use case as the staff renew control rather than re-claiming, their assessment values are stored unconfirmed for review at manual engineer assignment, professional-finding confirmation stays staff-Engineer-only, and no confirmation, report-approval, or outward-dispatch tool exists. Every tool invocation and material denial is attributable permanent history. The whole surface registers only when `Features:AutomationMcp` enables it with valid Automation MCP settings (ADR-0026); the deployed state of that gate and its dated activation evidence are owned by [operations](operations.md#production-environment), and source inventory must not be mistaken for deployed inventory.
 
