@@ -276,3 +276,9 @@ The release script inspection remains unchanged: it publishes the Web and Worker
 - Disposition: no behavior-preserving simplification was identified or left unapplied.
 
 Current operator scope supersedes any historical upstream-sync wording in inherited ticket material. This ticket performed no upstream operation and only used the configured `origin` remote.
+
+## Independent review correction — 2026-08-26
+
+The independent `pegasus-desktop-reviewer` initially returned FAIL: the new Supported platform paragraph named `Pegasus.Server.slnf` for Linux, but the Locked restore/build/test section still presented `Pegasus.slnx` commands as identical on both platforms. This was a valid medium finding and blocked merge.
+
+Corrective change: `docs/runbook.md` now gives separate Windows commands for `Pegasus.slnx` and Linux commands for `Pegasus.Server.slnf`, and states that lock-file regeneration uses the matching entry point. Documentation links, Markdown placement, and `git diff --check` were rerun successfully. A fresh independent review is required before PR creation.
