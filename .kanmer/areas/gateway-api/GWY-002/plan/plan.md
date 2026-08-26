@@ -308,3 +308,11 @@ Implemented the planned gateway composition, path-scoped exception handler, corr
 The planned `IStartupFilter` throwing-endpoint harness was not used. The production group intentionally contains no endpoint, and adding a test-only route through minimal-host startup would require a production-facing test hook or alter route composition. The fallback named in step 10 is therefore used: `DesktopGatewayProblemTests` directly invoke the internal handler for every mapping branch, while `DesktopGatewayCompositionTests` exercise the real `WebApplicationFactory` composition and machine-surface behavior. This keeps production scope unchanged and preserves branch-complete coverage.
 
 Focused validation completed: `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DesktopGateway" -nr:false` — 11 passed, 0 failed, 0 skipped.
+
+## Simplification pass — 2026-08-27
+
+- **Reuse:** the existing Automation MCP option/gate composition idiom is reused; shared contracts use [[GWY-001]]'s `PegasusHeaders`, `PegasusJson`, and `PegasusProblemTypes` rather than duplicating names or serialization rules.
+- **Simplification:** the gateway adds no endpoint, controller, policy engine, compatibility path, deployment unit, or new dependency. The named client-version filter is the smallest required extension point and remains a no-op until [[GWY-023]].
+- **Efficiency:** the initial logging call triggered repository analyzers `CA1848` and `CA1873`; it was replaced with a source-generated `LoggerMessage` delegate. No unnecessary per-request allocation or logging-template parsing remains.
+- **Clarity/altitude:** exception branches are ordered before their `InvalidOperationException` base type, and the path-scoped handler is composed only when the feature gate is open. No business rules, authentication, authorization, or client-version policy were added outside their owning tickets.
+- **Disposition:** no behavior-preserving simplification findings remain unapplied. The documented direct-handler test fallback is retained because the production group intentionally has no endpoint and adding a test-only production hook would expand scope.
