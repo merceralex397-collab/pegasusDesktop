@@ -4,12 +4,15 @@ type: ticket
 title: >-
   upstream:CASE-022 · Deliver public upload links (INT-31) to the operator's
   accepted limits
-status: preparing
+status: implementing
 area: case-reference-workflow
-assignee: ''
+assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:22:05.101Z'
+taken_at: '2026-08-26T15:01:55.729Z'
+branch: task/upstream-case-022-upload-links
+worktree: ../pegasus-worktrees/upstream-case-022-upload-links
 labels:
   - found-during-qa
   - ui
@@ -29,7 +32,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:42:25.804Z'
-updated: '2026-08-24T21:22:05.101Z'
+updated: '2026-08-26T15:01:55.730Z'
 ---
 
 ## What
