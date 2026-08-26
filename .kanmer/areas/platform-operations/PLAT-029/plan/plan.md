@@ -95,3 +95,10 @@ The pre-fix fact `OpenReadVersionAsyncReadsContentRetainedByLocalCaseCustody` wa
 - Failure and security: managed content is preferred unchanged; occurrence candidates stay under the case-id custody root; ambiguity, malformed metadata, missing metadata, missing content, length mismatch, and hash mismatch fail closed.
 - Scope/altitude: changed one local adapter, the named integration tests (including one real download/export caller), and the two named Test/UAT documentation locations. No speculative API, Worker, Azure, desktop, or FRD changes were found.
 - Disposition: no behavior-preserving simplification remained after the pass. The local Start/Smoke blocker is validation evidence, not a code simplification finding.
+
+## Validation refresh — 2026-08-26
+
+- The previously unavailable repository-required SDK is now available at the task-local path `C:\\Users\\PC\\AppData\\Local\\Temp\\pegasus-intk002-sdk-10.0.302`; invoking `Initialize-LocalDevelopment.ps1` with that SDK passed restore, Debug build, and Offline Doctor (SDK 10.0.302, all checks passed).
+- The prescribed `pwsh ./scripts/Invoke-LocalDevelopment.ps1 -Action Start` was rerun from this worktree with the same SDK and failed before readiness at `scripts/Invoke-LocalDevelopment.ps1:1482`: `GetFullPath` received an empty process path while recording a launched process. The run manifest is `artifacts/local-development/6b86d27dffba4f9a9fa8cffb35da877e/run-manifest.json`; the owned failed run was stopped with `-Action Stop -RunId 6b86d27dffba4f9a9fa8cffb35da877e`.
+- This is a launcher/process-recording failure outside this ticket's allowed source scope; no script, Worker, API, Azure, mailbox, Box, or upstream change was made to mask it. Start/Smoke acceptance remains open and is not claimed.
+- PR #25 was created against `dev`: https://github.com/merceralex397-collab/pegasusDesktop/pull/25. A fresh independent review was requested after the report/checklist and exact-SDK validation evidence changed.

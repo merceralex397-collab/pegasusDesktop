@@ -47,3 +47,11 @@ The independent `pegasus-desktop-reviewer` review on 2026-08-25 returned FAIL be
 1. Provide a workstation/environment with the repository-required SDK `10.0.302`, then rerun `Initialize-LocalDevelopment.ps1`, `Invoke-LocalDevelopment.ps1 -Action Start`, and `-Action Smoke`; capture the retained-content read result.
 2. Restore GitHub collaborator permission or have an authorized collaborator create the PR from the pushed branch.
 3. After those blockers, obtain a fresh independent review, satisfy CI/PR requirements, merge to `dev`, then verify on merged `main` and write proof before moving Kanmer stages.
+
+## Validation refresh — 2026-08-26
+
+The required SDK is now available at the task-local path `C:\\Users\\PC\\AppData\\Local\\Temp\\pegasus-intk002-sdk-10.0.302`. Running `Initialize-LocalDevelopment.ps1` with it passed restore, Debug build, and Offline Doctor.
+
+The exact prescribed `Invoke-LocalDevelopment.ps1 -Action Start` command then failed before readiness at line 1482 while recording the launched process: `GetFullPath` received an empty process path. The failed run was `6b86d27dffba4f9a9fa8cffb35da877e`; its manifest and logs remain under the run-owned artifact directory, and `-Action Stop -RunId 6b86d27dffba4f9a9fa8cffb35da877e` completed successfully. Consequently no Start/Smoke success or retained-content operator journey is claimed.
+
+PR #25 is open against `dev`. Fresh independent review is in progress. The code/test evidence remains as recorded above; the launcher failure is outside this ticket's permitted source scope and requires resolution in the local-development stack owner before PLAT-029 can close.
