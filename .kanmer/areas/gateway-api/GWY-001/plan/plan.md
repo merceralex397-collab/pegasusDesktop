@@ -293,3 +293,10 @@ diff before the PR, recorded here under a dated heading._
 - Scope: changed only the owned Contracts marker and the existing architecture test; no host, Web, Core, Infrastructure, desktop, or documentation files were added.
 - Clarity: kept the forbidden assembly prefixes in a Contracts-specific static readonly array because the shared Core list cannot include `Pegasus.Core`; the matcher uses exact-or-dot-qualified ordinal matching.
 - Result: no behaviour-preserving simplification was needed.
+
+## Review remediation — 2026-08-26
+
+- Independent review identified a documentation-only omission in the existing FND-029-owned contract files: missing XML documentation for paging lower caps, safe problem-details/version fields, and desktop operation-key constraints.
+- Added only XML documentation to `Paging/PagingLimits.cs`, `ProblemDetails/PegasusProblem.cs`, and `Requests/MutationEnvelope.cs`; no members, validation, wire shape, or ownership changed.
+- Validation after remediation: `dotnet build Pegasus.slnx -c Release -nr:false` — succeeded, 0 warnings, 0 errors; `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj -c Release -nr:false --no-build` — 110 passed, 0 failed, 0 skipped; static boundary checks unchanged (0 direct dependency XML matches, 1 PagedResult declaration, 0 Paging Total matches, 0 ActionActor matches, 0 forbidden-name matches, Problems/Commands absent); `git diff --check` clean.
+- Commit `ed4e2776` pushed to `origin/task/gwy-001-contract-conventions`; PR #27 now requires fresh exact-head CI and independent review against `ed4e2776`.

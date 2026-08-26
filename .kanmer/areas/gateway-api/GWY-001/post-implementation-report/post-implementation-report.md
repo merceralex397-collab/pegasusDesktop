@@ -20,3 +20,10 @@
 - PR: #27, base `dev`, head `b1fe439b`
 - Independent review and exact-head CI: pending.
 - No endpoint behavior is claimed; this is tier-1 static/build/architecture evidence only.
+
+## Review remediation — 2026-08-26
+
+- Addressed the independent review finding by adding the requested XML documentation to the existing `PagingLimits`, `PegasusProblem`, and `MutationEnvelope` contract files. No code or wire-shape behavior changed.
+- Commit: `ed4e2776`; PR #27 remains open against `dev`, now at head `ed4e2776`.
+- Fresh local validation: `dotnet build Pegasus.slnx -c Release -nr:false` succeeded with 0 warnings/errors; architecture tests passed 110/110 with 0 failed/skipped; static contract checks and `git diff --check` passed as recorded in the plan.
+- Fresh independent review and exact-head CI are pending; no endpoint behavior is claimed.
