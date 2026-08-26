@@ -1,12 +1,12 @@
 # Files — complete-assessment report workflow
 
-## Expected implementation surface after prerequisites merge
+## Expected implementation surface after the fork re-scope
 
 | Path/module | Expected responsibility | Risk / constraint |
 | --- | --- | --- |
-| `src/Pegasus.Core/Reports/AssessmentReportRendering.cs` and later merged TICK-092 report contracts | Evolve the existing snapshot/use case boundary into a durable trigger/result workflow; consume, do not duplicate, the accepted snapshot/query | Highest overlap with TICK-092/TICK-094; names are not stable yet |
+| `src/Pegasus.Core/Reports/AssessmentReportRendering.cs` and the ticket-owned minimum accepted snapshot/hash contract | Evolve the existing snapshot/use case boundary into a durable trigger/result workflow; consume, do not duplicate, the accepted snapshot/query | Highest overlap with TICK-092/TICK-094; names are not stable yet |
 | `src/Pegasus.Core/Reports/**` (new focused files if warranted) | Report request/version/reference states, typed assessment+fee-note result identity, deterministic logical key, retry/failure policy, correction lineage | Keep generation distinct from approval/Sent; no generic job abstraction |
-| `src/Pegasus.Core/Assessment/AssessmentOperations.cs` or the merged TICK-092 accepted-snapshot operation | Invoke/enqueue only after a committed complete accepted snapshot exists | Never render inside the assessment transaction; replay/concurrency races |
+| `src/Pegasus.Core/Assessment/AssessmentOperations.cs` and the ticket-owned accepted-snapshot operation | Invoke/enqueue only after a committed complete accepted snapshot exists | Never render inside the assessment transaction; replay/concurrency races |
 | `src/Pegasus.Core/Documents/DocumentContracts.cs` | Reuse immutable content addresses/hash verification; potentially name fee-note semantic role | Avoid forcing generated system work through staff edit leases |
 | `src/Pegasus.Core/Workflow/CaseWorkflowContracts.cs` | Relate report-version artifacts to later approval/Sent evidence if the merged ownership requires it | Current single approval/Sent fields can erase version association |
 | `src/Pegasus.Infrastructure/Persistence/PegasusDbContext.cs`, report entities/configuration, migration and model snapshot | Atomic request/version/artifact/provenance state; unique logical idempotency key; claims/leases/attempts/failures; predecessor link | Migration and concurrency correctness; never overwrite prior versions |
@@ -38,13 +38,13 @@
 | `src/Pegasus.Core/Documents/DocumentContracts.cs`, `EfDocumentCustodyStore.cs` | Immutable content/hash/custody mechanics |
 | `src/Pegasus.Core/Workflow/CaseWorkflowContracts.cs`, `EfCaseWorkflowStore.cs` | Approval/Sent finality, operation replay, Case concurrency |
 | Durable intake/custody/lookup work contracts and EF stores | Existing pending/claim/lease/retry/terminal-failure conventions |
-| [[TICK-093]], [[TICK-094]], [[TICK-092]] merged PIRs/contracts | Mandatory upstream accepted-source types and ownership |
+| `src/Pegasus.Core/Assessment/RepairSpecifications.cs` and local assessment contracts | Existing accepted source types; no upstream synchronization is permitted, and DOCS-001 owns only the missing minimum snapshot/hash seam |
 | [[TICK-208]], [[TICK-100]], [[PLAT-007]] | Downstream correction-Sent, addendum, and deployment ownership |
 | EPIC-004 `context.md` | Binding monolith, immutable identity/custody, and no-cloud-write constraints |
 
 ## Deliberately out of scope
 
-- Implementing or planning before TICK-092 and its TICK-093/TICK-094 prerequisites merge.
+- Fetching, merging, or synchronizing with upstream Pegasus. If a dedicated TICK-092/TICK-094 contract is absent locally, DOCS-001 owns only the minimum accepted snapshot/hash seam required by this ticket.
 - Azure deployment or any cloud write.
 - Report approval, outward sending, receipt, invoicing, Audit, diminution, addenda, or Sent-evidence correction policy owned by downstream tickets.
 - A standalone renderer host, endpoint, MCP tool, generic job framework, or second editable report-data record.

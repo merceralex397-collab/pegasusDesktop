@@ -1,13 +1,7 @@
 # Open questions
 
-**This document exists because the ticket body ordered it.** FEAT-042's Guardrails read: "**Open
-question (operator), to be resolved and recorded in this ticket's `open-questions` document before
-step 3 is implemented**". The body is settled and outranks the author, so the question below is
-recorded as an unticked item rather than reasoned away.
+- [x] **Is desktop report generation automatic, or an operator-initiated command?** — Resolved by the operator on 2026-08-26: desktop generation is the operator-initiated `Generate report draft` command. Automatic and hybrid triggers are excluded. Exact replay is idempotent; a changed accepted payload or template creates a successor. The selected repair estimate is explicit and source-attributed; generation remains separate from approval, issue, sending, and receipt.
 
-The unticked item holds `leave-preparing`, `enter-review` and `enter-done` shut. That is the
-intended behaviour and the reason the body required it. It does **not** gate `leave-backlog` — the
-ticket can be groomed and sequenced while the question stands.
 
 ---
 
