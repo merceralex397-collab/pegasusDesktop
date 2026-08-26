@@ -32,9 +32,13 @@ refs:
   - docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md
   - docs/adr/0025-integrate-renderer-and-extractor-into-the-application.md
 docs_todo: true
+commits:
+  - ff24adb9
+prs:
+  - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/14'
 archived: false
 created: '2026-08-24T11:41:20.415Z'
-updated: '2026-08-26T10:28:08.400Z'
+updated: '2026-08-26T10:28:44.795Z'
 ---
 
 ## What
