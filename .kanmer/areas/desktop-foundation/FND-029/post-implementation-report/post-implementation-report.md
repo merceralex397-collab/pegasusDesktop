@@ -52,3 +52,7 @@ The required fresh independent review and PR CI are pending. No merge or proof i
 ## Evidence correction — 2026-08-26
 
 Independent review identified a malformed recorded SHA. Correct commit evidence is `0a3d23becc5a1038ab166effafd5203847bc3b5c` (40 characters); the previous value had one extra trailing `5`. The current-head simplification pass is now recorded in `plan.md` and covers the server-filter additions. Local evidence remains: server-filter restore/build passed; architecture tests 110/110; full solution Release build passed with zero warnings/errors; worktree clean. Exact-head PR #26 CI run `33014659206` remains in progress, so merge is still pending.
+
+## Final independent review and CI — 2026-08-26
+
+Fresh independent review returned **PASS**. It confirmed current-head simplification coverage, valid commit evidence, completed deferred server-filter work, scope/dependency boundaries, and acceptance coverage. Exact-head PR #26 (`0a3d23becc5a1038ab166effafd5203847bc3b5c`) is `MERGEABLE`/`CLEAN`. CI run `33014659206` is green across all required lanes, including unit, browser, SQL shards 1–3, and coverage; infrastructure was correctly skipped. Local server-filter restore/build and architecture tests 110/110 passed. Historical pending CI wording is superseded. FND-029 is ready to merge to `dev`; no proof is written before merged `main`.

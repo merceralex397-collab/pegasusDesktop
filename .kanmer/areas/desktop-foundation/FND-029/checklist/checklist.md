@@ -35,3 +35,10 @@ whose completion makes the box true.
 - 2026-08-25: implementation and validation complete except the explicitly deferred FND-028 server-filter registration; full evidence is recorded in the plan.
 
 - 2026-08-25 corrective review: RFC 9457 top-level extension serialization/readback was fixed with `PegasusProblemJsonConverter`; top-level version accessor tests pass. Commit `54ade310` is pushed and the fresh independent review is pending.
+
+## Final independent review and CI — 2026-08-26
+
+- [x] Independent review passes — fresh review PASS on exact head after evidence corrections.
+- [x] Exact-head CI is green — run `33014659206`, including SQL shards 1–3 and coverage.
+- [x] Current-head simplification pass covers the synchronized server-filter additions.
+- [x] Commit metadata records the valid full SHA `0a3d23becc5a1038ab166effafd5203847bc3b5c`.
