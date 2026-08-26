@@ -3,3 +3,5 @@
 2026-08-25 PR handoff: branch fnd-003-board-shape pushed to origin successfully. `gh pr create --base dev --head fnd-003-board-shape` failed with exact GitHub error `GraphQL: must be a collaborator (createPullRequest)`. No PR exists and no merge/stage move is claimed. Smallest external action: grant the authenticated GitHub identity collaborator permission on merceralex397-collab/pegasusDesktop or have an authorized collaborator open the PR.
 
 Corrected the stale body instruction from 24 groups to 25 realised groups. Updated the plan risk wording to identify the original 24-group figure as historical; no repository diff changed. Existing independent review covered the repository diff and live board evidence; this Kanmer-only wording correction remains part of the review record.
+
+2026-08-26 PR handoff: repository permission is restored. Opened PR #19 targeting dev from fnd-003-board-shape at exact head 588479ad docs: record Kanmer board shape deviation. Independent review is PASS; live Kanmer evidence and docs validation remain recorded.
