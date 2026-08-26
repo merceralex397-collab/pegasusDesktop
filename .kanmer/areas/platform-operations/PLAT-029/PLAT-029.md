@@ -4,16 +4,14 @@ type: ticket
 title: >-
   upstream:PLAT-038 · Serve intake-retained document content in the local
   profile
-status: implementing
+status: review
 area: platform-operations
 order: 90
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
   preparing: '2026-08-24T21:21:17.158Z'
-taken_at: '2026-08-25T04:04:18.843Z'
-branch: plat-029-local-document-content
-worktree: .worktrees/plat-029
+  review: '2026-08-26T21:07:52.555Z'
 labels:
   - found-during-qa
   - developer-experience
@@ -41,7 +39,7 @@ prs:
   - '25'
 archived: false
 created: '2026-08-24T11:49:22.980Z'
-updated: '2026-08-26T21:06:17.472Z'
+updated: '2026-08-26T21:07:55.913Z'
 ---
 
 ## What
