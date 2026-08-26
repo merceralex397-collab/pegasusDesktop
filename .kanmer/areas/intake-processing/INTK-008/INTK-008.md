@@ -2,10 +2,13 @@
 id: INTK-008
 type: ticket
 title: Make grouped-image SQL deadlock retry deterministic in the integration test
-status: preparing
+status: implementing
 area: intake-processing
+order: 120
 assignee: codex-mcp-client
 profile: fix
+stageEntered:
+  implementing: '2026-08-26T11:34:01.194Z'
 taken_at: '2026-08-26T11:30:01.716Z'
 branch: task/intk-008-deadlock-retry
 worktree: ../pegasus-worktrees/intk-008-deadlock-retry
@@ -22,7 +25,7 @@ refs:
   - docs/frd/frd-02-intake-and-source-identity.md
 archived: false
 created: '2026-08-26T11:29:43.488Z'
-updated: '2026-08-26T11:30:01.716Z'
+updated: '2026-08-26T11:34:01.194Z'
 ---
 
 ## What

@@ -4,6 +4,7 @@ type: ticket
 title: 'upstream:AUTO-008 · Measure and reduce durable intake processing latency'
 status: implementing
 area: automation-integrations
+order: 10
 assignee: codex-mcp-client
 profile: spike
 stageEntered:
@@ -30,7 +31,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:41:25.722Z'
-updated: '2026-08-25T03:15:08.491Z'
+updated: '2026-08-26T11:34:00.939Z'
 ---
 
 ## What

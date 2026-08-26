@@ -6,6 +6,7 @@ title: >-
   `[agents]` table to `.codex/config.toml`
 status: implementing
 area: agent-tooling
+order: 110
 assignee: codex-mcp-client
 profile: chore
 stageEntered:
@@ -29,7 +30,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:07:44.152Z'
-updated: '2026-08-25T04:25:39.629Z'
+updated: '2026-08-26T11:34:01.015Z'
 ---
 
 ## What

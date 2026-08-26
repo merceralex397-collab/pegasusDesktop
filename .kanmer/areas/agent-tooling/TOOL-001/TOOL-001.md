@@ -4,6 +4,7 @@ type: ticket
 title: DSK-12-01 · Verify Codex skill and agent discovery on the workstation
 status: implementing
 area: agent-tooling
+order: 100
 assignee: codex-mcp-client
 profile: spike
 stageEntered:
@@ -28,7 +29,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:04:54.684Z'
-updated: '2026-08-25T03:48:33.970Z'
+updated: '2026-08-26T11:34:01.010Z'
 ---
 
 ## What

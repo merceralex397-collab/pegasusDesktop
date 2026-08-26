@@ -6,6 +6,7 @@ title: >-
   profile
 status: implementing
 area: platform-operations
+order: 90
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
@@ -33,7 +34,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:49:22.980Z'
-updated: '2026-08-25T04:04:18.843Z'
+updated: '2026-08-26T11:34:01.004Z'
 ---
 
 ## What

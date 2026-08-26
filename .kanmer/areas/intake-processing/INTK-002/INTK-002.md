@@ -6,6 +6,7 @@ title: >-
   arrives
 status: implementing
 area: intake-processing
+order: 80
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
@@ -29,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:44:22.475Z'
-updated: '2026-08-25T03:28:00.675Z'
+updated: '2026-08-26T11:34:00.996Z'
 ---
 
 ## What
