@@ -10,6 +10,7 @@ using Pegasus.Core.Identity;
 using Pegasus.Core.Reports;
 using Pegasus.Core.Vehicle;
 using Pegasus.Core.Workflow;
+using Pegasus.Web.Presentation;
 
 namespace Pegasus.Web.Pages.Cases.Assessment;
 
@@ -67,7 +68,21 @@ public sealed class IndexModel(
     /// </summary>
     public AssessmentReportDraftPreparation? ReportDraftPreparation { get; private set; }
 
+    public IReadOnlyList<AssessmentReportVersion> ReportVersions { get; private set; } = [];
+
     public string ReportDraftOperationKey { get; private set; } = NewOperationKey();
+
+    public string ReportStatusLabel(AssessmentReportVersion version) =>
+        OperatorLabels.ReportGenerationState(version.State, version.NextAttemptAtUtc);
+
+    public string ReportVersionLabel(int index) => index == 0 ? "Current report" : "Previous report";
+
+    public string ReportRetryTime(DateTimeOffset value) => OperatorLabels.OfficeTime(value);
+
+    public bool CanRetryReport(AssessmentReportVersion version) =>
+        version.State is AssessmentReportGenerationState.Pending or AssessmentReportGenerationState.Failed
+        && AssessmentReportRetryPolicy.CanRetry(version.AttemptCount)
+        && (version.NextAttemptAtUtc is null || version.NextAttemptAtUtc <= timeProvider.GetUtcNow());
 
     /// <summary>
     /// ENG-003: the one readiness list the page renders. <see cref="ReportDraftPreparation"/>'s
@@ -261,7 +276,12 @@ public sealed class IndexModel(
         AcceptedSpecification = await repairSpecifications.GetCurrentAcceptedAsync(id, cancellationToken);
         ActorIsEngineer = actor.IsInRole(StaffRole.Engineer);
         LatestRequest = await workRequests.GetLatestForCaseAsync(id, cancellationToken);
-        ReportDraftPreparation = await generateReportDraft.PrepareAsync(id, actor, cancellationToken);
+        ReportDraftPreparation = await generateReportDraft.PrepareAsync(
+            id,
+            actor,
+            AcceptedSpecification?.SpecificationId,
+            cancellationToken: cancellationToken);
+        ReportVersions = await generateReportDraft.GetVersionsAsync(id, cancellationToken);
         CombinedReadiness = ReportDraftPreparation?.Reasons ?? Assessment?.Readiness ?? [];
         await EvaluatePanelStateAsync(cancellationToken);
         return Page();
@@ -277,6 +297,8 @@ public sealed class IndexModel(
     public async Task<IActionResult> OnPostGenerateReportDraftAsync(
         Guid id,
         string operationKey,
+        Guid? selectedRepairSpecificationId,
+        Guid? reportVersionId,
         CancellationToken cancellationToken)
     {
         if (!TryGetActor(out var actor))
@@ -292,7 +314,12 @@ public sealed class IndexModel(
         GenerateCaseAssessmentReportDraftResult result;
         try
         {
-            result = await generateReportDraft.ExecuteAsync(id, actor, cancellationToken);
+            result = await generateReportDraft.ExecuteAsync(
+                id,
+                actor,
+                selectedRepairSpecificationId,
+                reportVersionId,
+                cancellationToken);
         }
         catch (Exception exception) when (exception is ReportRenderRejectedException
             or InvalidOperationException

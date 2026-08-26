@@ -92,7 +92,10 @@ public sealed class IntakePersistenceIntegrationTests
                 "20260821100623_GrantImageIntakeLifecycleUpdates",
                 "20260822044425_GrantWorkerCaseDocuments",
                 "20260825122524_DropEvaHandoffProvenanceAndManifest",
-                "20260825202208_CanonicalCaseMileageProvenance"
+                "20260825202208_CanonicalCaseMileageProvenance",
+                "20260826075756_AssessmentReportGeneration",
+                "20260826084843_AssessmentReportRetryPolicy",
+                "20260826095720_AssessmentReportPendingState"
             ],
             (await context.Database.GetAppliedMigrationsAsync()).ToArray());
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());

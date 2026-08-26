@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pegasus.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using Pegasus.Infrastructure.Persistence;
 namespace Pegasus.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(PegasusDbContext))]
-    partial class PegasusDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260826075756_AssessmentReportGeneration")]
+    partial class AssessmentReportGeneration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1024,9 +1027,6 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                         .HasMaxLength(80)
                         .HasColumnType("nvarchar(80)");
 
-                    b.Property<int>("AttemptCount")
-                        .HasColumnType("int");
-
                     b.Property<Guid>("CaseId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1051,9 +1051,6 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
-
-                    b.Property<DateTimeOffset?>("NextAttemptAtUtc")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("PredecessorId")
                         .HasColumnType("uniqueidentifier");
@@ -1085,9 +1082,7 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
 
                     b.ToTable("AssessmentReportVersions", null, t =>
                         {
-                            t.HasCheckConstraint("CK_AssessmentReportVersions_AttemptCount", "[AttemptCount] >= 0");
-
-                            t.HasCheckConstraint("CK_AssessmentReportVersions_State", "[State] IN ('Pending', 'Rendering', 'Generated', 'Failed')");
+                            t.HasCheckConstraint("CK_AssessmentReportVersions_State", "[State] IN ('Rendering', 'Generated', 'Failed')");
 
                             t.HasCheckConstraint("CK_AssessmentReportVersions_Version", "[Version] > 0");
                         });

@@ -246,16 +246,43 @@
         *@
         <section class="panel" aria-labelledby="report-draft-title">
             <h2 id="report-draft-title" class="section-label">Report draft</h2>
-            <p>Nothing is saved or sent.</p>
 
-            @if (Model.ReportDraftPreparation is null)
+            @if (Model.ReportVersions.Count > 0)
             {
-                <p class="empty-state">Not available for this case.</p>
+                <div class="status-card" role="status">
+                    <h3>Report versions</h3>
+                    @for (var index = 0; index < Model.ReportVersions.Count; index++)
+                    {
+                        var version = Model.ReportVersions[index];
+                        <p>
+                            @Model.ReportVersionLabel(index): @Model.ReportStatusLabel(version)
+                            @if (version.FailureReason is { } failureReason)
+                            {
+                                <span>— @failureReason</span>
+                                @if (version.NextAttemptAtUtc is { } nextAttempt)
+                                {
+                                    <span> (retry after @Model.ReportRetryTime(nextAttempt))</span>
+                                }
+                            }
+                        </p>
+                        @if (Model.CanRetryReport(version))
+                        {
+                            <form method="post" asp-page-handler="GenerateReportDraft" asp-route-id="@caseId">
+                                <input type="hidden" name="operationKey" value="@Model.ReportDraftOperationKey" />
+                                <input type="hidden" name="selectedRepairSpecificationId" value="@Model.AcceptedSpecification?.SpecificationId" />
+                                <input type="hidden" name="reportVersionId" value="@version.Id" />
+                                <button type="submit" class="secondary-action">Retry report draft</button>
+                            </form>
+                        }
+                    }
+                </div>
             }
-            else if (Model.ReportDraftPreparation.CanGenerate)
+
+            @if (Model.ReportDraftPreparation?.CanGenerate == true)
             {
                 <form method="post" asp-page-handler="GenerateReportDraft" asp-route-id="@caseId">
                     <input type="hidden" name="operationKey" value="@Model.ReportDraftOperationKey" />
+                    <input type="hidden" name="selectedRepairSpecificationId" value="@Model.AcceptedSpecification?.SpecificationId" />
                     <div class="button-row">
                         <button type="submit" class="secondary-action">
                             <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right" /></svg>
@@ -263,16 +290,6 @@
                         </button>
                     </div>
                 </form>
-            }
-            else
-            {
-                @* ENG-003: the readiness panel above owns the one itemised
-                   list — this card names the same count and points back to
-                   it rather than repeating every reason a second time. *@
-                <div class="status-card status-card--attention">
-                    <h3>Not ready</h3>
-                    <p>@IndexModel.IssueSummaryText(Model.ReportDraftPreparation.Reasons.Count) — see Readiness above for the list.</p>
-                </div>
             }
         </section>
     </aside>

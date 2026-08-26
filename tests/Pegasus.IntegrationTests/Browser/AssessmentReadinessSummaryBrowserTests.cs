@@ -153,7 +153,10 @@ public sealed class AssessmentReadinessSummaryBrowserTests
         : IAssessmentReportProjectionSource
     {
         public Task<AssessmentReportProjectionInput?> GetAsync(
-            Guid caseId, ActionActor actor, CancellationToken cancellationToken = default) =>
+            Guid caseId,
+            ActionActor actor,
+            Guid? selectedRepairSpecificationId = null,
+            CancellationToken cancellationToken = default) =>
             Task.FromResult<AssessmentReportProjectionInput?>(input);
     }
 }

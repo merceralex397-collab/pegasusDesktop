@@ -76,7 +76,6 @@ public sealed partial class AssessmentReportDraftWebTests
         });
 
         var html = await GetHtmlAsync(client, $"/Cases/{caseId:D}/Assessment");
-        Assert.Contains("Not ready", html, StringComparison.Ordinal);
         Assert.Contains(AssessmentReportProjection.RepairCostRequirement, html, StringComparison.Ordinal);
         Assert.DoesNotContain("Generate report draft", html, StringComparison.Ordinal);
 
@@ -91,12 +90,54 @@ public sealed partial class AssessmentReportDraftWebTests
         Assert.Contains(AssessmentReportProjection.RepairCostRequirement, afterHtml, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task RetryStateUsesOperatorLabelsAndAnActionableRetryControl()
+    {
+        using var baseFactory = new IntakeWebApplicationFactory();
+        var caseId = Guid.NewGuid();
+        var store = new FakeAssessmentReportStore();
+        var snapshot = AssessmentReportProjection.Project(ReadyInput(caseId)).Snapshot!;
+        store.Seed(new AssessmentReportVersion(
+            Guid.NewGuid(),
+            caseId,
+            1,
+            AssessmentReportPayload.Key(snapshot),
+            AssessmentReportGenerationState.Pending,
+            AssessmentReportPayload.Serialize(snapshot),
+            null,
+            [],
+            DateTimeOffset.UtcNow,
+            null,
+            "Renderer unavailable",
+            1,
+            DateTimeOffset.UtcNow.AddMinutes(-1)));
+        using var factory = Compose(
+            baseFactory,
+            new FakeGetCase(caseId),
+            new FakeGetCaseAssessment(FullAssessmentProjection(caseId)),
+            new FakeProjectionSource(ReadyInput(caseId)),
+            new FakeRenderer([1]),
+            store);
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("https://localhost")
+        });
+
+        var html = await GetHtmlAsync(client, $"/Cases/{caseId:D}/Assessment");
+
+        Assert.Contains("Current report: Retry", html, StringComparison.Ordinal);
+        Assert.Contains("Retry report draft", html, StringComparison.Ordinal);
+        Assert.Contains("Renderer unavailable", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("Report drafts are not approved or sent.", html, StringComparison.Ordinal);
+    }
+
     private static WebApplicationFactory<Program> Compose(
         IntakeWebApplicationFactory baseFactory,
         IGetCase getCase,
         IGetCaseAssessment getCaseAssessment,
         IAssessmentReportProjectionSource projectionSource,
-        IAssessmentReportRenderer renderer) =>
+        IAssessmentReportRenderer renderer,
+        FakeAssessmentReportStore? reportStore = null) =>
         baseFactory.WithWebHostBuilder(builder =>
             builder.ConfigureServices(services =>
             {
@@ -104,10 +145,12 @@ public sealed partial class AssessmentReportDraftWebTests
                 services.RemoveAll<IGetCaseAssessment>();
                 services.RemoveAll<IAssessmentReportProjectionSource>();
                 services.RemoveAll<IAssessmentReportRenderer>();
+                services.RemoveAll<IAssessmentReportStore>();
                 services.AddSingleton(getCase);
                 services.AddSingleton(getCaseAssessment);
                 services.AddSingleton(projectionSource);
                 services.AddSingleton(renderer);
+                services.AddSingleton<IAssessmentReportStore>(reportStore ?? new FakeAssessmentReportStore());
             }));
 
     private static AssessmentReportProjectionInput ReadyInput(Guid caseId)
@@ -116,6 +159,7 @@ public sealed partial class AssessmentReportDraftWebTests
         var photo = new ReportImageEvidence(
             "site.jpg", "image/jpeg", image, Convert.ToHexStringLower(SHA256.HashData(image)));
         var source = new AcceptedReportSource("instruction.pdf", "1", new string('a', 64));
+        var repairCostSource = new AcceptedReportSource("estimate.pdf", "2", new string('b', 64));
         return new AssessmentReportProjectionInput(
             FullAssessmentProjection(caseId),
             ClaimantName: "Alex Example",
@@ -125,7 +169,10 @@ public sealed partial class AssessmentReportDraftWebTests
             ReportDate: new DateOnly(2026, 8, 19),
             Photos: [photo],
             Sources: [source],
-            Costs: new ReportRepairCosts(5m, 30m, 50m, 20m, 5m, true));
+            Costs: new ReportRepairCosts(5m, 30m, 50m, 20m, 5m, true),
+            RepairCostSource: repairCostSource,
+            RepairSpecificationId: Guid.NewGuid(),
+            RepairSpecificationVersion: 2);
     }
 
     /// <summary>
@@ -241,7 +288,10 @@ public sealed partial class AssessmentReportDraftWebTests
         : IAssessmentReportProjectionSource
     {
         public Task<AssessmentReportProjectionInput?> GetAsync(
-            Guid caseId, ActionActor actor, CancellationToken cancellationToken = default) =>
+            Guid caseId,
+            ActionActor actor,
+            Guid? selectedRepairSpecificationId = null,
+            CancellationToken cancellationToken = default) =>
             Task.FromResult<AssessmentReportProjectionInput?>(input);
     }
 
@@ -255,5 +305,114 @@ public sealed partial class AssessmentReportDraftWebTests
             $"{family}.pdf", pdfBytes, 1,
             Convert.ToHexStringLower(SHA256.HashData(pdfBytes)),
             AssessmentReportContract.TemplateVersion, "fake");
+    }
+
+    private sealed class FakeAssessmentReportStore : IAssessmentReportStore
+    {
+        private readonly Dictionary<string, (AssessmentReportVersion Version, AssessmentReportDraft Draft)> versions = [];
+
+        public void Seed(AssessmentReportVersion version)
+        {
+            var assessment = new RenderedReportArtifact(
+                "assessment.pdf",
+                [1],
+                1,
+                Convert.ToHexStringLower(SHA256.HashData([1])),
+                AssessmentReportContract.TemplateVersion,
+                "seed");
+            var feeNote = new RenderedReportArtifact(
+                "fee-note.pdf",
+                [2],
+                1,
+                Convert.ToHexStringLower(SHA256.HashData([2])),
+                AssessmentReportContract.TemplateVersion,
+                "seed");
+            versions[version.LogicalKey.Value] = (version, new(assessment, feeNote));
+        }
+
+        public Task<IReadOnlyList<AssessmentReportVersion>> ListAsync(
+            Guid caseId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<AssessmentReportVersion>>(
+                versions.Values
+                    .Where(item => item.Version.CaseId == caseId)
+                    .Select(item => item.Version)
+                    .OrderByDescending(item => item.Version)
+                    .ToArray());
+
+        public Task<AssessmentReportGenerationReservation> BeginAsync(
+            AssessmentReportGenerationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var payload = AssessmentReportPayload.Serialize(request.Snapshot);
+            var key = AssessmentReportPayload.Key(request.Snapshot);
+            if (versions.TryGetValue(key.Value, out var existing))
+            {
+                return Task.FromResult(new AssessmentReportGenerationReservation(
+                    existing.Version,
+                    string.Empty,
+                    ShouldRender: false));
+            }
+
+            var version = new AssessmentReportVersion(
+                Guid.NewGuid(),
+                request.CaseId,
+                1,
+                key,
+                AssessmentReportGenerationState.Rendering,
+                payload,
+                null,
+                [],
+                DateTimeOffset.UtcNow,
+                null,
+                null);
+            return Task.FromResult(new AssessmentReportGenerationReservation(version, "fake", ShouldRender: true));
+        }
+
+        public Task<AssessmentReportDraft?> ReadDraftAsync(
+            AssessmentReportVersion version,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(
+                versions.TryGetValue(version.LogicalKey.Value, out var value)
+                    ? (AssessmentReportDraft?)value.Draft
+                    : null);
+
+        public Task<AssessmentReportVersion> CompleteAsync(
+            AssessmentReportGenerationReservation reservation,
+            AssessmentReportDraft draft,
+            CancellationToken cancellationToken = default)
+        {
+            var artifacts = new[]
+            {
+                ToArtifact(AssessmentReportArtifactKind.Assessment, draft.Assessment),
+                ToArtifact(AssessmentReportArtifactKind.FeeNote, draft.FeeNote)
+            };
+            var completed = reservation.Version with
+            {
+                State = AssessmentReportGenerationState.Generated,
+                Artifacts = artifacts,
+                CompletedAtUtc = DateTimeOffset.UtcNow
+            };
+            versions[completed.LogicalKey.Value] = (completed, draft);
+            return Task.FromResult(completed);
+        }
+
+        public Task FailAsync(
+            AssessmentReportGenerationReservation reservation,
+            string reason,
+            CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        private static AssessmentReportArtifact ToArtifact(
+            AssessmentReportArtifactKind kind,
+            RenderedReportArtifact artifact) => new(
+                Guid.NewGuid(),
+                kind,
+                artifact.SuggestedFileName,
+                "application/pdf",
+                artifact.Pdf.LongLength,
+                artifact.Sha256,
+                artifact.PageCount,
+                artifact.TemplateVersion,
+                artifact.EngineVersion);
     }
 }

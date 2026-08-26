@@ -3,10 +3,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Pegasus.Core.AiWork;
 using Pegasus.Core.Assessment;
 using Pegasus.Core.Cases;
+using Pegasus.Core.Documents;
 using Pegasus.Core.Identity;
 using Pegasus.Core.Intake;
 using Pegasus.Core.Lifecycle;
+using Pegasus.Core.Reports;
 using Pegasus.Core.Workflow;
+using Pegasus.Infrastructure.Custody;
 using Pegasus.Infrastructure.Persistence;
 
 namespace Pegasus.IntegrationTests;
@@ -16,6 +19,42 @@ public sealed class AssessmentPersistenceIntegrationTests
 {
     private static readonly DateTimeOffset StartUtc =
         new(2031, 5, 6, 10, 30, 0, TimeSpan.Zero);
+
+    private static AssessmentReportDraft ReportDraft(string? templateVersion = null)
+    {
+        templateVersion ??= AssessmentReportContract.TemplateVersion;
+        var assessment = new RenderedReportArtifact(
+            "assessment.pdf", [1, 2, 3], 1,
+            Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData([1, 2, 3])),
+            templateVersion, "test");
+        var feeNote = new RenderedReportArtifact(
+            "fee-note.pdf", [4, 5, 6], 1,
+            Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData([4, 5, 6])),
+            templateVersion, "test");
+        return new(assessment, feeNote);
+    }
+
+    private static AssessmentReportSnapshot ReportSnapshot(
+        Guid caseId,
+        RepairSpecificationVersion specification)
+    {
+        var basis = specification.CalculationBasis!;
+        var source = new AcceptedReportSource(
+            specification.Source.ArtifactReference!,
+            specification.Source.SourceVersion!,
+            specification.Source.Sha256!);
+        var snapshot = Reports.AssessmentReportRendererTests.Snapshot(
+            AssessmentReportOutcome.Repairable) with
+        {
+            CaseId = caseId,
+            AssessmentCaseVersion = 2,
+            RepairSpecificationId = specification.SpecificationId,
+            RepairSpecificationVersion = specification.Version,
+            Costs = ReportRepairCosts.FromAcceptedBasis(basis),
+            RepairCostSource = source
+        };
+        return snapshot with { Sources = snapshot.Sources.Append(source).ToArray() };
+    }
 
     [Fact]
     public async Task AutomationSaveIsUnconfirmedAttributedAndParityLoggedWithAStaffSave()
@@ -169,6 +208,266 @@ public sealed class AssessmentPersistenceIntegrationTests
 
         await Assert.ThrowsAsync<CaseOperationConflictException>(() =>
             harness.SaveAssessment.ExecuteAsync(Request("poor"), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ReportStoreReplaysAnExactInputAndAppendsACorrectionVersion()
+    {
+        await using var harness = await Harness.CreateAsync();
+        var outcome = await harness.AcceptAsync("assessment-report-accept");
+        var caseId = outcome.Identity.CaseId;
+        var specification = await harness.AcceptReportSpecificationAsync(caseId);
+        var snapshot = ReportSnapshot(caseId, specification);
+        var request = new AssessmentReportGenerationRequest(caseId, snapshot, harness.EngineerActor);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            harness.ReportStore.BeginAsync(
+                request with
+                {
+                    Snapshot = snapshot with
+                    {
+                        RepairSpecificationId = null,
+                        RepairSpecificationVersion = null,
+                        RepairCostSource = null
+                    }
+                }));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            harness.ReportStore.BeginAsync(
+                request with
+                {
+                    Snapshot = snapshot with
+                    {
+                        RepairCostSource = new AcceptedReportSource(
+                            "case://repair-spec/wrong-source", "source-v1", new string('b', 64))
+                    }
+                }));
+
+        var first = await harness.ReportStore.BeginAsync(request);
+        Assert.True(first.ShouldRender);
+        var completed = await harness.ReportStore.CompleteAsync(first, ReportDraft());
+
+        var replay = await harness.ReportStore.BeginAsync(request);
+        Assert.True(replay.IsReplay);
+        Assert.Equal(completed.Id, replay.Version.Id);
+        var replayDraft = await harness.ReportStore.ReadDraftAsync(replay.Version);
+        Assert.NotNull(replayDraft);
+        Assert.Equal(ReportDraft().Assessment.Sha256, replayDraft!.Assessment.Sha256);
+
+        var replayAfterUnrelatedCaseEdit = await harness.ReportStore.BeginAsync(
+            request with { Snapshot = snapshot with { AssessmentCaseVersion = 1 } });
+        Assert.True(replayAfterUnrelatedCaseEdit.IsReplay);
+        Assert.Equal(completed.Id, replayAfterUnrelatedCaseEdit.Version.Id);
+
+        var correction = await harness.ReportStore.BeginAsync(
+            request with { Snapshot = snapshot with { EngineerComments = "Correction retained" } });
+        Assert.True(correction.ShouldRender);
+        Assert.Equal(2, correction.Version.Version);
+        Assert.Equal(completed.Id, correction.Version.PredecessorId);
+        await harness.ReportStore.CompleteAsync(correction, ReportDraft());
+
+        await using var context = await harness.Factory.CreateDbContextAsync();
+        Assert.Equal(2, await context.AssessmentReportVersions.AsNoTracking()
+            .CountAsync(item => item.CaseId == caseId));
+        Assert.Equal(4, await context.AssessmentReportArtifacts.AsNoTracking()
+            .CountAsync(item => item.ReportVersion.CaseId == caseId));
+        Assert.Equal(4, await context.Set<DocumentOccurrenceEntity>().AsNoTracking()
+            .CountAsync(item => item.CaseId == caseId && item.Source == Pegasus.Core.Documents.DocumentSource.Generated));
+
+    }
+
+    [Fact]
+    public async Task ReportStoreRejectsAnArtifactFromTheWrongTemplateVersion()
+    {
+        await using var harness = await Harness.CreateAsync();
+        var outcome = await harness.AcceptAsync("assessment-report-template");
+        var caseId = outcome.Identity.CaseId;
+        var specification = await harness.AcceptReportSpecificationAsync(caseId);
+        var snapshot = ReportSnapshot(caseId, specification);
+        var reservation = await harness.ReportStore.BeginAsync(
+            new AssessmentReportGenerationRequest(caseId, snapshot, harness.EngineerActor));
+
+        await Assert.ThrowsAsync<ReportRenderRejectedException>(() =>
+            harness.ReportStore.CompleteAsync(reservation, ReportDraft("report-template/wrong")));
+    }
+
+    [Fact]
+    public async Task ConcurrentFailureReportsOnlyTheActiveLeaseOwner()
+    {
+        await using var harness = await Harness.CreateAsync();
+        var outcome = await harness.AcceptAsync("assessment-report-failure-race");
+        var caseId = outcome.Identity.CaseId;
+        var specification = await harness.AcceptReportSpecificationAsync(caseId);
+        var snapshot = ReportSnapshot(caseId, specification);
+        var reservation = await harness.ReportStore.BeginAsync(
+            new AssessmentReportGenerationRequest(caseId, snapshot, harness.EngineerActor));
+
+        await Task.WhenAll(
+            harness.ReportStore.FailAsync(reservation, "first failure"),
+            harness.ReportStore.FailAsync(reservation, "second failure"));
+
+        await using var context = await harness.Factory.CreateDbContextAsync();
+        var entity = await context.AssessmentReportVersions.AsNoTracking()
+            .SingleAsync(item => item.Id == reservation.Version.Id);
+        Assert.Equal(AssessmentReportGenerationState.Pending.ToString(), entity.State);
+        Assert.Null(entity.LeaseId);
+        Assert.Equal(1, entity.AttemptCount);
+        Assert.True(entity.FailureReason is "first failure" or "second failure");
+    }
+
+    [Fact]
+    public async Task ConcurrentIdenticalReportRequestsReserveOnlyOneRenderer()
+    {
+        await using var harness = await Harness.CreateAsync();
+        var outcome = await harness.AcceptAsync("assessment-report-concurrent");
+        var caseId = outcome.Identity.CaseId;
+        var specification = await harness.AcceptReportSpecificationAsync(caseId);
+        var snapshot = ReportSnapshot(caseId, specification);
+        var request = new AssessmentReportGenerationRequest(caseId, snapshot, harness.EngineerActor);
+
+        var reservations = await Task.WhenAll(
+            Task.Run(() => harness.ReportStore.BeginAsync(request)),
+            Task.Run(() => harness.ReportStore.BeginAsync(request)));
+
+        Assert.Single(reservations, item => item.ShouldRender);
+        Assert.Single(reservations, item => !item.ShouldRender);
+        await using var context = await harness.Factory.CreateDbContextAsync();
+        Assert.Equal(
+            1,
+            await context.AssessmentReportVersions
+                .AsNoTracking()
+                .CountAsync(item => item.CaseId == caseId));
+    }
+
+    [Fact]
+    public async Task ReportGenerationRetriesWithBackoffAndStopsAtTheTerminalAttempt()
+    {
+        await using var harness = await Harness.CreateAsync();
+        var outcome = await harness.AcceptAsync("assessment-report-retries");
+        var caseId = outcome.Identity.CaseId;
+        var specification = await harness.AcceptReportSpecificationAsync(caseId);
+        var snapshot = ReportSnapshot(caseId, specification);
+        var request = new AssessmentReportGenerationRequest(caseId, snapshot, harness.EngineerActor);
+
+        var first = await harness.ReportStore.BeginAsync(request);
+        Assert.Equal(1, first.Version.AttemptCount);
+        await harness.ReportStore.FailAsync(first, "renderer failed");
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            harness.ReportStore.BeginAsync(request));
+
+        harness.Advance(TimeSpan.FromSeconds(5));
+        var second = await harness.ReportStore.BeginAsync(request);
+        Assert.Equal(2, second.Version.AttemptCount);
+        await harness.ReportStore.FailAsync(second, "renderer failed again");
+
+        harness.Advance(TimeSpan.FromSeconds(10));
+        var third = await harness.ReportStore.BeginAsync(request);
+        Assert.Equal(3, third.Version.AttemptCount);
+        await harness.ReportStore.FailAsync(third, "renderer failed finally");
+
+        harness.Advance(TimeSpan.FromSeconds(15));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            harness.ReportStore.BeginAsync(request));
+        await using var context = await harness.Factory.CreateDbContextAsync();
+        var reportId = await context.AssessmentReportVersions
+            .Where(item => item.CaseId == caseId)
+            .Select(item => item.Id)
+            .SingleAsync();
+        Assert.All(
+            await context.Set<DocumentVersionEntity>()
+                .Where(item => context.AssessmentReportArtifacts
+                    .Where(artifact => artifact.ReportVersionId == reportId)
+                    .Select(artifact => artifact.DocumentVersionId)
+                    .Contains(item.Id))
+                .ToArrayAsync(),
+            item => Assert.Equal(DocumentCustodyStatus.Failed, item.CustodyStatus));
+    }
+
+    [Fact]
+    public async Task RecoveryReconcilesMetadataCommittedBeforeContentWrite()
+    {
+        await using var harness = await Harness.CreateAsync();
+        var outcome = await harness.AcceptAsync("assessment-report-recovery");
+        var caseId = outcome.Identity.CaseId;
+        var specification = await harness.AcceptReportSpecificationAsync(caseId);
+        var snapshot = ReportSnapshot(caseId, specification);
+        var request = new AssessmentReportGenerationRequest(caseId, snapshot, harness.EngineerActor);
+        var failingStore = harness.CreateReportStore(
+            new FailFirstDocumentContentStore(harness.NewLocalContentStore()));
+
+        var reservation = await failingStore.BeginAsync(request);
+        await Assert.ThrowsAsync<IOException>(() =>
+            failingStore.CompleteAsync(reservation, ReportDraft()));
+
+        await using (var context = await harness.Factory.CreateDbContextAsync())
+        {
+            Assert.Equal(
+                AssessmentReportGenerationState.Rendering.ToString(),
+                await context.AssessmentReportVersions
+                    .Where(item => item.Id == reservation.Version.Id)
+                    .Select(item => item.State)
+                    .SingleAsync());
+            Assert.Equal(
+                2,
+                await context.AssessmentReportArtifacts
+                    .Where(item => item.ReportVersionId == reservation.Version.Id)
+                    .CountAsync());
+            Assert.All(
+                await context.Set<DocumentVersionEntity>()
+                    .Where(item => context.AssessmentReportArtifacts
+                        .Where(artifact => artifact.ReportVersionId == reservation.Version.Id)
+                        .Select(artifact => artifact.DocumentVersionId)
+                        .Contains(item.Id))
+                    .ToArrayAsync(),
+                item => Assert.Equal(DocumentCustodyStatus.Pending, item.CustodyStatus));
+        }
+
+        harness.Advance(TimeSpan.FromMinutes(6));
+        var recovery = await harness.ReportStore.BeginAsync(request);
+        Assert.True(recovery.ShouldRender);
+        Assert.Equal(reservation.Version.Id, recovery.Version.Id);
+        await harness.ReportStore.CompleteAsync(recovery, ReportDraft());
+        Assert.True((await harness.ReportStore.BeginAsync(request)).IsReplay);
+    }
+
+    [Fact]
+    public async Task TerminalFailureMarksPendingGeneratedDocumentsFailed()
+    {
+        await using var harness = await Harness.CreateAsync();
+        var outcome = await harness.AcceptAsync("assessment-report-terminal");
+        var caseId = outcome.Identity.CaseId;
+        var specification = await harness.AcceptReportSpecificationAsync(caseId);
+        var snapshot = ReportSnapshot(caseId, specification);
+        var request = new AssessmentReportGenerationRequest(caseId, snapshot, harness.EngineerActor);
+        var failingStore = harness.CreateReportStore(
+            new FailFirstDocumentContentStore(harness.NewLocalContentStore()));
+
+        var first = await failingStore.BeginAsync(request);
+        await Assert.ThrowsAsync<IOException>(() =>
+            failingStore.CompleteAsync(first, ReportDraft()));
+
+        harness.Advance(TimeSpan.FromMinutes(6));
+        var second = await harness.ReportStore.BeginAsync(request);
+        await harness.ReportStore.FailAsync(second, "second renderer failure");
+        harness.Advance(TimeSpan.FromSeconds(10));
+        var third = await harness.ReportStore.BeginAsync(request);
+        await harness.ReportStore.FailAsync(third, "terminal renderer failure");
+        harness.Advance(TimeSpan.FromSeconds(15));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            harness.ReportStore.BeginAsync(request));
+
+        await using var context = await harness.Factory.CreateDbContextAsync();
+        var reportId = await context.AssessmentReportVersions
+            .Where(item => item.CaseId == caseId)
+            .Select(item => item.Id)
+            .SingleAsync();
+        Assert.All(
+            await context.Set<DocumentVersionEntity>()
+                .Where(item => context.AssessmentReportArtifacts
+                    .Where(artifact => artifact.ReportVersionId == reportId)
+                    .Select(artifact => artifact.DocumentVersionId)
+                    .Contains(item.Id))
+                .ToArrayAsync(),
+            item => Assert.Equal(DocumentCustodyStatus.Failed, item.CustodyStatus));
     }
 
     [Fact]
@@ -414,6 +713,7 @@ public sealed class AssessmentPersistenceIntegrationTests
     private sealed class Harness : IAsyncDisposable
     {
         private readonly LocalDbTestDatabase database;
+        private readonly string contentRoot;
         private readonly AcquireCaseEditLease acquireLease;
         private readonly AcceptIntake acceptIntake;
         private readonly CaseDataCompletenessPersistenceTests.MutableTimeProvider timeProvider;
@@ -427,7 +727,9 @@ public sealed class AssessmentPersistenceIntegrationTests
             SaveAssessment saveAssessment,
             EfAiWorkRequestStore workRequests,
             EfRepairSpecificationStore repairSpecifications,
-            CaseDataCompletenessPersistenceTests.MutableTimeProvider timeProvider)
+            CaseDataCompletenessPersistenceTests.MutableTimeProvider timeProvider,
+            string contentRoot,
+            EfAssessmentReportStore reportStore)
         {
             this.database = database;
             Factory = factory;
@@ -438,6 +740,8 @@ public sealed class AssessmentPersistenceIntegrationTests
             WorkRequests = workRequests;
             RepairSpecifications = repairSpecifications;
             this.timeProvider = timeProvider;
+            this.contentRoot = contentRoot;
+            ReportStore = reportStore;
         }
 
         public PooledDbContextFactory<PegasusDbContext> Factory { get; }
@@ -445,6 +749,7 @@ public sealed class AssessmentPersistenceIntegrationTests
         public SaveAssessment SaveAssessment { get; }
         public EfAiWorkRequestStore WorkRequests { get; }
         public EfRepairSpecificationStore RepairSpecifications { get; }
+        public EfAssessmentReportStore ReportStore { get; }
         public ActionActor AutomationActor { get; } = ActionActor.Automation("pegasus-automation");
         public ActionActor EngineerActor { get; } =
             ActionActor.Staff(Guid.NewGuid(), [StaffRole.Engineer]);
@@ -465,6 +770,11 @@ public sealed class AssessmentPersistenceIntegrationTests
                 var acceptanceStore = new EfCaseAcceptanceStore(factory, timeProvider, []);
                 var workflowStore = new EfCaseWorkflowStore(factory, timeProvider);
                 var repairSpecifications = new EfRepairSpecificationStore(factory, timeProvider);
+                var contentRoot = Path.Combine(Path.GetTempPath(), $"pegasus-report-{Guid.NewGuid():N}");
+                var reportStore = new EfAssessmentReportStore(
+                    factory,
+                    new LocalDocumentContentStore(contentRoot),
+                    timeProvider);
                 return new(
                     database,
                     factory,
@@ -478,7 +788,9 @@ public sealed class AssessmentPersistenceIntegrationTests
                         new EfCaseAssessmentStore(factory, timeProvider, repairSpecifications)),
                     new EfAiWorkRequestStore(factory, timeProvider),
                     repairSpecifications,
-                    timeProvider);
+                    timeProvider,
+                    contentRoot,
+                    reportStore);
             }
             catch
             {
@@ -488,6 +800,12 @@ public sealed class AssessmentPersistenceIntegrationTests
         }
 
         public void Advance(TimeSpan interval) => timeProvider.Advance(interval);
+
+        public EfAssessmentReportStore CreateReportStore(IDocumentContentStore contentStore) =>
+            new(Factory, contentStore, timeProvider);
+
+        public LocalDocumentContentStore NewLocalContentStore() =>
+            new(contentRoot);
 
         public Task<CaseAcceptanceOutcome> AcceptAsync(string operationKey) =>
             acceptIntake.ExecuteAsync(
@@ -503,6 +821,50 @@ public sealed class AssessmentPersistenceIntegrationTests
                     AcceptedInspectionDeadline: new DateOnly(2031, 5, 20)),
                 CancellationToken.None);
 
+        public async Task<RepairSpecificationVersion> AcceptReportSpecificationAsync(Guid caseId)
+        {
+            var source = new RepairSpecificationSource(
+                RepairSpecificationSourceRoute.Manual,
+                "case://repair-spec/report-source",
+                "source-v1",
+                new string('a', 64));
+            var basis = new RepairCalculationBasis(
+                150m, 50m, 20m, 5m, true, 45m, 270m, "external-estimate/v1");
+            var lines = new EstimateLineInput[]
+            {
+                new("new_part", null, "Front bumper", null, 50m, false, null, null,
+                    "confirmed", "case", "Report fixture"),
+            };
+            var draftLease = await AcquireLeaseAsync(
+                caseId, 0, EngineerActor, "report-spec-draft-lease");
+            var draft = await RepairSpecifications.StartDraftAsync(
+                new(
+                    caseId,
+                    draftLease.Version,
+                    source,
+                    EngineerActor,
+                    "report-spec-draft",
+                    "Create the selected report estimate.",
+                    draftLease.Token,
+                    Lines: lines),
+                CancellationToken.None);
+            var acceptLease = await AcquireLeaseAsync(
+                caseId, 1, EngineerActor, "report-spec-accept-lease");
+            return await RepairSpecifications.AcceptAsync(
+                new(
+                    caseId,
+                    acceptLease.Version,
+                    draft.SpecificationId,
+                    draft.Version,
+                    source,
+                    basis,
+                    EngineerActor,
+                    "report-spec-accept",
+                    "Accept the selected report estimate.",
+                    acceptLease.Token),
+                CancellationToken.None);
+        }
+
         public Task<CaseEditLease> AcquireLeaseAsync(
             Guid caseId,
             long version,
@@ -511,7 +873,14 @@ public sealed class AssessmentPersistenceIntegrationTests
             new(caseId, version, actor, operationKey),
             CancellationToken.None);
 
-        public async ValueTask DisposeAsync() => await database.DisposeAsync();
+        public async ValueTask DisposeAsync()
+        {
+            await database.DisposeAsync();
+            if (Directory.Exists(contentRoot))
+            {
+                Directory.Delete(contentRoot, recursive: true);
+            }
+        }
 
         private static async Task SeedAsync(
             IDbContextFactory<PegasusDbContext> factory,
@@ -553,5 +922,54 @@ public sealed class AssessmentPersistenceIntegrationTests
 
         public Task<CaseWorkflowConfiguration> GetCurrentAsync(
             CancellationToken cancellationToken) => Task.FromResult(Configuration);
+    }
+
+    private sealed class FailFirstDocumentContentStore(IDocumentContentStore inner) : IDocumentContentStore
+    {
+        private int writes;
+
+        public Task StoreAsync(
+            Guid caseId,
+            string caseReference,
+            Guid versionId,
+            ReadOnlyMemory<byte> content,
+            string expectedSha256,
+            CancellationToken cancellationToken)
+        {
+            if (Interlocked.Increment(ref writes) == 1)
+            {
+                throw new IOException("Simulated content-store failure after metadata commit.");
+            }
+
+            return inner.StoreAsync(
+                caseId,
+                caseReference,
+                versionId,
+                content,
+                expectedSha256,
+                cancellationToken);
+        }
+
+        public Task<Stream> OpenReadAsync(
+            Guid caseId,
+            string caseReference,
+            Guid versionId,
+            string expectedSha256,
+            long expectedLength,
+            CancellationToken cancellationToken) =>
+            inner.OpenReadAsync(
+                caseId,
+                caseReference,
+                versionId,
+                expectedSha256,
+                expectedLength,
+                cancellationToken);
+
+        public Task DeleteAsync(
+            Guid caseId,
+            string caseReference,
+            Guid versionId,
+            CancellationToken cancellationToken) =>
+            inner.DeleteAsync(caseId, caseReference, versionId, cancellationToken);
     }
 }

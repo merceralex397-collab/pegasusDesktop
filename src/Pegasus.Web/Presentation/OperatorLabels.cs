@@ -10,6 +10,7 @@ using Pegasus.Core.Workflow;
 using Pegasus.Core.Identity;
 using Pegasus.Core.Vehicle;
 using Pegasus.Core.Intake.Unidentified;
+using Pegasus.Core.Reports;
 
 namespace Pegasus.Web.Presentation;
 
@@ -234,6 +235,20 @@ public static class OperatorLabels
         DocumentSource.Automation => "Automatic",
         _ => Humanise(source.ToString())
     };
+
+    public static string ReportGenerationState(
+        AssessmentReportGenerationState state,
+        DateTimeOffset? retryAtUtc = null) =>
+        state == AssessmentReportGenerationState.Pending && retryAtUtc is not null
+            ? "Retry"
+            : state switch
+            {
+                AssessmentReportGenerationState.Pending => "Pending",
+                AssessmentReportGenerationState.Rendering => "Rendering",
+                AssessmentReportGenerationState.Generated => "Generated",
+                AssessmentReportGenerationState.Failed => "Failed",
+                _ => Humanise(state.ToString())
+            };
 
     /// <summary>
     /// The Image-initiated Case lifecycle state, in the operator's words.
