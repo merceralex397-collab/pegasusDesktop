@@ -29,3 +29,12 @@ Independent review must confirm that the appended text is limited to Area 09's m
 ## Verification after merge
 
 On merged main, re-run the two documentation scripts, inspect the rendered ADR for the five required decision areas, confirm one ADR-0105 file and one index row, and record proof. This ticket proves documentation consistency only; downstream packaging and release tickets must prove generated package/feed/runtime behavior.
+
+## Review response — 2026-08-26
+
+The independent reviewer identified two blocking clarity/completeness findings. Both were fixed in commit 17c87e51:
+
+- Added the planned Relates section for ADR-0007, ADR-0014, and the future FRD-13 pointer owned by DSK-00-08/FND-008.
+- Changed “package manifest” to “App Installer file” so it cannot be confused with Package.appxmanifest.
+
+The documentation-link and Markdown-placement gates were rerun after the fix and passed. The PR head is now 17c87e51; CI must be rechecked at that exact head.

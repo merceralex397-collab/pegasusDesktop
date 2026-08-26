@@ -1,0 +1,1 @@
+2026-08-26 — Independent review NEEDS CHANGES: missing Relates entries for ADR-0014 and future FRD-13/DSK-00-08, plus ambiguous “package manifest” wording. Fixed in 17c87e51; local link and placement gates passed. PR #22 now needs exact-head CI and passing re-review.

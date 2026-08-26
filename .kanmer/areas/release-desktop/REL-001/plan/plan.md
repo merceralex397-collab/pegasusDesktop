@@ -262,3 +262,7 @@ The canonical ADR now has an appended Area 09 release contract covering the expl
 - pwsh -NoProfile -File ./scripts/Test-TestMarkdownPlacement.ps1 — passed
 - Get-ChildItem docs/adr -Filter 0105* — exactly one file
 - docs/adr/README.md — existing ADR-0105 row unchanged
+
+## Review response — 2026-08-26
+
+Independent review initially returned NEEDS CHANGES for the missing ADR-0014/FRD-13 Relates section and ambiguous “package manifest” wording. Commit 17c87e51 adds the required Relates section and names the App Installer file distinctly from Package.appxmanifest. The review scope remains one documentation file and no product decision or runtime claim was added.
