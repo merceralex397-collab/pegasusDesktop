@@ -4,7 +4,7 @@ type: ticket
 title: >-
   Triage authority · Define the T- aggregate, custody transfer, and Case
   conversion
-status: verifying
+status: done
 area: case-reference-workflow
 order: 50
 assignee: codex-mcp-client
@@ -13,6 +13,7 @@ stageEntered:
   implementing: '2026-08-25T12:10:29.252Z'
   review: '2026-08-25T12:15:11.021Z'
   verifying: '2026-08-25T14:44:44.466Z'
+  done: '2026-08-26T15:46:02.897Z'
 labels:
   - triage
   - governing-docs
@@ -34,7 +35,7 @@ prs:
   - '5'
 archived: false
 created: '2026-08-25T12:04:56.725Z'
-updated: '2026-08-26T11:21:58.919Z'
+updated: '2026-08-26T15:46:02.897Z'
 ---
 
 ## What
