@@ -3,7 +3,9 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Pegasus.Core.Assessment;
 using Pegasus.Core.Cases;
+using Pegasus.Core.Custody;
 using Pegasus.Core.Documents;
 using Pegasus.Core.Eva;
 using Pegasus.Core.Identity;
@@ -273,6 +275,85 @@ public sealed class EvaHandoffPersistenceTests
     }
 
     [Fact]
+    public async Task IntakeRetainedImageIsReadByEvaAndAssessmentReportProjection()
+    {
+        await using var database = await LocalDbTestDatabase.CreateAsync();
+        var factory = Factory(database.ConnectionString);
+        var caseId = await SeedCaseAsync(factory, "Review", workflowVersion: 7, hiddenCaseVersion: 7);
+        var actor = ActionActor.Staff(Guid.NewGuid(), [StaffRole.User]);
+        const string lease = "eva-intake-retained-image-lease";
+        await SetLeaseAsync(factory, caseId, actor, lease);
+        var custodyRoot = Path.Combine(
+            Path.GetTempPath(), "pegasus-eva-intake-retained", Guid.NewGuid().ToString("N"));
+        var content = Encoding.UTF8.GetBytes("intake-retained image content");
+        var sourceKey = "intake-image";
+        var contentStore = new LocalDocumentContentStore(custodyRoot);
+        var custody = new LocalCaseCustody(
+            custodyRoot,
+            new FixedIntakeArtifactStore(sourceKey, content));
+
+        try
+        {
+            var root = await custody.CreateCaseRootAsync(
+                caseId,
+                "QDOS001",
+                "eva-intake-retained-root",
+                CancellationToken.None);
+            var image = await SeedIntakeImageAsync(
+                factory,
+                custody,
+                root,
+                caseId,
+                "intake-damage.jpg",
+                sourceKey,
+                content);
+
+            var evaStore = AcceptedStore(factory, contentStore, caseId, dataVersion: 7);
+            var preparation = await evaStore.GetPreparationAsync(caseId);
+            Assert.NotNull(preparation);
+            Assert.Contains(preparation.Images, item => item.OccurrenceId == image.OccurrenceId);
+
+            var generated = await evaStore.ExecuteAsync(new(
+                caseId,
+                7,
+                actor,
+                "eva:intake-retained-image",
+                "Prepare Review handoff.",
+                lease));
+
+            Assert.Equal(GenerateEvaHandoffOutcome.Generated, generated.Outcome);
+            Assert.NotNull(generated.Bundle);
+            using var provenance = JsonDocument.Parse(generated.Bundle.ProvenanceContent);
+            Assert.Contains(
+                image.OccurrenceId,
+                provenance.RootElement
+                    .GetProperty("images")
+                    .EnumerateArray()
+                    .Select(item => item.GetProperty("occurrenceId").GetGuid()));
+
+            var reportSource = new EfAssessmentReportProjectionSource(
+                factory,
+                new FixedGetCase(AcceptedCaseDetails(caseId)),
+                new FixedGetCaseAssessment(AcceptedAssessment(caseId)),
+                contentStore,
+                TimeProvider.System);
+            var projection = await reportSource.GetAsync(caseId, actor);
+
+            Assert.NotNull(projection);
+            var photo = Assert.Single(projection.Photos);
+            Assert.Equal("intake-damage.jpg", photo.CustodyReference);
+            Assert.Equal(content, photo.Content);
+        }
+        finally
+        {
+            if (Directory.Exists(custodyRoot))
+            {
+                Directory.Delete(custodyRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task ReviewOnlyGenerationUsesRenderedWorkflowVersionAndConfirmedApplicableCustody()
     {
         await using var database = await LocalDbTestDatabase.CreateAsync();
@@ -503,6 +584,88 @@ public sealed class EvaHandoffPersistenceTests
         return new(occurrenceId, versionId);
     }
 
+    private static async Task<SeededIntakeImage> SeedIntakeImageAsync(
+        IDbContextFactory<PegasusDbContext> factory,
+        LocalCaseCustody custody,
+        CaseCustodyRoot root,
+        Guid caseId,
+        string fileName,
+        string sourceKey,
+        byte[] content)
+    {
+        var documentId = Guid.NewGuid();
+        var versionId = Guid.NewGuid();
+        var occurrenceId = Guid.NewGuid();
+        var receiptId = Guid.NewGuid();
+        var ordinal = 2;
+        var sha256 = Sha256(content);
+        await custody.RetainAcceptedIntakeAttachmentAsync(
+            root,
+            new(
+                receiptId,
+                fileName,
+                "image/jpeg",
+                sha256,
+                sourceKey,
+                content.LongLength),
+            ordinal,
+            "eva-intake-retained-image",
+            CancellationToken.None);
+
+        await using var context = await factory.CreateDbContextAsync();
+        await context.Database.ExecuteSqlInterpolatedAsync(
+            $"INSERT INTO CaseDocuments (Id, CaseId, Ordinal, SourceOccurrenceIdentity) VALUES ({documentId}, {caseId}, {ordinal}, {$"intake:{fileName}"})");
+        await context.Database.ExecuteSqlInterpolatedAsync(
+            $"INSERT INTO DocumentVersions (Id, DocumentId, Version, FileName, MediaType, ContentLength, Sha256, CustodyStatus, CreatedAtUtc, CreatedBy, IsCurrent, IsLogicallyRemoved) VALUES ({versionId}, {documentId}, {1}, {fileName}, {"image/jpeg"}, {(long)content.Length}, {sha256}, {"Confirmed"}, {Now}, {"staff:intake-fixture"}, {true}, {false})");
+        await context.Database.ExecuteSqlInterpolatedAsync(
+            $"INSERT INTO DocumentOccurrences (Id, CaseId, DocumentId, VersionId, Ordinal, SemanticRole, Source, SourceOccurrenceIdentity, RecordedAtUtc, OperationKey, ThirdPartyVehicleConfirmedAtUtc, ThirdPartyVehicleConfirmationReason, ThirdPartyVehicleConfirmationOperationKey) VALUES ({occurrenceId}, {caseId}, {documentId}, {versionId}, {ordinal}, {"Image"}, {"StaffUpload"}, {$"intake:{fileName}"}, {Now}, {"eva-intake-retained-image"}, {null}, {null}, {null})");
+
+        return new(occurrenceId, versionId);
+    }
+
+    private static CaseDetails AcceptedCaseDetails(Guid caseId)
+    {
+        var identity = new CaseIdentity(caseId, "QDOS", 2031, 1, "QDOS001");
+        var workflow = new CaseWorkflowRecord(
+            caseId,
+            identity,
+            CaseLifecycleState.Review,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            7);
+        var summary = new CaseSearchItem(
+            caseId,
+            identity.Reference,
+            null,
+            CaseType.Inspection,
+            "QDOS provider",
+            workflow.State,
+            null,
+            "AB12CDE",
+            "Fixture claimant",
+            "CLAIM-001",
+            Now,
+            null,
+            "ManualUpload",
+            Now);
+        return new(summary, workflow, null, [], null, CaseCustodyState.Confirmed, [], [], []);
+    }
+
+    private static CaseAssessmentProjection AcceptedAssessment(Guid caseId) => new(
+        caseId,
+        "QDOS001",
+        7,
+        CaseLifecycleState.Review,
+        null,
+        [],
+        [],
+        new(null, null, null, null, null, null, null, null, null));
+
     private static CaseDataProjection AcceptedCaseData(Guid caseId, long version) => new(
         new(caseId, "QDOS", 2031, 1, "QDOS001"),
         new(
@@ -575,6 +738,44 @@ public sealed class EvaHandoffPersistenceTests
             null);
 
     private sealed record SeededImage(Guid OccurrenceId, Guid VersionId);
+
+    private sealed record SeededIntakeImage(Guid OccurrenceId, Guid VersionId);
+
+    private sealed class FixedIntakeArtifactStore(
+        string sourceKey,
+        ReadOnlyMemory<byte> content) : IIntakeArtifactStore
+    {
+        public Task<string> StoreAsync(
+            string contentHash,
+            ReadOnlyMemory<byte> value,
+            CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
+
+        public Task<ReadOnlyMemory<byte>?> ReadAsync(
+            string storageKey,
+            CancellationToken cancellationToken)
+        {
+            Assert.Equal(sourceKey, storageKey);
+            return Task.FromResult<ReadOnlyMemory<byte>?>(content);
+        }
+    }
+
+    private sealed class FixedGetCase(CaseDetails details) : IGetCase
+    {
+        public Task<CaseDetails?> ExecuteAsync(
+            GetCaseQuery query,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<CaseDetails?>(query.CaseId == details.Summary.CaseId ? details : null);
+    }
+
+    private sealed class FixedGetCaseAssessment(CaseAssessmentProjection projection)
+        : IGetCaseAssessment
+    {
+        public Task<CaseAssessmentProjection?> ExecuteAsync(
+            Guid caseId,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<CaseAssessmentProjection?>(projection.CaseId == caseId ? projection : null);
+    }
 
     private sealed class FixedCaseDataQueries(CaseDataProjection data) : ICaseDataQueries
     {
