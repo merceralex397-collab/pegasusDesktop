@@ -18,8 +18,8 @@
 - [x] Local non-Corpus/non-Browser integration tests green; exact-head CI is a PR gate
 - [x] Simplification pass over the branch diff, recorded in the plan
 - [x] Exact-head GitHub Actions run 32992629383 passed for commit `c25099f92681db991a0003146991b676d1c8b82b`; all repository-check jobs, including browser, three SQL shards, coverage, unit, infrastructure, documentation, changes, reference-data, and local-development-scripts, passed
-- [ ] PR into `dev`, independent review, merge
-- [ ] Proof on merged `main`
+- [x] PR into `dev`, independent review, merge — PR #21 merged at `36dccd8fa1c883c38977b6721d86b745c45c9a94` after Gibbs PASS and exact-head CI 32992629383
+- [x] Proof on merged `main` — merged-main commit `36dccd8fa1c883c38977b6721d86b745c45c9a94` verified; `proof.md` written
 
 ## Progress notes
 
@@ -52,3 +52,6 @@ template needed work.
 **2026-08-26 validation** — `dotnet restore` passed; `dotnet build --configuration Release` passed with 0 warnings and 0 errors; full Core tests passed 935/935; targeted SQL integration passed 19/19; full non-Corpus/non-Browser integration passed 886/886 with 2 expected skips. Final simplification changes were revalidated by a final 119/119 focused Core pass and 19/19 targeted SQL integration pass.
 
 **2026-08-26 exact-head CI** — Added the repository's existing `repository-check` workflow_dispatch trigger so the exact PR head could be validated after pull_request event registration failed to create a run. Manual run 32992629383 passed at commit `c25099f92681db991a0003146991b676d1c8b82b`; this does not substitute for independent review or merged-main proof.
+
+
+**2026-08-26 closeout evidence** — The final PR head passed exact-head CI and independent review, merged to `dev`, was promoted to `main`, and was revalidated from the merged-main commit.
