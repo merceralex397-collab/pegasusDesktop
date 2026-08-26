@@ -27,3 +27,9 @@
 - Commit: `ed4e2776`; PR #27 remains open against `dev`, now at head `ed4e2776`.
 - Fresh local validation: `dotnet build Pegasus.slnx -c Release -nr:false` succeeded with 0 warnings/errors; architecture tests passed 110/110 with 0 failed/skipped; static contract checks and `git diff --check` passed as recorded in the plan.
 - Fresh independent review and exact-head CI are pending; no endpoint behavior is claimed.
+
+## Independent review — 2026-08-26
+
+- Hilbert completed a fresh independent review of PR #27 at exact head `ed4e2776c8529d2d4d170b6fab52fd20d39594b4`.
+- Verdict: implementation PASS; the prior XML-documentation omission is fully remediated. The review confirms `PagingLimits.cs` documents lower endpoint caps and ListIntake’s 100 limit, `PegasusProblem.cs` documents the safe RFC 9457 boundary and typed-version rationale, and `MutationEnvelope.cs` documents body placement, `desk:<guid>`, validation ownership, and the 200-character exception.
+- Review found no remaining plan, scope, implementation, or simplification gap. The review is not merge approval yet only because exact-head CI run `33021359764` remains in progress for SQL shards 1 and 3; all other jobs are green.
