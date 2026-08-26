@@ -12,9 +12,6 @@ profile: fix
 stageEntered:
   preparing: '2026-08-24T21:21:17.158Z'
   review: '2026-08-26T21:07:52.555Z'
-taken_at: '2026-08-26T22:06:42.587Z'
-branch: plat-029-local-document-content
-worktree: .worktrees/plat-029
 labels:
   - found-during-qa
   - developer-experience
@@ -42,7 +39,7 @@ prs:
   - '25'
 archived: false
 created: '2026-08-24T11:49:22.980Z'
-updated: '2026-08-26T22:06:42.587Z'
+updated: '2026-08-26T22:19:59.321Z'
 ---
 
 ## What
