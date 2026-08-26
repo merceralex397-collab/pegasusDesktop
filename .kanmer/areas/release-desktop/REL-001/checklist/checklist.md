@@ -42,3 +42,9 @@
 - [x] Update the ADR index current/superseded views without a duplicate ADR-0105.
 - [x] Scope feed versus gateway cloud evidence and use canonical XML element wording.
 - [ ] Obtain passing exact-head CI and independent re-review of be26313f.
+
+## Final review — 2026-08-26
+
+- [x] Address review findings with the accepted-ADR supersession route, scoped cloud table, canonical rollback XML, and complete Relates/Links.
+- [x] Obtain passing exact-head CI and independent re-review at be26313f.
+- [ ] Merge PR #22 into dev, verify merged main, write proof, and close out.
