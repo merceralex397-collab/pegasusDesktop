@@ -314,7 +314,7 @@ On Linux, substitute the server-only filter so Windows-targeted desktop projects
 ```powershell
 dotnet restore ./Pegasus.Server.slnf --locked-mode
 dotnet build ./Pegasus.Server.slnf --configuration Release --no-restore
-dotnet test ./Pegasus.Server.slnf --configuration Release --no-build --filter "Category!=Corpus"
+dotnet test ./Pegasus.Server.slnf --configuration Release --no-build --filter "Category!=Corpus&Category!=Browser"
 ```
 
 `pwsh` runs either platform's commands. Package versions are centralized in

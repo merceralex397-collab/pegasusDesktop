@@ -559,9 +559,8 @@ public sealed class DependencyDirectionTests
             .GetProperty("solution")
             .GetProperty("projects")
             .EnumerateArray()
-            .Select(project => project.GetString()?.Replace('\\', '/'))
-            .Where(project => project is not null)
-            .Cast<string>()
+            .Select(project => project.GetString()?.Replace('\\', '/')
+                ?? throw new InvalidOperationException("Server solution filter contains a non-string project entry."))
             .Order(StringComparer.Ordinal)
             .ToArray();
     }
