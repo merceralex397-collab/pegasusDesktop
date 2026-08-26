@@ -4,12 +4,13 @@ type: ticket
 title: >-
   upstream:INTK-033 · A triage-request email creates no Triage and no
   Unidentified item — it is stranded
-status: implementing
+status: review
 area: intake-processing
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
   preparing: '2026-08-24T21:23:46.870Z'
+  review: '2026-08-26T17:00:34.278Z'
 taken_at: '2026-08-26T16:12:18.164Z'
 branch: task/upstream-intk-033-triage-from-intake
 worktree: ../pegasus-worktrees/upstream-intk-033-triage-from-intake
@@ -32,9 +33,13 @@ refs:
   - docs/frd/frd-03-triage.md
   - docs/frd/frd-09-provider-and-intermediary-routes.md
 docs_todo: true
+commits:
+  - c85e1f1e33e3b7159c70ecf58c294379734300ba
+prs:
+  - '21'
 archived: false
 created: '2026-08-24T11:52:39.628Z'
-updated: '2026-08-26T16:12:18.164Z'
+updated: '2026-08-26T17:00:34.278Z'
 ---
 
 ## What
