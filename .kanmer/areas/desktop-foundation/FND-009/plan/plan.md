@@ -242,3 +242,11 @@ Expected outcome: `n/a — docs-only`._
 ## Simplification pass — 2026-08-26
 
 The diff was reviewed for reuse, duplication, scope, efficiency and altitude. The documentation change adds one compact engineering rule; the release skill copies are kept byte-identical to avoid two routes diverging; no workflow, packaging, deployment, feed, Azure, or version-generation change was added. No further behavior-preserving simplification was identified.
+
+## Independent review and merge — 2026-08-26
+
+Faraday (`pegasus-desktop-reviewer`) independently reviewed PR #24 at exact head `322e18bda664f3b800c9614a64513a4be6b11e34` and returned **PASS** for the static portion. The review verified the two tag mappings, main-only/post-promotion ordering, immutability rule, synchronized skill copies, three-file scope, and no cloud/deployment/upstream activity. It confirmed merge was appropriate while the release-time tag remains pending.
+
+- PR #24 merged into `dev` at `f26b5b01d509ad21d9db58bca9fb00afe77c384a` on 2026-08-26.
+- Exact-head repository-check run `33009752135`: applicable `changes`, `documentation`, `local-development-scripts`, and `reference-data` jobs passed; code/infrastructure lanes were path-skipped.
+- `gateway/r21` and the corresponding `docs/operations.md` entry are not claimed. FND-009 must remain open until the next authorized production release applies the tag and records the release evidence.
