@@ -73,3 +73,18 @@ The prior trigger contradiction and rate-card blocker are resolved by the decisi
 ## Simplification pass
 
 _To be completed against the branch diff before opening the PR._
+
+
+## Implementation result — 2026-08-26
+
+- The explicit staff `Generate report draft` command is the only trigger. `GenerateCaseAssessmentReportDraft` now uses the shared Core readiness service, reserves a durable report version, renders outside the database transaction, and returns an exact replay from retained artifacts.
+- The accepted repair-specification version, source provenance, case version, payload hash, template version, retry attempt/backoff state, and predecessor lineage are retained. A selected estimate must be accepted, source-attributed, and versioned; no internal rate-card value is derived.
+- `EfAssessmentReportStore` uses a unique logical key and reconciles concurrent insert/deadlock races. It commits pending generated-document metadata before content writes, then confirms custody only after both PDF bytes are verified. A later lease reconciles the same persisted artifact identities.
+- The generated assessment and fee note use normal generated case-document custody with distinct semantic roles. No approval, issue, send, receipt, cloud write, deployment, upstream synchronization, desktop Reports UI, or version-specific Sent association is implemented here; those boundaries remain with the linked downstream tickets.
+
+## Simplification pass — 2026-08-26
+
+- Reused `AssessmentPolicy`, `IDocumentContentStore`, existing case-document custody entities, and the existing renderer instead of adding a generic job framework or duplicate policy owner.
+- Kept report persistence in one focused store and one focused Core aggregate file; the only new retry state is the three-attempt policy required by the ticket.
+- Removed the redundant imported/non-imported total-labour renderer branch and excluded only request metadata (report date and optimistic case-version token) from the logical-key hash. Selected repair-specification identity remains part of the accepted payload.
+- The independent review findings about date-boundary replay, selected estimate identity, version guards, concurrency, pending metadata recovery, validation, retry terminal state, shared readiness, and misleading UI text were applied. No known behaviour-preserving simplification finding remains unapplied.
