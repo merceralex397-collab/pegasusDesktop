@@ -40,12 +40,12 @@ never renumbered or reused.
 | [0028](0028-run-integrated-renderer-in-web-container-app.md) | Run the integrated report renderer in the Web Container App | FRD-11 |
 | [0029](0029-image-initiated-case-projection.md) | Image-initiated Case projection | FRD-01/02/05/06/12 |
 | [0030](0030-triage-as-separate-aggregate.md) | Triage as a separate aggregate | FRD-01, FRD-03 |
+| [0031](0031-desktop-release-distribution-contract.md) | Desktop release distribution contract | — |
 | [0100](0100-native-winui-3-client-in-the-fork.md) | Native WinUI 3 client in the Pegasus fork | — |
 | [0101](0101-local-execution-cloud-authority-split.md) | Local-execution / cloud-authority split | — |
 | [0102](0102-existing-pegasus-credentials-token-session.md) | Existing Pegasus credentials and desktop token session | FRD-04 |
 | [0103](0103-gateway-not-direct-database-access.md) | Gateway, not direct workstation database access | — |
 | [0104](0104-online-required-bounded-local-cache.md) | Online-required client with bounded local cache | — |
-| [0105](0105-msix-app-installer-and-minimum-version-gate.md) | Signed MSIX/App Installer and minimum-version gate | — |
 | [0110](0110-agent-skill-pinning-and-invocation-protocol.md) | Agent-skill pinning and invocation protocol | — |
 
 ## Superseded and relocated
@@ -58,6 +58,7 @@ never renumbered or reused.
 | [0020](0020-accepted-qdos-case-association-predicates.md) | Accepted QDOS automatic case-association predicates | [FRD-09](../frd/frd-09-provider-and-intermediary-routes.md) |
 | [0022](0022-approved-mailbox-identity-and-enablement-database-setting.md) | Approved-mailbox identity and enablement as a database setting | [ADR-0024](0024-stable-approved-mailbox-identity-and-explicit-baseline.md) — estate decision carried forward; behaviour in [FRD-08](../frd/frd-08-email-mailbox-and-background-processing.md) |
 | [0023](0023-restructure-repository-documentation-and-reference-evidence.md) | Restructure repository documentation and reference evidence | `AGENTS.md` / [`docs/index.md`](../index.md) — governance is not an ADR |
+| [0105](0105-msix-app-installer-and-minimum-version-gate.md) | Signed MSIX/App Installer and minimum-version gate | [ADR-0031](0031-desktop-release-distribution-contract.md) — complete Area 09 release contract |
 
 ADR-0017 was never issued (a numbering collision while filing 0018/0019); the gap
 is intentional and the number is not reused.

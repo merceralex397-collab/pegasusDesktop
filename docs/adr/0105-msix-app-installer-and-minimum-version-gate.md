@@ -1,9 +1,9 @@
 ---
 id: ADR-0105
-status: accepted
+status: superseded
 date: 2026-08-24
 supersedes: []
-superseded_by: []
+superseded_by: [ADR-0031]
 related_capabilities: []
 related_frd: []
 tags: [desktop, msix, app-installer, release]
@@ -96,46 +96,6 @@ never bundled with the desktop application or committed to the repository.
 The manifest `Publisher` must match the signing certificate subject exactly.
 The `.appinstaller` `Uri` is the stable canonical UNC path, and the feed is
 reachable only from the office network or VPN over SMB.
-
-### Area 09 release contract
-
-The App Installer file uses the 2021 schema
-(`http://schemas.microsoft.com/appx/appinstaller/2021`). Its launch update
-settings are `OnLaunch HoursBetweenUpdateChecks="0"`, `ShowPrompt="true"`,
-`UpdateBlocksActivation="true"`, and `AutomaticBackgroundTask`. These settings
-remain subject to the platform and launch-path limits recorded above; the
-gateway gate remains authoritative. A rollback republishes the retained
-known-good package with a higher `.appinstaller` `Version` and
-`ForceUpdateFromAnyVersion="true"`.
-
-The desktop package version is `1.<minor>.<build>.0`: the release owner bumps
-`minor` when the gateway compatibility range changes, the CI run number is the
-`build` component, and the revision is always `0`. The gateway's product
-version remains `0.1.0-alpha.1`; the desktop version is carried by
-`Package.appxmanifest` and the desktop release manifest.
-
-There is one package identity, `CollisionEngineers.Pegasus`, with two channel
-feeds: `pilot/Pegasus.appinstaller` and `prod/Pegasus.appinstaller`. A
-workstation belongs to the channel from which its `.appinstaller` was
-installed; changing rings is a reinstall from the other feed. The gateway is
-deployed first and remains backward compatible, the desktop package follows,
-and the minimum client version is raised only after the pilot ring has run the
-new package.
-
-D-002 (self-managed certificate) and D-003 (UNC feed) were decided on
-2026-08-23. Their combined distribution path has no Azure resource and no
-recurring service cost. The accepted operational trade-offs are per-machine
-certificate trust rollout and rehearsed renewal, and update checks that work
-only on the office network or VPN.
-
-## Relates
-
-- ADR-0007 — the gateway's existing authorised-terminal release route is
-  unchanged.
-- ADR-0014 — Test/UAT remains local; this decision does not create an Azure
-  test feed or environment.
-- FRD-13 — the future desktop gateway compatibility contract, to be authored
-  by [[DSK-00-08]] (FND-008); this ADR does not claim that FRD-13 exists yet.
 
 ## Consequences
 
