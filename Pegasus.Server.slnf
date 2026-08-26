@@ -3,6 +3,7 @@
     "path": "Pegasus.slnx",
     "projects": [
       "src\\Pegasus.Core\\Pegasus.Core.csproj",
+      "src\\Pegasus.Contracts\\Pegasus.Contracts.csproj",
       "src\\Pegasus.Infrastructure\\Pegasus.Infrastructure.csproj",
       "src\\Pegasus.Web\\Pegasus.Web.csproj",
       "src\\Pegasus.Worker\\Pegasus.Worker.csproj",

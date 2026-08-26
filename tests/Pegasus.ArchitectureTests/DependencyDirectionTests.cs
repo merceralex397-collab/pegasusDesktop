@@ -176,6 +176,7 @@ public sealed class DependencyDirectionTests
 
         Assert.Equal(
             [
+                "src/Pegasus.Contracts/Pegasus.Contracts.csproj",
                 "src/Pegasus.Core/Pegasus.Core.csproj",
                 "src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj",
                 "src/Pegasus.Web/Pegasus.Web.csproj",
