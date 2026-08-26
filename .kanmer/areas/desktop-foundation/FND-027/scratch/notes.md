@@ -5,3 +5,5 @@
 2026-08-25 implementation checkpoint: committed as 7dd5138d (build: centralize Pegasus package versions) and pushed branch fnd-027-central-package-management to origin. The PR is now the next external handoff; ignored artifacts/fnd-027-cpm remain local evidence, while Kanmer plan/scratch record the commands and outcomes.
 
 2026-08-25 PR handoff blocked: gh pr create --base dev --head fnd-027-central-package-management failed with exact GitHub GraphQL error: must be a collaborator (createPullRequest). Branch remains pushed at 7dd5138d; no Kanmer stage move was attempted. Smallest external action: grant the authenticated GitHub identity collaborator/createPullRequest permission or have an authorized collaborator open the PR.
+
+2026-08-26 PR handoff: authenticated GitHub account now reports ADMIN; retried the previously rejected PR creation successfully. Opened PR #17 against dev from fnd-027-central-package-management at commit 7dd5138d. Awaiting exact-head CI and the existing independent review evidence remains PASS.
