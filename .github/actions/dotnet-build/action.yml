@@ -17,6 +17,7 @@ runs:
         cache: true
         cache-dependency-path: |
           global.json
+          Directory.Packages.props
           src/**/packages.lock.json
           tests/**/packages.lock.json
     - name: Restore

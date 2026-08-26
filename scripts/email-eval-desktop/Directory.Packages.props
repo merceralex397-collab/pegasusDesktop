@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- ADR-0016 evaluator: independent of Pegasus.slnx and its central package policy. -->
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>
