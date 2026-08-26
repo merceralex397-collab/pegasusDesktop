@@ -4,7 +4,7 @@ type: ticket
 title: >-
   upstream:CASE-021 · Refuse Review for a case with no images instead of
   asserting its images are complete
-status: review
+status: verifying
 area: case-reference-workflow
 order: 10
 assignee: codex-mcp-client
@@ -13,6 +13,7 @@ stageEntered:
   preparing: '2026-08-24T21:23:44.361Z'
   review: '2026-08-25T06:06:37.232Z'
   implementing: '2026-08-25T06:17:42.877Z'
+  verifying: '2026-08-26T14:29:15.164Z'
 taken_at: '2026-08-25T11:38:04.507Z'
 branch: task/case-001-observed-images
 worktree: ../pegasus-worktrees/case-001-observed-images
@@ -45,7 +46,7 @@ prs:
   - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/4'
 archived: false
 created: '2026-08-24T11:42:25.781Z'
-updated: '2026-08-25T18:29:15.864Z'
+updated: '2026-08-26T14:29:15.164Z'
 ---
 
 ## What
