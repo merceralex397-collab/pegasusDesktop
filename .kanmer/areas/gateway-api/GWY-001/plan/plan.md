@@ -276,3 +276,20 @@ The `proof` document is produced from these command logs, in this order:
 
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this branch's own
 diff before the PR, recorded here under a dated heading._
+
+## Implementation record — 2026-08-26
+
+- Step 2 found the extend-in-place branch: `src/Pegasus.Contracts/Pegasus.Contracts.csproj` exists, targets `net10.0`, is present in `Pegasus.slnx`, and all five envelope files already existed from [[FND-029]]. No envelope file was changed.
+- Steps 3–6 therefore verified the existing `PegasusProblemTypes`, `PegasusProblem`, `PagedResult`, `PagingLimits`, and `MutationEnvelope` shapes and made no changes to those files.
+- Step 7 added only `ContractConventions.cs`; step 8 extended the existing `ContractsProjectHasNoDependencies` fact with the eight-prefix assembly-reference assertion. The Contracts project reference in the architecture-test project was already present.
+- `dotnet build Pegasus.slnx -c Release`: succeeded, 0 warnings, 0 errors.
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj -c Release`: succeeded, 110 passed, 0 failed, 0 skipped.
+- Static checks: no direct dependency XML references; one `PagedResult` declaration; no `Total` or `ActionActor` matches; `Problems` and `Commands` directories absent.
+- The literal plan command `rg -n --case-sensitive 'ContractsHasNoInfrastructureOrHostDependencies|ProblemTypes\\b|CommandEnvelope' tests src` returns the required `PegasusProblemTypes` symbol and its uses because the unanchored `ProblemTypes\\b` alternative matches the suffix of that legitimate name. It is a false positive in the prescribed check, not an implementation violation. The boundary-corrected check `rg -n --case-sensitive '(^|[^A-Za-z])ProblemTypes\\b|CommandEnvelope' tests src` returned zero matches.
+
+## Simplification pass — 2026-08-26
+
+- Reuse: retained [[FND-029]]'s existing contract types and the existing `ContractsProjectHasNoDependencies` fact; no duplicate matcher or envelope implementation was introduced.
+- Scope: changed only the owned Contracts marker and the existing architecture test; no host, Web, Core, Infrastructure, desktop, or documentation files were added.
+- Clarity: kept the forbidden assembly prefixes in a Contracts-specific static readonly array because the shared Core list cannot include `Pegasus.Core`; the matcher uses exact-or-dot-qualified ordinal matching.
+- Result: no behaviour-preserving simplification was needed.
