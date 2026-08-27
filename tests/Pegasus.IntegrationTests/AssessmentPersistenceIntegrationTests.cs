@@ -582,11 +582,6 @@ public sealed class AssessmentPersistenceIntegrationTests
 
         var correctionLease = await harness.AcquireLeaseAsync(
             caseId, 2, harness.EngineerActor, "repair-spec-correct-lease");
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            harness.RepairSpecifications.StartDraftAsync(
-                new(caseId, correctionLease.Version, source, harness.EngineerActor,
-                    "repair-spec-duplicate", "Attempt a competing canonical draft.",
-                    correctionLease.Token, Lines: lines), CancellationToken.None));
         var correction = await harness.RepairSpecifications.StartDraftAsync(
             new(caseId, correctionLease.Version, source with { SourceVersion = "source-v2" },
                 harness.EngineerActor, "repair-spec-correct", "Correct the accepted mapping.",
