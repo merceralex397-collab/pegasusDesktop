@@ -94,15 +94,14 @@ public sealed class ProductionCompositionTests
     }
 
     [Fact]
-    public void ProductionProfileKeepsTheTriageMatcherInactive()
+    public void ProductionProfileComposesClassificationAsTheTriageTrigger()
     {
-        // Automatic Triage matching stays inactive until its predicates are
-        // accepted (docs/open-decisions.md). Activation must be a deliberate
-        // change to a named matcher, never a side effect of composition.
         using var provider = BuildProduction();
 
-        Assert.IsType<NoAcceptedIntakeTriageMatcher>(
-            provider.GetRequiredService<IIntakeTriageMatcher>());
+        Assert.IsType<QdosMailClassificationPolicy>(
+            provider.GetRequiredService<IMailClassificationPolicy>());
+        Assert.IsType<QdosInstructionExtractionPolicy>(
+            provider.GetRequiredService<IInstructionExtractionPolicy>());
     }
 
     [Fact]

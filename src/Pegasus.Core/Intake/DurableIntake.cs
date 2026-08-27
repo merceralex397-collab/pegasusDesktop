@@ -494,7 +494,7 @@ public sealed class ProcessQueuedIntake(
                 cancellationToken);
             var replayAllocated =
                 replayAllocation?.State.Status == IntakeAllocationProjectionStatus.Succeeded;
-            await CreateTriageIfQualifyingAsync(
+            var replayTriage = await CreateTriageIfQualifyingAsync(
                 completedReceipt,
                 completedEvaluation,
                 cancellationToken);
@@ -514,7 +514,10 @@ public sealed class ProcessQueuedIntake(
                 return QueuedIntakeProcessingOutcome.RetryScheduled;
             }
 
-            await SynchronizeUnidentifiedAsync(completedReceipt, cancellationToken);
+            await SynchronizeUnidentifiedAsync(
+                completedReceipt,
+                replayTriage,
+                cancellationToken);
             return QueuedIntakeProcessingOutcome.NoOp;
         }
 
@@ -615,7 +618,7 @@ public sealed class ProcessQueuedIntake(
             evaluation.Id,
             cancellationToken);
         var allocated = allocation?.State.Status == IntakeAllocationProjectionStatus.Succeeded;
-        await CreateTriageIfQualifyingAsync(processed, evaluation, cancellationToken);
+        var triage = await CreateTriageIfQualifyingAsync(processed, evaluation, cancellationToken);
         if (allocated)
         {
             // Allocation wrote CurrentCaseId durably; image automation must
@@ -630,7 +633,7 @@ public sealed class ProcessQueuedIntake(
             return QueuedIntakeProcessingOutcome.RetryScheduled;
         }
 
-        await SynchronizeUnidentifiedAsync(processed, cancellationToken);
+        await SynchronizeUnidentifiedAsync(processed, triage, cancellationToken);
         return QueuedIntakeProcessingOutcome.Completed;
     }
 
@@ -699,11 +702,14 @@ public sealed class ProcessQueuedIntake(
     /// </summary>
     private async Task SynchronizeUnidentifiedAsync(
         IntakeReceipt receipt,
+        TriageRecord? triage,
         CancellationToken cancellationToken)
     {
         if (registerUnidentified is not null
             && receipt.Decision == IntakeDecision.NeedsSorting
-            && Pegasus.Core.ImageIntake.ImageIntakeLifecycleRules.IsImageOnlyMaterial(receipt))
+            && (Pegasus.Core.ImageIntake.ImageIntakeLifecycleRules.IsImageOnlyMaterial(receipt)
+                || (receipt.MailClassificationDecision?.IsTriageRequest == true
+                    && triage is null)))
         {
             try
             {
@@ -729,7 +735,7 @@ public sealed class ProcessQueuedIntake(
             // One owner for the supersession rule: the same component the
             // reconciliation sweep uses resolves the receipt's stale open
             // item to the destination that now exists.
-            await unidentifiedDestinations.ResolveForReceiptAsync(receipt, cancellationToken);
+            await unidentifiedDestinations.ResolveForReceiptAsync(receipt, triage, cancellationToken);
         }
         catch (Exception exception) when (IntakeExceptionPolicy.IsRecoverable(exception))
         {
@@ -890,7 +896,7 @@ public sealed class ProcessQueuedIntake(
             ? "artifact_retention_failure"
             : "intake_processing_failure";
 
-    private async Task CreateTriageIfQualifyingAsync(
+    private async Task<TriageRecord?> CreateTriageIfQualifyingAsync(
         IntakeReceipt receipt,
         IntakeEvaluationRevision evaluation,
         CancellationToken cancellationToken)
@@ -906,10 +912,10 @@ public sealed class ProcessQueuedIntake(
             || string.IsNullOrWhiteSpace(acceptedMatches[0].MatcherKey)
             || acceptedMatches[0].MatcherVersion is null or <= 0)
         {
-            return;
+            return null;
         }
 
-        await createTriage.ExecuteAsync(
+        return await createTriage.ExecuteAsync(
             new(
                 new(
                     receipt.Id,

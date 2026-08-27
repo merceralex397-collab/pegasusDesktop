@@ -73,9 +73,10 @@ Verified by read-only inspection of the fork at `main` `191ddf33`
   `MaximumRetainedProposedValueCharacters = 2000` and a
   `RetainableFormFields` allow-list of about thirty names
   (`src/Pegasus.Web/Pages/Cases/CaseMutationPageModel.cs:36-80`).
-- `src/Pegasus.Web/Presentation/OperatorLabels.cs` (685 lines) is the single
-  code→operator-vocabulary map consumed by 24 `.cshtml` files; it has no
-  ASP.NET dependency. `Presentation/RailCountsPageFilter.cs` (51 lines) is an
+- `src/Pegasus.Contracts/Vocabulary/OperatorVocabulary.cs` is the single
+  code→operator-vocabulary map consumed by the gateway and desktop. The
+  Core-typed `src/Pegasus.Web/Presentation/OperatorLabels.cs` adapter preserves
+  the 24 `.cshtml` consumers. `Presentation/RailCountsPageFilter.cs` (51 lines) is an
   `IAsyncPageFilter` writing `ViewData["RailCounts"]`.
 - The MCP layer (`src/Pegasus.Web/Mcp/`, 14 files, ~3,200 LOC, 35 tools) is
   the only existing machine-readable projection of Core; it touches
@@ -143,10 +144,10 @@ Verified by read-only inspection of the fork at `main` `191ddf33`
   the design authority, with the Razor page model used as behavioural
   evidence only (proposal §6.1 control 1).
 - **Extract `OperatorLabels` to a shared assembly.** The operator vocabulary
-  (685 lines, 24 consumers) becomes one list used by web and desktop alike
-  (one-list-per-concept rule, `AGENTS.md § Simplicity rails`). Home:
-  `Pegasus.Contracts` (preferred, because it is presentation vocabulary) or
-  Core; the final home is decided in DSK-05-23 with the gateway author.
+  (24 consumers) becomes one list used by web and desktop alike
+  (one-list-per-concept rule, `AGENTS.md § Simplicity rails`). Its settled home
+  is `Pegasus.Contracts`; GWY-016 owns the extraction and leaves only the
+  Core-typed Web adapter.
 - **Web stays live until cutover.** Razor pages remain deployable and
   feature-gated `/api/v1` groups ship beside them (area 03); no page is
   removed before its slice reaches `UAT passed` in the parity matrix.
@@ -229,7 +230,7 @@ Kanmer profile on the fork board (`feature` unless stated).
 | DSK-05-20 | S20 Operations and integration health | feature | DSK-05-01; DSK-03 operations group | Retryable external work, active links, integration health, retry/revoke | Contract tests; VM tests | 5, 7 | winui-dev · pegasus-gateway-dev · pegasus-test-engineer · skills dotnet-webapi · MCP Microsoft Learn, Kanmer |
 | DSK-05-21 | S21 Password change and account lifecycle | feature | DSK-04 session | Change password; must-change-password routing; disabled account explained | Contract tests; VM tests; security tests | 5, 9 | winui-dev · pegasus-gateway-dev · pegasus-test-engineer · skills dotnet-webapi · MCP Microsoft Learn, Kanmer |
 | DSK-05-22 | S22 Hardening sweep | chore | DSK-05-01…21 | All slices pass accessibility, performance and security baselines; parity matrix complete | axe-windows scan; `winapp ui` suite; perf report; security checklist | 7, 9, 10 | pegasus-ui-verifier · pegasus-desktop-reviewer · pegasus-test-engineer · skills winui-ui-testing, winui-code-review, analyzing-dotnet-performance · MCP Microsoft Learn, Kanmer |
-| DSK-05-23 | Extract `OperatorLabels` to the shared assembly | chore | DSK-02 Contracts project | One vocabulary list used by web and desktop; 24 `.cshtml` consumers unchanged in behaviour | Existing web tests green; new unit tests for the map | 1, 2, 5 | pegasus-gateway-dev · pegasus-desktop-reviewer · skills dotnet-webapi, run-tests · MCP Kanmer |
+| DSK-05-23 | Extract `OperatorLabels` to the shared assembly (covered by GWY-016) | chore | DSK-02 Contracts project | One vocabulary list used by web and desktop; 24 `.cshtml` consumers retain their signatures; sanctioned intake wording follows the design authority | Base/post characterization; existing web tests green; architecture ownership guard | 1, 2, 5 | pegasus-gateway-dev · pegasus-desktop-reviewer · skills dotnet-webapi, run-tests · MCP Kanmer |
 | DSK-05-24 | Retire `CaseMutationPageModel` state machine for desktop paths | chore | DSK-05-05, DSK-05-08 | Desktop edit state is in-memory VM state plus server lease; no TempData equivalents introduced | Architecture test: desktop has no TempData/PRG; VM tests | 1, 7 | winui-dev · pegasus-desktop-reviewer · skills winui-code-review · MCP Kanmer |
 | DSK-05-25 | Parity evidence per slice (matrix maintenance) | chore | each slice | Every slice's row reaches `automated verification passed` then `UAT passed` with linked proof | Matrix diff reviewed per PR | 12 | pegasus-parity-researcher · pegasus-desktop-reviewer · skills kanmer-verify · MCP Kanmer |
 | DSK-05-26 | Cut-list execution after cutover | chore | Phase 10 approval | Razor pages, partials, `site.css`, `site.js`, browser lane removed per reuse-map cut list; web-only routes kept | Build green; architecture tests; release notes | 1, 5 | pegasus-gateway-dev · pegasus-desktop-reviewer · skills run-tests · MCP Kanmer |

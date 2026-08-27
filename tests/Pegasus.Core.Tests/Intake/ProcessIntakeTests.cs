@@ -707,11 +707,10 @@ public sealed class ProcessIntakeTests
     }
 
     [Fact]
-    public async Task ClassificationIsRecordedOnlyAndNeverChangesTheIntakeDecision()
+    public async Task NonTriageClassificationIsRecordedOnlyAndNeverChangesTheIntakeDecision()
     {
-        // The same message processed with and without the classification
-        // policy must land on the identical decision: a classification is a
-        // recorded observation, never a queue, Triage, or destination change.
+        // A non-Triage classification remains an observation and does not
+        // alter the instruction decision.
         IntakeSourceReadResult ReadResult() => Readable(
             transportEvidence:
             [
@@ -719,14 +718,18 @@ public sealed class ProcessIntakeTests
                     IntakeEvidenceSource.Sender,
                     "instructions@qdosassist.co.uk",
                     IntakeSenderIdentityKind.Transport,
-                    "outer message")
+                    "outer message"),
+                new(
+                    IntakeEvidenceSource.Subject,
+                    "Automatic reply: out of office",
+                    SourceLabel: "message subject")
             ],
             content:
             [
                 new(
                     IntakeEvidenceSource.EmailBody,
                     "message body",
-                    "Triage Only Request. Please find attached our client's images.")
+                    "Please find attached our client's images.")
             ]);
         IntakeSource Source(string key) => CreateSource() with
         {

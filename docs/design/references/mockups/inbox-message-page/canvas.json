@@ -36,7 +36,7 @@
       "y": -320,
       "w": 620,
       "page": "page-1",
-      "text": "Filed to becomes the case link, Folder appears, the move action becomes available, and the Corrections card appears beneath.\n\nThe notice is trimmed to \"Classification corrected.\" — dev adds \"The previous decision and evidence remain in permanent history\", which is how-it-works copy.\n\n\"New instruction · Inspection\" is a PROPOSAL, not a settled term. dev renders this as the raw slug new-instruction-received/inspection, which README:171 bans; it needs an OperatorLabels map and your wording."
+      "text": "Filed to becomes the case link, Folder appears, the move action becomes available, and the Corrections card appears beneath.\n\nThe notice is trimmed to \"Classification corrected.\" — dev adds \"The previous decision and evidence remain in permanent history\", which is how-it-works copy.\n\n\"New instruction · Inspection\" is now supplied by the shared OperatorVocabulary through the Web adapter; the persisted registry key must not reach the operator."
     },
     {
       "id": "case-tab",
