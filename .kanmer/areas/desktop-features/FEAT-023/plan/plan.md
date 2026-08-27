@@ -257,3 +257,7 @@ the before/after/governing-line table for the two reconciled words.
 
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this branch's own
 diff before the PR, recorded here under a dated heading._
+
+## Ownership resolution — 2026-08-27
+
+GWY-016 performs the single relocation into `Pegasus.Contracts` and absorbs this ticket's page-local map fold-ins and the binding text reconciliation. FEAT-023 is covered and will not create a second branch or PR.

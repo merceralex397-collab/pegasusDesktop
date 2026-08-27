@@ -1,0 +1,1 @@
+2026-08-27 — Ownership resolved: this ticket performs the single OperatorLabels relocation and absorbs FEAT-023's two IntakeDecision fold-ins/reconciliation plus the separate VrmRecognitionOutcomeKind map with wording unchanged. FEAT-023 will be archived as covered duplicate; no second branch or PR.

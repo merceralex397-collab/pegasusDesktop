@@ -24,9 +24,9 @@ blocks:
 refs:
   - docs/frd/frd-12-operator-experience.md
 docs_todo: true
-archived: false
+archived: true
 created: '2026-08-24T08:02:19.029Z'
-updated: '2026-08-24T21:31:38.615Z'
+updated: '2026-08-27T18:20:03.543Z'
 ---
 
 ## What
@@ -109,3 +109,8 @@ Tier 1 obliges compiling the approved projects and enforcing dependency directio
 ## Outcome
 
 _Filled at closeout._
+
+
+## Archive rationale — 2026-08-27
+
+Archived as a documented duplicate/covered item. Live Kanmer evidence shows [[GWY-016]] has the same `OperatorLabels` → `Pegasus.Contracts` relocation, is the unblocked gateway-side owner, and now explicitly absorbs this ticket's two `IntakeDecision` fold-ins, binding reconciliation, and separate `VrmRecognitionOutcomeKind` map. No implementation, branch, or PR will be created for FEAT-023; the single implementation is tracked by GWY-016. The ticket's open-question resolution and plan appendix record the same ownership decision.

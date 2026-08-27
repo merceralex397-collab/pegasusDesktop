@@ -12,7 +12,7 @@ performed by neither ticket.
 
 ## Blocking
 
-- [ ] **Which ticket performs the `OperatorLabels` relocation — this one or [[GWY-016]] (plan handle
+- [x] **Which ticket performs the `OperatorLabels` relocation — this one or [[GWY-016]] (plan handle
   `DSK-03-16`) — and which closes as covered?**
   Both describe the same move. [[GWY-016]]'s title is "Relocate `OperatorLabels` to
   `Pegasus.Contracts` as one shared vocabulary list"; its row is in
@@ -54,3 +54,8 @@ performed by neither ticket.
   change**. Taken as a default rather than raised, because the ticket names exactly one sanctioned
   text change and this is not it. The consequence for the ticket's verification grep is recorded in
   the plan's § Verification.
+
+
+## Resolution — 2026-08-27
+
+GWY-016 performs the one relocation into `Pegasus.Contracts`. It absorbs the two `IntakeDecision` fold-ins and the binding text reconciliation, while preserving the separately typed `VrmRecognitionOutcomeKind` wording. FEAT-023 is covered and will not create a second branch, move, or PR.
