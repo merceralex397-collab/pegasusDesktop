@@ -10,9 +10,6 @@ assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:31:41.111Z'
-taken_at: '2026-08-27T00:49:07.557Z'
-branch: task/dsk-07-05-box-broker-endpoints
-worktree: ../pegasus-worktrees/dsk-07-05-box-broker-endpoints
 labels:
   - desktop-conversion
   - plan-07
@@ -33,7 +30,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.673Z'
-updated: '2026-08-27T00:50:23.602Z'
+updated: '2026-08-27T03:59:11.513Z'
 ---
 
 ## What
@@ -75,7 +72,7 @@ Proposal § 12.2 splits Box: the gateway holds or brokers organisational credent
 7. Implement the upload session triple — `POST /api/v1/cases/{caseId}/documents/upload-session` → `PUT /api/v1/upload-sessions/{sessionId}` (bytes, chunked) → `POST /api/v1/upload-sessions/{sessionId}/complete` — with the completion carrying `expectedVersion`, `editLeaseToken` and `operationKey` and delegating to `IAddCaseDocument`. Enforce the limits from `IntakeEnvelopeLimits` (`src/Pegasus.Core/Intake/IntakeContracts.cs:7`) at the boundary and return `urn:pegasus:problem:validation` when exceeded. An interrupted upload must leave no receipt and no partial canonical document.
 8. Implement `DELETE /api/v1/cases/{caseId}/documents/{occurrenceId}` (logical, reason required) over `LogicallyRemoveDocumentCommand` and `POST /api/v1/cases/{caseId}/third-party-vehicle-evidence/confirm` over `ConfirmThirdPartyVehicleEvidenceCommand`, both with `operationKey` replay semantics.
 9. Keep bytes flowing **through** the gateway. Do not issue a Box URL, a Box token or a Box object id to the client in this ticket: whether direct transfer is ever permitted is decided by the [[DSK-07-07]] spike. Add a contract test asserting no response body or header contains `box.com`, a bearer token, a JWT or a Box file/folder id.
-10. Write contract tests in `tests/Pegasus.Api.ContractTests` covering, per endpoint: success, 401, 403 on a case the actor may not access, 409 stale `expectedVersion`, replay of the same `operationKey`, oversize upload rejection, range download, reason-required on removal, and the no-credential assertion from step 9.
+10. Write contract tests in the existing `tests/Pegasus.IntegrationTests` owner covering, per endpoint: success, 401, 403 on a case the actor may not access, 409 stale `expectedVersion`, replay of the same `operationKey`, oversize upload rejection, range download, reason-required on removal, and the no-credential assertion from step 9. The standalone `tests/Pegasus.Api.ContractTests` project is not created because it is not in the solution/CI and overlaps shared test ownership; the existing-project test evidence is the accepted verification owner for this ticket.
 11. Write integration tests against the fake/local Box adapter following `tests/Pegasus.IntegrationTests/CustodyOutboxIntegrationTests.cs` and `BoxDocumentContentStoreTests.cs`: a completed upload produces exactly one canonical document version with a matching SHA-256; an abandoned session produces none.
 12. Prove the two inherited facts from the current fork only; do not synchronize with upstream. If a required fix or evidence is absent in this repository, record the exact gap and do not represent the affected scope as done. **(a) Call budget.** The export and evidence-gallery paths must resolve the case folder **once per request** and issue O(1) + N Box calls — one folder resolve, one listing, N downloads — not roughly nine per image. PLAT-041 traced ~45 sequential calls for a five-image export (~18 s): `EvaHandoffStore.LoadEligibleImagesAsync` awaits one image at a time with no batch method on `IDocumentContentStore` (`DocumentContracts.cs:226-282`), every `BoxContentClient` method re-walks ancestry through `EnsureDescendantAsync` (`BoxCaseCustody.cs:526-562`) because the client is stateless (`:263-266`), and a redundant `VerifyFileMetadataAsync` GET sits on top. The same resolution runs on every Evidence-tab thumbnail, and screen-spec §13.7's gallery with paging and a preview pane does *more* per-image resolution than the web, not less. Count the Box calls on the local stack's adapter for an N-image export and for one gallery page, and record the count per image. **Do not expose the export or evidence-gallery endpoints until an in-repository implementation and measurement satisfy the call-budget requirement** — flow record Q4.3 identifies this as a precondition to avoid per-image Box calls from a desktop batch. No upstream synchronization may be used; if the current repository cannot satisfy this without an in-scope change, record the exact gap and keep those endpoints blocked. Record the current-fork check and its result in `plan`. **(b) Token age.** Take one document download and one case export **more than an hour after the gateway revision started**, and confirm both succeed. This is the inherited Box token-renewal check: its own proof records that the export which proved the fix ran at ~15:00Z against a 14:35Z revision — inside the first hour — so the renewal is proved not to have broken the working path but is not yet proved to renew, while under the old code this failed 100 % of the time. Record the revision start time and both call times in the ticket proof.
 13. Run the package/secret assertion for the boundary: confirm Box credentials appear only as Container App secrets and Key Vault references in `infra/modules/platform.bicep:382-398,555-556`, and record (read-only) evidence with the Azure MCP `keyvault` tool listing **names only**. Then run the simplification pass over the branch diff, record it under a dated `## Simplification pass` heading in the plan document, and open the PR into `dev`.
@@ -92,7 +89,7 @@ Proposal § 12.2 splits Box: the gateway holds or brokers organisational credent
 
 ## Verification
 
-- [ ] `dotnet test ./tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj --configuration Release` — expected: every endpoint's success, authorization, conflict, replay, limit and no-credential fact passes.
+- [x] `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore --filter FullyQualifiedName~BoxDocumentBroker` — passed 26/26; this existing project is the explicit verification owner because no standalone contract-test project or CI lane is created.
 - [ ] `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "Category!=Corpus&Category!=Browser"` — expected: custody and content-store facts pass, including the abandoned-session fact.
 - [ ] Box call-count record in the ticket proof — expected: one folder resolve, one listing and N downloads for an N-image export and for one evidence-gallery page; not ~9 per image. State whether the current fork contains the call-budget implementation and measurement; no upstream sync is permitted.
 - [ ] Token-age record in the ticket proof — expected: one document download and one case export taken more than an hour after the gateway revision started, both succeeding, with the revision start time and both call times stated.

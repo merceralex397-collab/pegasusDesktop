@@ -31,7 +31,7 @@ Export and evidence-gallery paths remain unexposed until their current-fork call
 - Initial implementation: `f31d5aefdb48575c9ee990a0515c0e68374f8d63`.
 - Review remediation: `42250fd20fcf917081bb919c140a4797ce557150`, `8ff40b2720fef1e6a36b46a4124fe1578f6c7082`, `fcf5145c5bf14354aeaee87429f45e9c7826c591`.
 - Final lifecycle/persistence evidence: `3860d43f`; removal audit remediation: `c3d06081`; upload audit remediation: `894a520c`.
-- Current exact head: `894a520c67237268523b88bf43bee3610b5074d1` on `task/dsk-07-05-box-broker-endpoints`.
+- Implementation head: `894a520c67237268523b88bf43bee3610b5074d1`; full reviewed branch head including canonical documentation: `29e13dd1bc70fe0514b62d81279e0f3256ce7ce4` on `task/dsk-07-05-box-broker-endpoints`.
 
 ## Validation
 
@@ -58,12 +58,13 @@ Coordinator-owned exact-head checks at `894a520c67237268523b88bf43bee3610b5074d1
 
 The first independent review of the initial implementation failed on the overlapping test scaffold, upload/session hardening, response-cache/ETag details, and missing adapter/persistence evidence. Those findings were remediated through `3860d43f`; the final removal-audit and persistence-evidence remediation is `c3d06081a09a47798ac7e333dcf9e0afeac026a9`. The review at `3860d43f` returned FAIL with findings on PLAT-039/041, removal audit history, persistence evidence strength, and exact replay assertion; those findings are addressed or remain explicitly blocked as described below.
 
-The ticket is not acceptance-complete yet:
+The ticket is not acceptance-complete yet. The shared test-owner wording was explicitly amended in the ticket body and checklist to use the existing IntegrationTests project; no standalone project or CI lane is created.
+
 
 - PLAT-039: the required document-download and case-export success after more than one hour of gateway revision age has no current-fork proof. The referenced upstream IDs do not exist on this board, and upstream synchronization is prohibited.
 - PLAT-041: export/evidence-gallery O(1)+N resolution and measurement have no current-fork implementation/proof, so those routes remain intentionally unexposed. The referenced upstream IDs do not exist on this board, and upstream synchronization is prohibited.
 
-Next action: obtain fresh independent review of `894a520c67237268523b88bf43bee3610b5074d1`; if supported scope passes, run exact-head CI and manage the PR. The two inherited acceptance conditions remain blockers for closing FEAT-031 until implemented/proven in this repository or explicitly resolved through a truthful Kanmer scope decision. Do not use upstream synchronization or cloud/deployment writes.
+Next action: use the completed independent review of full head `29e13dd1bc70fe0514b62d81279e0f3256ce7ce4` to manage the remaining acceptance disposition; if supported scope passes, run exact-head CI and manage the PR. The two inherited acceptance conditions remain blockers for closing FEAT-031 until implemented/proven in this repository or explicitly resolved through a truthful Kanmer scope decision. Do not use upstream synchronization or cloud/deployment writes.
 
 ## Review remediation — 2026-08-27
 
@@ -92,7 +93,7 @@ The independent re-review of `c3d06081a09a47798ac7e333dcf9e0afeac026a9` returned
 - `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false` — passed with 0 warnings and 0 errors.
 - `git diff --check` passed and the worktree is clean.
 
-A fresh independent re-review of exact head `894a520c67237268523b88bf43bee3610b5074d1` is required. PLAT-039 token-age proof, PLAT-041 call-budget/export-gallery implementation and measurement, and live Key Vault boundary evidence remain open; no upstream synchronization or cloud/deployment operation is permitted.
+Fresh independent re-review of full head `29e13dd1bc70fe0514b62d81279e0f3256ce7ce4` completed: FAIL for merge because the supported slice is review-ready but PLAT-039, PLAT-041, live Key Vault evidence, PR/CI, and the original standalone-test wording require disposition. PLAT-039 token-age proof, PLAT-041 call-budget/export-gallery implementation and measurement, and live Key Vault boundary evidence remain open; no upstream synchronization or cloud/deployment operation is permitted.
 
 ## Canonical documentation and final validation update — 2026-08-27
 

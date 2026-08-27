@@ -1,8 +1,8 @@
 # Post-implementation report — FEAT-031
 
-## Exact implementation head
+## Implementation and full reviewed head
 
-`894a520c67237268523b88bf43bee3610b5074d1` on branch `task/dsk-07-05-box-broker-endpoints`.
+Implementation commits through `894a520c67237268523b88bf43bee3610b5074d1`; full branch head including canonical documentation is `29e13dd1bc70fe0514b62d81279e0f3256ce7ce4` on branch `task/dsk-07-05-box-broker-endpoints`.
 
 ## Delivered scope
 
@@ -45,4 +45,4 @@ Fresh independent review of this exact head is required. PLAT-039 token-age evid
 
 ## Canonical documentation and final validation update — 2026-08-27
 
-Commit `29e13dd1bc70fe0514b62d81279e0f3256ce7ce4` updates the endpoint map, parity flow record, FRD-05 desktop broker clause, and `docs/capabilities.md` DSK-07-05 row. The current-fork disposition is explicit: list/metadata/content/upload/removal/confirmation are brokered locally; export/evidence-gallery remain unexposed pending PLAT-041; PLAT-039 and live Key Vault evidence remain open. Final committed-head broker-focused tests passed 26/26 with `--no-restore`; the same-code broad integration profile passed 934 with 2 skipped and 0 failed; `git diff --check` passed and the worktree is clean. A fresh independent review of exact head `894a520c` plus docs commit `29e13dd1` is still required; this report does not claim done.
+Commit `29e13dd1bc70fe0514b62d81279e0f3256ce7ce4` updates the endpoint map, parity flow record, FRD-05 desktop broker clause, and `docs/capabilities.md` DSK-07-05 row. The current-fork disposition is explicit: list/metadata/content/upload/removal/confirmation are brokered locally; export/evidence-gallery remain unexposed pending PLAT-041; PLAT-039 and live Key Vault evidence remain open. Final committed-head broker-focused tests passed 26/26 with `--no-restore`; the same-code broad integration profile passed 934 with 2 skipped and 0 failed; `git diff --check` passed and the worktree is clean. Independent review of full head `29e13dd1` is complete: FAIL for merge because the supported gateway slice is review-ready but PLAT-039, PLAT-041, live Key Vault evidence, PR, and exact-head CI remain open. This report does not claim done.
