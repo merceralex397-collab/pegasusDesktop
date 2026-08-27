@@ -33,7 +33,7 @@ prs:
   - '29'
 archived: false
 created: '2026-08-24T07:46:12.549Z'
-updated: '2026-08-27T04:33:01.669Z'
+updated: '2026-08-27T04:50:10.416Z'
 ---
 
 ## What
@@ -128,3 +128,8 @@ _Filled at closeout._
 The ticket title and its short Kanmer plan are the governing scope for this scaffold slice. This ticket owns exactly one new `tests/Pegasus.Api.ContractTests` project, its WebApplicationFactory baseline, solution registration, locked restore, and a deterministic host-composition smoke fact. It does not own the OpenAPI export/snapshot contract (GWY-004), Kiota generation (GWY-005), or later authorization/persistence/compatibility cases; those tickets extend this single project after this scaffold lands. No second project or duplicate snapshot/client implementation may be created.
 
 This split resolves the pre-existing overlap in the original body: the project is established here and later contract tickets add their named cases. The acceptance evidence for TEST-001 is therefore the project/solution/lock/fixture/trait/build/test-discovery boundary; downstream contract behavior remains open in the named tickets. No Azure, cloud, deployment, upstream synchronization, credential, or corpus write is part of this ticket.
+
+
+## Review remediation — 2026-08-27
+
+The smoke assertion and CI wiring were corrected after independent review: the test now claims only real-host gateway composition, and the existing unit CI lane explicitly executes the Contract project. The project remains the sole scaffold owner; GWY-004/GWY-005 and later testing tickets retain their downstream case ownership.

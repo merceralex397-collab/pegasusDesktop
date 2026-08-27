@@ -54,3 +54,9 @@ Validation:
 - Added one deterministic smoke fact instead of placeholder template tests or duplicate OpenAPI/client tests owned by GWY-004/GWY-005.
 - The only necessary adjacent update was the architecture test's exact solution inventory, which otherwise made the canonical suite fail after the intended project registration.
 - `git diff --check`: passed. No unapplied behaviour-preserving simplification findings remain.
+
+## Review remediation — 2026-08-27
+
+Independent review found that the former HTTP probe's 401 was produced by the global authenticated-user fallback, not by a mapped gateway endpoint. The smoke fact was narrowed to the observable host-composition boundary: `WebApplicationFactory<Program>` builds with `Features:DesktopGateway=true` and resolves `DesktopGatewayOptions`. It makes no endpoint-mapping claim while the shared gateway group remains empty.
+
+The review also found that CI built but did not execute the new project. The existing `unit` job's chained test command now runs `dotnet test ./tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj --configuration Release --no-build --filter "Category=Contract"`. This uses the existing lane and does not create a new job. Fresh local and exact-head CI validation is required after this correction.
