@@ -109,5 +109,4 @@ public sealed record ConfirmThirdPartyEvidenceRequest
 public sealed record DocumentMutationResponse(
     Guid CaseId,
     Guid OccurrenceId,
-    long Version,
-    bool IsReplay);
+    long Version);

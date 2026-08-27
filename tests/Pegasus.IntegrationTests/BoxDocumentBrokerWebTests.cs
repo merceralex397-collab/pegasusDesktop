@@ -77,7 +77,54 @@ public sealed class BoxDocumentBrokerWebTests
         Assert.Equal(1, getCase.Calls);
         Assert.True(download.CalledAfter(getCase));
         Assert.Equal("nosniff", response.Headers.GetValues("X-Content-Type-Options").Single());
+        AssertPrivateNoStore(response);
         Assert.DoesNotContain("box.com", response.Headers.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task MetadataIfNoneMatchUsesWeakCommaSeparatedAndWildcardMatching()
+    {
+        using var factory = CreateFactory(new RecordingGetCase(CreateDetails()));
+        using var client = CreateClient(factory);
+
+        foreach (var header in new[] { "W/\"other\", \"7\"", "*" })
+        {
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents");
+            request.Headers.TryAddWithoutValidation("If-None-Match", header);
+
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.NotModified, response.StatusCode);
+        }
+    }
+
+    [Fact]
+    public async Task DownloadIfNoneMatchAndInvalidRangeRetainPrivateNoStoreCachePolicy()
+    {
+        using var factory = CreateFactory(
+            new RecordingGetCase(CreateDetails()),
+            new RecordingDownload([]));
+        using var client = CreateClient(factory);
+
+        using var notModifiedRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/{OccurrenceId:D}/content");
+        notModifiedRequest.Headers.TryAddWithoutValidation(
+            "If-None-Match",
+            "W/\"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\"");
+        using var notModified = await client.SendAsync(notModifiedRequest);
+        Assert.Equal(HttpStatusCode.NotModified, notModified.StatusCode);
+        AssertPrivateNoStore(notModified);
+
+        using var rangeRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/{OccurrenceId:D}/content");
+        rangeRequest.Headers.Range = new RangeHeaderValue(99, null);
+        using var range = await client.SendAsync(rangeRequest);
+        Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, range.StatusCode);
+        AssertPrivateNoStore(range);
     }
 
     [Fact]
@@ -171,6 +218,59 @@ public sealed class BoxDocumentBrokerWebTests
     }
 
     [Fact]
+    public async Task ConcurrentSameKeyCompletionsCallCoreOnceAndReplayTheStoredResponse()
+    {
+        var getCase = new RecordingGetCase(CreateDetails());
+        var addDocument = new BlockingAddDocument();
+        using var factory = CreateFactory(getCase, addDocument: addDocument);
+        using var client = CreateClient(factory);
+        var session = await CreateUploadSessionAsync(client, "concurrent-same-key.txt");
+        await PutUploadContentAsync(client, session.SessionId, "concurrent content");
+
+        var first = CompleteUploadAsync(client, session.SessionId, "desk:concurrent-same");
+        await addDocument.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var second = CompleteUploadAsync(client, session.SessionId, "desk:concurrent-same");
+        await Task.Delay(100);
+        addDocument.Release.TrySetResult();
+
+        using var firstResponse = await first;
+        using var secondResponse = await second;
+        var statuses = new[] { firstResponse.StatusCode, secondResponse.StatusCode };
+        Assert.Equal(1, statuses.Count(status => status == HttpStatusCode.Created));
+        Assert.Equal(1, statuses.Count(status => status == HttpStatusCode.OK));
+        Assert.Equal(1, addDocument.Calls);
+    }
+
+    [Fact]
+    public async Task ConcurrentDifferentKeyCompletionsCallCoreOnceAndConflictTheSecondKey()
+    {
+        var getCase = new RecordingGetCase(CreateDetails());
+        var addDocument = new BlockingAddDocument();
+        using var factory = CreateFactory(getCase, addDocument: addDocument);
+        using var client = CreateClient(factory);
+        var session = await CreateUploadSessionAsync(client, "concurrent-different-key.txt");
+        await PutUploadContentAsync(client, session.SessionId, "concurrent content");
+
+        var first = CompleteUploadAsync(client, session.SessionId, "desk:concurrent-first");
+        await addDocument.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var second = CompleteUploadAsync(client, session.SessionId, "desk:concurrent-second");
+        await Task.Delay(100);
+        addDocument.Release.TrySetResult();
+
+        using var firstResponse = await first;
+        using var secondResponse = await second;
+        var statuses = new[] { firstResponse.StatusCode, secondResponse.StatusCode };
+        Assert.Contains(HttpStatusCode.Created, statuses);
+        Assert.Contains(HttpStatusCode.Conflict, statuses);
+        Assert.Equal(1, addDocument.Calls);
+        var problemResponse = firstResponse.StatusCode == HttpStatusCode.Conflict
+            ? firstResponse
+            : secondResponse;
+        var problem = await DeserializeAsync<PegasusProblem>(problemResponse);
+        Assert.Equal(PegasusProblemTypes.OperationConflict, problem.Type);
+    }
+
+    [Fact]
     public async Task LogicalRemovalRequiresReasonAndDelegatesIdempotencyToCore()
     {
         var getCase = new RecordingGetCase(CreateDetails());
@@ -198,6 +298,33 @@ public sealed class BoxDocumentBrokerWebTests
     }
 
     [Fact]
+    public async Task LogicalRemovalLeaseFailureIsReturnedAsProblemDetails()
+    {
+        var getCase = new RecordingGetCase(CreateDetails());
+        var remove = new RecordingRemoveDocument(
+            new CaseEditLeaseConflictException(CaseId, 7));
+        using var factory = CreateFactory(getCase, remove: remove);
+        using var client = CreateClient(factory);
+        using var response = await client.SendAsync(new HttpRequestMessage(
+            HttpMethod.Delete,
+            $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/{OccurrenceId:D}")
+        {
+            Content = JsonContent.Create(new RemoveDocumentRequest
+            {
+                ExpectedVersion = 7,
+                OperationKey = "desk:remove-lease",
+                EditLeaseToken = "lease",
+                Reason = "Duplicate upload"
+            })
+        });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var problem = await DeserializeAsync<PegasusProblem>(response);
+        Assert.Equal(PegasusProblemTypes.LeaseConflict, problem.Type);
+        Assert.Equal(1, remove.Calls);
+    }
+
+    [Fact]
     public async Task ThirdPartyEvidenceConfirmationDelegatesReasonAndConcurrencyFields()
     {
         var getCase = new RecordingGetCase(CreateDetails());
@@ -220,6 +347,82 @@ public sealed class BoxDocumentBrokerWebTests
         Assert.Equal(OccurrenceId, confirm.Command?.OccurrenceId);
         Assert.Equal("desk:confirm-1", confirm.Command?.OperationKey);
         Assert.Equal("Vehicle evidence confirmed", confirm.Command?.Reason);
+    }
+
+    [Fact]
+    public async Task UploadSessionQuotaReturnsRateLimitedProblemAfterActiveLimit()
+    {
+        using var factory = CreateFactory(new RecordingGetCase(CreateDetails()));
+        using var client = CreateClient(factory);
+
+        for (var index = 0; index < DesktopDocumentUploadSessions.MaximumActiveSessions; index++)
+        {
+            using var response = await client.PostAsJsonAsync(
+                $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/upload-session",
+                new CreateDocumentUploadSessionRequest
+                {
+                    FileName = $"upload-{index}.txt",
+                    MediaType = "text/plain",
+                    SemanticRole = "Other"
+                });
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        }
+
+        using var overLimit = await client.PostAsJsonAsync(
+            $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/upload-session",
+            new CreateDocumentUploadSessionRequest
+            {
+                FileName = "over-limit.txt",
+                MediaType = "text/plain",
+                SemanticRole = "Other"
+            });
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, overLimit.StatusCode);
+        var problem = await DeserializeAsync<PegasusProblem>(overLimit);
+        Assert.Equal(PegasusProblemTypes.RateLimited, problem.Type);
+    }
+
+    [Fact]
+    public void ExpiredSessionCleanupReleasesActiveAndBufferedQuotas()
+    {
+        var clock = new TestTimeProvider(DateTimeOffset.UnixEpoch);
+        var sessions = new DesktopDocumentUploadSessions(clock);
+        var actor = ActionActor.Staff(
+            Guid.Parse("50617283-94a5-b6c7-d8e9-fafb0c1d2e3f"),
+            [StaffRole.Administrator]);
+
+        Assert.True(sessions.TryCreate(
+            CaseId,
+            actor,
+            "bounded.bin",
+            "application/octet-stream",
+            DocumentSemanticRole.Other,
+            out var session));
+        Assert.NotNull(session);
+        Assert.True(session!.TrySetContent(
+            new byte[(int)DesktopDocumentUploadSessions.MaximumBufferedBytes]));
+
+        Assert.True(sessions.TryCreate(
+            CaseId,
+            actor,
+            "another.bin",
+            "application/octet-stream",
+            DocumentSemanticRole.Other,
+            out var another));
+        Assert.NotNull(another);
+        Assert.False(another!.TrySetContent([1]));
+
+        clock.Advance(TimeSpan.FromMinutes(31));
+        Assert.True(sessions.TryCreate(
+            CaseId,
+            actor,
+            "after-expiry.bin",
+            "application/octet-stream",
+            DocumentSemanticRole.Other,
+            out var afterExpiry));
+        Assert.NotNull(afterExpiry);
+        Assert.True(afterExpiry!.TrySetContent(
+            new byte[(int)DesktopDocumentUploadSessions.MaximumBufferedBytes]));
     }
 
     [Fact]
@@ -250,10 +453,51 @@ public sealed class BoxDocumentBrokerWebTests
         Assert.Equal(PegasusProblemTypes.Validation, problem.Type);
     }
 
+    private static async Task<DocumentUploadSessionResponse> CreateUploadSessionAsync(
+        HttpClient client,
+        string fileName)
+    {
+        using var response = await client.PostAsJsonAsync(
+            $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/upload-session",
+            new CreateDocumentUploadSessionRequest
+            {
+                FileName = fileName,
+                MediaType = "text/plain",
+                SemanticRole = "Other"
+            });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        return await DeserializeAsync<DocumentUploadSessionResponse>(response);
+    }
+
+    private static async Task PutUploadContentAsync(
+        HttpClient client,
+        Guid sessionId,
+        string content)
+    {
+        using var requestContent = new StringContent(content, Encoding.UTF8, "text/plain");
+        using var response = await client.PutAsync(
+            $"{DesktopGateway.BasePath}/upload-sessions/{sessionId:D}",
+            requestContent);
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    private static Task<HttpResponseMessage> CompleteUploadAsync(
+        HttpClient client,
+        Guid sessionId,
+        string operationKey) =>
+        client.PostAsJsonAsync(
+            $"{DesktopGateway.BasePath}/upload-sessions/{sessionId:D}/complete",
+            new CompleteDocumentUploadRequest
+            {
+                ExpectedVersion = 7,
+                OperationKey = operationKey,
+                EditLeaseToken = "lease"
+            });
+
     private static WebApplicationFactory<Program> CreateFactory(
         RecordingGetCase getCase,
         RecordingDownload? download = null,
-        RecordingAddDocument? addDocument = null,
+        IAddCaseDocument? addDocument = null,
         RecordingRemoveDocument? remove = null,
         RecordingConfirmEvidence? confirm = null)
     {
@@ -375,6 +619,14 @@ public sealed class BoxDocumentBrokerWebTests
         return value!;
     }
 
+    private static void AssertPrivateNoStore(HttpResponseMessage response)
+    {
+        var cacheControl = response.Headers.CacheControl;
+        Assert.NotNull(cacheControl);
+        Assert.True(cacheControl!.Private);
+        Assert.True(cacheControl.NoStore);
+    }
+
     private sealed class RecordingGetCase : IGetCase
     {
         private readonly CaseDetails? details;
@@ -451,6 +703,14 @@ public sealed class BoxDocumentBrokerWebTests
 
     private sealed class RecordingAddDocument : IAddCaseDocument
     {
+        private readonly Exception? exception;
+
+        public RecordingAddDocument()
+        {
+        }
+
+        public RecordingAddDocument(Exception exception) => this.exception = exception;
+
         public int Calls { get; private set; }
         public AddCaseDocumentCommand? Command { get; private set; }
         public byte[]? Content => Command?.Content.ToArray();
@@ -461,6 +721,11 @@ public sealed class BoxDocumentBrokerWebTests
         {
             Calls++;
             Command = command;
+            if (exception is not null)
+            {
+                throw exception;
+            }
+
             var version = new DocumentVersion(
                 VersionId,
                 DocumentId,
@@ -491,8 +756,36 @@ public sealed class BoxDocumentBrokerWebTests
         }
     }
 
+    private sealed class BlockingAddDocument : IAddCaseDocument
+    {
+        private readonly RecordingAddDocument inner = new();
+
+        public TaskCompletionSource Entered { get; } = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Release { get; } = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        public int Calls => inner.Calls;
+
+        public async Task<AddCaseDocumentResult> ExecuteAsync(
+            AddCaseDocumentCommand command,
+            CancellationToken cancellationToken)
+        {
+            Entered.TrySetResult();
+            await Release.Task.WaitAsync(cancellationToken);
+            return await inner.ExecuteAsync(command, cancellationToken);
+        }
+    }
+
     private sealed class RecordingRemoveDocument : ILogicallyRemoveDocument
     {
+        private readonly Exception? exception;
+
+        public RecordingRemoveDocument()
+        {
+        }
+
+        public RecordingRemoveDocument(Exception exception) => this.exception = exception;
+
         public int Calls { get; private set; }
         public LogicallyRemoveDocumentCommand? Command { get; private set; }
 
@@ -502,6 +795,11 @@ public sealed class BoxDocumentBrokerWebTests
         {
             Calls++;
             Command = command;
+            if (exception is not null)
+            {
+                throw exception;
+            }
+
             return Task.CompletedTask;
         }
     }
@@ -527,5 +825,14 @@ public sealed class BoxDocumentBrokerWebTests
             Guid caseId,
             CancellationToken cancellationToken) =>
             Task.FromResult<CaseDocumentState?>(new(caseId, 8));
+    }
+
+    private sealed class TestTimeProvider(DateTimeOffset initialUtcNow) : TimeProvider
+    {
+        private DateTimeOffset utcNow = initialUtcNow;
+
+        public override DateTimeOffset GetUtcNow() => utcNow;
+
+        public void Advance(TimeSpan duration) => utcNow = utcNow.Add(duration);
     }
 }

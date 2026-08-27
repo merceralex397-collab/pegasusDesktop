@@ -58,6 +58,7 @@ internal static class BoxDocumentBrokerEndpoints
             .WithName("StartCaseDocumentUploadSession")
             .WithSummary("Start a case document upload session")
             .Produces<DocumentUploadSessionResponse>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -208,7 +209,14 @@ internal static class BoxDocumentBrokerEndpoints
         var fileName = RequireFileName(request.FileName);
         var mediaType = RequireMediaType(request.MediaType);
         var semanticRole = ParseSemanticRole(request.SemanticRole);
-        var session = sessions.Create(caseId, actor, fileName, mediaType, semanticRole);
+        if (!sessions.TryCreate(caseId, actor, fileName, mediaType, semanticRole, out var session)
+            || session is null)
+        {
+            return await RateLimitedAsync(
+                httpContext,
+                "The active upload-session quota has been reached. Retry after an existing session expires.");
+        }
+
         var response = new DocumentUploadSessionResponse(
             session.Id,
             session.ExpiresAtUtc,
@@ -242,7 +250,13 @@ internal static class BoxDocumentBrokerEndpoints
                 "The upload content must be between 1 byte and 10 MiB.");
         }
 
-        session.SetContent(content);
+        if (!session.TrySetContent(content))
+        {
+            return await RateLimitedAsync(
+                httpContext,
+                "The buffered upload quota has been reached. Complete or wait for an existing session to expire.");
+        }
+
         return TypedResults.NoContent();
     }
 
@@ -276,41 +290,49 @@ internal static class BoxDocumentBrokerEndpoints
                 "ExpectedVersion and EditLeaseToken are required.");
         }
 
-        if (session.TryGetCompleted(operationKey, out var completed))
+        await session.WaitForCompletionAsync(cancellationToken);
+        try
         {
-            return TypedResults.Ok(completed);
-        }
+            if (session.TryGetCompleted(operationKey, out var completed))
+            {
+                return TypedResults.Ok(completed);
+            }
 
-        if (!session.TryGetContent(out var content))
+            if (!session.TryGetContent(out var content))
+            {
+                return await ValidationAsync(
+                    httpContext,
+                    "Upload bytes must be supplied before completion.");
+            }
+
+            var result = await addDocument.ExecuteAsync(
+                new(
+                    session.CaseId,
+                    session.FileName,
+                    session.MediaType,
+                    content,
+                    session.SemanticRole,
+                    DocumentSource.StaffUpload,
+                    StaffUploadIdentityPrefix + operationKey,
+                    actor,
+                    operationKey,
+                    request.ExpectedVersion,
+                    request.EditLeaseToken),
+                cancellationToken);
+            var response = new DocumentUploadCompletionResponse(
+                ToMetadata(result.Occurrence, result.Version),
+                result.IsReplay);
+            session.SetCompleted(operationKey, response);
+            return result.IsReplay
+                ? TypedResults.Ok(response)
+                : TypedResults.Created(
+                    $"{DesktopGateway.BasePath}/cases/{session.CaseId:D}/documents/{result.Occurrence.Id:D}",
+                    response);
+        }
+        finally
         {
-            return await ValidationAsync(
-                httpContext,
-                "Upload bytes must be supplied before completion.");
+            session.ReleaseCompletion();
         }
-
-        var result = await addDocument.ExecuteAsync(
-            new(
-                session.CaseId,
-                session.FileName,
-                session.MediaType,
-                content,
-                session.SemanticRole,
-                DocumentSource.StaffUpload,
-                StaffUploadIdentityPrefix + operationKey,
-                actor,
-                operationKey,
-                request.ExpectedVersion,
-                request.EditLeaseToken),
-            cancellationToken);
-        var response = new DocumentUploadCompletionResponse(
-            ToMetadata(result.Occurrence, result.Version),
-            result.IsReplay);
-        session.SetCompleted(operationKey, response);
-        return result.IsReplay
-            ? TypedResults.Ok(response)
-            : TypedResults.Created(
-                $"{DesktopGateway.BasePath}/cases/{session.CaseId:D}/documents/{result.Occurrence.Id:D}",
-                response);
     }
 
     private static async Task<IResult> RemoveAsync(
@@ -350,7 +372,7 @@ internal static class BoxDocumentBrokerEndpoints
             cancellationToken);
         var state = await documentStateQueries.GetAsync(caseId, cancellationToken)
             ?? throw new InvalidOperationException("The case document state is unavailable.");
-        return TypedResults.Ok(new DocumentMutationResponse(caseId, occurrenceId, state.CaseVersion, false));
+        return TypedResults.Ok(new DocumentMutationResponse(caseId, occurrenceId, state.CaseVersion));
     }
 
     private static async Task<IResult> ConfirmThirdPartyEvidenceAsync(
@@ -381,7 +403,7 @@ internal static class BoxDocumentBrokerEndpoints
             cancellationToken);
         var state = await documentStateQueries.GetAsync(caseId, cancellationToken)
             ?? throw new InvalidOperationException("The case document state is unavailable.");
-        return TypedResults.Ok(new DocumentMutationResponse(caseId, request.OccurrenceId, state.CaseVersion, false));
+        return TypedResults.Ok(new DocumentMutationResponse(caseId, request.OccurrenceId, state.CaseVersion));
     }
 
     private static async Task<CaseDetails?> AuthorizeCaseAsync(
@@ -445,7 +467,9 @@ internal static class BoxDocumentBrokerEndpoints
     {
         var etag = $"W/\"{version}\"";
         context.Response.Headers.ETag = etag;
-        if (string.Equals(context.Request.Headers.IfNoneMatch, etag, StringComparison.Ordinal))
+        if (WeakIfNoneMatchMatches(
+                context.Request.Headers.IfNoneMatch.ToString(),
+                EntityTagHeaderValue.Parse(etag)))
         {
             return TypedResults.StatusCode(StatusCodes.Status304NotModified);
         }
@@ -453,9 +477,33 @@ internal static class BoxDocumentBrokerEndpoints
         return TypedResults.Ok(response);
     }
 
+    private static bool WeakIfNoneMatchMatches(
+        string header,
+        EntityTagHeaderValue current)
+    {
+        if (string.IsNullOrWhiteSpace(header))
+        {
+            return false;
+        }
+
+        return EntityTagHeaderValue.TryParseList([header], out var values)
+            && values.Any(value =>
+                value == EntityTagHeaderValue.Any
+                || value.Compare(current, useStrongComparison: false));
+    }
+
     private static async Task<IResult> ValidationAsync(HttpContext context, string detail)
     {
         await DesktopGatewayProblems.WriteValidationAsync(
+            context,
+            detail,
+            context.RequestAborted);
+        return TypedResults.Empty;
+    }
+
+    private static async Task<IResult> RateLimitedAsync(HttpContext context, string detail)
+    {
+        await DesktopGatewayProblems.WriteRateLimitedAsync(
             context,
             detail,
             context.RequestAborted);
@@ -585,56 +633,180 @@ internal static class BoxDocumentBrokerEndpoints
     }
 }
 
-internal sealed class DesktopDocumentUploadSessions
+internal sealed class DesktopDocumentUploadSessions : IDisposable
 {
     private static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(30);
+    internal const int MaximumActiveSessions = 32;
+    internal const long MaximumBufferedBytes = 64L * 1024 * 1024;
     private readonly ConcurrentDictionary<Guid, Session> sessions = new();
+    private readonly object sync = new();
+    private readonly TimeProvider timeProvider;
+    private long bufferedBytes;
 
-    public Session Create(
+    public DesktopDocumentUploadSessions(TimeProvider timeProvider) =>
+        this.timeProvider = timeProvider;
+
+    public bool TryCreate(
         Guid caseId,
         ActionActor actor,
         string fileName,
         string mediaType,
-        DocumentSemanticRole semanticRole)
+        DocumentSemanticRole semanticRole,
+        out Session? session)
     {
-        var session = new Session(
-            Guid.NewGuid(),
-            caseId,
-            actor,
-            fileName,
-            mediaType,
-            semanticRole,
-            DateTimeOffset.UtcNow.Add(Lifetime));
-        sessions[session.Id] = session;
-        return session;
+        lock (sync)
+        {
+            CleanupExpiredUnsafe(timeProvider.GetUtcNow());
+            if (sessions.Count >= MaximumActiveSessions)
+            {
+                session = null;
+                return false;
+            }
+
+            session = new Session(
+                this,
+                Guid.NewGuid(),
+                caseId,
+                actor,
+                fileName,
+                mediaType,
+                semanticRole,
+                timeProvider.GetUtcNow().Add(Lifetime));
+            sessions[session.Id] = session;
+            return true;
+        }
     }
 
     public Session? Find(Guid id, ActionActor actor)
     {
-        if (!sessions.TryGetValue(id, out var session)
-            || session.ExpiresAtUtc <= DateTimeOffset.UtcNow
-            || !session.BelongsTo(actor))
+        lock (sync)
         {
-            sessions.TryRemove(id, out _);
-            return null;
+            CleanupExpiredUnsafe(timeProvider.GetUtcNow());
+            if (!sessions.TryGetValue(id, out var session)
+                || !session.BelongsTo(actor))
+            {
+                sessions.TryRemove(id, out _);
+                return null;
+            }
+
+            return session;
+        }
+    }
+
+    private void CleanupExpiredUnsafe(DateTimeOffset now)
+    {
+        foreach (var pair in sessions)
+        {
+            if (pair.Value.ExpiresAtUtc <= now
+                && sessions.TryRemove(pair.Key, out var expired))
+            {
+                bufferedBytes -= expired.ContentLength;
+            }
+        }
+    }
+
+    private bool TrySetContent(Session session, byte[] value)
+    {
+        lock (sync)
+        {
+            if (!sessions.ContainsKey(session.Id) || session.IsCompleted)
+            {
+                return false;
+            }
+
+            var nextBufferedBytes = bufferedBytes
+                - session.ContentLength
+                + value.LongLength;
+            if (nextBufferedBytes > MaximumBufferedBytes)
+            {
+                return false;
+            }
+
+            bufferedBytes = nextBufferedBytes;
+            session.SetContentUnsafe(value);
+            return true;
+        }
+    }
+
+    private bool TryGetContent(Session session, out byte[] value)
+    {
+        lock (sync)
+        {
+            value = session.Content ?? [];
+            return sessions.ContainsKey(session.Id) && value.Length > 0;
+        }
+    }
+
+    private bool TryGetCompleted(
+        Session session,
+        string operationKey,
+        out DocumentUploadCompletionResponse value)
+    {
+        lock (sync)
+        {
+            if (session.Completed is not null)
+            {
+                if (!string.Equals(
+                        session.CompletedOperationKey,
+                        operationKey,
+                        StringComparison.Ordinal))
+                {
+                    throw new CaseOperationConflictException(session.CaseId, operationKey);
+                }
+
+                value = session.Completed;
+                return true;
+            }
+
+            value = null!;
+            return false;
+        }
+    }
+
+    private void SetCompleted(
+        Session session,
+        string operationKey,
+        DocumentUploadCompletionResponse value)
+    {
+        lock (sync)
+        {
+            if (sessions.ContainsKey(session.Id))
+            {
+                bufferedBytes -= session.ContentLength;
+            }
+
+            session.SetCompletedUnsafe(operationKey, value);
+        }
+    }
+
+    public void Dispose()
+    {
+        Session[] active;
+        lock (sync)
+        {
+            active = sessions.Values.ToArray();
+            sessions.Clear();
+            bufferedBytes = 0;
         }
 
-        return session;
+        foreach (var session in active)
+        {
+            session.Dispose();
+        }
     }
 
     internal sealed class Session(
+        DesktopDocumentUploadSessions owner,
         Guid id,
         Guid caseId,
         ActionActor actor,
         string fileName,
         string mediaType,
         DocumentSemanticRole semanticRole,
-        DateTimeOffset expiresAtUtc)
+        DateTimeOffset expiresAtUtc) : IDisposable
     {
-        private readonly object sync = new();
+        private readonly SemaphoreSlim completionGate = new(1, 1);
         private byte[]? content;
-        private string? completedOperationKey;
-        private DocumentUploadCompletionResponse? completed;
 
         public Guid Id { get; } = id;
         public Guid CaseId { get; } = caseId;
@@ -642,62 +814,47 @@ internal sealed class DesktopDocumentUploadSessions
         public string MediaType { get; } = mediaType;
         public DocumentSemanticRole SemanticRole { get; } = semanticRole;
         public DateTimeOffset ExpiresAtUtc { get; } = expiresAtUtc;
+        public bool IsCompleted => Completed is not null;
+        public long ContentLength => content?.LongLength ?? 0;
+        internal byte[]? Content => content;
+        internal string? CompletedOperationKey { get; private set; }
+        internal DocumentUploadCompletionResponse? Completed { get; private set; }
 
         public bool BelongsTo(ActionActor candidate) =>
             actor.Kind == candidate.Kind
             && string.Equals(actor.SubjectId, candidate.SubjectId, StringComparison.Ordinal);
 
-        public void SetContent(byte[] value)
-        {
-            lock (sync)
-            {
-                if (completed is null)
-                {
-                    content = value;
-                }
-            }
-        }
+        public bool TrySetContent(byte[] value) => owner.TrySetContent(this, value);
 
-        public bool TryGetContent(out byte[] value)
-        {
-            lock (sync)
-            {
-                value = content ?? [];
-                return value.Length > 0;
-            }
-        }
+        public bool TryGetContent(out byte[] value) => owner.TryGetContent(this, out value);
 
         public bool TryGetCompleted(
             string operationKey,
-            out DocumentUploadCompletionResponse value)
+            out DocumentUploadCompletionResponse value) =>
+            owner.TryGetCompleted(this, operationKey, out value);
+
+        public void SetCompleted(
+            string operationKey,
+            DocumentUploadCompletionResponse value) =>
+            owner.SetCompleted(this, operationKey, value);
+
+        public Task WaitForCompletionAsync(CancellationToken cancellationToken) =>
+            completionGate.WaitAsync(cancellationToken);
+
+        public void ReleaseCompletion() => completionGate.Release();
+
+        internal void SetContentUnsafe(byte[] value) => content = value;
+
+        internal void SetCompletedUnsafe(
+            string operationKey,
+            DocumentUploadCompletionResponse value)
         {
-            lock (sync)
-            {
-                if (completed is not null)
-                {
-                    if (!string.Equals(completedOperationKey, operationKey, StringComparison.Ordinal))
-                    {
-                        throw new CaseOperationConflictException(CaseId, operationKey);
-                    }
-
-                    value = completed;
-                    return true;
-                }
-
-                value = null!;
-                return false;
-            }
+            CompletedOperationKey = operationKey;
+            Completed = value;
+            content = null;
         }
 
-        public void SetCompleted(string operationKey, DocumentUploadCompletionResponse value)
-        {
-            lock (sync)
-            {
-                completedOperationKey = operationKey;
-                completed = value;
-                content = null;
-            }
-        }
+        public void Dispose() => completionGate.Dispose();
     }
 }
 
@@ -709,6 +866,7 @@ internal sealed class DocumentDownloadResult(
     {
         var etag = $"W/\"{download.Sha256.ToLowerInvariant()}\"";
         httpContext.Response.Headers.ETag = etag;
+        httpContext.Response.Headers.CacheControl = "private, no-store";
         httpContext.Response.Headers.AcceptRanges = "bytes";
         httpContext.Response.Headers.XContentTypeOptions = "nosniff";
         httpContext.Response.ContentType = download.MediaType;
@@ -720,7 +878,14 @@ internal sealed class DocumentDownloadResult(
 
         try
         {
-            if (string.Equals(request.Headers.IfNoneMatch.ToString(), etag, StringComparison.Ordinal))
+            if (EntityTagHeaderValue.TryParseList(
+                    [request.Headers.IfNoneMatch.ToString()],
+                    out var values)
+                && values.Any(value =>
+                    value == EntityTagHeaderValue.Any
+                    || value.Compare(
+                        EntityTagHeaderValue.Parse(etag),
+                        useStrongComparison: false)))
             {
                 httpContext.Response.StatusCode = StatusCodes.Status304NotModified;
                 return;

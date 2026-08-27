@@ -2,9 +2,10 @@ using System.Text.Json;
 using Pegasus.Contracts;
 using Pegasus.Contracts.Responses;
 
-namespace Pegasus.Api.ContractTests;
+namespace Pegasus.IntegrationTests;
 
-public sealed class DocumentContractTests
+[Trait("Category", "Contract")]
+public sealed class BoxDocumentBrokerContractTests
 {
     [Fact]
     public void MetadataContractContainsOnlyBrokerSafeFields()
@@ -44,17 +45,22 @@ public sealed class DocumentContractTests
     }
 
     [Fact]
-    public void UploadSessionContractExposesOnlyOpaqueSessionMetadata()
+    public void UploadSessionAndMutationContractsExposeNoProviderDetailsOrInventedReplay()
     {
-        var response = new DocumentUploadSessionResponse(
+        var upload = new DocumentUploadSessionResponse(
             Guid.NewGuid(),
             DateTimeOffset.UnixEpoch.AddMinutes(30),
             10 * 1024 * 1024);
+        var mutation = new DocumentMutationResponse(Guid.NewGuid(), Guid.NewGuid(), 8);
 
-        var json = JsonSerializer.Serialize(response, PegasusJson.Options);
+        var json = JsonSerializer.Serialize(
+            new { upload, mutation },
+            PegasusJson.Options);
 
         Assert.Contains("sessionId", json, StringComparison.Ordinal);
         Assert.Contains("maximumContentLength", json, StringComparison.Ordinal);
+        Assert.Contains("version", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("isReplay", json, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("box", json, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("credential", json, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("remoteId", json, StringComparison.OrdinalIgnoreCase);

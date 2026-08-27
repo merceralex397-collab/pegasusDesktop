@@ -150,6 +150,21 @@ internal static class DesktopGatewayProblems
                 DesktopGatewayCorrelation.Apply(httpContext)),
             cancellationToken);
 
+    public static Task WriteRateLimitedAsync(
+        HttpContext httpContext,
+        string detail,
+        CancellationToken cancellationToken = default) =>
+        WriteAsync(
+            httpContext,
+            new PegasusProblem(
+                PegasusProblemTypes.RateLimited,
+                "Too many requests",
+                StatusCodes.Status429TooManyRequests,
+                detail,
+                null,
+                DesktopGatewayCorrelation.Apply(httpContext)),
+            cancellationToken);
+
     public static async Task WriteNotFoundAsync(
         HttpContext httpContext,
         CancellationToken cancellationToken = default)
