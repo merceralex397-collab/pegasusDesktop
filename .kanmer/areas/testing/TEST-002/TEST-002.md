@@ -4,15 +4,15 @@ type: ticket
 title: >-
   DSK-08-02 · Authorization and failure-path test template for every `/api/v1`
   command
-status: implementing
+status: done
 area: testing
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:34:13.034Z'
-taken_at: '2026-08-27T16:47:08.718Z'
-branch: task/test-002-command-coverage
-worktree: 'C:\Users\PC\Documents\GitHub\pegasus-worktrees\test-002-command-coverage'
+  review: '2026-08-27T17:51:04.880Z'
+  verifying: '2026-08-27T17:51:10.496Z'
+  done: '2026-08-27T17:51:15.416Z'
 labels:
   - desktop-conversion
   - plan-08
@@ -26,9 +26,13 @@ blocks:
   - TEST-003
   - TEST-011
 docs_todo: true
+commits:
+  - ae66cbf6fccff7b7ac15805fec89c663bd25f730
+prs:
+  - '31'
 archived: false
 created: '2026-08-24T07:46:12.565Z'
-updated: '2026-08-27T16:47:08.718Z'
+updated: '2026-08-27T17:51:34.459Z'
 ---
 
 ## What

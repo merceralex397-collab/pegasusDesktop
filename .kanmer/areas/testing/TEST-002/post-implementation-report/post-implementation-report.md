@@ -29,3 +29,11 @@ The two skipped integration tests are existing explicitly skipped cases; this ti
 ## Review remediation — 2026-08-27
 
 The independent review identified six merge-readiness findings. All implementation findings are now addressed: the probe uses a derived real host and `EndpointDataSource`; versioned rows carry current-version evidence and stale tests assert it; the guard validates operation-key/replay and version/stale-row symmetry; problem assertions require exact titles; and replay asserts the row-supplied post-state plus one new history entry. The focused contract suite after remediation passes 12/12. The exact-head CI rerun remains the outstanding external validation until it is terminal and green.
+
+
+## Final merged evidence — 2026-08-27
+
+- Independent Hilbert review of exact head `3e0fe8c7c444bfab2427f83611459cc186cec3c8`: PASS after all six findings were remediated.
+- PR #31 merged into `dev` as `ae66cbf6fccff7b7ac15805fec89c663bd25f730`.
+- Exact-head repository-check run `33098778132` passed changes, documentation, local-development-scripts, reference-data, unit, browser, SQL integration shards 1–3, and SQL integration coverage; infrastructure was skipped by its path condition.
+- Detached merged-main verification at `ae66cbf6fccff7b7ac15805fec89c663bd25f730`: locked restore passed; Release solution build passed with 0 warnings/0 errors; contract tests passed 12/12; `git diff --check` passed.
