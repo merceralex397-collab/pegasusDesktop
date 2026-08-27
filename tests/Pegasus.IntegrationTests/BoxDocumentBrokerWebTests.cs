@@ -546,6 +546,35 @@ public sealed class BoxDocumentBrokerWebTests
             Assert.Equal(
                 occurrence.ThirdPartyVehicleConfirmationReason,
                 completion.Document.ThirdPartyVehicleConfirmationReason);
+            var uploadHistory = await verification.ActionHistory
+                .SingleAsync(value => value.CorrelationId == "desk:broker-persistence-upload");
+            Assert.Equal("document_added", uploadHistory.EventKind);
+            Assert.Equal(occurrence.Id.ToString("D"), uploadHistory.AggregateId);
+            Assert.Null(uploadHistory.Reason);
+            Assert.False(string.IsNullOrWhiteSpace(uploadHistory.BeforeJson));
+            Assert.False(string.IsNullOrWhiteSpace(uploadHistory.AfterJson));
+            Assert.Contains("broker-image.jpg", uploadHistory.AfterJson!, StringComparison.Ordinal);
+            Assert.Contains("image/jpeg", uploadHistory.AfterJson!, StringComparison.Ordinal);
+
+            var uploadReplay = await leaseScope.ServiceProvider
+                .GetRequiredService<IAddCaseDocument>()
+                .ExecuteAsync(
+                    new(
+                        CaseId,
+                        "broker-image.jpg",
+                        "image/jpeg",
+                        content,
+                        DocumentSemanticRole.Image,
+                        DocumentSource.StaffUpload,
+                        "staff-upload:desk:broker-persistence-upload",
+                        actor,
+                        "desk:broker-persistence-upload",
+                        lease.Version,
+                        lease.Token),
+                    CancellationToken.None);
+            Assert.True(uploadReplay.IsReplay);
+            Assert.Equal(completion.Document.OccurrenceId, uploadReplay.Occurrence.Id);
+            Assert.Equal(completion.Document.VersionId, uploadReplay.Version.Id);
             Assert.True(File.Exists(Path.Combine(
                 baseFactory.ArtifactDirectory,
                 "custody",
@@ -781,6 +810,7 @@ public sealed class BoxDocumentBrokerWebTests
         var problemResponse = firstResponse.StatusCode == HttpStatusCode.Conflict
             ? firstResponse
             : secondResponse;
+        await AssertProviderDetailsAbsentAsync(problemResponse);
         var problem = await DeserializeAsync<PegasusProblem>(problemResponse);
         Assert.Equal(PegasusProblemTypes.OperationConflict, problem.Type);
     }
@@ -835,6 +865,7 @@ public sealed class BoxDocumentBrokerWebTests
         });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        await AssertProviderDetailsAbsentAsync(response);
         var problem = await DeserializeAsync<PegasusProblem>(response);
         Assert.Equal(PegasusProblemTypes.LeaseConflict, problem.Type);
         Assert.Equal(1, remove.Calls);
