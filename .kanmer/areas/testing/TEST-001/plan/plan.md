@@ -60,3 +60,9 @@ Validation:
 Independent review found that the former HTTP probe's 401 was produced by the global authenticated-user fallback, not by a mapped gateway endpoint. The smoke fact was narrowed to the observable host-composition boundary: `WebApplicationFactory<Program>` builds with `Features:DesktopGateway=true` and resolves `DesktopGatewayOptions`. It makes no endpoint-mapping claim while the shared gateway group remains empty.
 
 The review also found that CI built but did not execute the new project. The existing `unit` job's chained test command now runs `dotnet test ./tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj --configuration Release --no-build --filter "Category=Contract"`. This uses the existing lane and does not create a new job. Fresh local and exact-head CI validation is required after this correction.
+
+## Post-review validation correction — 2026-08-27
+
+The reviewer identified that the former HTTP probe could receive 401 from the global fallback policy before route matching. The test was changed to assert only the observable `DesktopGatewayOptions` registration from the real `WebApplicationFactory<Program>` host; it no longer claims an endpoint is mapped.
+
+The reviewer also identified that the unit CI job did not execute the new project. The existing chained unit lane now includes the focused Contract command. A fresh local Release solution build passed with 0 warnings/errors; the focused Contract project test passed 1/1; the solution-level Contract selection passed 1/1; `git diff --check` passed. PR #29 at the pre-correction SHA remains superseded by the next pushed head; exact-head CI must be rechecked after push.

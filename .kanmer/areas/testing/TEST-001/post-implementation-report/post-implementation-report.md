@@ -19,11 +19,16 @@ The single `Pegasus.Api.ContractTests` project is present, registered once in `P
 
 ## Validation
 
-Locked solution restore and Release solution build passed with zero warnings/errors before the review correction. The focused project and solution-level Contract selection each passed 1/1. The canonical non-corpus solution selection passed Core 935, Architecture 110, Contract 1, and Integration 957 with 2 skips and 0 failures before the review correction; the corrected smoke assertion requires a fresh local rerun and exact-head CI.
+- `dotnet restore ./Pegasus.slnx --locked-mode`: passed.
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore`: passed, 0 warnings/errors after the review correction.
+- `dotnet test ./tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj --configuration Release --no-build --filter "Category=Contract"`: passed 1, failed 0, skipped 0 after the review correction.
+- `dotnet test ./Pegasus.slnx --configuration Release --no-build --filter "Category=Contract"`: passed 1, failed 0, skipped 0 after the review correction.
+- Prior canonical non-corpus solution run at the implementation head passed Core 935, Architecture 110, Contract 1, and Integration 957 with 2 skips and 0 failures; the review correction changed only the Contract smoke assertion and CI wiring, so a fresh exact-head CI run is the required delivery proof.
+- `git diff --check`: passed.
 
 ## Review corrections
 
-Independent review correctly identified that a request to an unregistered probe path could receive 401 from the global fallback policy and therefore did not prove route mapping. The test now makes only the host-composition assertion. Review also identified that CI built but did not execute the new project; the existing unit chain now runs the focused Contract selection. The desktop testing plan now marks the scaffold existing while retaining downstream OpenAPI, Kiota, authorization, persistence and compatibility work as future work.
+Independent review found and the branch corrected two issues: the smoke test now claims only host composition rather than endpoint mapping, and the existing unit CI lane now executes the Contract project. The testing plan §4 now marks the scaffold existing while retaining downstream OpenAPI, Kiota, authorization, persistence and compatibility work as future work.
 
 ## Scope limits
 
@@ -31,4 +36,4 @@ OpenAPI snapshot/export, Kiota generated-client freshness, endpoint authorizatio
 
 ## Review state
 
-A fresh independent review and post-correction exact-head CI run are required before merge.
+A fresh independent review and exact-head CI run are required after the correction commit.

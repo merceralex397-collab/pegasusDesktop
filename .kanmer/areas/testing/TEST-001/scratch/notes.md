@@ -3,3 +3,5 @@
 PR #29 is open against dev at exact head 1fddd2d1838a9d4e063b525a96108d9334d02e99. repository-check changes/documentation/local-development-scripts/reference-data passed; unit/browser/sql-integration lanes are still pending and infrastructure is skipped. Independent reviewer Sartre is reviewing; no merge yet.
 
 Independent review verdict FAIL at 2026-08-27: (1) docs/desktop/08-testing/README.md §4 still labeled the API contract project NEW; (2) CI unit job built but did not execute Pegasus.Api.ContractTests; (3) the smoke probe's 401 was global fallback auth, not proof an endpoint existed. Remediation in progress: mark the project existing with downstream OpenAPI/Kiota cases still future, add the Contract command to the existing unit chain, and narrow the smoke fact to real-host gateway composition.
+
+Review corrections applied: smoke fact narrowed to DesktopGatewayOptions registration from the real host; CI unit chain now executes Category=Contract. Fresh local Release solution build 0 warnings/errors, focused Contract 1/1, solution-level Contract 1/1, diff check passed. Need commit/push and fresh review plus exact-head CI.
