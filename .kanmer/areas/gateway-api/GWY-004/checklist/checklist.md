@@ -31,3 +31,5 @@ One box per plan step, in plan order. The last box produces `proof`.
 - 2026-08-27: Exact-head CI run 33043859460 built successfully but unit failed during parallel contract-host startup (4 HTTP 500s after the runner timeout). Added a test-only non-parallel xUnit collection; repository-equivalent Core, Architecture, and Contract sequence then passed 935/935, 110/110, and 5/5.
 
 - 2026-08-27: Replaced the insufficient class-level collection marker with assembly-level xUnit test serialization covering both host-backed test classes; exact local unit sequence passed 935/935, 110/110, and 5/5.
+
+- 2026-08-27: Run 33045186858 still failed the unit contract host with HTTP 500 after serialization. Added test-only response-body diagnostics; local targeted build and contract suite remained green.

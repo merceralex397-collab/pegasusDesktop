@@ -285,3 +285,7 @@ PR #30 exact-head run `33043859460` built successfully, and documentation/change
 ## CI follow-up correction — 2026-08-27
 
 The first six-line xUnit collection marker did not cover the separate `ContractTestHostTests` fixture under the runner. It was replaced by the smaller assembly-level `CollectionBehavior(DisableTestParallelization = true)` in `tests/Pegasus.Api.ContractTests/TestAssembly.cs`, and the redundant class marker was removed. The exact unit sequence then passed locally: Core 935/935, Architecture 110/110, Contract 5/5.
+
+## CI diagnostics follow-up — 2026-08-27
+
+The second exact-head run `33045186858` still failed the unit contract tests after assembly-level serialization: the first request returned HTTP 500 after 14 seconds, followed by the remaining three. The test assertions previously discarded the response body, so `OpenApiSnapshotTests` now reports the status and bounded response text for enabled and disabled-host failures. The targeted contract suite remains 5/5 locally. Fresh exact-head CI is required to capture the server exception.
