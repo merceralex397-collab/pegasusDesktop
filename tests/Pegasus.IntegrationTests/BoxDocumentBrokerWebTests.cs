@@ -7,6 +7,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Pegasus.Contracts;
@@ -16,6 +17,8 @@ using Pegasus.Core.Cases;
 using Pegasus.Core.Documents;
 using Pegasus.Core.Identity;
 using Pegasus.Core.Workflow;
+using Pegasus.Infrastructure.Persistence;
+using Pegasus.Web.Authentication;
 using Pegasus.Web.Api;
 
 namespace Pegasus.IntegrationTests;
@@ -47,6 +50,7 @@ public sealed class BoxDocumentBrokerWebTests
         Assert.Equal("image/jpeg", document.MediaType);
         Assert.Equal("Image", document.SemanticRole);
         Assert.Equal(CaseVersion, body.Version.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        await AssertProviderDetailsAbsentAsync(response);
 
         using var cachedRequest = new HttpRequestMessage(
             HttpMethod.Get,
@@ -79,6 +83,7 @@ public sealed class BoxDocumentBrokerWebTests
         Assert.Equal("nosniff", response.Headers.GetValues("X-Content-Type-Options").Single());
         AssertPrivateNoStore(response);
         Assert.DoesNotContain("box.com", response.Headers.ToString(), StringComparison.OrdinalIgnoreCase);
+        await AssertProviderDetailsAbsentAsync(response);
     }
 
     [Fact]
@@ -117,6 +122,7 @@ public sealed class BoxDocumentBrokerWebTests
         using var notModified = await client.SendAsync(notModifiedRequest);
         Assert.Equal(HttpStatusCode.NotModified, notModified.StatusCode);
         AssertPrivateNoStore(notModified);
+        await AssertProviderDetailsAbsentAsync(notModified);
 
         using var rangeRequest = new HttpRequestMessage(
             HttpMethod.Get,
@@ -125,6 +131,7 @@ public sealed class BoxDocumentBrokerWebTests
         using var range = await client.SendAsync(rangeRequest);
         Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, range.StatusCode);
         AssertPrivateNoStore(range);
+        await AssertProviderDetailsAbsentAsync(range);
     }
 
     [Fact]
@@ -146,6 +153,177 @@ public sealed class BoxDocumentBrokerWebTests
     }
 
     [Fact]
+    public async Task EveryBrokerRouteRejectsAnonymousRequestsBeforeAnyPort()
+    {
+        var getCase = new RecordingGetCase(CreateDetails());
+        var download = new RecordingDownload([]);
+        var addDocument = new RecordingAddDocument();
+        var remove = new RecordingRemoveDocument();
+        var confirm = new RecordingConfirmEvidence();
+        using var factory = CreateFactory(getCase, download, addDocument, remove, confirm);
+        using var client = CreateClient(factory);
+        var requests = new List<HttpRequestMessage>
+        {
+            new(HttpMethod.Get, $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents"),
+            new(HttpMethod.Get, $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/{OccurrenceId:D}"),
+            new(HttpMethod.Get, $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/{OccurrenceId:D}/content"),
+            new(HttpMethod.Post, $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/upload-session")
+            {
+                Content = JsonContent.Create(new CreateDocumentUploadSessionRequest
+                {
+                    FileName = "anonymous.txt",
+                    MediaType = "text/plain",
+                    SemanticRole = "Other"
+                })
+            },
+            new(HttpMethod.Put, $"{DesktopGateway.BasePath}/upload-sessions/{Guid.NewGuid():D}")
+            {
+                Content = new ByteArrayContent([1])
+            },
+            new(HttpMethod.Post, $"{DesktopGateway.BasePath}/upload-sessions/{Guid.NewGuid():D}/complete")
+            {
+                Content = JsonContent.Create(new CompleteDocumentUploadRequest
+                {
+                    ExpectedVersion = 7,
+                    OperationKey = "anonymous-complete",
+                    EditLeaseToken = "lease"
+                })
+            },
+            new(HttpMethod.Delete, $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/{OccurrenceId:D}")
+            {
+                Content = JsonContent.Create(new RemoveDocumentRequest
+                {
+                    ExpectedVersion = 7,
+                    OperationKey = "anonymous-remove",
+                    EditLeaseToken = "lease",
+                    Reason = "test"
+                })
+            },
+            new(HttpMethod.Post,
+                $"{DesktopGateway.BasePath}/cases/{CaseId:D}/third-party-vehicle-evidence/confirm")
+            {
+                Content = JsonContent.Create(new ConfirmThirdPartyEvidenceRequest
+                {
+                    OccurrenceId = OccurrenceId,
+                    ExpectedVersion = 7,
+                    OperationKey = "anonymous-confirm",
+                    EditLeaseToken = "lease",
+                    Reason = "test"
+                })
+            }
+        };
+
+        try
+        {
+            foreach (var request in requests)
+            {
+                request.Headers.Add("X-Test-Anonymous", "true");
+                using var response = await client.SendAsync(request);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                await AssertProviderDetailsAbsentAsync(response);
+            }
+        }
+        finally
+        {
+            foreach (var request in requests)
+            {
+                request.Dispose();
+            }
+        }
+
+        Assert.Equal(0, getCase.Calls);
+        Assert.False(download.WasCalled);
+        Assert.Equal(0, addDocument.Calls);
+        Assert.Equal(0, remove.Calls);
+        Assert.Equal(0, confirm.Calls);
+    }
+
+    [Fact]
+    public async Task CaseAuthorizationFailurePrecedesEveryCaseBoundProviderPort()
+    {
+        var getCase = new RecordingGetCase(CreateDetails());
+        var download = new RecordingDownload([]);
+        var addDocument = new RecordingAddDocument();
+        var remove = new RecordingRemoveDocument();
+        var confirm = new RecordingConfirmEvidence();
+        using var factory = CreateFactory(getCase, download, addDocument, remove, confirm);
+        using var client = CreateClient(factory);
+        var session = await CreateUploadSessionAsync(client, "authorization-order.txt");
+        await PutUploadContentAsync(client, session.SessionId, "content");
+        getCase.SetException(new StaffAuthorizationException(StaffAccessRight.PerformCasework));
+
+        var requests = new List<HttpRequestMessage>
+        {
+            new(HttpMethod.Get, $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents"),
+            new(HttpMethod.Get, $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/{OccurrenceId:D}"),
+            new(HttpMethod.Get, $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/{OccurrenceId:D}/content"),
+            new(HttpMethod.Post, $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/upload-session")
+            {
+                Content = JsonContent.Create(new CreateDocumentUploadSessionRequest
+                {
+                    FileName = "authorization-order.txt",
+                    MediaType = "text/plain",
+                    SemanticRole = "Other"
+                })
+            },
+            new(HttpMethod.Post,
+                $"{DesktopGateway.BasePath}/upload-sessions/{session.SessionId:D}/complete")
+            {
+                Content = JsonContent.Create(new CompleteDocumentUploadRequest
+                {
+                    ExpectedVersion = 7,
+                    OperationKey = "authorization-complete",
+                    EditLeaseToken = "lease"
+                })
+            },
+            new(HttpMethod.Delete, $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/{OccurrenceId:D}")
+            {
+                Content = JsonContent.Create(new RemoveDocumentRequest
+                {
+                    ExpectedVersion = 7,
+                    OperationKey = "authorization-remove",
+                    EditLeaseToken = "lease",
+                    Reason = "test"
+                })
+            },
+            new(HttpMethod.Post,
+                $"{DesktopGateway.BasePath}/cases/{CaseId:D}/third-party-vehicle-evidence/confirm")
+            {
+                Content = JsonContent.Create(new ConfirmThirdPartyEvidenceRequest
+                {
+                    OccurrenceId = OccurrenceId,
+                    ExpectedVersion = 7,
+                    OperationKey = "authorization-confirm",
+                    EditLeaseToken = "lease",
+                    Reason = "test"
+                })
+            }
+        };
+
+        try
+        {
+            foreach (var request in requests)
+            {
+                using var response = await client.SendAsync(request);
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+                await AssertProviderDetailsAbsentAsync(response);
+            }
+        }
+        finally
+        {
+            foreach (var request in requests)
+            {
+                request.Dispose();
+            }
+        }
+
+        Assert.False(download.WasCalled);
+        Assert.Equal(0, addDocument.Calls);
+        Assert.Equal(0, remove.Calls);
+        Assert.Equal(0, confirm.Calls);
+    }
+
+    [Fact]
     public async Task CaseAuthorizationFailureReturns403BeforeContentPort()
     {
         var getCase = new RecordingGetCase(
@@ -161,6 +339,240 @@ public sealed class BoxDocumentBrokerWebTests
         Assert.False(download.WasCalled);
         var problem = await DeserializeAsync<PegasusProblem>(response);
         Assert.Equal(PegasusProblemTypes.NotAuthorized, problem.Type);
+    }
+
+    [Fact]
+    public async Task CompletionRechecksExpiryAfterLookupBeforeCallingCore()
+    {
+        var clock = new TestTimeProvider(DateTimeOffset.UtcNow);
+        var getCase = new RecordingGetCase(
+            CreateDetails(),
+            [],
+            calls =>
+            {
+                if (calls == 2)
+                {
+                    clock.Advance(TimeSpan.FromMinutes(31));
+                }
+            });
+        var addDocument = new RecordingAddDocument();
+        using var factory = CreateFactory(getCase, addDocument: addDocument, timeProvider: clock);
+        using var client = CreateClient(factory);
+        var session = await CreateUploadSessionAsync(client, "expires-before-complete.txt");
+        await PutUploadContentAsync(client, session.SessionId, "content");
+
+        using var response = await CompleteUploadAsync(client, session.SessionId, "desk:expires-before-complete");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(0, addDocument.Calls);
+    }
+
+    [Fact]
+    public async Task ExpiryDuringBlockedCompletionDefersSessionDisposalUntilTheCoreCallReleasesIt()
+    {
+        var clock = new TestTimeProvider(DateTimeOffset.UtcNow);
+        var getCase = new RecordingGetCase(CreateDetails());
+        var addDocument = new BlockingAddDocument();
+        using var factory = CreateFactory(
+            getCase,
+            addDocument: addDocument,
+            timeProvider: clock);
+        using var client = CreateClient(factory);
+        var session = await CreateUploadSessionAsync(client, "expires-during-complete.txt");
+        await PutUploadContentAsync(client, session.SessionId, "content");
+
+        var first = CompleteUploadAsync(client, session.SessionId, "desk:expires-during-complete");
+        await addDocument.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        clock.Advance(TimeSpan.FromMinutes(31));
+
+        using var expired = await CompleteUploadAsync(
+            client,
+            session.SessionId,
+            "desk:expires-after-core-started");
+        Assert.Equal(HttpStatusCode.NotFound, expired.StatusCode);
+
+        addDocument.Release.TrySetResult();
+        using var completed = await first;
+        Assert.Equal(HttpStatusCode.Created, completed.StatusCode);
+        Assert.Equal(1, addDocument.Calls);
+    }
+
+    [Fact]
+    public void ExpiredSessionBetweenLookupAndWriteIsRemovedAndReleasesQuota()
+    {
+        var clock = new TestTimeProvider(DateTimeOffset.UtcNow);
+        var sessions = new DesktopDocumentUploadSessions(clock);
+        var actor = ActionActor.Staff(
+            Guid.Parse("50617283-94a5-b6c7-d8e9-fafb0c1d2e3f"),
+            [StaffRole.Administrator]);
+
+        Assert.True(sessions.TryCreate(
+            CaseId,
+            actor,
+            "expires-before-write.bin",
+            "application/octet-stream",
+            DocumentSemanticRole.Other,
+            out var session));
+        Assert.NotNull(session);
+        var lookedUp = sessions.Find(session!.Id, actor);
+        Assert.Same(session, lookedUp);
+
+        clock.Advance(TimeSpan.FromMinutes(31));
+        Assert.False(lookedUp!.TrySetContent([1], out var expired));
+        Assert.True(expired);
+        Assert.Null(sessions.Find(session.Id, actor));
+
+        Assert.True(sessions.TryCreate(
+            CaseId,
+            actor,
+            "replacement.bin",
+            "application/octet-stream",
+            DocumentSemanticRole.Other,
+            out var replacement));
+        Assert.NotNull(replacement);
+        Assert.True(replacement!.TrySetContent([1], out _));
+    }
+
+    [Fact]
+    public async Task UploadAndConfirmationUseExistingPersistenceAndCustodyAdapters()
+    {
+        var baseFactory = new IntakeWebApplicationFactory(
+            "Development",
+            true,
+            useIntegrationTestAuthentication: true);
+        await SeedBrokerCaseAsync(baseFactory.Database);
+        var getCase = new RecordingGetCase(CreateDetails(0));
+        using var factory = baseFactory.WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting(DesktopGateway.FeatureFlag, "true");
+            builder.ConfigureServices(services =>
+            {
+                services.RemoveAll<IGetCase>();
+                services.AddSingleton<IGetCase>(getCase);
+            });
+        });
+        using var client = CreateClient(factory);
+        var actor = ActionActor.Staff(
+            DevelopmentOfflineIdentity.AdministratorId,
+            [StaffRole.Administrator]);
+
+        await using (var leaseScope = factory.Services.CreateAsyncScope())
+        {
+            var lease = await leaseScope.ServiceProvider
+                .GetRequiredService<ILeaseCaseForEdit>()
+                .ClaimAsync(
+                    new(CaseId, 0, actor, "broker-persistence-lease"),
+                    CancellationToken.None);
+
+            var abandoned = await CreateUploadSessionAsync(client, "abandoned-broker-image.jpg");
+            await PutUploadContentAsync(client, abandoned.SessionId, "abandoned content");
+            await using (var abandonedVerification = await baseFactory.Database.CreateContextAsync())
+            {
+                Assert.Empty(await abandonedVerification.Set<DocumentVersionEntity>().ToArrayAsync());
+                Assert.Empty(await abandonedVerification.Set<CaseDocumentEntity>().ToArrayAsync());
+            }
+            using var abandonedList = await client.GetAsync(
+                $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents");
+            await AssertProviderDetailsAbsentAsync(abandonedList);
+
+            using var start = await client.PostAsJsonAsync(
+                $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/upload-session",
+                new CreateDocumentUploadSessionRequest
+                {
+                    FileName = "broker-image.jpg",
+                    MediaType = "image/jpeg",
+                    SemanticRole = "Image"
+                });
+            Assert.Equal(HttpStatusCode.Created, start.StatusCode);
+            var session = await DeserializeAsync<DocumentUploadSessionResponse>(start);
+            var content = "persisted broker image"u8.ToArray();
+            using var put = new ByteArrayContent(content);
+            using var putResponse = await client.PutAsync(
+                $"{DesktopGateway.BasePath}/upload-sessions/{session.SessionId:D}",
+                put);
+            Assert.Equal(HttpStatusCode.NoContent, putResponse.StatusCode);
+
+            using var complete = await client.PostAsJsonAsync(
+                $"{DesktopGateway.BasePath}/upload-sessions/{session.SessionId:D}/complete",
+                new CompleteDocumentUploadRequest
+                {
+                    ExpectedVersion = lease.Version,
+                    OperationKey = "desk:broker-persistence-upload",
+                    EditLeaseToken = lease.Token
+                });
+            Assert.Equal(HttpStatusCode.Created, complete.StatusCode);
+            var completion = await DeserializeAsync<DocumentUploadCompletionResponse>(complete);
+            Assert.Equal(content.Length, completion.Document.ContentLength);
+            Assert.Equal(
+                Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant(),
+                completion.Document.Sha256);
+
+            await using var verification = await baseFactory.Database.CreateContextAsync();
+            var occurrence = await verification.Set<DocumentOccurrenceEntity>()
+                .SingleAsync(value => value.OperationKey == "desk:broker-persistence-upload");
+            var version = await verification.Set<DocumentVersionEntity>()
+                .SingleAsync(value => value.Id == occurrence.VersionId);
+            Assert.Equal(completion.Document.OccurrenceId, occurrence.Id);
+            Assert.Equal(content.Length, version.ContentLength);
+            Assert.Equal(completion.Document.Sha256, version.Sha256);
+            Assert.True(File.Exists(Path.Combine(
+                baseFactory.ArtifactDirectory,
+                "custody",
+                "cases",
+                "BRKR001",
+                "managed",
+                version.Id.ToString("N"),
+                "content")));
+            Assert.Empty(Directory.EnumerateFiles(
+                Path.Combine(baseFactory.ArtifactDirectory, "custody"),
+                "*.tmp",
+                SearchOption.AllDirectories));
+        }
+
+        await using (var leaseScope = factory.Services.CreateAsyncScope())
+        {
+            var lease = await leaseScope.ServiceProvider
+                .GetRequiredService<ILeaseCaseForEdit>()
+                .ClaimAsync(
+                    new(CaseId, 1, actor, "broker-persistence-confirm-lease"),
+                    CancellationToken.None);
+            await using var verification = await baseFactory.Database.CreateContextAsync();
+            var occurrence = await verification.Set<DocumentOccurrenceEntity>()
+                .SingleAsync(value => value.OperationKey == "desk:broker-persistence-upload");
+
+            using var confirmed = await client.PostAsJsonAsync(
+                $"{DesktopGateway.BasePath}/cases/{CaseId:D}/third-party-vehicle-evidence/confirm",
+                new ConfirmThirdPartyEvidenceRequest
+                {
+                    OccurrenceId = occurrence.Id,
+                    ExpectedVersion = lease.Version,
+                    OperationKey = "desk:broker-persistence-confirm",
+                    EditLeaseToken = lease.Token,
+                    Reason = "The retained image depicts the other vehicle."
+            });
+            Assert.Equal(HttpStatusCode.OK, confirmed.StatusCode);
+
+            using var replay = await client.PostAsJsonAsync(
+                $"{DesktopGateway.BasePath}/cases/{CaseId:D}/third-party-vehicle-evidence/confirm",
+                new ConfirmThirdPartyEvidenceRequest
+                {
+                    OccurrenceId = occurrence.Id,
+                    ExpectedVersion = lease.Version,
+                    OperationKey = "desk:broker-persistence-confirm",
+                    EditLeaseToken = lease.Token,
+                    Reason = "The retained image depicts the other vehicle."
+                });
+            Assert.Equal(HttpStatusCode.OK, replay.StatusCode);
+
+            var history = await verification.ActionHistory
+                .SingleAsync(value => value.CorrelationId == "desk:broker-persistence-confirm");
+            Assert.Equal("third_party_vehicle_evidence_confirmed", history.EventKind);
+            Assert.Equal("The retained image depicts the other vehicle.", history.Reason);
+            Assert.Equal(
+                1,
+                await verification.ActionHistory.CountAsync(
+                    value => value.CorrelationId == "desk:broker-persistence-confirm"));
+        }
     }
 
     [Fact]
@@ -203,7 +615,12 @@ public sealed class BoxDocumentBrokerWebTests
 
         var response = await DeserializeAsync<DocumentUploadCompletionResponse>(complete);
         Assert.Equal(OccurrenceId, response.Document.OccurrenceId);
+        Assert.Equal(content.Length, response.Document.ContentLength);
+        Assert.Equal(
+            Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant(),
+            response.Document.Sha256);
         Assert.False(response.IsReplay);
+        await AssertProviderDetailsAbsentAsync(complete);
 
         using var replay = await client.PostAsJsonAsync(
             $"{DesktopGateway.BasePath}/upload-sessions/{session.SessionId:D}/complete",
@@ -215,6 +632,7 @@ public sealed class BoxDocumentBrokerWebTests
             });
         Assert.Equal(HttpStatusCode.OK, replay.StatusCode);
         Assert.Equal(1, addDocument.Calls);
+        await AssertProviderDetailsAbsentAsync(replay);
     }
 
     [Fact]
@@ -295,6 +713,7 @@ public sealed class BoxDocumentBrokerWebTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("Duplicate upload", remove.Command?.Reason);
         Assert.Equal(1, remove.Calls);
+        await AssertProviderDetailsAbsentAsync(response);
     }
 
     [Fact]
@@ -325,6 +744,35 @@ public sealed class BoxDocumentBrokerWebTests
     }
 
     [Fact]
+    public async Task LogicalRemovalStaleVersionIsReturnedAsProblemDetails()
+    {
+        var getCase = new RecordingGetCase(CreateDetails());
+        var remove = new RecordingRemoveDocument(
+            new CaseVersionConflictException(CaseId, 7, 8));
+        using var factory = CreateFactory(getCase, remove: remove);
+        using var client = CreateClient(factory);
+
+        using var response = await client.SendAsync(new HttpRequestMessage(
+            HttpMethod.Delete,
+            $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/{OccurrenceId:D}")
+        {
+            Content = JsonContent.Create(new RemoveDocumentRequest
+            {
+                ExpectedVersion = 7,
+                OperationKey = "desk:remove-stale",
+                EditLeaseToken = "lease",
+                Reason = "Duplicate upload"
+            })
+        });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var problem = await DeserializeAsync<PegasusProblem>(response);
+        Assert.Equal(PegasusProblemTypes.VersionConflict, problem.Type);
+        Assert.Equal(1, remove.Calls);
+        await AssertProviderDetailsAbsentAsync(response);
+    }
+
+    [Fact]
     public async Task ThirdPartyEvidenceConfirmationDelegatesReasonAndConcurrencyFields()
     {
         var getCase = new RecordingGetCase(CreateDetails());
@@ -347,6 +795,34 @@ public sealed class BoxDocumentBrokerWebTests
         Assert.Equal(OccurrenceId, confirm.Command?.OccurrenceId);
         Assert.Equal("desk:confirm-1", confirm.Command?.OperationKey);
         Assert.Equal("Vehicle evidence confirmed", confirm.Command?.Reason);
+        await AssertProviderDetailsAbsentAsync(response);
+    }
+
+    [Fact]
+    public async Task ThirdPartyEvidenceStaleVersionIsReturnedAsProblemDetails()
+    {
+        var getCase = new RecordingGetCase(CreateDetails());
+        var confirm = new RecordingConfirmEvidence(
+            new CaseVersionConflictException(CaseId, 7, 8));
+        using var factory = CreateFactory(getCase, confirm: confirm);
+        using var client = CreateClient(factory);
+
+        using var response = await client.PostAsJsonAsync(
+            $"{DesktopGateway.BasePath}/cases/{CaseId:D}/third-party-vehicle-evidence/confirm",
+            new ConfirmThirdPartyEvidenceRequest
+            {
+                OccurrenceId = OccurrenceId,
+                ExpectedVersion = 7,
+                OperationKey = "desk:confirm-stale",
+                EditLeaseToken = "lease",
+                Reason = "Vehicle evidence confirmed"
+            });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var problem = await DeserializeAsync<PegasusProblem>(response);
+        Assert.Equal(PegasusProblemTypes.VersionConflict, problem.Type);
+        Assert.Equal(1, confirm.Calls);
+        await AssertProviderDetailsAbsentAsync(response);
     }
 
     [Fact]
@@ -381,6 +857,7 @@ public sealed class BoxDocumentBrokerWebTests
         Assert.Equal("1800", overLimit.Headers.GetValues("Retry-After").Single());
         var problem = await DeserializeAsync<PegasusProblem>(overLimit);
         Assert.Equal(PegasusProblemTypes.RateLimited, problem.Type);
+        await AssertProviderDetailsAbsentAsync(overLimit);
     }
 
     [Fact]
@@ -401,7 +878,7 @@ public sealed class BoxDocumentBrokerWebTests
             out var session));
         Assert.NotNull(session);
         Assert.True(session!.TrySetContent(
-            new byte[(int)DesktopDocumentUploadSessions.MaximumBufferedBytes]));
+            new byte[(int)DesktopDocumentUploadSessions.MaximumBufferedBytes], out _));
 
         Assert.True(sessions.TryCreate(
             CaseId,
@@ -411,7 +888,7 @@ public sealed class BoxDocumentBrokerWebTests
             DocumentSemanticRole.Other,
             out var another));
         Assert.NotNull(another);
-        Assert.False(another!.TrySetContent([1]));
+        Assert.False(another!.TrySetContent([1], out _));
 
         clock.Advance(TimeSpan.FromMinutes(31));
         Assert.True(sessions.TryCreate(
@@ -423,7 +900,7 @@ public sealed class BoxDocumentBrokerWebTests
             out var afterExpiry));
         Assert.NotNull(afterExpiry);
         Assert.True(afterExpiry!.TrySetContent(
-            new byte[(int)DesktopDocumentUploadSessions.MaximumBufferedBytes]));
+            new byte[(int)DesktopDocumentUploadSessions.MaximumBufferedBytes], out _));
     }
 
     [Fact]
@@ -447,7 +924,7 @@ public sealed class BoxDocumentBrokerWebTests
             out var session));
         Assert.NotNull(session);
         Assert.True(session!.TrySetContent(
-            new byte[(int)DesktopDocumentUploadSessions.MaximumBufferedBytes]));
+            new byte[(int)DesktopDocumentUploadSessions.MaximumBufferedBytes], out _));
 
         Assert.Null(sessions.Find(session.Id, otherActor));
         Assert.Same(session, sessions.Find(session.Id, owner));
@@ -462,7 +939,7 @@ public sealed class BoxDocumentBrokerWebTests
             out var afterExpiry));
         Assert.NotNull(afterExpiry);
         Assert.True(afterExpiry!.TrySetContent(
-            new byte[(int)DesktopDocumentUploadSessions.MaximumBufferedBytes]));
+            new byte[(int)DesktopDocumentUploadSessions.MaximumBufferedBytes], out _));
     }
 
     [Fact]
@@ -491,6 +968,7 @@ public sealed class BoxDocumentBrokerWebTests
         Assert.Equal(0, addDocument.Calls);
         var problem = await DeserializeAsync<PegasusProblem>(response);
         Assert.Equal(PegasusProblemTypes.Validation, problem.Type);
+        await AssertProviderDetailsAbsentAsync(response);
     }
 
     private static async Task<DocumentUploadSessionResponse> CreateUploadSessionAsync(
@@ -539,9 +1017,14 @@ public sealed class BoxDocumentBrokerWebTests
         RecordingDownload? download = null,
         IAddCaseDocument? addDocument = null,
         RecordingRemoveDocument? remove = null,
-        RecordingConfirmEvidence? confirm = null)
+        RecordingConfirmEvidence? confirm = null,
+        TimeProvider? timeProvider = null)
     {
-        var baseFactory = new IntakeWebApplicationFactory(useIntegrationTestAuthentication: true);
+        var baseFactory = new IntakeWebApplicationFactory(
+            "Development",
+            true,
+            timeProvider: timeProvider,
+            useIntegrationTestAuthentication: true);
         return baseFactory.WithWebHostBuilder(builder =>
         {
             builder.UseSetting(DesktopGateway.FeatureFlag, "true");
@@ -583,7 +1066,7 @@ public sealed class BoxDocumentBrokerWebTests
             BaseAddress = new Uri("https://localhost:7139")
         });
 
-    private static CaseDetails CreateDetails()
+    private static CaseDetails CreateDetails(long workflowVersion = 7)
     {
         var version = new DocumentVersion(
             VersionId,
@@ -624,7 +1107,7 @@ public sealed class BoxDocumentBrokerWebTests
             null,
             null,
             null,
-            7);
+            workflowVersion);
         var summary = new CaseSearchItem(
             CaseId,
             "CASE-1",
@@ -652,11 +1135,108 @@ public sealed class BoxDocumentBrokerWebTests
             []);
     }
 
+    private static async Task SeedBrokerCaseAsync(LocalDbTestDatabase database)
+    {
+        await using var context = await database.CreateContextAsync();
+        var occurredAtUtc = new DateTimeOffset(2031, 5, 6, 10, 30, 0, TimeSpan.Zero);
+        var organizationId = Guid.NewGuid();
+        var sequenceLineageId = Guid.NewGuid();
+        var principalId = Guid.NewGuid();
+        var receiptId = Guid.NewGuid();
+        context.AddRange(
+            new OrganizationEntity
+            {
+                Id = organizationId,
+                Name = "Broker custody test organization",
+                Version = 0
+            },
+            new PrincipalSequenceLineageEntity
+            {
+                Id = sequenceLineageId,
+                CreatedAtUtc = occurredAtUtc
+            },
+            new PrincipalEntity
+            {
+                Id = principalId,
+                OrganizationId = organizationId,
+                Code = "BRKR",
+                SequenceLineageId = sequenceLineageId,
+                IsActive = true,
+                Version = 0
+            },
+            new IntakeReceiptEntity
+            {
+                Id = receiptId,
+                SourceFileName = "broker-custody.eml",
+                MediaType = "message/rfc822",
+                SourceLength = 1,
+                SourceHash = new string('0', 64),
+                SourceChannel = "manual_upload",
+                ExternalReceiptToken = $"broker:{Guid.NewGuid():N}",
+                ReceivedAtUtc = occurredAtUtc,
+                ProcessedAtUtc = occurredAtUtc,
+                SourceReaderKey = "broker-test",
+                SourceReaderVersion = "1",
+                Version = 0,
+                Decision = "case_created",
+                DecisionReason = "Broker custody test fixture.",
+                EvidenceJson = "[]",
+                FieldsJson = "[]",
+                OcrCandidatesJson = "[]"
+            },
+            new CaseEntity
+            {
+                Id = CaseId,
+                PrincipalId = principalId,
+                SequenceLineageId = sequenceLineageId,
+                Year = 2031,
+                Sequence = 1,
+                Reference = "BRKR001",
+                Type = "Inspection",
+                InitialState = "Review",
+                CustodyState = "Confirmed",
+                OriginIntakeReceiptId = receiptId,
+                CreatedAtUtc = occurredAtUtc,
+                Version = 3,
+                ConcurrencyToken = Guid.NewGuid()
+            },
+            new CaseWorkflowEntity
+            {
+                CaseId = CaseId,
+                State = "Review",
+                Version = 0,
+                ConcurrencyToken = Guid.NewGuid()
+            });
+        await context.SaveChangesAsync();
+    }
+
     private static async Task<T> DeserializeAsync<T>(HttpResponseMessage response)
     {
         var value = await response.Content.ReadFromJsonAsync<T>(PegasusJson.Options);
         Assert.NotNull(value);
         return value!;
+    }
+
+    private static async Task AssertProviderDetailsAbsentAsync(HttpResponseMessage response)
+    {
+        var surface = string.Concat(
+            response.Headers.ToString(),
+            response.Content.Headers.ToString(),
+            await response.Content.ReadAsStringAsync());
+        foreach (var prohibited in new[]
+        {
+            "box.com",
+            "credential",
+            "client-secret",
+            "access_token",
+            "eyJ",
+            "remoteId",
+            "objectId",
+            "provider"
+        })
+        {
+            Assert.DoesNotContain(prohibited, surface, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     private static void AssertPrivateNoStore(HttpResponseMessage response)
@@ -670,18 +1250,23 @@ public sealed class BoxDocumentBrokerWebTests
     private sealed class RecordingGetCase : IGetCase
     {
         private readonly CaseDetails? details;
-        private readonly Exception? exception;
+        private Exception? exception;
         private readonly List<string> events;
+        private readonly Action<int>? afterCall;
 
         public RecordingGetCase(CaseDetails details)
             : this(details, [])
         {
         }
 
-        public RecordingGetCase(CaseDetails details, List<string> events)
+        public RecordingGetCase(
+            CaseDetails details,
+            List<string> events,
+            Action<int>? afterCall = null)
         {
             this.details = details;
             this.events = events;
+            this.afterCall = afterCall;
         }
 
         public RecordingGetCase(Exception exception)
@@ -698,12 +1283,15 @@ public sealed class BoxDocumentBrokerWebTests
         public int Calls { get; private set; }
         public IReadOnlyList<string> Events => events;
 
+        public void SetException(Exception value) => exception = value;
+
         public Task<CaseDetails?> ExecuteAsync(
             GetCaseQuery query,
             CancellationToken cancellationToken)
         {
             Calls++;
             events.Add("case");
+            afterCall?.Invoke(Calls);
             if (exception is not null)
             {
                 throw exception;
@@ -846,6 +1434,14 @@ public sealed class BoxDocumentBrokerWebTests
 
     private sealed class RecordingConfirmEvidence : IConfirmThirdPartyVehicleEvidence
     {
+        private readonly Exception? exception;
+
+        public RecordingConfirmEvidence()
+        {
+        }
+
+        public RecordingConfirmEvidence(Exception exception) => this.exception = exception;
+
         public int Calls { get; private set; }
         public ConfirmThirdPartyVehicleEvidenceCommand? Command { get; private set; }
 
@@ -855,6 +1451,11 @@ public sealed class BoxDocumentBrokerWebTests
         {
             Calls++;
             Command = command;
+            if (exception is not null)
+            {
+                throw exception;
+            }
+
             return Task.CompletedTask;
         }
     }

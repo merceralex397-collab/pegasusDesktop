@@ -249,8 +249,13 @@ internal static class BoxDocumentBrokerEndpoints
                 "The upload content must be between 1 byte and 10 MiB.");
         }
 
-        if (!session.TrySetContent(content))
+        if (!session.TrySetContent(content, out var expired))
         {
+            if (expired)
+            {
+                return TypedResults.NotFound();
+            }
+
             return await RateLimitedAsync(
                 httpContext,
                 "The buffered upload quota has been reached. Complete or wait for an existing session to expire.");
@@ -289,49 +294,53 @@ internal static class BoxDocumentBrokerEndpoints
                 "ExpectedVersion and EditLeaseToken are required.");
         }
 
-        await session.WaitForCompletionAsync(cancellationToken);
-        try
+        using var completion = session.TryBeginCompletion();
+        if (completion is null)
         {
-            if (session.TryGetCompleted(operationKey, out var completed))
-            {
-                return TypedResults.Ok(completed);
-            }
-
-            if (!session.TryGetContent(out var content))
-            {
-                return await ValidationAsync(
-                    httpContext,
-                    "Upload bytes must be supplied before completion.");
-            }
-
-            var result = await addDocument.ExecuteAsync(
-                new(
-                    session.CaseId,
-                    session.FileName,
-                    session.MediaType,
-                    content,
-                    session.SemanticRole,
-                    DocumentSource.StaffUpload,
-                    StaffUploadIdentityPrefix + operationKey,
-                    actor,
-                    operationKey,
-                    request.ExpectedVersion,
-                    request.EditLeaseToken),
-                cancellationToken);
-            var response = new DocumentUploadCompletionResponse(
-                ToMetadata(result.Occurrence, result.Version),
-                result.IsReplay);
-            session.SetCompleted(operationKey, response);
-            return result.IsReplay
-                ? TypedResults.Ok(response)
-                : TypedResults.Created(
-                    $"{DesktopGateway.BasePath}/cases/{session.CaseId:D}/documents/{result.Occurrence.Id:D}",
-                    response);
+            return TypedResults.NotFound();
         }
-        finally
+
+        await completion.WaitAsync(cancellationToken);
+        if (!completion.IsActive())
         {
-            session.ReleaseCompletion();
+            return TypedResults.NotFound();
         }
+
+        if (session.TryGetCompleted(operationKey, out var completed))
+        {
+            return TypedResults.Ok(completed);
+        }
+
+        if (!session.TryGetContent(out var content))
+        {
+            return await ValidationAsync(
+                httpContext,
+                "Upload bytes must be supplied before completion.");
+        }
+
+        var result = await addDocument.ExecuteAsync(
+            new(
+                session.CaseId,
+                session.FileName,
+                session.MediaType,
+                content,
+                session.SemanticRole,
+                DocumentSource.StaffUpload,
+                StaffUploadIdentityPrefix + operationKey,
+                actor,
+                operationKey,
+                request.ExpectedVersion,
+                request.EditLeaseToken),
+            cancellationToken);
+        var response = new DocumentUploadCompletionResponse(
+            ToMetadata(result.Occurrence, result.Version),
+            result.IsReplay);
+        session.SetCompleted(operationKey, response);
+        return result.IsReplay
+            ? TypedResults.Ok(response)
+            : TypedResults.Created(
+                $"{DesktopGateway.BasePath}/cases/{session.CaseId:D}/documents/{result.Occurrence.Id:D}",
+                response);
     }
 
     private static async Task<IResult> RemoveAsync(
@@ -641,6 +650,7 @@ internal sealed class DesktopDocumentUploadSessions : IDisposable
     private readonly object sync = new();
     private readonly TimeProvider timeProvider;
     private long bufferedBytes;
+    private bool disposed;
 
     public DesktopDocumentUploadSessions(TimeProvider timeProvider) =>
         this.timeProvider = timeProvider;
@@ -656,7 +666,7 @@ internal sealed class DesktopDocumentUploadSessions : IDisposable
         lock (sync)
         {
             CleanupExpiredUnsafe(timeProvider.GetUtcNow());
-            if (sessions.Count >= MaximumActiveSessions)
+            if (disposed || sessions.Count >= MaximumActiveSessions)
             {
                 session = null;
                 return false;
@@ -682,6 +692,7 @@ internal sealed class DesktopDocumentUploadSessions : IDisposable
         {
             CleanupExpiredUnsafe(timeProvider.GetUtcNow());
             if (!sessions.TryGetValue(id, out var session)
+                || disposed
                 || !session.BelongsTo(actor))
             {
                 return null;
@@ -699,15 +710,22 @@ internal sealed class DesktopDocumentUploadSessions : IDisposable
                 && sessions.TryRemove(pair.Key, out var expired))
             {
                 bufferedBytes -= expired.ContentLength;
+                DisposeOrDeferUnsafe(expired);
             }
         }
     }
 
-    private bool TrySetContent(Session session, byte[] value)
+    private bool TrySetContent(Session session, byte[] value, out bool expired)
     {
         lock (sync)
         {
-            if (!sessions.ContainsKey(session.Id) || session.IsCompleted)
+            if (!IsActiveUnsafe(session, timeProvider.GetUtcNow()))
+            {
+                expired = true;
+                return false;
+            }
+            expired = false;
+            if (session.IsCompleted)
             {
                 return false;
             }
@@ -731,7 +749,84 @@ internal sealed class DesktopDocumentUploadSessions : IDisposable
         lock (sync)
         {
             value = session.Content ?? [];
-            return sessions.ContainsKey(session.Id) && value.Length > 0;
+            return IsActiveUnsafe(session, timeProvider.GetUtcNow()) && value.Length > 0;
+        }
+    }
+
+    private CompletionLease? TryBeginCompletion(Session session)
+    {
+        lock (sync)
+        {
+            CleanupExpiredUnsafe(timeProvider.GetUtcNow());
+            if (!IsActiveUnsafe(session, timeProvider.GetUtcNow()))
+            {
+                return null;
+            }
+
+            session.BeginCompletionUnsafe();
+            return new CompletionLease(this, session);
+        }
+    }
+
+    private bool IsCompletionActive(Session session)
+    {
+        lock (sync)
+        {
+            return IsActiveUnsafe(session, timeProvider.GetUtcNow());
+        }
+    }
+
+    private bool IsActiveUnsafe(Session session, DateTimeOffset now)
+    {
+        if (disposed
+            || !sessions.TryGetValue(session.Id, out var current)
+            || !ReferenceEquals(current, session))
+        {
+            return false;
+        }
+
+        if (session.ExpiresAtUtc <= now)
+        {
+            RemoveSessionUnsafe(session);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void ReleaseCompletion(Session session)
+    {
+        lock (sync)
+        {
+            session.ReleaseCompletionUnsafe();
+            if (session.ActiveCompletions == 0 && session.DisposePending)
+            {
+                session.DisposeUnsafe();
+            }
+        }
+    }
+
+    private void RemoveSessionUnsafe(Session session)
+    {
+        if (sessions.TryGetValue(session.Id, out var current)
+            && ReferenceEquals(current, session)
+            && sessions.TryRemove(session.Id, out _))
+        {
+            bufferedBytes -= session.ContentLength;
+        }
+
+        DisposeOrDeferUnsafe(session);
+    }
+
+    private static void DisposeOrDeferUnsafe(Session session)
+    {
+        if (session.ActiveCompletions == 0)
+        {
+            session.DisposeUnsafe();
+        }
+        else
+        {
+            session.MarkDisposePendingUnsafe();
         }
     }
 
@@ -742,6 +837,12 @@ internal sealed class DesktopDocumentUploadSessions : IDisposable
     {
         lock (sync)
         {
+            if (!IsActiveUnsafe(session, timeProvider.GetUtcNow()))
+            {
+                value = null!;
+                return false;
+            }
+
             if (session.Completed is not null)
             {
                 if (!string.Equals(
@@ -779,17 +880,21 @@ internal sealed class DesktopDocumentUploadSessions : IDisposable
 
     public void Dispose()
     {
-        Session[] active;
         lock (sync)
         {
-            active = sessions.Values.ToArray();
-            sessions.Clear();
-            bufferedBytes = 0;
-        }
+            if (disposed)
+            {
+                return;
+            }
 
-        foreach (var session in active)
-        {
-            session.Dispose();
+            disposed = true;
+            var active = sessions.Values.ToArray();
+            sessions.Clear();
+            foreach (var session in active)
+            {
+                bufferedBytes -= session.ContentLength;
+                DisposeOrDeferUnsafe(session);
+            }
         }
     }
 
@@ -805,6 +910,9 @@ internal sealed class DesktopDocumentUploadSessions : IDisposable
     {
         private readonly SemaphoreSlim completionGate = new(1, 1);
         private byte[]? content;
+        private bool isDisposed;
+        private bool disposePending;
+        private int activeCompletions;
 
         public Guid Id { get; } = id;
         public Guid CaseId { get; } = caseId;
@@ -817,12 +925,15 @@ internal sealed class DesktopDocumentUploadSessions : IDisposable
         internal byte[]? Content => content;
         internal string? CompletedOperationKey { get; private set; }
         internal DocumentUploadCompletionResponse? Completed { get; private set; }
+        internal int ActiveCompletions => activeCompletions;
+        internal bool DisposePending => disposePending;
 
         public bool BelongsTo(ActionActor candidate) =>
             actor.Kind == candidate.Kind
             && string.Equals(actor.SubjectId, candidate.SubjectId, StringComparison.Ordinal);
 
-        public bool TrySetContent(byte[] value) => owner.TrySetContent(this, value);
+        public bool TrySetContent(byte[] value, out bool expired) =>
+            owner.TrySetContent(this, value, out expired);
 
         public bool TryGetContent(out byte[] value) => owner.TryGetContent(this, out value);
 
@@ -836,10 +947,18 @@ internal sealed class DesktopDocumentUploadSessions : IDisposable
             DocumentUploadCompletionResponse value) =>
             owner.SetCompleted(this, operationKey, value);
 
-        public Task WaitForCompletionAsync(CancellationToken cancellationToken) =>
+        public CompletionLease? TryBeginCompletion() => owner.TryBeginCompletion(this);
+
+        internal Task WaitForCompletionAsync(CancellationToken cancellationToken) =>
             completionGate.WaitAsync(cancellationToken);
 
-        public void ReleaseCompletion() => completionGate.Release();
+        internal void ReleaseCompletionGate() => completionGate.Release();
+
+        internal void BeginCompletionUnsafe() => activeCompletions++;
+
+        internal void ReleaseCompletionUnsafe() => activeCompletions--;
+
+        internal void MarkDisposePendingUnsafe() => disposePending = true;
 
         internal void SetContentUnsafe(byte[] value) => content = value;
 
@@ -852,7 +971,44 @@ internal sealed class DesktopDocumentUploadSessions : IDisposable
             content = null;
         }
 
-        public void Dispose() => completionGate.Dispose();
+        internal void DisposeUnsafe()
+        {
+            if (!isDisposed)
+            {
+                isDisposed = true;
+                completionGate.Dispose();
+            }
+        }
+
+        public void Dispose() => DisposeUnsafe();
+    }
+
+    internal sealed class CompletionLease(DesktopDocumentUploadSessions owner, Session session)
+        : IDisposable
+    {
+        private int released;
+        private int acquired;
+
+        public async Task WaitAsync(CancellationToken cancellationToken)
+        {
+            await session.WaitForCompletionAsync(cancellationToken);
+            Volatile.Write(ref acquired, 1);
+        }
+
+        public bool IsActive() => owner.IsCompletionActive(session);
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref released, 1) == 0)
+            {
+                if (Interlocked.Exchange(ref acquired, 0) == 1)
+                {
+                    session.ReleaseCompletionGate();
+                }
+
+                owner.ReleaseCompletion(session);
+            }
+        }
     }
 }
 
