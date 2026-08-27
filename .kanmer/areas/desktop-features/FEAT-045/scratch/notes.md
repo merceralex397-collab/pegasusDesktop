@@ -1,0 +1,1 @@
+2026-08-27 — Read-only target audit: Contracts exists, but desktop infrastructure/view-model test projects and the linked area-07 provider endpoint implementations are absent from origin/dev. Implementing only a partial catalogue would not satisfy the acceptance criteria; creating sibling-owned projects/routes is out of scope. Claim released pending those prerequisites.

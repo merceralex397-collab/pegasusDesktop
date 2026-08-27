@@ -10,9 +10,6 @@ assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:31:47.154Z'
-taken_at: '2026-08-27T18:18:07.643Z'
-branch: task/feat-045-provider-taxonomy
-worktree: 'C:\Users\PC\Documents\GitHub\pegasus-worktrees\feat-045-provider-taxonomy'
 labels:
   - desktop-conversion
   - plan-07
@@ -27,7 +24,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:31:27.017Z'
-updated: '2026-08-27T18:18:07.643Z'
+updated: '2026-08-27T18:19:24.430Z'
 ---
 
 ## What
