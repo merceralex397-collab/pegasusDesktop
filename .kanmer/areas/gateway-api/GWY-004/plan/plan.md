@@ -277,3 +277,7 @@ The branch diff was reviewed against the required reuse, simplification, efficie
 - Altitude: no `Program.cs` change, endpoint implementation, compatibility path, generated client, or unrelated documentation was added. The OpenAPI normalizer owns only the four required stability rules.
 - Findings and dispositions: reflection produced an empty `PegasusProblem` component because its JSON converter owns serialization; the transformer now supplies the six serialized fields and the required non-null fields. The initial OpenAPI package version resolved a vulnerable `Microsoft.OpenApi` dependency; `Microsoft.AspNetCore.OpenApi` was pinned to 10.0.11, resolving `Microsoft.OpenApi` 2.7.5, and locked restore passes.
 - Unapplied findings: none.
+
+## CI follow-up — 2026-08-27
+
+PR #30 exact-head run `33043859460` built successfully, and documentation/changes/local-script/reference-data/browser jobs passed. Its unit job initially failed only in the parallel contract-host tests: 4 OpenAPI requests returned HTTP 500 after the shared runner's approximately 100-second startup/request timeout, while the same suite passed standalone locally. The contract test class now uses an xUnit collection with parallelization disabled, preventing concurrent WebApplicationFactory startup contention. The repository-equivalent sequence was rerun locally after that change: Core 935/935 passed, Architecture 110/110 passed, and contract 5/5 passed. This is a test-host reliability fix; product behavior is unchanged.

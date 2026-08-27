@@ -31,3 +31,7 @@ Commit: `8d3827c68530ae7db8468d3bf6a488511c10b4a0`
 - The first OpenAPI package version exposed a high-severity transitive vulnerability; 10.0.11 was selected because it resolves `Microsoft.OpenApi` 2.7.5 and passes locked restore.
 - No Azure, deployment, upstream, credential, or external write was performed.
 - Simplification pass completed with no unapplied findings.
+
+## CI follow-up — 2026-08-27
+
+The first exact-head CI run `33043859460` exposed parallel `WebApplicationFactory` startup contention in the contract class: build passed, but the four concurrent OpenAPI requests returned HTTP 500 after the runner timeout. The class was changed to an xUnit collection with parallelization disabled. The exact unit command sequence was reproduced locally afterward with Core 935/935, Architecture 110/110, and Contract 5/5 passing. A fresh commit and exact-head CI run are required before merge.
