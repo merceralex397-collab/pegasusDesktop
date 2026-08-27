@@ -273,3 +273,11 @@ build does not satisfy it.
 
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over
 this branch's own diff before the PR, recorded here under a dated heading._
+
+## 2026-08-27 live dependency disposition
+
+Before implementation, the live dependency graph was rechecked. Although the stored FEAT-027 edge lists GWY-002 as satisfied, the ticket's own dependency statement requires GWY-003, and the shared Operations route owner GWY-013 also requires GWY-003. GWY-003 is currently blocked by GWY-021/DSK-04-04, and the current fork has no bearer actor accessor or named right filter. Implementing FEAT-027 now would either bypass the required authorization owner or duplicate its route/auth pipeline, so the ticket is not actionable.
+
+The board's old upstream-sync wording is not executable. The fork is authoritative and no upstream operation is allowed. The requested standalone contract-test project is owned by TEST-001 and is not to be created here as a duplicate. After GWY-003 and the mailbox-source decision are complete, resume this plan from the route implementation step, reusing the shared gateway group, auth filter, existing Core projection ports, and the existing test owner.
+
+Disposition for this run: no code, branch push, PR, merge, or stage advancement. Release the temporary claim and leave the ticket in implementing with this evidence; the next action is to complete GWY-003's in-repo prerequisite (or record its blocker) and resolve the approved-mailbox enumeration source.

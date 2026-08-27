@@ -268,3 +268,13 @@ owners:
   is recorded as open in `docs/open-decisions.md` by the code's own remark
   (`RetainedMail.cs:652-661`). This ticket reuses the constant and neither
   re-argues nor hard-codes it.
+
+## 2026-08-27 dependency re-audit and authority correction
+
+The live board was refreshed before this decision. Its effective root is `C:\\Users\\PC\\Documents\\GitHub\\pegasusDesktop\\.worktrees\\kanmer`, repository root is `C:\\Users\\PC\\Documents\\GitHub\\pegasusDesktop`, format 3, with no warnings. `get_links FEAT-027` reports only GWY-002 as a stored `blockedBy`, but the FEAT-027 body and this research require DSK-03-03/GWY-003 staff bearer actor resolution and its named `StaffAccessRight` endpoint filter. The live GWY-003 item is blocked by GWY-021/DSK-04-04 and is not implemented. GWY-013, which owns the shared Operations route surface referenced by this ticket, is blocked by GWY-003 and INTK-007.
+
+A read-only inspection of the current `origin/dev` source confirms that `DesktopGatewayExtensions.cs` currently maps only the empty gateway group with correlation/client-version filters; the GWY-003 authorization filter and actor accessor are absent. FEAT-027 must not create a second authentication/authorization pipeline or a second Operations group. This is a genuine implementation dependency even though the board edge is incomplete.
+
+The fork is authoritative for this task. No upstream fetch, merge, or synchronization is permitted. Any prior wording that treats an upstream sync as a prerequisite is superseded by this note and must not be executed.
+
+A second acceptance issue remains open: the ticket asks for one row per approved mailbox, including a mailbox with no retained message, while the current `IRetainedMailQueries.ListMailboxesAsync` implementation enumerates retained-mail rows and therefore cannot prove that empty approved mailboxes are represented. FEAT-027 must wait for the owning mailbox/read-model decision or an in-repository change that establishes the required source of approved mailboxes.

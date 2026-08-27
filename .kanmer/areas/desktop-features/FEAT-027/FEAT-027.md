@@ -10,9 +10,6 @@ assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:31:39.549Z'
-taken_at: '2026-08-27T04:00:40.574Z'
-branch: task/dsk-07-01-intake-status-endpoints
-worktree: ../pegasus-worktrees/dsk-07-01-intake-status-endpoints
 labels:
   - desktop-conversion
   - plan-07
@@ -32,7 +29,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.602Z'
-updated: '2026-08-27T04:00:40.574Z'
+updated: '2026-08-27T04:04:14.494Z'
 ---
 
 ## What
