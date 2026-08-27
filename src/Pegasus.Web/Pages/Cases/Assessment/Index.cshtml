@@ -240,22 +240,51 @@
             DELIV-012: the reachable report-draft entry point. It renders
             from already-saved assessment values (the same store the
             readiness list above reads), never from the unbound section
-            forms below. A case that is not ready stays visible with every
-            outstanding reason named, per docs/design/README.md's
-            absent-versus-disabled rule.
+            forms below. The panel is shown only when stored versions or a
+            currently available generate action exist; readiness remains in
+            the single rail above, per docs/design/README.md's page-economy rule.
         *@
-        <section class="panel" aria-labelledby="report-draft-title">
+        @if (Model.ReportVersions.Count > 0 || Model.ReportDraftPreparation?.CanGenerate == true)
+        {
+            <section class="panel" aria-labelledby="report-draft-title">
             <h2 id="report-draft-title" class="section-label">Report draft</h2>
-            <p>Nothing is saved or sent.</p>
 
-            @if (Model.ReportDraftPreparation is null)
+            @if (Model.ReportVersions.Count > 0)
             {
-                <p class="empty-state">Not available for this case.</p>
+                <div class="status-card" role="status">
+                    <h3>Report versions</h3>
+                    @for (var index = 0; index < Model.ReportVersions.Count; index++)
+                    {
+                        var version = Model.ReportVersions[index];
+                        <p>
+                            @Model.ReportVersionLabel(index): @Model.ReportStatusLabel(version)
+                            @if (version.FailureReason is not null)
+                            {
+                                <span>— @Model.ReportFailureLabel(version)</span>
+                                @if (version.NextAttemptAtUtc is { } nextAttempt)
+                                {
+                                    <span> (retry after @Model.ReportRetryTime(nextAttempt))</span>
+                                }
+                            }
+                        </p>
+                        @if (Model.CanRetryReport(version))
+                        {
+                            <form method="post" asp-page-handler="GenerateReportDraft" asp-route-id="@caseId">
+                                <input type="hidden" name="operationKey" value="@Model.ReportDraftOperationKey" />
+                                <input type="hidden" name="selectedRepairSpecificationId" value="@Model.ReportVersionSpecificationId(version)" />
+                                <input type="hidden" name="reportVersionId" value="@version.Id" />
+                                <button type="submit" class="secondary-action">Retry report draft</button>
+                            </form>
+                        }
+                    }
+                </div>
             }
-            else if (Model.ReportDraftPreparation.CanGenerate)
+
+            @if (Model.ReportDraftPreparation?.CanGenerate == true)
             {
                 <form method="post" asp-page-handler="GenerateReportDraft" asp-route-id="@caseId">
                     <input type="hidden" name="operationKey" value="@Model.ReportDraftOperationKey" />
+                    <input type="hidden" name="selectedRepairSpecificationId" value="@Model.SelectedRepairSpecificationId" />
                     <div class="button-row">
                         <button type="submit" class="secondary-action">
                             <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right" /></svg>
@@ -264,17 +293,8 @@
                     </div>
                 </form>
             }
-            else
-            {
-                @* ENG-003: the readiness panel above owns the one itemised
-                   list — this card names the same count and points back to
-                   it rather than repeating every reason a second time. *@
-                <div class="status-card status-card--attention">
-                    <h3>Not ready</h3>
-                    <p>@IndexModel.IssueSummaryText(Model.ReportDraftPreparation.Reasons.Count) — see Readiness above for the list.</p>
-                </div>
-            }
-        </section>
+            </section>
+        }
     </aside>
 
     <div>
@@ -595,12 +615,11 @@
 
         @if (current == "estimate")
         {
-            @* ENG-002: the case's current repair specification and the
-               estimate import. Imported and AI-recorded material lands as a
-               draft; only an Engineer's acceptance, with the money figures
-               typed from the retained original, makes it the case's accepted
-               specification. The report's own cost figures still wait on
-               EXT-09's accepted derivation formula. *@
+            @* ENG-002: the case's repair specifications and estimate import.
+               Imported and AI-recorded material lands as a draft; only an
+               Engineer's acceptance, with the money figures typed from the
+               retained original, makes it an accepted specification. Report
+               generation uses the selected accepted basis. *@
             <section class="panel" aria-labelledby="estimate-current-title">
                 <h2 id="estimate-current-title">Repair specification</h2>
 
@@ -724,22 +743,23 @@
                 }
             </section>
 
-            @*
-                EXT-09 (Later / 1.0.0): several estimates can sit on one case —
-                an import from an estimating service, the engineer's own, one
-                recorded by automation — and the engineer works whichever is
-                selected. Inactive: the strip renders, nothing switches, and no
-                estimate is stored. Versioned estimate lines, source versions
-                and the original-versus-assessed comparison need their own
-                accepted formula authority before any of this is wired.
-            *@
-            <div class="est-tabs" role="tablist" aria-label="Estimates on this case">
-                <button type="button" role="tab" class="est-tab" aria-selected="true" disabled>Estimate</button>
-                <button type="button" class="est-add" aria-label="New estimate" title="New estimate" disabled>+</button>
-                <span class="est-tabs__state">
-                    <partial name="Shared/_StatusChip" model="@("Unconfirmed")" />
-                </span>
-            </div>
+            @if (Model.AcceptedSpecifications.Count > 0)
+            {
+                <div class="est-tabs" role="tablist" aria-label="Estimates on this case">
+                    @foreach (var estimate in Model.AcceptedSpecifications)
+                    {
+                        <a role="tab"
+                           class="est-tab"
+                           aria-selected="@(estimate.SpecificationId == Model.SelectedRepairSpecificationId ? "true" : "false")"
+                           href="@Model.EstimateTabUrl(estimate.SpecificationId)">
+                            @Model.EstimateTabLabel(estimate)
+                        </a>
+                    }
+                    <span class="est-tabs__state">
+                        <partial name="Shared/_StatusChip" model="@("Accepted")" />
+                    </span>
+                </div>
+            }
 
             <section class="panel est-body" aria-labelledby="estimate-title">
                 <h2 id="estimate-title">Estimate</h2>

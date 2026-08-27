@@ -226,6 +226,10 @@ public interface IRepairSpecificationStore
         Guid caseId,
         CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<RepairSpecificationVersion>> ListAcceptedAsync(
+        Guid caseId,
+        CancellationToken cancellationToken);
+
     Task<RepairSpecificationVersion?> GetCurrentDraftAsync(
         Guid caseId,
         CancellationToken cancellationToken);

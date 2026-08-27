@@ -322,6 +322,14 @@ function Get-MigrationPermissionMatrix {
     foreach ($permission in @('SELECT', 'INSERT', 'UPDATE')) {
         $expected.Add("pegasus_worker_runtime_role|G|$permission|DocumentVersions")
     }
+    # 20260826075756_AssessmentReportGeneration: report drafts and their
+    # generated artifact metadata are owned by the Web report-generation path.
+    foreach ($permission in @('SELECT', 'INSERT', 'UPDATE')) {
+        $expected.Add("pegasus_web_runtime_role|G|$permission|AssessmentReportVersions")
+    }
+    foreach ($permission in @('SELECT', 'INSERT')) {
+        $expected.Add("pegasus_web_runtime_role|G|$permission|AssessmentReportArtifacts")
+    }
     return @($expected | Sort-Object -Unique)
 }
 

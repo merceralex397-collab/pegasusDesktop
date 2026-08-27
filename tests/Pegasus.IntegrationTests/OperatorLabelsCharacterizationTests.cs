@@ -60,7 +60,7 @@ public sealed class OperatorLabelsCharacterizationTests
         Assert.Equal(
             [
                 "Original source", "Instruction", "Image", "Correspondence", "Engineer report",
-                "Audit report", "Other"
+                "Audit report", "Fee note", "Other"
             ],
             Enum.GetValues<DocumentSemanticRole>().Select(OperatorLabels.DocumentRole));
         Assert.Equal(

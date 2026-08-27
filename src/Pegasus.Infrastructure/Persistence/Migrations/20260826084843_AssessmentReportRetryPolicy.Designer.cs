@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pegasus.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using Pegasus.Infrastructure.Persistence;
 namespace Pegasus.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(PegasusDbContext))]
-    partial class PegasusDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260826084843_AssessmentReportRetryPolicy")]
+    partial class AssessmentReportRetryPolicy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1087,7 +1090,7 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("CK_AssessmentReportVersions_AttemptCount", "[AttemptCount] >= 0");
 
-                            t.HasCheckConstraint("CK_AssessmentReportVersions_State", "[State] IN ('Pending', 'Rendering', 'Generated', 'Failed')");
+                            t.HasCheckConstraint("CK_AssessmentReportVersions_State", "[State] IN ('Rendering', 'Generated', 'Failed')");
 
                             t.HasCheckConstraint("CK_AssessmentReportVersions_Version", "[Version] > 0");
                         });
@@ -2116,7 +2119,9 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CaseId");
+                    b.HasIndex("CaseId")
+                        .IsUnique()
+                        .HasFilter("[State] = 'Accepted'");
 
                     b.HasIndex("CaseId", "CreationOperationKey")
                         .IsUnique();

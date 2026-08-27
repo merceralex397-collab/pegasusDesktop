@@ -10,6 +10,7 @@ public enum DocumentSemanticRole
     Correspondence,
     EngineerReport,
     AuditReport,
+    FeeNote,
     Other
 }
 

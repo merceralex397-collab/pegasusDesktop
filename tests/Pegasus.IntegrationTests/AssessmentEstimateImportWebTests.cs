@@ -305,6 +305,8 @@ public sealed partial class AssessmentEstimateImportWebTests
 
         public RepairSpecificationVersion? CurrentAccepted { get; set; }
 
+        public List<RepairSpecificationVersion> AcceptedSpecifications { get; } = [];
+
         public List<AddCaseDocumentCommand> AddedDocuments { get; } = [];
 
         public List<StartRepairSpecificationDraftRequest> StartedDrafts { get; } = [];
@@ -355,16 +357,27 @@ public sealed partial class AssessmentEstimateImportWebTests
             };
             CurrentDraft = null;
             CurrentAccepted = accepted;
+            AcceptedSpecifications.RemoveAll(item => item.SpecificationId == accepted.SpecificationId);
+            AcceptedSpecifications.Insert(0, accepted);
             return Task.FromResult(accepted);
         }
 
         public Task<RepairSpecificationVersion?> GetVersionAsync(
             Guid ownerCaseId, Guid specificationId, CancellationToken cancellationToken) =>
-            Task.FromResult<RepairSpecificationVersion?>(null);
+            Task.FromResult<RepairSpecificationVersion?>(
+                AcceptedSpecifications.SingleOrDefault(item => item.SpecificationId == specificationId)
+                ?? (CurrentAccepted?.SpecificationId == specificationId ? CurrentAccepted : null));
 
         public Task<RepairSpecificationVersion?> GetCurrentAcceptedAsync(
             Guid ownerCaseId, CancellationToken cancellationToken) =>
             Task.FromResult(CurrentAccepted);
+
+        public Task<IReadOnlyList<RepairSpecificationVersion>> ListAcceptedAsync(
+            Guid ownerCaseId, CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<RepairSpecificationVersion>>(
+                AcceptedSpecifications.Count > 0
+                    ? AcceptedSpecifications.ToArray()
+                    : CurrentAccepted is null ? [] : [CurrentAccepted]);
 
         public Task<RepairSpecificationVersion?> GetCurrentDraftAsync(
             Guid ownerCaseId, CancellationToken cancellationToken) =>

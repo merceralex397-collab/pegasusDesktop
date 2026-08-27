@@ -24,6 +24,7 @@ internal sealed class EfAssessmentReportProjectionSource(
     IDbContextFactory<PegasusDbContext> contextFactory,
     IGetCase getCase,
     IGetCaseAssessment getCaseAssessment,
+    IRepairSpecificationStore repairSpecifications,
     IDocumentContentStore contentStore,
     TimeProvider timeProvider) : IAssessmentReportProjectionSource
 {
@@ -31,7 +32,10 @@ internal sealed class EfAssessmentReportProjectionSource(
         new(StringComparer.Ordinal) { "image/jpeg", "image/png", "image/webp" };
 
     public async Task<AssessmentReportProjectionInput?> GetAsync(
-        Guid caseId, ActionActor actor, CancellationToken cancellationToken = default)
+        Guid caseId,
+        ActionActor actor,
+        Guid? selectedRepairSpecificationId = null,
+        CancellationToken cancellationToken = default)
     {
         var details = await getCase.ExecuteAsync(new GetCaseQuery(caseId, actor), cancellationToken);
         if (details is null)
@@ -55,6 +59,7 @@ internal sealed class EfAssessmentReportProjectionSource(
                       && version.IsCurrent
                       && !version.IsLogicallyRemoved
                       && version.CustodyStatus == DocumentCustodyStatus.Confirmed
+                      && occurrence.Source != DocumentSource.Generated
                 orderby occurrence.Ordinal
                 select new ConfirmedDocumentRow(
                     occurrence.Id,
@@ -106,9 +111,21 @@ internal sealed class EfAssessmentReportProjectionSource(
             photos.Add(new ReportImageEvidence(row.FileName, row.MediaType, bytes, row.Sha256));
         }
 
-        // Repair-cost figures have no accepted formula anywhere in the
-        // domain yet (see the remarks on AssessmentReportProjectionInput);
-        // this production source never fabricates one.
+        var acceptedSpecification = selectedRepairSpecificationId is { } specificationId
+            ? await repairSpecifications.GetVersionAsync(caseId, specificationId, cancellationToken)
+            : null;
+        var selectedAccepted = acceptedSpecification is { State: RepairSpecificationState.Accepted }
+            accepted
+            ? accepted
+            : null;
+        var costs = selectedAccepted?.CalculationBasis is { } basis
+            ? ReportRepairCosts.FromAcceptedBasis(basis)
+            : null;
+        var repairCostSource = selectedAccepted?.Source is
+                { ArtifactReference: not null, SourceVersion: not null, Sha256: not null } source
+            ? new AcceptedReportSource(source.ArtifactReference, source.SourceVersion, source.Sha256)
+            : null;
+
         return new AssessmentReportProjectionInput(
             assessment,
             details.Summary.Claimant,
@@ -118,7 +135,10 @@ internal sealed class EfAssessmentReportProjectionSource(
             DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
             photos,
             sources,
-            Costs: null);
+            costs,
+            repairCostSource,
+            selectedAccepted?.SpecificationId,
+            selectedAccepted?.Version);
     }
 
     private sealed record ConfirmedDocumentRow(
