@@ -1,0 +1,1 @@
+2026-08-27 checkpoint: Read the complete FRD-02 governing document. Confirmed current owner is EfIntakeWorkStore.CompleteProcessingAsync and current grouped-race coverage is GroupedImageIntakeConcurrencyTests. Wrote files map and implementation plan through Kanmer. No product questions remain; cloud, upstream, PR #14, and test weakening are out of scope.

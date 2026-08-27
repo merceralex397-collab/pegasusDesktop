@@ -2,12 +2,15 @@
 id: INTK-009
 type: ticket
 title: Fix concurrent intake completion SQL deadlock
-status: preparing
+status: implementing
 area: intake-processing
-assignee: ''
+assignee: codex-mcp-client
 profile: fix
 stageEntered:
   preparing: '2026-08-27T20:06:15.606Z'
+taken_at: '2026-08-27T20:09:17.307Z'
+branch: task/intk-009-intake-completion-deadlock
+worktree: ../pegasus-worktrees/intk-009-intake-completion-deadlock
 labels:
   - defect
   - intake
@@ -22,7 +25,7 @@ refs:
   - docs/frd/frd-02-intake-and-source-identity.md
 archived: false
 created: '2026-08-27T20:06:12.155Z'
-updated: '2026-08-27T20:06:15.606Z'
+updated: '2026-08-27T20:09:17.307Z'
 ---
 
 ## What
