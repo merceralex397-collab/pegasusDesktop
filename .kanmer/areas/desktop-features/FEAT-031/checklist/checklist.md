@@ -14,3 +14,7 @@
 - [x] Receive independent re-review of exact head `c3d06081a09a47798ac7e333dcf9e0afeac026a9`; it returned FAIL on upload audit history, remediated at `894a520c`.
 
 - [ ] Obtain fresh independent re-review of exact head `894a520c67237268523b88bf43bee3610b5074d1`.
+
+- [x] Update canonical endpoint, parity, FRD, and capability documentation with the current-fork broker scope and explicit PLAT-039/PLAT-041/no-cloud boundary disposition (`29e13dd1`).
+- [x] Run final committed-head broker-focused validation: 26 passed, 0 failed, 0 skipped; broad same-code integration profile: 934 passed, 2 skipped, 0 failed.
+- [ ] Obtain fresh independent re-review of exact head `894a520c` plus documentation commit `29e13dd1`.

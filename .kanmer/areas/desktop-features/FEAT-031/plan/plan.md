@@ -93,3 +93,9 @@ The independent re-review of `c3d06081a09a47798ac7e333dcf9e0afeac026a9` returned
 - `git diff --check` passed and the worktree is clean.
 
 A fresh independent re-review of exact head `894a520c67237268523b88bf43bee3610b5074d1` is required. PLAT-039 token-age proof, PLAT-041 call-budget/export-gallery implementation and measurement, and live Key Vault boundary evidence remain open; no upstream synchronization or cloud/deployment operation is permitted.
+
+## Canonical documentation and final validation update — 2026-08-27
+
+- Commit `29e13dd1bc70fe0514b62d81279e0f3256ce7ce4` updates the endpoint map, parity flow record, FRD-05 desktop broker clause, and `docs/capabilities.md` DSK-07-05 row. The documents now describe the implemented current-fork routes and explicitly keep export/evidence-gallery gated on PLAT-041, record PLAT-039 as unproved, and remove any upstream-sync dependency.
+- Final committed-head validation: `dotnet test .\\tests\\Pegasus.IntegrationTests\\Pegasus.IntegrationTests.csproj --configuration Release --no-restore --filter FullyQualifiedName~BoxDocumentBroker -nr:false` passed 26/26; prior same-code broad profile run passed 934, skipped 2, failed 0. `git diff --check` passed before commit and the worktree is clean.
+- Fresh independent review of the full exact head (`894a520c` implementation plus `29e13dd1` docs) is still required. PLAT-039 token-age proof, PLAT-041 O(1)+N/export-gallery implementation and measurement, and live Key Vault names-only evidence remain blockers under the current no-cloud/no-upstream boundary.
