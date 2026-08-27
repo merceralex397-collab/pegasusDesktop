@@ -78,3 +78,14 @@ Implementation and independent review are complete on the local branch; PR, merg
 - [ ] Curie's non-blocking production-cost-composition warning is addressed or honestly dispositioned.
 - [ ] Fresh independent review and exact-head CI pass on the resulting commit.
 - [ ] Merge, proof, and Kanmer closeout remain pending.
+
+## Final remediation checkpoint — 2026-08-27
+
+- [x] Replaced persisted/rendered raw report failure details with stable operator wording and structured diagnostic logging; added characterization coverage.
+- [x] Implemented separately selectable accepted-estimate tabs with selected-estimate identity carried through the existing Generate/retry action; independent accepted estimates remain source-attributed and do not introduce an internal rate-card rule.
+- [x] Added production persistence coverage for multiple independent accepted estimates and documented the web-fixture cost-composition disposition in the plan.
+- [x] Simplification pass completed for the remediation diff; no unapplied behaviour-preserving finding remains.
+- [x] Local remediation validation passed: Release solution build 0/0, focused report/import/persistence tests 12/12, Core 938/938, architecture 111/111, and migration grants 70/70.
+- [ ] Fresh independent review of the resulting commit passes.
+- [ ] Fresh exact-head CI for the resulting commit is fully green.
+- [ ] Merge to dev, exact-SHA main promotion, proof, and Kanmer closeout remain pending.
