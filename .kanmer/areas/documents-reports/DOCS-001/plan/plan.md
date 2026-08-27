@@ -136,3 +136,8 @@ Curie reviewed exact head `8f60fc47f97f9e6ca18078a3341f6b0795dcc77d` against `or
 - Simplification pass completed: reused the existing accepted-specification store, report projection, operator-facing vocabulary, document custody, and renderer; removed an unused tab wrapper; added no compatibility path, generic job abstraction, rate-card policy, or speculative desktop implementation.
 - Local validation after remediation: `dotnet build .\\Pegasus.slnx --configuration Release -nr:false -p:UseSharedCompilation=false --no-restore` passed with 0 warnings and 0 errors; focused report/import/persistence integration tests passed 12/12; Core tests passed 938/938; architecture tests passed 111/111; `pwsh -NoProfile -File .\\scripts\\Test-MigrationGrants.ps1` passed 70/70 migration files. Full integration validation is running separately and retains the previously evidenced unrelated intake deadlock disposition if it recurs.
 - Fresh independent review and exact-head CI are still required for the resulting commit before merge.
+
+## Final local correction — 2026-08-27
+
+- The first post-remediation full integration attempt exposed an obsolete assertion that any draft after an accepted estimate must be rejected. That contradicted the recorded multiple-independent-estimates decision. The assertion was removed; the explicit correction path remains covered by its predecessor supersession assertions, and the migration catalog expectation now includes `20260827214843_AllowMultipleAcceptedRepairSpecifications`.
+- After that correction, the affected integration set passed 14/14 and the Release solution build again passed with 0 warnings and 0 errors. The final pushed head is `fb13e943`.

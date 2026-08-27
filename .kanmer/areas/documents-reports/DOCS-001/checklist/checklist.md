@@ -89,3 +89,11 @@ Implementation and independent review are complete on the local branch; PR, merg
 - [ ] Fresh independent review of the resulting commit passes.
 - [ ] Fresh exact-head CI for the resulting commit is fully green.
 - [ ] Merge to dev, exact-SHA main promotion, proof, and Kanmer closeout remain pending.
+
+## Final local correction — 2026-08-27
+
+- [x] Removed the obsolete rejection assertion from the old single-current-estimate test while retaining explicit correction/supersession coverage.
+- [x] Updated the migration catalog expectation for the new migration; affected integration validation passed 14/14 and the Release solution build passed 0/0.
+- [ ] Fresh independent review of exact pushed head `fb13e943` passes.
+- [ ] Fresh exact-head CI for `fb13e943` is fully green.
+- [ ] Merge to dev, exact-SHA main promotion, proof, and Kanmer closeout remain pending.
