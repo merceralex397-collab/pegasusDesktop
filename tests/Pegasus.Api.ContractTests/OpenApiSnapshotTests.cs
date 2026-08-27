@@ -12,7 +12,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Pegasus.Api.ContractTests;
 
-[Collection(nameof(OpenApiSnapshotTestGroup))]
 [Trait("Category", "Contract")]
 public sealed class OpenApiSnapshotTests
 {
@@ -378,9 +377,4 @@ public sealed class OpenApiSnapshotTests
             object? resource) =>
             Task.FromResult(PolicyAuthorizationResult.Success());
     }
-}
-
-[CollectionDefinition(nameof(OpenApiSnapshotTestGroup), DisableParallelization = true)]
-public sealed class OpenApiSnapshotTestGroup
-{
 }
