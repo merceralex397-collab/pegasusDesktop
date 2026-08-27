@@ -266,3 +266,14 @@ correct three-project comment. No duplicate project or CI command is permitted.
 The Microsoft Learn OpenAPI generation and customization pages were searched
 and fetched on 2026-08-27. No product decision or external approval is needed
 for this ticket.
+
+## Simplification pass — 2026-08-27
+
+The branch diff was reviewed against the required reuse, simplification, efficiency, and altitude lenses.
+
+- Reuse: the existing `AddPegasusDesktopGateway` / `MapPegasusDesktopGateway` composition, `ContractTestWebApplicationFactory`, central package management, and existing CI `unit` job are reused. No second test project, host, API route, or CI job was added.
+- Simplification: the OpenAPI setup is one document registration, one transformer, one exporter, and one snapshot test file. The test-only policy evaluator exists only to observe the expected 404 under the repository's global fallback authorization policy; it is not application code.
+- Efficiency: the exporter selects an ephemeral loopback port and runs the already-built Web project with `--no-build --no-restore`; no external service or cloud operation is involved.
+- Altitude: no `Program.cs` change, endpoint implementation, compatibility path, generated client, or unrelated documentation was added. The OpenAPI normalizer owns only the four required stability rules.
+- Findings and dispositions: reflection produced an empty `PegasusProblem` component because its JSON converter owns serialization; the transformer now supplies the six serialized fields and the required non-null fields. The initial OpenAPI package version resolved a vulnerable `Microsoft.OpenApi` dependency; `Microsoft.AspNetCore.OpenApi` was pinned to 10.0.11, resolving `Microsoft.OpenApi` 2.7.5, and locked restore passes.
+- Unapplied findings: none.
