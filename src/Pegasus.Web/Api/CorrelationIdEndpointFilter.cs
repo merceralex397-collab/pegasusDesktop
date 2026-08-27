@@ -21,10 +21,10 @@ internal sealed partial class CorrelationIdEndpointFilter : IEndpointFilter
         EndpointFilterDelegate next)
     {
         var httpContext = context.HttpContext;
-        var correlationId = GetCorrelationId(httpContext);
-        httpContext.Items[DesktopGatewayRequestContext.CorrelationIdKey] = correlationId;
-        httpContext.Response.Headers[PegasusHeaders.CorrelationId] = correlationId;
-        LogRequest(
+        var correlationId = DesktopGatewayCorrelation.Apply(httpContext);
+        DesktopGatewayCorrelation.Echo(httpContext, correlationId);
+        DesktopGatewayLogging.LogRequest(
+            logger,
             correlationId,
             httpContext.Request.Method,
             httpContext.Request.Path);
@@ -32,24 +32,66 @@ internal sealed partial class CorrelationIdEndpointFilter : IEndpointFilter
         return await next(context);
     }
 
-    private static string GetCorrelationId(HttpContext context)
+}
+
+internal sealed class DesktopGatewayCorrelationMiddleware(
+    RequestDelegate next,
+    ILogger<DesktopGatewayCorrelationMiddleware> logger)
+{
+    public async Task InvokeAsync(HttpContext httpContext)
     {
+        var correlationId = DesktopGatewayCorrelation.Apply(httpContext);
+        DesktopGatewayCorrelation.Echo(httpContext, correlationId);
+        DesktopGatewayLogging.LogRequest(
+            logger,
+            correlationId,
+            httpContext.Request.Method,
+            httpContext.Request.Path);
+
+        await next(httpContext);
+    }
+}
+
+internal static class DesktopGatewayCorrelation
+{
+    public static string Apply(HttpContext context)
+    {
+        if (context.Items.TryGetValue(
+                DesktopGatewayRequestContext.CorrelationIdKey,
+                out var value)
+            && value is string existing)
+        {
+            return existing;
+        }
+
         var supplied = context.Request.Headers[PegasusHeaders.CorrelationId].FirstOrDefault();
-        return IsWellFormed(supplied)
+        var correlationId = IsWellFormed(supplied)
             ? supplied!
             : context.TraceIdentifier;
+        context.Items[DesktopGatewayRequestContext.CorrelationIdKey] = correlationId;
+        return correlationId;
     }
+
+    public static void Echo(HttpContext context, string correlationId) =>
+        context.Response.Headers[PegasusHeaders.CorrelationId] = correlationId;
 
     private static bool IsWellFormed(string? value) =>
         !string.IsNullOrEmpty(value)
         && value.Length <= 200
         && value.All(character => !char.IsControl(character));
+}
 
+internal static partial class DesktopGatewayLogging
+{
     [LoggerMessage(
         EventId = 1,
         Level = LogLevel.Debug,
         Message = "Desktop gateway request {CorrelationId} {Method} {Path}")]
-    private partial void LogRequest(string correlationId, string method, PathString path);
+    public static partial void LogRequest(
+        ILogger logger,
+        string correlationId,
+        string method,
+        PathString path);
 }
 
 /// <summary>

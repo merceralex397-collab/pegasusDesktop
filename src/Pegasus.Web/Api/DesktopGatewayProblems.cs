@@ -24,23 +24,12 @@ internal sealed class DesktopGatewayExceptionHandler : IExceptionHandler
             return false;
         }
 
-        var correlationId = httpContext.Items.TryGetValue(
-                DesktopGatewayRequestContext.CorrelationIdKey,
-                out var value)
-            && value is string itemCorrelationId
-            ? itemCorrelationId
-            : httpContext.TraceIdentifier;
-
+        var correlationId = DesktopGatewayCorrelation.Apply(httpContext);
         var problem = CreateProblem(exception, correlationId);
-        httpContext.Response.StatusCode = problem.Status;
-        httpContext.Response.ContentType = "application/problem+json";
-        httpContext.Response.Headers[PegasusHeaders.CorrelationId] = correlationId;
-        await JsonSerializer.SerializeAsync(
-            httpContext.Response.Body,
+        return await DesktopGatewayProblems.WriteAsync(
+            httpContext,
             problem,
-            PegasusJson.Options,
             cancellationToken);
-        return true;
     }
 
     private static PegasusProblem CreateProblem(Exception exception, string correlationId)
@@ -113,5 +102,53 @@ internal sealed class DesktopGatewayExceptionHandler : IExceptionHandler
                 null,
                 correlationId)
         };
+    }
+}
+
+internal static class DesktopGatewayProblems
+{
+    public static async Task WriteNotFoundAsync(
+        HttpContext httpContext,
+        CancellationToken cancellationToken = default)
+    {
+        if (httpContext.Response.StatusCode != StatusCodes.Status404NotFound ||
+            httpContext.Response.HasStarted ||
+            httpContext.Response.ContentLength is > 0)
+        {
+            return;
+        }
+
+        var correlationId = DesktopGatewayCorrelation.Apply(httpContext);
+        await WriteAsync(
+            httpContext,
+            new PegasusProblem(
+                PegasusProblemTypes.NotFound,
+                "Not found",
+                StatusCodes.Status404NotFound,
+                "The requested resource was not found.",
+                null,
+                correlationId),
+            cancellationToken);
+    }
+
+    public static async Task<bool> WriteAsync(
+        HttpContext httpContext,
+        PegasusProblem problem,
+        CancellationToken cancellationToken)
+    {
+        if (httpContext.Response.HasStarted)
+        {
+            return false;
+        }
+
+        httpContext.Response.StatusCode = problem.Status;
+        httpContext.Response.ContentType = "application/problem+json";
+        DesktopGatewayCorrelation.Echo(httpContext, problem.CorrelationId);
+        await JsonSerializer.SerializeAsync(
+            httpContext.Response.Body,
+            problem,
+            PegasusJson.Options,
+            cancellationToken);
+        return true;
     }
 }

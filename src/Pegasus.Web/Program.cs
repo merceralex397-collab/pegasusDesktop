@@ -761,7 +761,15 @@ if (desktopGatewayOptions is not null)
 {
     app.UseWhen(
         context => context.Request.Path.StartsWithSegments(DesktopGateway.BasePath),
-        branch => branch.UseExceptionHandler(new ExceptionHandlerOptions()));
+        branch =>
+        {
+            branch.UseMiddleware<DesktopGatewayCorrelationMiddleware>();
+            branch.UseExceptionHandler(new ExceptionHandlerOptions());
+            branch.UseStatusCodePages(async statusContext =>
+            {
+                await DesktopGatewayProblems.WriteNotFoundAsync(statusContext.HttpContext);
+            });
+        });
 }
 
 if (!app.Environment.IsDevelopment())
