@@ -1,28 +1,35 @@
-# Plan — TEST-002 Authorization and failure-path template
+# Plan — TEST-002 Authorization and failure-path test template
 
-## Governing documents
+## Objective
 
-This ticket remains docs_todo: true until the planned desktop governing documents are authored. The local Test/UAT and locked-decision material is binding now; do not create a competing product document in this task.
+Create a reusable contract-test harness for every command endpoint under `/api/v1`. Each explicit table row will supply the route, method, required `StaffAccessRight`, valid and invalid request bodies, and the concurrency/idempotency flags needed by the five failure-path theories. The harness must enumerate the real host's endpoint data source and fail closed when an endpoint is added without a row.
 
-## Chosen approach
+## Verified starting state — 2026-08-27
 
-Establish a reusable authorization and failure-path contract template for every api-v1 command.
+- `TEST-001` is done and owns the existing `Pegasus.Api.ContractTests` project and `ContractTestWebApplicationFactory`.
+- The merged `origin/dev` head `ae2ce74a8eea31232203971415fe6b652c89ea84` contains the `/api/v1` group and OpenAPI surface, but no POST, PUT, PATCH, or DELETE command endpoint yet.
+- `GWY-003` and `GWY-021` are not merged, so this ticket must not invent bearer authentication, endpoint authorization metadata, command handlers, database setup, or duplicate Core policy.
+- Therefore the initial literal command table is intentionally empty. The normal-host guard must pass with zero commands, while the throwaway probe test must prove that a newly mapped command is reported until its explicit row is added. Future endpoint tickets add their rows and their endpoint-specific effect/setup assertions within this harness.
 
-## Steps
+## Ordered implementation
 
-1. Inventory the existing api-v1 endpoint groups and their current auth/problem mapping.
-2. Build a small parameterized template covering unauthenticated, wrong-role, invalid request, not-found/conflict and known provider failure responses.
-3. Use endpoint fixtures that invoke the real Core use cases rather than recreate rules in test assertions.
-4. Apply the template to one representative command from each group and document the extension rule.
+1. Add `CommandEndpointCatalogue` under `tests/Pegasus.Api.ContractTests/CommandCoverage/`. Resolve `EndpointDataSource` from the existing factory service provider, select `POST`, `PUT`, `PATCH`, and `DELETE` route endpoints under `/api/v1`, and expose stable route/method identities plus the endpoint's declared access-right metadata when it exists. Do not enumerate Razor or MCP endpoints.
+2. Add a literal `CommandCoverageTable` with the row contract: route pattern, method, required right, a concrete request path/body factory, invalid body, and version/operation-key flags. Keep it empty for the current merged host; do not fabricate command endpoints or request data.
+3. Add a symmetric guard fact: every catalogued command has exactly one table row, and every table row has exactly one catalogued command. Failure text includes the route and method.
+4. Add the five data-driven theory classes. They use the existing `ContractTestWebApplicationFactory` and row-supplied request/effect probes; they do not re-implement Core rules. Unauthenticated requests expect 401 and only the Bearer challenge; wrong-right and stale-version cases assert the persisted effect snapshot is unchanged; invalid requests expect the mapped `PegasusProblem` 400 contract; operation-key replay expects identical response and one effect.
+5. Add a test-only derived factory that maps `POST /api/v1/__probe` and assert the guard reports that route, then remove the probe factory from the normal test path.
+6. Update `docs/desktop/08-testing/README.md` §4 to state that the template exists and future area-03 command tickets must add literal rows.
+7. Run the detected .NET/xUnit contract suite, then the locked restore/Release build and the exact throwaway-probe red/green check. Run a simplification pass over the branch diff and record the disposition here before review.
 
-## Verification
+## Scope and non-goals
 
-- Each selected command has authorization and problem-details assertions.
-- No test encodes a duplicate business policy.
-- Focused filtered contract tests pass with the detected runner syntax.
+- Owned files: `tests/Pegasus.Api.ContractTests/CommandCoverage/**`, the five TEST-002 theory files under `tests/Pegasus.Api.ContractTests/**`, and the one named sentence/table update in `docs/desktop/08-testing/README.md`.
+- No endpoint implementation, bearer-token pipeline, Core policy, database migration, CI lane, cloud/Azure write, upstream sync, `corpus/`, or unrelated documentation.
+- The current zero-command table is evidence about the merged host, not a claim that future command coverage is complete. The guard is the enforcement point for later endpoint rows.
 
-## Risks
+## Verification and exit conditions
 
-Keep only one fixture taxonomy and preserve the gateway/Core boundary.
-
-Use the detected runner/framework and record exact command output when implementation begins. Complete a simplification pass and independent review before merge.
+- Normal host catalogue and guard pass with zero command endpoints.
+- Throwaway `POST /api/v1/__probe` causes the guard to fail naming `/api/v1/__probe`; removing the probe restores green.
+- The contract project builds with warnings as errors and the five theories are wired over the applicable literal rows.
+- Simplification pass and independent review are recorded before the PR.
