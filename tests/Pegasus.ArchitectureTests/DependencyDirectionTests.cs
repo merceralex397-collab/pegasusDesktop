@@ -149,7 +149,7 @@ public sealed class DependencyDirectionTests
             ["Pegasus.Core"],
             ProjectReferences(root, "src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj"));
         Assert.Equal(
-            ["Pegasus.Core", "Pegasus.Infrastructure"],
+            ["Pegasus.Contracts", "Pegasus.Core", "Pegasus.Infrastructure"],
             ProjectReferences(root, "src/Pegasus.Web/Pegasus.Web.csproj"));
         Assert.Equal(
             ["Pegasus.Core", "Pegasus.Infrastructure"],

@@ -1426,6 +1426,7 @@
           "Microsoft.ApplicationInsights.AspNetCore": "[2.23.0, )",
           "ModelContextProtocol.AspNetCore": "[2.0.0, )",
           "OpenIddict.AspNetCore": "[7.6.0, )",
+          "Pegasus.Contracts": "[0.1.0-alpha.1, )",
           "Pegasus.Core": "[0.1.0-alpha.1, )",
           "Pegasus.Infrastructure": "[0.1.0-alpha.1, )"
         }
