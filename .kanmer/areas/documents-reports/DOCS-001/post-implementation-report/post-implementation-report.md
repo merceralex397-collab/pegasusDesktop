@@ -55,3 +55,7 @@ The FeeNote characterization assertion was also corrected after exact-head CI ru
 ## Review remediation follow-up — 2026-08-27
 
 Plato's fresh review of exact head `7039bdf7` returned FAIL on the browser test's invalid absent-locator text lookup. That test was corrected and locally passed 1/1; the correction is pushed as exact head `8f60fc47`. The prior CI run `33115676879` remains non-green because it tested `7039bdf7`; a new exact-head CI run and independent review are required for `8f60fc47` before merge. No cloud, deployment, upstream, or corpus operation was performed.
+
+## Exact-head CI checkpoint — 2026-08-27
+
+Run `33116768838` passed fully for exact head `8f60fc47f97f9e6ca18078a3341f6b0795dcc77d`, including browser, all SQL integration shards, and coverage. This replaces the superseded non-green run. Fresh independent review remains the final pre-merge gate.

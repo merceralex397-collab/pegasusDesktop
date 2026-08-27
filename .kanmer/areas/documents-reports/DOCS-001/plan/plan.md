@@ -119,3 +119,7 @@ The one-line FeeNote characterization correction and these behaviour-preserving 
 ## Review remediation follow-up — 2026-08-27
 
 Plato independently reviewed exact head `7039bdf7fe24c8d9d94f21db3721a5918ec148f7` against `origin/dev` `67109b45066648b3256eff8d4bc3491a18bfeb7d` and returned FAIL because `AssessmentReadinessSummaryBrowserTests` asserted the report panel was absent and then called `InnerTextAsync()` on that absent locator. The review also required current exact-head evidence. The production remediation itself had no new finding. The test was corrected to assert the locator count is zero, committed as `8f60fc47f97f9e6ca18078a3341f6b0795dcc77d`, and pushed to the configured `origin` remote. Local browser validation passed 1/1. Fresh exact-head CI and fresh independent review of `8f60fc47` are pending; merge remains prohibited until both pass.
+
+## Exact-head CI checkpoint — 2026-08-27
+
+GitHub Actions run `33116768838` completed green for exact head `8f60fc47f97f9e6ca18078a3341f6b0795dcc77d`: changes, documentation, local-development-scripts, reference-data, infrastructure, unit, browser, SQL integration shards 1/2/3, and `sql-integration-coverage` all passed. Fresh independent review of this exact head remains pending before merge.

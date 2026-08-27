@@ -64,3 +64,9 @@ Implementation and independent review are complete on the local branch; PR, merg
 - [ ] Fresh exact-head CI for `8f60fc47` is fully green.
 - [ ] Fresh independent review of exact head `8f60fc47` passes.
 - [ ] Merge, proof, and Kanmer closeout remain pending.
+
+## Exact-head CI checkpoint — 2026-08-27
+
+- [x] Exact-head CI run `33116768838` for `8f60fc47` is fully green, including browser, SQL shards 1/2/3, and coverage.
+- [ ] Fresh independent review of exact head `8f60fc47` passes.
+- [ ] Merge, proof, and Kanmer closeout remain pending.
