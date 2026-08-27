@@ -11,4 +11,6 @@
 - [ ] Prove PLAT-039 token-age behaviour and PLAT-041 O(1)+N call-budget/export-gallery behaviour in this fork, or route the exact dependency through Kanmer; affected acceptance remains open and export/gallery stays unexposed.
 - [x] Receive independent review of exact head `3860d43f`; it returned FAIL and its actionable findings are remediated or explicitly retained as blockers in the plan.
 
-- [ ] Obtain fresh independent re-review of exact head `c3d06081a09a47798ac7e333dcf9e0afeac026a9`.
+- [x] Receive independent re-review of exact head `c3d06081a09a47798ac7e333dcf9e0afeac026a9`; it returned FAIL on upload audit history, remediated at `894a520c`.
+
+- [ ] Obtain fresh independent re-review of exact head `894a520c67237268523b88bf43bee3610b5074d1`.

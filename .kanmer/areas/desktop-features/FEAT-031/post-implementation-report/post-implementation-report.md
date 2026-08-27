@@ -2,7 +2,7 @@
 
 ## Exact implementation head
 
-`c3d06081a09a47798ac7e333dcf9e0afeac026a9` on branch `task/dsk-07-05-box-broker-endpoints`.
+`894a520c67237268523b88bf43bee3610b5074d1` on branch `task/dsk-07-05-box-broker-endpoints`.
 
 ## Delivered scope
 
@@ -19,7 +19,7 @@ The gateway broker routes, contracts, auth/problem-details/correlation integrati
 
 ## Open acceptance conditions
 
-- The independent review of exact head `3860d43f` returned FAIL; its removal-audit, persistence-evidence, and replay-assertion findings were remediated at `c3d06081a09a47798ac7e333dcf9e0afeac026a9`. A fresh independent review of the current exact head is pending.
+- The independent review of exact head `3860d43f` returned FAIL; its removal-audit, persistence-evidence, and replay-assertion findings were remediated at `c3d06081a09a47798ac7e333dcf9e0afeac026a9`. The re-review of `c3d06081a09a47798ac7e333dcf9e0afeac026a9` returned FAIL because upload completion lacked action history; that finding was remediated at `894a520c67237268523b88bf43bee3610b5074d1`. A fresh independent review of the current exact head is pending.
 - PLAT-039 token-age success after more than one hour has not been proven in this fork; the referenced upstream ticket is absent from this board and upstream synchronization is prohibited.
 - PLAT-041 current-fork O(1)+N call-budget implementation/measurement for export/evidence-gallery has not been proven; those routes remain unexposed and the referenced upstream ticket is absent from this board.
 
@@ -36,3 +36,9 @@ A new independent review is required at this exact head. PLAT-039 token-age evid
 Local read-only package/source checks at `c3d06081a09a47798ac7e333dcf9e0afeac026a9` found `Box.Sdk.Gen` only in `src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj`; `src/Pegasus.Desktop.Infrastructure` is absent; the changed gateway marker scan found only the intentional `WWW-Authenticate: Bearer` challenge. The 26 focused route tests cover response leakage.
 
 The repository Bicep file shows the intended Container App secret and Key Vault-reference placement, but the required live Key Vault names-only read was not performed because the current operator instruction forbids cloud/deployment operations until the full refactor is complete. That acceptance evidence remains open.
+
+## Upload audit remediation update — 2026-08-27
+
+At `894a520c67237268523b88bf43bee3610b5074d1`, upload completion now persists a `document_added` action with operation key and canonical before/after metadata and validates same-key Core replay against the persisted audit. The LocalDB/Ef evidence asserts that row and the complete canonical metadata projection. Exact broker-focused tests passed 26/26; related custody tests passed 19 with 1 existing skip; Release build passed with 0 warnings/errors.
+
+Fresh independent review of this exact head is required. PLAT-039 token-age evidence, PLAT-041 O(1)+N/export-gallery implementation and measurement, and live Key Vault names-only evidence remain open under the current fork and operator boundary; this report does not claim done.

@@ -30,12 +30,12 @@ Export and evidence-gallery paths remain unexposed until their current-fork call
 
 - Initial implementation: `f31d5aefdb48575c9ee990a0515c0e68374f8d63`.
 - Review remediation: `42250fd20fcf917081bb919c140a4797ce557150`, `8ff40b2720fef1e6a36b46a4124fe1578f6c7082`, `fcf5145c5bf14354aeaee87429f45e9c7826c591`.
-- Final lifecycle/persistence evidence: `3860d43f`; removal audit remediation: `c3d06081`.
-- Current exact head: `c3d06081a09a47798ac7e333dcf9e0afeac026a9` on `task/dsk-07-05-box-broker-endpoints`.
+- Final lifecycle/persistence evidence: `3860d43f`; removal audit remediation: `c3d06081`; upload audit remediation: `894a520c`.
+- Current exact head: `894a520c67237268523b88bf43bee3610b5074d1` on `task/dsk-07-05-box-broker-endpoints`.
 
 ## Validation
 
-Coordinator-owned exact-head checks at `c3d06081a09a47798ac7e333dcf9e0afeac026a9`:
+Coordinator-owned exact-head checks at `894a520c67237268523b88bf43bee3610b5074d1`:
 
 - `dotnet build .\\Pegasus.slnx --configuration Release --no-restore -nr:false` — passed; 0 warnings, 0 errors.
 - `dotnet test .\\tests\\Pegasus.IntegrationTests\\Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter FullyQualifiedName~BoxDocumentBroker -nr:false` — passed; 26 passed, 0 failed, 0 skipped.
@@ -63,7 +63,7 @@ The ticket is not acceptance-complete yet:
 - PLAT-039: the required document-download and case-export success after more than one hour of gateway revision age has no current-fork proof. The referenced upstream IDs do not exist on this board, and upstream synchronization is prohibited.
 - PLAT-041: export/evidence-gallery O(1)+N resolution and measurement have no current-fork implementation/proof, so those routes remain intentionally unexposed. The referenced upstream IDs do not exist on this board, and upstream synchronization is prohibited.
 
-Next action: obtain fresh independent review of `c3d06081a09a47798ac7e333dcf9e0afeac026a9`; if supported scope passes, run exact-head CI and manage the PR. The two inherited acceptance conditions remain blockers for closing FEAT-031 until implemented/proven in this repository or explicitly resolved through a truthful Kanmer scope decision. Do not use upstream synchronization or cloud/deployment writes.
+Next action: obtain fresh independent review of `894a520c67237268523b88bf43bee3610b5074d1`; if supported scope passes, run exact-head CI and manage the PR. The two inherited acceptance conditions remain blockers for closing FEAT-031 until implemented/proven in this repository or explicitly resolved through a truthful Kanmer scope decision. Do not use upstream synchronization or cloud/deployment writes.
 
 ## Review remediation — 2026-08-27
 
@@ -82,3 +82,14 @@ A fresh independent re-review of the exact current head is required. PLAT-039 to
 Local read-only package/source checks at `c3d06081a09a47798ac7e333dcf9e0afeac026a9`: `rg -n "Box.Sdk.Gen" src tests --glob '*.csproj' --glob '!**/packages.lock.json' --glob '!**/obj/**' --glob '!**/bin/**'` found only `src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj:10`; `Test-Path src/Pegasus.Desktop.Infrastructure` returned `False`; the changed gateway response/provider marker scan found only the intentional `WWW-Authenticate: Bearer` challenge. The real route response scan is covered by the 26 focused tests.
 
 The repository Bicep evidence places Box credentials in Container App secret/Key Vault-reference settings, but the required live Key Vault name-only read was not performed because the current operator instruction forbids cloud/deployment operations until the full refactor is complete. This remains an open acceptance condition; no claim of provider-secret placement beyond repository evidence is made.
+
+## Upload audit remediation — 2026-08-27
+
+The independent re-review of `c3d06081a09a47798ac7e333dcf9e0afeac026a9` returned FAIL because upload completion wrote no `ActionHistory` row. Commit `894a520c67237268523b88bf43bee3610b5074d1` now records `document_added` with the caller operation key and canonical before/after metadata, validates same-key Core replay against that audit, and asserts the persisted row in the LocalDB/Ef host test. The same test continues to prove abandoned receipt/document/temp-file non-persistence, full metadata projection, removal audit/replay, and confirmation replay equality.
+
+- `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter FullyQualifiedName~BoxDocumentBroker -nr:false` — passed 26/26.
+- `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter FullyQualifiedName~CustodyOutboxIntegrationTests -nr:false` — passed 19, skipped 1, failed 0.
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false` — passed with 0 warnings and 0 errors.
+- `git diff --check` passed and the worktree is clean.
+
+A fresh independent re-review of exact head `894a520c67237268523b88bf43bee3610b5074d1` is required. PLAT-039 token-age proof, PLAT-041 call-budget/export-gallery implementation and measurement, and live Key Vault boundary evidence remain open; no upstream synchronization or cloud/deployment operation is permitted.
