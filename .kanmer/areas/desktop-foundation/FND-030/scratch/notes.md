@@ -13,3 +13,5 @@ Read-only identity inspection:
 ## Blocker — identity confirmation still missing
 
 The exact permanent `Identity/@Publisher` distinguished name, matching the self-managed certificate subject character-for-character under D-002, is not discoverable from authoritative repository files or existing tool output. The Name is discoverable as `CollisionEngineers.Pegasus`, but FND-030's plan explicitly requires both values to be operator-confirmed verbatim before any product file is created. No scaffold, product-file edit, restore, build, launch, or validation was performed. Await the exact Publisher DN (and explicit confirmation that `Identity/@Name` is `CollisionEngineers.Pegasus`) before proceeding.
+
+2026-08-27 — Newton prerequisite audit: recorded worktree clean; Identity/@Name is authoritatively CollisionEngineers.Pegasus. Exact permanent Identity/@Publisher certificate-subject DN is not present in repository or certificate artifacts; templates retain a placeholder. No WinUI files were created. Blocked pending operator provision of the exact permanent Publisher DN.
