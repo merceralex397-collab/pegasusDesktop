@@ -32,5 +32,6 @@ public sealed class IdempotentReplayCommandTests
         }
         var after = await row.ReadEffectAsync(context);
         Assert.Equal(before.ActionHistoryEntries + 1, after.ActionHistoryEntries);
+        Assert.Equal(row.ExpectedStateAfterReplay, after.State);
     }
 }

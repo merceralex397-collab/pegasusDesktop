@@ -26,7 +26,11 @@ public sealed class StaleVersionCommandTests
         await CommandCoverageAssertions.AssertProblemAsync(
             response,
             HttpStatusCode.Conflict,
-            Pegasus.Contracts.ProblemDetails.PegasusProblemTypes.VersionConflict);
+            Pegasus.Contracts.ProblemDetails.PegasusProblemTypes.VersionConflict,
+            "Version conflict",
+            row.ReadExpectedCurrentVersionAsync is null
+                ? null
+                : await row.ReadExpectedCurrentVersionAsync(context));
         var after = await row.ReadEffectAsync(context);
         Assert.Equal(before, after);
     }

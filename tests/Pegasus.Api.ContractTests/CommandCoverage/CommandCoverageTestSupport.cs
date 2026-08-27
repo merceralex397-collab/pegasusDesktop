@@ -53,15 +53,22 @@ internal static class CommandCoverageAssertions
     public static async Task AssertProblemAsync(
         HttpResponseMessage response,
         HttpStatusCode expectedStatus,
-        string expectedType)
+        string expectedType,
+        string expectedTitle,
+        string? expectedCurrentVersion = null)
     {
         Assert.Equal(expectedStatus, response.StatusCode);
         Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
 
         using var document = JsonDocument.Parse(await response.Content.ReadAsStreamAsync());
         Assert.Equal(expectedType, document.RootElement.GetProperty("type").GetString());
-        Assert.False(string.IsNullOrWhiteSpace(
-            document.RootElement.GetProperty("title").GetString()));
+        Assert.Equal(expectedTitle, document.RootElement.GetProperty("title").GetString());
+        if (expectedCurrentVersion is not null)
+        {
+            Assert.Equal(
+                expectedCurrentVersion,
+                document.RootElement.GetProperty("currentVersion").GetString());
+        }
     }
 
     public static void AssertBearerChallengeOnly(HttpResponseMessage response)

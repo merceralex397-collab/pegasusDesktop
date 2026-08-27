@@ -11,6 +11,9 @@ public delegate (HttpRequestMessage First, HttpRequestMessage Replay)
 public delegate Task<CommandEffectSnapshot> CommandEffectReader(
     CommandCoverageTestContext context);
 
+public delegate Task<string> CommandVersionReader(
+    CommandCoverageTestContext context);
+
 public sealed record CommandEffectSnapshot(string State, int ActionHistoryEntries);
 
 /// <summary>
@@ -31,7 +34,10 @@ public sealed record CommandCoverageRow(
     CommandRequestFactory CreateInvalidRequest,
     CommandReplayRequestFactory? CreateReplayRequests,
     CommandEffectReader ReadEffectAsync,
+    CommandVersionReader? ReadExpectedCurrentVersionAsync,
+    string ExpectedStateAfterReplay,
     string InvalidProblemType = Pegasus.Contracts.ProblemDetails.PegasusProblemTypes.Validation,
+    string InvalidProblemTitle = "Validation failed",
     bool IsPlaceholder = false);
 
 /// <summary>
@@ -73,6 +79,8 @@ internal static class CommandCoverageTable
         _ => new HttpRequestMessage(),
         null,
         _ => Task.FromResult(new CommandEffectSnapshot(string.Empty, 0)),
+        null,
+        string.Empty,
         IsPlaceholder: true);
 }
 
@@ -116,6 +124,19 @@ internal static class CommandCoverageGuard
         foreach (var row in rows)
         {
             var key = ToKey(row);
+            if (row.HasOperationKey != (row.CreateReplayRequests is not null))
+            {
+                mismatches.Add(
+                    $"Coverage row for {key} must provide replay requests exactly when it declares an operation key.");
+            }
+
+            if (row.HasVersionToken != (row.CreateStaleVersionRequest is not null
+                                        && row.ReadExpectedCurrentVersionAsync is not null))
+            {
+                mismatches.Add(
+                    $"Coverage row for {key} must provide stale-version and current-version evidence exactly when it declares a version token.");
+            }
+
             if (!endpointByKey.TryGetValue(key, out var matchingEndpoints))
             {
                 mismatches.Add($"Coverage row has no command endpoint for {key}.");

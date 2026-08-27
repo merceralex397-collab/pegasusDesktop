@@ -25,7 +25,8 @@ public sealed class WrongRightCommandTests
         await CommandCoverageAssertions.AssertProblemAsync(
             response,
             HttpStatusCode.Forbidden,
-            Pegasus.Contracts.ProblemDetails.PegasusProblemTypes.NotAuthorized);
+            Pegasus.Contracts.ProblemDetails.PegasusProblemTypes.NotAuthorized,
+            "Not authorized");
         var after = await row.ReadEffectAsync(context);
         Assert.Equal(before, after);
     }

@@ -24,6 +24,7 @@ public sealed class InvalidRequestCommandTests
         await CommandCoverageAssertions.AssertProblemAsync(
             response,
             HttpStatusCode.BadRequest,
-            row.InvalidProblemType);
+            row.InvalidProblemType,
+            row.InvalidProblemTitle);
     }
 }
