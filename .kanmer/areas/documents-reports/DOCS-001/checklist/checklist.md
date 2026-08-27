@@ -56,3 +56,11 @@ Implementation and independent review are complete on the local branch; PR, merg
 - [ ] Fresh exact-head CI for `9beae42d` is fully green.
 - [ ] Fresh independent review of the remediated head passes.
 - [ ] Merge, proof, and Kanmer closeout remain pending.
+
+## Review remediation follow-up — 2026-08-27
+
+- [x] Plato independently reviewed exact head `7039bdf7` and identified the invalid absent-locator text lookup.
+- [x] Replaced the invalid text lookup with a zero-count assertion; local browser test passed 1/1.
+- [ ] Fresh exact-head CI for `8f60fc47` is fully green.
+- [ ] Fresh independent review of exact head `8f60fc47` passes.
+- [ ] Merge, proof, and Kanmer closeout remain pending.

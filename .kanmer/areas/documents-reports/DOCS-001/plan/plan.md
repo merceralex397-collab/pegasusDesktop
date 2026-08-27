@@ -115,3 +115,7 @@ Plato's independent review of exact head `9beae42dcc787f8d1f199866b8a52aed22a3ba
 - `AssessmentReportVersion` now carries the rendering lease expiry from the persistence mapper, and the page exposes retry for an expired Rendering lease when the retry limit permits. The recovery test posts the stored version and proves the canonical payload reaches the renderer.
 
 The one-line FeeNote characterization correction and these behaviour-preserving fixes do not change the simplification disposition. Focused validation after remediation: `AssessmentReportDraftWebTests|OperatorLabelsCharacterizationTests` — 35 passed, 0 failed, 0 skipped. The branch was then pushed as `9beae42d`; fresh exact-head CI and a fresh independent review remain required before merge.
+
+## Review remediation follow-up — 2026-08-27
+
+Plato independently reviewed exact head `7039bdf7fe24c8d9d94f21db3721a5918ec148f7` against `origin/dev` `67109b45066648b3256eff8d4bc3491a18bfeb7d` and returned FAIL because `AssessmentReadinessSummaryBrowserTests` asserted the report panel was absent and then called `InnerTextAsync()` on that absent locator. The review also required current exact-head evidence. The production remediation itself had no new finding. The test was corrected to assert the locator count is zero, committed as `8f60fc47f97f9e6ca18078a3341f6b0795dcc77d`, and pushed to the configured `origin` remote. Local browser validation passed 1/1. Fresh exact-head CI and fresh independent review of `8f60fc47` are pending; merge remains prohibited until both pass.
