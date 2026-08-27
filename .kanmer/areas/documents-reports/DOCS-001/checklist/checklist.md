@@ -46,3 +46,13 @@ Implementation and independent review are complete on the local branch; PR, merg
 ## Exact-head CI blocker — 2026-08-26
 
 - [ ] PR #14 head `bb263b20` required CI is fully green. Browser 49/49, unit, infrastructure, repository checks, SQL shards 1 and 3, and coverage passed; SQL shard 2 failed and its authorized rerun failed identically on the unrelated intake deadlock at `EfIntakeWorkStore.CompleteProcessingAsync:338`.
+
+## Remediation checkpoint — 2026-08-27
+
+- [x] Corrected the FeeNote characterization expectation after exact-head CI identified the stale enum assertion.
+- [x] Re-authorized stored report-version retry through actor-aware case lookup and added cross-case denial coverage.
+- [x] Omitted the report-draft panel when it has neither versions nor an available generation action, with incomplete-case coverage.
+- [x] Made expired Rendering leases retryable from the retained canonical payload, with recovery coverage.
+- [ ] Fresh exact-head CI for `9beae42d` is fully green.
+- [ ] Fresh independent review of the remediated head passes.
+- [ ] Merge, proof, and Kanmer closeout remain pending.

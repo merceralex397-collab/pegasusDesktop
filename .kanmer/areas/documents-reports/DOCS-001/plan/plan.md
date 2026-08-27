@@ -105,3 +105,13 @@ _To be completed against the branch diff before opening the PR._
 ## Exact-head CI blocker — 2026-08-26
 
 PR #14 exact head `bb263b20a49af1375d2823ce5c4a803dd66bdc39` was validated by run `32959758190`. Browser passed 49/49; unit, infrastructure, changes, documentation, local-development-scripts, reference-data, SQL shards 1 and 3, and SQL coverage passed. SQL shard 2 failed, and the authorized failed-job rerun also failed, both on `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns`: SQL Server deadlock 1205 at `EfIntakeWorkStore.CompleteProcessingAsync` line 338, through `DurableIntake.ProcessQueuedIntake`. This is the same unrelated intake concurrency failure reproduced in the local suite; no DOCS-001 report path appears in either stack. The PR remains unmerged because repository policy requires green required CI. The intake deadlock must be resolved by its owning work or explicitly accepted by the owning ticket before DOCS-001 can merge.
+
+## Review remediation — 2026-08-27
+
+Plato's independent review of exact head `9beae42dcc787f8d1f199866b8a52aed22a3bade` found three actionable issues, all fixed on this branch:
+
+- The report-draft POST now re-authorizes the target case through the existing actor-aware `IGetCase` path before a stored `reportVersionId` can be read or retried. Cross-case denial coverage was added.
+- The report-draft panel now renders only when stored versions exist or generation is currently available; the incomplete-case web test proves the empty panel is absent while readiness remains visible.
+- `AssessmentReportVersion` now carries the rendering lease expiry from the persistence mapper, and the page exposes retry for an expired Rendering lease when the retry limit permits. The recovery test posts the stored version and proves the canonical payload reaches the renderer.
+
+The one-line FeeNote characterization correction and these behaviour-preserving fixes do not change the simplification disposition. Focused validation after remediation: `AssessmentReportDraftWebTests|OperatorLabelsCharacterizationTests` — 35 passed, 0 failed, 0 skipped. The branch was then pushed as `9beae42d`; fresh exact-head CI and a fresh independent review remain required before merge.
