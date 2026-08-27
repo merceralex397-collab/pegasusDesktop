@@ -77,3 +77,7 @@ A full integration attempt exposed and corrected one obsolete single-current-est
 ## Final independent review — 2026-08-27
 
 Curie reviewed exact pushed head `fb13e94318116c6f39a5941278313c67ad1e324b` against `origin/dev` and found the prior implementation blockers fixed. The only merge blocker in the review is exact-head CI run `33121490469`, which was still running. Curie's low-risk note that the web tab fixture does not POST through a projection fake that records selected identity is dispositioned: the web test proves selected identity in rendered Generate/retry markup, and production projection/persistence tests prove selected accepted-basis/source composition.
+
+## Exact-head CI completion — 2026-08-27
+
+Run 33121490469 passed fully for exact head fb13e94318116c6f39a5941278313c67ad1e324b: changes, documentation, local-development-scripts, reference-data, infrastructure, unit, browser, SQL integration shards 1/2/3, and SQL integration coverage all passed. Curie's fresh independent review passed the implementation; its low-risk web-fixture limitation is dispositioned in the plan. PR #14 is ready for the reviewed merge into dev; main promotion, proof, and Kanmer closeout remain pending.

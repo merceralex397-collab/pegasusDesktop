@@ -47,3 +47,5 @@ PR #14 exact-head CI initially failed `changes` because the new report migration
 2026-08-27 — Final local correction committed and pushed as fb13e943: obsolete single-current-estimate rejection assertion removed; migration catalog expectation updated. Affected integration set 14/14; Release solution build 0/0. Fresh Curie review and exact-head CI are pending.
 
 2026-08-27 — Curie fresh review of fb13e943: implementation blockers fixed; low-risk web POST-fixture gap dispositioned via production projection/persistence coverage. Exact-head CI run 33121490469 remains the sole pre-merge blocker.
+
+2026-08-27 — Exact-head CI 33121490469 fully green for fb13e943: all required lanes passed, including browser, unit, SQL shards 1/2/3, and coverage. Curie review implementation PASS. PR #14 ready for merge; Kanmer verification/proof and closeout still pending.

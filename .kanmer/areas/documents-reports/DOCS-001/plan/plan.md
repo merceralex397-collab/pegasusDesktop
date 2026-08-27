@@ -147,3 +147,8 @@ Curie reviewed exact head `8f60fc47f97f9e6ca18078a3341f6b0795dcc77d` against `or
 - Curie independently reviewed exact pushed head `fb13e94318116c6f39a5941278313c67ad1e324b` against `origin/dev` `67109b45066648b3256eff8d4bc3491a18bfeb7d`. Verdict: **FAIL only because exact-head CI run `33121490469` was still running**; the implementation blockers are fixed.
 - Curie verified stable operator-safe failure presentation with logger-only diagnostics, independently selectable accepted estimates, selected Generate/retry identity, production accepted-basis projection and source provenance, explicit correction semantics, migration/grants, scope, auth/retry, and the recorded simplification pass.
 - Curie's low-risk test-gap note is accepted and dispositioned: the web tab test verifies rendered selection and hidden selected identity, while production projection/persistence coverage verifies that identity resolves only to the selected accepted specification and composes `ReportRepairCosts.FromAcceptedBasis`. A POST-through-fake assertion would duplicate production composition without changing the implementation.
+
+## Exact-head CI completion — 2026-08-27
+
+- Run 33121490469 completed fully green for exact head fb13e94318116c6f39a5941278313c67ad1e324b: changes, documentation, local-development-scripts, reference-data, infrastructure, unit, browser, SQL integration shards 1/2/3, and sql-integration-coverage all passed.
+- The fresh independent review and exact-head CI gates are both satisfied. PR #14 remains open pending the reviewed merge into dev, exact-SHA main promotion, proof, and Kanmer closeout.
