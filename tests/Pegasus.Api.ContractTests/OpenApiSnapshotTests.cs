@@ -22,7 +22,7 @@ public sealed class OpenApiSnapshotTests
     {
         using var factory = new ContractTestWebApplicationFactory();
         using var client = factory.CreateClient();
-        var document = await client.GetStringAsync("/openapi/v1.json");
+        var document = await GetOpenApiDocumentAsync(client);
         var root = FindRepositoryRoot();
         var snapshotPath = Path.Combine(root, "openapi", "pegasus-v1.json");
         var actualPath = snapshotPath + ".actual";
@@ -47,7 +47,7 @@ public sealed class OpenApiSnapshotTests
     {
         using var factory = new ContractTestWebApplicationFactory();
         using var client = factory.CreateClient();
-        using var document = JsonDocument.Parse(await client.GetStringAsync("/openapi/v1.json"));
+        using var document = JsonDocument.Parse(await GetOpenApiDocumentAsync(client));
 
         var schemas = document.RootElement
             .GetProperty("components")
@@ -65,7 +65,11 @@ public sealed class OpenApiSnapshotTests
 
         using var response = await client.GetAsync("/openapi/v1.json");
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        if (response.StatusCode != HttpStatusCode.NotFound)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Fail($"Expected the disabled gateway to return 404, got {(int)response.StatusCode}: {body}");
+        }
     }
 
     [Fact]
@@ -73,7 +77,7 @@ public sealed class OpenApiSnapshotTests
     {
         using var factory = new ContractTestWebApplicationFactory();
         using var client = factory.CreateClient();
-        using var current = JsonDocument.Parse(await client.GetStringAsync("/openapi/v1.json"));
+        using var current = JsonDocument.Parse(await GetOpenApiDocumentAsync(client));
         using var previous = JsonDocument.Parse(
             File.ReadAllText(Path.Combine(FindRepositoryRoot(), "openapi", "pegasus-v1.previous.json")));
 
@@ -260,6 +264,15 @@ public sealed class OpenApiSnapshotTests
             && property.ValueKind == JsonValueKind.Object
             ? property
             : null;
+
+    private static async Task<string> GetOpenApiDocumentAsync(HttpClient client)
+    {
+        using var response = await client.GetAsync("/openapi/v1.json");
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.True(response.IsSuccessStatusCode,
+            $"GET /openapi/v1.json returned {(int)response.StatusCode}: {body}");
+        return body;
+    }
 
     private static JsonElement? GetOptionalArray(JsonElement value, string propertyName) =>
         value.ValueKind == JsonValueKind.Object
