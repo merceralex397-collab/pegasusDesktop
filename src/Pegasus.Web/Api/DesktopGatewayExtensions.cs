@@ -23,10 +23,8 @@ public static class DesktopGatewayExtensions
     }
 
     /// <summary>
-    /// Maps the empty versioned desktop API group. Authentication and endpoint
-    /// authorization are added by the endpoint tickets that attach routes to
-    /// this group; this ticket only composes the shared filters and returns the
-    /// group for those callers.
+    /// Maps the versioned desktop API group, including its shared authentication
+    /// and endpoint-authorization filters.
     /// </summary>
     public static RouteGroupBuilder MapPegasusDesktopGateway(this WebApplication app)
     {

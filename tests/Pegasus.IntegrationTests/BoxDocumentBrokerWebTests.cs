@@ -378,6 +378,7 @@ public sealed class BoxDocumentBrokerWebTests
             });
 
         Assert.Equal(HttpStatusCode.TooManyRequests, overLimit.StatusCode);
+        Assert.Equal("1800", overLimit.Headers.GetValues("Retry-After").Single());
         var problem = await DeserializeAsync<PegasusProblem>(overLimit);
         Assert.Equal(PegasusProblemTypes.RateLimited, problem.Type);
     }

@@ -153,8 +153,10 @@ internal static class DesktopGatewayProblems
     public static Task WriteRateLimitedAsync(
         HttpContext httpContext,
         string detail,
-        CancellationToken cancellationToken = default) =>
-        WriteAsync(
+        CancellationToken cancellationToken = default)
+    {
+        httpContext.Response.Headers.RetryAfter = "1800";
+        return WriteAsync(
             httpContext,
             new PegasusProblem(
                 PegasusProblemTypes.RateLimited,
@@ -164,6 +166,7 @@ internal static class DesktopGatewayProblems
                 null,
                 DesktopGatewayCorrelation.Apply(httpContext)),
             cancellationToken);
+    }
 
     public static async Task WriteNotFoundAsync(
         HttpContext httpContext,
