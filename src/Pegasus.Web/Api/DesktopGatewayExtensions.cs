@@ -8,6 +8,8 @@ namespace Pegasus.Web.Api;
 /// </summary>
 public static class DesktopGatewayExtensions
 {
+    private const string OpenApiDocumentName = "v1";
+
     public static IServiceCollection AddPegasusDesktopGateway(
         this IServiceCollection services,
         DesktopGatewayOptions options)
@@ -18,11 +20,16 @@ public static class DesktopGatewayExtensions
         services.AddSingleton(options);
         services.AddProblemDetails();
         services.AddExceptionHandler<DesktopGatewayExceptionHandler>();
+        services.AddOpenApi(OpenApiDocumentName, openApiOptions =>
+        {
+            openApiOptions.ShouldInclude = description => description.GroupName == OpenApiDocumentName;
+            openApiOptions.AddDocumentTransformer<OpenApiDocumentTransformer>();
+        });
         return services;
     }
 
     /// <summary>
-    /// Maps the empty versioned desktop API group. Authentication and endpoint
+    /// Maps the versioned desktop API group. Authentication and endpoint
     /// authorization are added by the endpoint tickets that attach routes to
     /// this group; this ticket only composes the shared filters and returns the
     /// group for those callers.
@@ -31,9 +38,12 @@ public static class DesktopGatewayExtensions
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var group = app.MapGroup(DesktopGateway.BasePath);
+        var group = app.MapGroup(DesktopGateway.BasePath)
+            .WithGroupName(OpenApiDocumentName);
         group.AddEndpointFilter<CorrelationIdEndpointFilter>();
         group.AddEndpointFilter<ClientVersionEndpointFilter>();
+        app.MapOpenApi("/openapi/{documentName}.json")
+            .AllowAnonymous();
         return group;
     }
 }

@@ -22,6 +22,7 @@ design assets remain under [`docs/design/`](design/).
 | What raw supplied evidence exists? | [Reference evidence](../reference/README.md) |
 | What are the UI rules? | [Design](design/README.md) |
 | How is a provider's email identified, classified, and mapped? | [Principal rules and mappings](principal-rules-and-mappings/README.md) — descriptive companions; the cited FRD/ADR/policy owners bind |
+| Where is the native desktop gateway contract? | [OpenAPI snapshot](../openapi/pegasus-v1.json) — the committed `/api/v1` document used for contract tests and client generation |
 | What is the Azure production state? | [Operations § Production environment](operations.md#production-environment) — the sole current-state owner; `.azure/deployment-plan.md` is the immutable 2026-08-02 execution record |
 | What do the imported source workspaces own? | [Workspaces](../workspaces/README.md) |
 | What do domain terms mean? | [`CONTEXT.md`](../CONTEXT.md) (repo root) |

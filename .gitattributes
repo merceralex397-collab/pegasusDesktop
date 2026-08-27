@@ -10,6 +10,8 @@ docs/design/assets/report-renderer/**/*.scriban text eol=lf
 docs/design/system/src/**/*.ts text eol=lf
 docs/design/system/src/**/*.tsx text eol=lf
 docs/design/system/docs/*.md text eol=lf
+openapi/pegasus-v1.json text eol=lf
+openapi/pegasus-v1.previous.json text eol=lf
 *.doc binary
 *.docx binary
 *.ico binary
