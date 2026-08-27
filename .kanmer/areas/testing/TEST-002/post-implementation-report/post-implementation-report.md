@@ -25,3 +25,7 @@ The merged `origin/dev` host was inspected through the existing `ContractTestWeb
 | `git diff --check` | Passed. |
 
 The two skipped integration tests are existing explicitly skipped cases; this ticket did not alter them. Independent review, PR CI, merge, exact-SHA main proof, and Kanmer closeout remain outstanding.
+
+## Review remediation — 2026-08-27
+
+The independent review identified six merge-readiness findings. All implementation findings are now addressed: the probe uses a derived real host and `EndpointDataSource`; versioned rows carry current-version evidence and stale tests assert it; the guard validates operation-key/replay and version/stale-row symmetry; problem assertions require exact titles; and replay asserts the row-supplied post-state plus one new history entry. The focused contract suite after remediation passes 12/12. The exact-head CI rerun remains the outstanding external validation until it is terminal and green.

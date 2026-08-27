@@ -27,3 +27,7 @@ Keep only one fixture taxonomy and preserve the gateway/Core boundary.
 - `GWY-003` and `GWY-021` remain unmerged, so there is no authoritative command authorization metadata or command handler to test yet.
 - The harness records this zero state explicitly and makes the first future command endpoint fail the symmetric coverage guard until its literal row is reviewed and added.
 - The in-memory probe test supplies a `POST /api/v1/__probe` route directly to the catalogue/guard; it is test-only and does not alter the application host.
+
+## Review correction — 2026-08-27
+
+The independent review correctly rejected treating a synthetic endpoint as equivalent to host registration. The probe has been changed to a derived `WebApplicationFactory<Program>` with a test-only `IStartupFilter` that maps `POST /api/v1/__probe`; the test now reads the resulting real `EndpointDataSource` and the focused contract suite confirms the route is reported as uncovered. This remains test-only and does not alter application routing.

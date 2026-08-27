@@ -39,5 +39,16 @@ Create a reusable contract-test harness for every command endpoint under `/api/v
 - Reused the existing `ContractTestWebApplicationFactory`, xUnit project, and shared ASP.NET problem contract; no second host, auth implementation, business-policy fixture, or new dependency was introduced.
 - Kept one endpoint catalogue and one literal row type. The five required theories are thin consumers of row-supplied request/effect delegates instead of repeating endpoint-specific setup.
 - The current row set remains empty because the verified host has no command endpoints. xUnit requires at least one data item for a theory, so a private placeholder row is used only to keep each future-row theory discoverable; each theory exits before creating a request, and the placeholder cannot satisfy the coverage guard because it is not in `Rows`.
-- The probe is an in-memory `RouteEndpointBuilder` rather than a derived web host, eliminating static-assets and application-startup machinery while still exercising the real catalogue/guard code path.
+- The probe uses a derived `WebApplicationFactory<Program>` with a test-only startup filter and reads the resulting real `EndpointDataSource`; this proves host registration without changing product routing.
 - No behaviour-changing simplification was identified. Reflection-based access-right discovery is limited to test-side endpoint metadata and avoids inventing or duplicating the not-yet-merged GWY-003 metadata type; it will be exercised by the guard when that production metadata exists.
+
+## Independent review findings and dispositions — 2026-08-27
+
+- **Real host probe — fixed:** replaced the synthetic `RouteEndpointBuilder` probe with a derived `WebApplicationFactory<Program>` and test-only startup filter mapping `POST /api/v1/__probe`; the guard now reads the factory's real `EndpointDataSource`.
+- **Stale current version — fixed:** rows now provide an expected-current-version reader when `HasVersionToken` is true, and the stale theory asserts the `currentVersion` extension.
+- **Operation-row completeness — fixed:** the guard rejects operation-key rows without replay factories and rejects replay factories on rows without operation keys.
+- **Mapped problem title — fixed:** the shared problem assertion and rows now require/assert the exact canonical title for invalid requests; wrong-right and stale assertions also use their exact current titles.
+- **Replay effect evidence — fixed:** rows provide the expected post-replay state and the replay theory asserts it as well as exactly one new action-history entry and identical response bodies.
+- **CI stall — rerun authorized and performed:** the first run's `changes` checkout stalled and was cancelled; the exact-head run was rerun. The rerun was still pending/in progress at this note and must reach a terminal green result before merge.
+
+The empty table and placeholder remain deliberate for the verified zero-command host; the independent review accepted that aspect.
