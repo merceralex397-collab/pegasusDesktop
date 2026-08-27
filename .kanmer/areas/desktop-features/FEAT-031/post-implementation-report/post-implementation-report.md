@@ -30,3 +30,9 @@ This report does not claim the ticket is done. The open acceptance conditions mu
 The current branch head is `c3d06081a09a47798ac7e333dcf9e0afeac026a9`. The coordinator added a `document_logically_removed` history row with reason, operation key, and before/after snapshots; the LocalDB/Ef test now checks receipt preservation, full canonical metadata, removal audit state, and equal original/replay response bodies. The Release build passed with 0 warnings/errors and the broker-focused test suite passed 26/26.
 
 A new independent review is required at this exact head. PLAT-039 token-age evidence, PLAT-041 O(1)+N/export-gallery implementation and measurement, and the boundary evidence restricted by the current no-cloud/deployment operator instruction remain open; this report does not claim done.
+
+## Boundary evidence update — 2026-08-27
+
+Local read-only package/source checks at `c3d06081a09a47798ac7e333dcf9e0afeac026a9` found `Box.Sdk.Gen` only in `src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj`; `src/Pegasus.Desktop.Infrastructure` is absent; the changed gateway marker scan found only the intentional `WWW-Authenticate: Bearer` challenge. The 26 focused route tests cover response leakage.
+
+The repository Bicep file shows the intended Container App secret and Key Vault-reference placement, but the required live Key Vault names-only read was not performed because the current operator instruction forbids cloud/deployment operations until the full refactor is complete. That acceptance evidence remains open.

@@ -76,3 +76,9 @@ Remediation committed at `c3d06081a09a47798ac7e333dcf9e0afeac026a9`: logical rem
 - `git diff --check` passed and the branch worktree is clean.
 
 A fresh independent re-review of the exact current head is required. PLAT-039 token-age proof, PLAT-041 call-budget/export-gallery implementation and measurement, and the repository/cloud boundary evidence remain open acceptance blockers; no export/gallery route is exposed and no cloud/deployment read or write is being used under the current operator boundary.
+
+## Boundary evidence update — 2026-08-27
+
+Local read-only package/source checks at `c3d06081a09a47798ac7e333dcf9e0afeac026a9`: `rg -n "Box.Sdk.Gen" src tests --glob '*.csproj' --glob '!**/packages.lock.json' --glob '!**/obj/**' --glob '!**/bin/**'` found only `src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj:10`; `Test-Path src/Pegasus.Desktop.Infrastructure` returned `False`; the changed gateway response/provider marker scan found only the intentional `WWW-Authenticate: Bearer` challenge. The real route response scan is covered by the 26 focused tests.
+
+The repository Bicep evidence places Box credentials in Container App secret/Key Vault-reference settings, but the required live Key Vault name-only read was not performed because the current operator instruction forbids cloud/deployment operations until the full refactor is complete. This remains an open acceptance condition; no claim of provider-secret placement beyond repository evidence is made.
