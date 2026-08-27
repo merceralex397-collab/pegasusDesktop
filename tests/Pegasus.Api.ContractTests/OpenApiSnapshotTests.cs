@@ -38,7 +38,7 @@ public sealed class OpenApiSnapshotTests
                 + $"Review it and regenerate with {RegenerationCommand}.");
         }
 
-        var expected = File.ReadAllBytes(snapshotPath);
+        var expected = Normalize(File.ReadAllText(snapshotPath));
         Assert.True(actual.SequenceEqual(expected),
             $"The OpenAPI snapshot differs from {snapshotPath}. Review the contract and regenerate with {RegenerationCommand}.");
     }
@@ -371,6 +371,9 @@ public sealed class OpenApiSnapshotTests
             builder.UseSetting("Features:DesktopGateway", "false");
             builder.ConfigureTestServices(services =>
             {
+                services.RemoveAll<IAuthenticationService>();
+                services.AddSingleton<IAuthenticationService,
+                    ContractTestWebApplicationFactory.NoOpAuthenticationService>();
                 services.RemoveAll<IPolicyEvaluator>();
                 services.AddSingleton<IPolicyEvaluator, AllowAllPolicyEvaluator>();
             });

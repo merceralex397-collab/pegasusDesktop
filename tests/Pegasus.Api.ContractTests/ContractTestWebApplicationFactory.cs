@@ -24,7 +24,7 @@ public sealed class ContractTestWebApplicationFactory : WebApplicationFactory<Pr
         });
     }
 
-    private sealed class NoOpAuthenticationService : IAuthenticationService
+    internal sealed class NoOpAuthenticationService : IAuthenticationService
     {
         public Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string? scheme) =>
             Task.FromResult(AuthenticateResult.NoResult());
