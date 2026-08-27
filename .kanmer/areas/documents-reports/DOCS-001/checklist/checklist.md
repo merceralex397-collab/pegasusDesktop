@@ -97,3 +97,9 @@ Implementation and independent review are complete on the local branch; PR, merg
 - [ ] Fresh independent review of exact pushed head `fb13e943` passes.
 - [ ] Fresh exact-head CI for `fb13e943` is fully green.
 - [ ] Merge to dev, exact-SHA main promotion, proof, and Kanmer closeout remain pending.
+
+## Final independent review — 2026-08-27
+
+- [x] Curie independently reviewed exact head `fb13e943`; no implementation blocker remained. The low-risk web-fixture POST gap is explicitly dispositioned in the plan and production projection/persistence coverage.
+- [ ] Exact-head CI run `33121490469` completes green.
+- [ ] Merge to dev, exact-SHA main promotion, proof, and Kanmer closeout remain pending.

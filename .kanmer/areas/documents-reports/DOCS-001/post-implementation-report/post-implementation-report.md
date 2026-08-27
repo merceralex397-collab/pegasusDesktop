@@ -73,3 +73,7 @@ The remediation remained proportionate: existing stores, report projection, cust
 ## Final local correction — 2026-08-27
 
 A full integration attempt exposed and corrected one obsolete single-current-estimate assertion; it was not a production failure. The migration catalog test was updated for `20260827214843_AllowMultipleAcceptedRepairSpecifications`. The affected integration set then passed 14/14 and the Release solution build passed with 0 warnings and 0 errors. The final pushed head is `fb13e943`; fresh independent review and exact-head CI remain required.
+
+## Final independent review — 2026-08-27
+
+Curie reviewed exact pushed head `fb13e94318116c6f39a5941278313c67ad1e324b` against `origin/dev` and found the prior implementation blockers fixed. The only merge blocker in the review is exact-head CI run `33121490469`, which was still running. Curie's low-risk note that the web tab fixture does not POST through a projection fake that records selected identity is dispositioned: the web test proves selected identity in rendered Generate/retry markup, and production projection/persistence tests prove selected accepted-basis/source composition.
