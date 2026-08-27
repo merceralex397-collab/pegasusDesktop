@@ -420,9 +420,18 @@ internal sealed class EfDocumentCustodyStore(
         LogicallyRemoveDocumentCommand command,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(command);
         ValidateActor(command.Actor);
         ArgumentException.ThrowIfNullOrWhiteSpace(command.Reason);
-        ArgumentException.ThrowIfNullOrWhiteSpace(command.OperationKey);
+        var reason = command.Reason.Trim();
+        if (reason.Length > 500)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(command),
+                "The document removal reason cannot exceed 500 characters.");
+        }
+
+        var operationKey = ValidateOperationKey(command.OperationKey);
 
         await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
@@ -433,15 +442,60 @@ internal sealed class EfDocumentCustodyStore(
             ?? throw new InvalidOperationException("The document occurrence is unavailable.");
         var version = await context.Set<DocumentVersionEntity>()
             .SingleAsync(value => value.Id == occurrence.VersionId, cancellationToken);
-        if (version.IsLogicallyRemoved)
+
+        var beforeJson = DocumentActionHistory.Serialize(new DocumentRemovalHistoryValue(
+            command.CaseId,
+            occurrence.Id,
+            version.Id,
+            version.FileName,
+            version.MediaType,
+            version.ContentLength,
+            version.Sha256,
+            occurrence.SemanticRole,
+            occurrence.Source,
+            version.IsCurrent,
+            version.IsLogicallyRemoved,
+            version.RemovalReason,
+            version.RemovalOperationKey));
+        var afterJson = DocumentActionHistory.Serialize(new DocumentRemovalHistoryValue(
+            command.CaseId,
+            occurrence.Id,
+            version.Id,
+            version.FileName,
+            version.MediaType,
+            version.ContentLength,
+            version.Sha256,
+            occurrence.SemanticRole,
+            occurrence.Source,
+            false,
+            true,
+            reason,
+            operationKey));
+        var history = await FindDocumentHistoryAsync(context, operationKey, cancellationToken);
+        if (history is not null)
         {
-            if (!string.Equals(version.RemovalReason, command.Reason.Trim(), StringComparison.Ordinal)
-                || !string.Equals(version.RemovalOperationKey, command.OperationKey, StringComparison.Ordinal))
+            DocumentActionHistory.RequireExactReplay(
+                history,
+                "case_document",
+                occurrence.Id.ToString("D"),
+                "document_logically_removed",
+                command.Actor,
+                reason,
+                afterJson);
+            if (!version.IsLogicallyRemoved
+                || !string.Equals(version.RemovalReason, reason, StringComparison.Ordinal)
+                || !string.Equals(version.RemovalOperationKey, operationKey, StringComparison.Ordinal))
             {
-                throw new InvalidOperationException("The document has already been removed for a different reason.");
+                throw new InvalidDataException(
+                    "The audited logical document removal does not match the document state.");
             }
 
             return;
+        }
+        if (version.IsLogicallyRemoved)
+        {
+            throw new InvalidDataException(
+                "The logical document removal is missing its audited action history.");
         }
         var workflow = await RequireWorkflowAsync(context, command.CaseId, cancellationToken);
         CaseMutationGuard.Require(
@@ -454,7 +508,18 @@ internal sealed class EfDocumentCustodyStore(
         version.IsLogicallyRemoved = true;
         version.IsCurrent = false;
         version.RemovalReason = command.Reason.Trim();
-        version.RemovalOperationKey = command.OperationKey;
+        version.RemovalOperationKey = operationKey;
+        var now = timeProvider.GetUtcNow();
+        context.ActionHistory.Add(DocumentActionHistory.Succeeded(
+            "case_document",
+            occurrence.Id.ToString("D"),
+            "document_logically_removed",
+            command.Actor,
+            now,
+            operationKey,
+            reason,
+            beforeJson,
+            afterJson));
         CaseMutationGuard.Complete(workflow);
         await context.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
@@ -891,6 +956,21 @@ internal sealed class EfDocumentCustodyStore(
         Guid OccurrenceId,
         DateTimeOffset? ConfirmedAtUtc,
         string? Reason);
+
+    private sealed record DocumentRemovalHistoryValue(
+        Guid CaseId,
+        Guid OccurrenceId,
+        Guid VersionId,
+        string FileName,
+        string MediaType,
+        long ContentLength,
+        string Sha256,
+        DocumentSemanticRole SemanticRole,
+        DocumentSource Source,
+        bool IsCurrent,
+        bool IsLogicallyRemoved,
+        string? RemovalReason,
+        string? RemovalOperationKey);
 
     private sealed record ExportItem(
         DocumentOccurrenceEntity Occurrence,

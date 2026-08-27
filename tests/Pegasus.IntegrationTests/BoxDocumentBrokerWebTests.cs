@@ -441,6 +441,8 @@ public sealed class BoxDocumentBrokerWebTests
             true,
             useIntegrationTestAuthentication: true);
         await SeedBrokerCaseAsync(baseFactory.Database);
+        var receiptCountBeforeAbandonedUpload = await baseFactory.Database.ScalarAsync<int>(
+            "SELECT COUNT(*) FROM IntakeReceipts");
         var getCase = new RecordingGetCase(CreateDetails(0));
         using var factory = baseFactory.WithWebHostBuilder(builder =>
         {
@@ -471,6 +473,9 @@ public sealed class BoxDocumentBrokerWebTests
                 Assert.Empty(await abandonedVerification.Set<DocumentVersionEntity>().ToArrayAsync());
                 Assert.Empty(await abandonedVerification.Set<CaseDocumentEntity>().ToArrayAsync());
             }
+            Assert.Equal(
+                receiptCountBeforeAbandonedUpload,
+                await baseFactory.Database.ScalarAsync<int>("SELECT COUNT(*) FROM IntakeReceipts"));
             using var abandonedList = await client.GetAsync(
                 $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents");
             await AssertProviderDetailsAbsentAsync(abandonedList);
@@ -503,6 +508,14 @@ public sealed class BoxDocumentBrokerWebTests
             Assert.Equal(HttpStatusCode.Created, complete.StatusCode);
             var completion = await DeserializeAsync<DocumentUploadCompletionResponse>(complete);
             Assert.Equal(content.Length, completion.Document.ContentLength);
+            Assert.Equal("broker-image.jpg", completion.Document.FileName);
+            Assert.Equal("image/jpeg", completion.Document.MediaType);
+            Assert.Equal("Image", completion.Document.SemanticRole);
+            Assert.Equal("StaffUpload", completion.Document.Source);
+            Assert.Equal("Confirmed", completion.Document.CustodyStatus);
+            Assert.True(completion.Document.IsCurrent);
+            Assert.False(completion.Document.IsLogicallyRemoved);
+            Assert.Equal("staff-upload:desk:broker-persistence-upload", completion.Document.SourceOccurrenceIdentity);
             Assert.Equal(
                 Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant(),
                 completion.Document.Sha256);
@@ -513,8 +526,26 @@ public sealed class BoxDocumentBrokerWebTests
             var version = await verification.Set<DocumentVersionEntity>()
                 .SingleAsync(value => value.Id == occurrence.VersionId);
             Assert.Equal(completion.Document.OccurrenceId, occurrence.Id);
+            Assert.Equal(occurrence.DocumentId, completion.Document.DocumentId);
+            Assert.Equal(version.Id, completion.Document.VersionId);
+            Assert.Equal(DocumentSemanticRole.Image, occurrence.SemanticRole);
+            Assert.Equal(DocumentSource.StaffUpload, occurrence.Source);
+            Assert.Equal(completion.Document.FileName, version.FileName);
+            Assert.Equal(completion.Document.MediaType, version.MediaType);
             Assert.Equal(content.Length, version.ContentLength);
             Assert.Equal(completion.Document.Sha256, version.Sha256);
+            Assert.Equal(DocumentCustodyStatus.Confirmed, version.CustodyStatus);
+            Assert.Equal(completion.Document.CreatedBy, version.CreatedBy);
+            Assert.True(version.IsCurrent);
+            Assert.False(version.IsLogicallyRemoved);
+            Assert.Equal(occurrence.RecordedAtUtc, completion.Document.RecordedAtUtc);
+            Assert.Equal(occurrence.Ordinal, completion.Document.Ordinal);
+            Assert.Equal(
+                occurrence.ThirdPartyVehicleConfirmedAtUtc,
+                completion.Document.ThirdPartyVehicleConfirmedAtUtc);
+            Assert.Equal(
+                occurrence.ThirdPartyVehicleConfirmationReason,
+                completion.Document.ThirdPartyVehicleConfirmationReason);
             Assert.True(File.Exists(Path.Combine(
                 baseFactory.ArtifactDirectory,
                 "custody",
@@ -564,6 +595,10 @@ public sealed class BoxDocumentBrokerWebTests
                 });
             Assert.Equal(HttpStatusCode.OK, replay.StatusCode);
 
+            var confirmedPayload = await DeserializeAsync<DocumentMutationResponse>(confirmed);
+            var replayPayload = await DeserializeAsync<DocumentMutationResponse>(replay);
+            Assert.Equal(confirmedPayload, replayPayload);
+
             var history = await verification.ActionHistory
                 .SingleAsync(value => value.CorrelationId == "desk:broker-persistence-confirm");
             Assert.Equal("third_party_vehicle_evidence_confirmed", history.EventKind);
@@ -572,6 +607,68 @@ public sealed class BoxDocumentBrokerWebTests
                 1,
                 await verification.ActionHistory.CountAsync(
                     value => value.CorrelationId == "desk:broker-persistence-confirm"));
+
+            var removalLease = await leaseScope.ServiceProvider
+                .GetRequiredService<ILeaseCaseForEdit>()
+                .ClaimAsync(
+                    new(CaseId, 2, actor, "broker-persistence-remove-lease"),
+                    CancellationToken.None);
+            using var removed = await client.SendAsync(new HttpRequestMessage(
+                HttpMethod.Delete,
+                $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/{occurrence.Id:D}")
+            {
+                Content = JsonContent.Create(new RemoveDocumentRequest
+                {
+                    ExpectedVersion = removalLease.Version,
+                    OperationKey = "desk:broker-persistence-remove",
+                    EditLeaseToken = removalLease.Token,
+                    Reason = "The retained image is not part of this case file."
+                })
+            });
+            Assert.Equal(HttpStatusCode.OK, removed.StatusCode);
+            await AssertProviderDetailsAbsentAsync(removed);
+
+            using var removedReplay = await client.SendAsync(new HttpRequestMessage(
+                HttpMethod.Delete,
+                $"{DesktopGateway.BasePath}/cases/{CaseId:D}/documents/{occurrence.Id:D}")
+            {
+                Content = JsonContent.Create(new RemoveDocumentRequest
+                {
+                    ExpectedVersion = removalLease.Version,
+                    OperationKey = "desk:broker-persistence-remove",
+                    EditLeaseToken = removalLease.Token,
+                    Reason = "The retained image is not part of this case file."
+                })
+            });
+            Assert.Equal(HttpStatusCode.OK, removedReplay.StatusCode);
+            Assert.Equal(
+                await DeserializeAsync<DocumentMutationResponse>(removed),
+                await DeserializeAsync<DocumentMutationResponse>(removedReplay));
+            await AssertProviderDetailsAbsentAsync(removedReplay);
+        }
+
+        await using (var removalVerification = await baseFactory.Database.CreateContextAsync())
+        {
+            var removedOccurrence = await removalVerification.Set<DocumentOccurrenceEntity>()
+                .SingleAsync(value => value.OperationKey == "desk:broker-persistence-upload");
+            var removedVersion = await removalVerification.Set<DocumentVersionEntity>()
+                .SingleAsync(value => value.Id == removedOccurrence.VersionId);
+            Assert.True(removedVersion.IsLogicallyRemoved);
+            Assert.False(removedVersion.IsCurrent);
+            Assert.Equal("The retained image is not part of this case file.", removedVersion.RemovalReason);
+
+            var removalHistory = await removalVerification.ActionHistory
+                .SingleAsync(value => value.CorrelationId == "desk:broker-persistence-remove");
+            Assert.Equal("document_logically_removed", removalHistory.EventKind);
+            Assert.Equal("The retained image is not part of this case file.", removalHistory.Reason);
+            Assert.False(string.IsNullOrWhiteSpace(removalHistory.BeforeJson));
+            Assert.False(string.IsNullOrWhiteSpace(removalHistory.AfterJson));
+            Assert.Contains("\"isLogicallyRemoved\":false", removalHistory.BeforeJson!, StringComparison.Ordinal);
+            Assert.Contains("\"isLogicallyRemoved\":true", removalHistory.AfterJson!, StringComparison.Ordinal);
+            Assert.Equal(
+                1,
+                await removalVerification.ActionHistory.CountAsync(
+                    value => value.CorrelationId == "desk:broker-persistence-remove"));
         }
     }
 
