@@ -72,3 +72,11 @@ Move the pure code → operator-label map out of `src/Pegasus.Web/Presentation/O
 - Simplification: no new interface, project, package, compatibility path, or duplicate page map was introduced. The shared helper uses stable names instead of adding a Core reference to Contracts.
 - Efficiency: label calls remain direct static calls; no cache, reflection, service, or extra runtime hop was added.
 - Altitude: documentation names the actual as-built owner and adapter; the architecture test checks the ownership boundary without adding production infrastructure. No unapplied simplification finding remains.
+
+## Review remediation — 2026-08-27
+
+- Independent review identified and the branch fixed the typed `IntakeSourceChannel` unknown-value regression: the Web adapter again throws `InvalidOperationException` with the original numeric value.
+- Independent review identified and the branch fixed the `CaseStage(string?)` fallback regression: snake_case `source_email_unlinked` remains `Source email unlinked`, while the PascalCase enum name retains the typed `Cancelled — email unlinked` label.
+- `OperatorLabelsCharacterizationTests` now covers every mapped enum value, every intake failure branch, every history mapping, custody-folder states, source-code fallbacks, provenance outputs, dynamic formatting, strict exceptions, and the two page adapters. The existing base label suites passed 8/8 before the move; the post-move focused suite passes 52/52. The sanctioned FEAT-023 wording differences are explicitly asserted.
+- The architecture guard now checks exact owner declarations, shared labels, and a repository-wide Web source-shape pattern for moved enum-to-string maps, excluding only the intentional Core-typed adapter. It passes with the full 111-fact ArchitectureTests suite.
+- Canonical desktop/gateway/design/testing references now name `OperatorVocabulary` and GWY-016; the mock-up provenance note was updated because the former classification gap is now implemented. The shared owner retains substantive reserved-vocabulary and fallback remarks.
