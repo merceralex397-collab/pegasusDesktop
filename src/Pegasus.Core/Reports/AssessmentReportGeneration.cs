@@ -19,6 +19,12 @@ public enum AssessmentReportArtifactKind
     FeeNote
 }
 
+public static class AssessmentReportFailureMessages
+{
+    public const string GenerationFailed =
+        "The report draft could not be generated. Retry the operation.";
+}
+
 public sealed record AssessmentReportLogicalKey(
     Guid CaseId,
     string AssessmentFamily,

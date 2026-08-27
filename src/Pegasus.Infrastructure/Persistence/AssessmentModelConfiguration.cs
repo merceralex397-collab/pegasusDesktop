@@ -126,9 +126,7 @@ internal static class AssessmentModelConfiguration
             entity.Property(item => item.SupersessionReason).HasMaxLength(500);
             entity.HasIndex(item => new { item.CaseId, item.Version }).IsUnique();
             entity.HasIndex(item => new { item.CaseId, item.CreationOperationKey }).IsUnique();
-            entity.HasIndex(item => item.CaseId)
-                .IsUnique()
-                .HasFilter("[State] = 'Accepted'");
+            entity.HasIndex(item => item.CaseId);
             entity.HasOne(item => item.Case)
                 .WithMany()
                 .HasForeignKey(item => item.CaseId)

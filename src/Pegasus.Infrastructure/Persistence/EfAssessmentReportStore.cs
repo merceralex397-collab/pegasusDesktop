@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Pegasus.Core.Assessment;
 using Pegasus.Core.Documents;
 using Pegasus.Core.Identity;
@@ -12,10 +13,11 @@ namespace Pegasus.Infrastructure.Persistence;
 /// committed before rendering, while the two rendered PDFs and their normal
 /// generated case-document custody rows are committed together afterwards.
 /// </summary>
-internal sealed class EfAssessmentReportStore(
+internal sealed partial class EfAssessmentReportStore(
     IDbContextFactory<PegasusDbContext> contextFactory,
     IDocumentContentStore contentStore,
-    TimeProvider timeProvider) : IAssessmentReportStore
+    TimeProvider timeProvider,
+    ILogger<EfAssessmentReportStore>? logger = null) : IAssessmentReportStore
 {
     private static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(5);
 
@@ -506,6 +508,12 @@ internal sealed class EfAssessmentReportStore(
         string reason,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(reservation);
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        if (logger is not null)
+        {
+            LogGenerationFailed(logger, reservation.Version.Id, reason);
+        }
         for (var attempt = 0; ; attempt++)
         {
             try
@@ -525,8 +533,6 @@ internal sealed class EfAssessmentReportStore(
         string reason,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(reservation);
-        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await context.Database.BeginTransactionAsync(
             IsolationLevel.Serializable,
@@ -542,9 +548,7 @@ internal sealed class EfAssessmentReportStore(
             return;
         }
 
-        entity.FailureReason = reason.Trim().Length > 2000
-            ? reason.Trim()[..2000]
-            : reason.Trim();
+        entity.FailureReason = AssessmentReportFailureMessages.GenerationFailed;
         var canRetry = AssessmentReportRetryPolicy.CanRetry(entity.AttemptCount);
         entity.State = canRetry
             ? AssessmentReportGenerationState.Pending.ToString()
@@ -700,4 +704,13 @@ internal sealed class EfAssessmentReportStore(
         result.Validate();
         return result;
     }
+
+    [LoggerMessage(
+        EventId = 6101,
+        Level = LogLevel.Error,
+        Message = "Assessment report generation failed for report version {ReportVersionId}: {DiagnosticReason}")]
+    private static partial void LogGenerationFailed(
+        ILogger logger,
+        Guid reportVersionId,
+        string diagnosticReason);
 }

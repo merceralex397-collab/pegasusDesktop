@@ -311,7 +311,7 @@ public sealed class AssessmentPersistenceIntegrationTests
         Assert.Equal(AssessmentReportGenerationState.Pending.ToString(), entity.State);
         Assert.Null(entity.LeaseId);
         Assert.Equal(1, entity.AttemptCount);
-        Assert.True(entity.FailureReason is "first failure" or "second failure");
+        Assert.Equal(AssessmentReportFailureMessages.GenerationFailed, entity.FailureReason);
     }
 
     [Fact]
@@ -611,6 +611,62 @@ public sealed class AssessmentPersistenceIntegrationTests
         Assert.Equal(corrected.SpecificationId,
             (await harness.RepairSpecifications.GetVersionAsync(
                 caseId, corrected.SpecificationId, CancellationToken.None))!.SpecificationId);
+    }
+
+    [Fact]
+    public async Task IndependentAcceptedEstimatesRemainSeparateAndListable()
+    {
+        await using var harness = await Harness.CreateAsync();
+        var first = await harness.AcceptReportSpecificationAsync(
+            (await harness.AcceptAsync("repair-estimate-first-case")).Identity.CaseId);
+        var caseId = first.CaseId;
+        var source = new RepairSpecificationSource(
+            RepairSpecificationSourceRoute.Manual,
+            "case://repair-spec/second-source",
+            "source-v2",
+            new string('b', 64));
+        var basis = new RepairCalculationBasis(200m, 40m, 10m, 5m, true, 51m, 306m, "external-estimate/v1");
+        var lines = new EstimateLineInput[]
+        {
+            new("new_part", null, "Second bumper", null, 40m, false, null, null,
+                "confirmed", "case", "Independent estimate"),
+        };
+
+        var draftLease = await harness.AcquireLeaseAsync(
+            caseId, 2, harness.EngineerActor, "repair-spec-second-draft-lease");
+        var draft = await harness.RepairSpecifications.StartDraftAsync(
+            new(
+                caseId,
+                draftLease.Version,
+                source,
+                harness.EngineerActor,
+                "repair-spec-second-draft",
+                "Record an independent repair estimate.",
+                draftLease.Token,
+                Lines: lines),
+            CancellationToken.None);
+        var acceptLease = await harness.AcquireLeaseAsync(
+            caseId, 3, harness.EngineerActor, "repair-spec-second-accept-lease");
+        var second = await harness.RepairSpecifications.AcceptAsync(
+            new(
+                caseId,
+                acceptLease.Version,
+                draft.SpecificationId,
+                draft.Version,
+                source,
+                basis,
+                harness.EngineerActor,
+                "repair-spec-second-accept",
+                "Accept the independent repair estimate.",
+                acceptLease.Token),
+            CancellationToken.None);
+
+        var accepted = await harness.RepairSpecifications.ListAcceptedAsync(
+            caseId, CancellationToken.None);
+        Assert.Equal(2, accepted.Count);
+        Assert.Contains(accepted, item => item.SpecificationId == first.SpecificationId);
+        Assert.Contains(accepted, item => item.SpecificationId == second.SpecificationId);
+        Assert.All(accepted, item => Assert.Equal(RepairSpecificationState.Accepted, item.State));
     }
 
     [Fact]

@@ -109,7 +109,7 @@ public sealed partial class AssessmentReportDraftWebTests
             [],
             DateTimeOffset.UtcNow,
             null,
-            "Renderer unavailable",
+            "System.InvalidOperationException: C:\\private\\renderer-state",
             1,
             DateTimeOffset.UtcNow.AddMinutes(-1)));
         using var factory = Compose(
@@ -128,7 +128,8 @@ public sealed partial class AssessmentReportDraftWebTests
 
         Assert.Contains("Current report: Retry", html, StringComparison.Ordinal);
         Assert.Contains("Retry report draft", html, StringComparison.Ordinal);
-        Assert.Contains("Renderer unavailable", html, StringComparison.Ordinal);
+        Assert.Contains(AssessmentReportFailureMessages.GenerationFailed, html, StringComparison.Ordinal);
+        Assert.DoesNotContain("C:\\private\\renderer-state", html, StringComparison.Ordinal);
         Assert.DoesNotContain("Report drafts are not approved or sent.", html, StringComparison.Ordinal);
     }
 
@@ -211,6 +212,47 @@ public sealed partial class AssessmentReportDraftWebTests
         Assert.Equal(1, store.BeginCount);
     }
 
+    [Fact]
+    public async Task MultipleAcceptedEstimatesRemainSelectableAndCarryTheSelectedEstimate()
+    {
+        using var baseFactory = new IntakeWebApplicationFactory();
+        var caseId = Guid.NewGuid();
+        var newest = AcceptedSpecification(caseId, 2);
+        var oldest = AcceptedSpecification(caseId, 1);
+        using var factory = Compose(
+            baseFactory,
+            new FakeGetCase(caseId),
+            new FakeGetCaseAssessment(FullAssessmentProjection(caseId)),
+            new FakeProjectionSource(ReadyInput(caseId)),
+            new FakeRenderer([1]),
+            repairSpecifications: new FakeRepairSpecificationStore([newest, oldest]));
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("https://localhost")
+        });
+
+        var newestHtml = await GetHtmlAsync(client, $"/Cases/{caseId:D}/Assessment?section=estimate");
+        Assert.Contains("Estimate 2", newestHtml, StringComparison.Ordinal);
+        Assert.Contains("Estimate 1", newestHtml, StringComparison.Ordinal);
+        Assert.Contains(
+            $"name=\"selectedRepairSpecificationId\" value=\"{newest.SpecificationId:D}\"",
+            newestHtml,
+            StringComparison.Ordinal);
+
+        var oldestHtml = await GetHtmlAsync(
+            client,
+            $"/Cases/{caseId:D}/Assessment?section=estimate&selectedRepairSpecificationId={oldest.SpecificationId:D}");
+        Assert.Contains(
+            $"name=\"selectedRepairSpecificationId\" value=\"{oldest.SpecificationId:D}\"",
+            oldestHtml,
+            StringComparison.Ordinal);
+        Assert.Contains("aria-selected=\"true\"", oldestHtml, StringComparison.Ordinal);
+        Assert.Contains(
+            $"href=\"?section=estimate&amp;selectedRepairSpecificationId={oldest.SpecificationId:D}\"",
+            oldestHtml,
+            StringComparison.Ordinal);
+    }
+
     private static AssessmentReportVersion StoredVersion(
         Guid caseId,
         AssessmentReportGenerationState state,
@@ -229,11 +271,36 @@ public sealed partial class AssessmentReportDraftWebTests
             [],
             DateTimeOffset.UtcNow,
             null,
-            "Renderer unavailable",
+            "System.InvalidOperationException: C:\\private\\renderer-state",
             1,
             nextAttemptAtUtc,
             leaseExpiresAtUtc);
     }
+
+    private static RepairSpecificationVersion AcceptedSpecification(Guid caseId, int version) => new(
+        Guid.NewGuid(),
+        caseId,
+        version,
+        RepairSpecificationState.Accepted,
+        new(
+            RepairSpecificationSourceRoute.Manual,
+            $"estimate-{version}.json",
+            $"source-v{version}",
+            new string((char)('a' + version), 64)),
+        [
+            new(
+                Guid.NewGuid(), 1, "new_part", "123", $"Part {version}", null, 100m, false,
+                null, null, "confirmed", "case", null,
+                ActorKind.Staff, "engineer-1", DateTimeOffset.UtcNow,
+                "engineer-1", DateTimeOffset.UtcNow)
+        ],
+        new RepairCalculationBasis(5m, 30m, 50m, 20m, true, 5m, 110m, "external-estimate/v1"),
+        "engineer-1",
+        DateTimeOffset.UtcNow,
+        "engineer-1",
+        DateTimeOffset.UtcNow,
+        null,
+        null);
 
     private static WebApplicationFactory<Program> Compose(
         IntakeWebApplicationFactory baseFactory,
@@ -241,7 +308,8 @@ public sealed partial class AssessmentReportDraftWebTests
         IGetCaseAssessment getCaseAssessment,
         IAssessmentReportProjectionSource projectionSource,
         IAssessmentReportRenderer renderer,
-        FakeAssessmentReportStore? reportStore = null) =>
+        FakeAssessmentReportStore? reportStore = null,
+        IRepairSpecificationStore? repairSpecifications = null) =>
         baseFactory.WithWebHostBuilder(builder =>
             builder.ConfigureServices(services =>
             {
@@ -255,6 +323,11 @@ public sealed partial class AssessmentReportDraftWebTests
                 services.AddSingleton(projectionSource);
                 services.AddSingleton(renderer);
                 services.AddSingleton<IAssessmentReportStore>(reportStore ?? new FakeAssessmentReportStore());
+                if (repairSpecifications is not null)
+                {
+                    services.RemoveAll<IRepairSpecificationStore>();
+                    services.AddSingleton(repairSpecifications);
+                }
             }));
 
     private static AssessmentReportProjectionInput ReadyInput(Guid caseId)
@@ -397,6 +470,45 @@ public sealed partial class AssessmentReportDraftWebTests
             Guid? selectedRepairSpecificationId = null,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<AssessmentReportProjectionInput?>(input);
+    }
+
+    private sealed class FakeRepairSpecificationStore(
+        IReadOnlyList<RepairSpecificationVersion> accepted) : IRepairSpecificationStore
+    {
+        public Task<RepairSpecificationVersion> StartDraftAsync(
+            StartRepairSpecificationDraftRequest request,
+            CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
+
+        public Task<RepairSpecificationVersion> AcceptAsync(
+            AcceptRepairSpecificationRequest request,
+            CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
+
+        public Task<RepairSpecificationVersion?> GetVersionAsync(
+            Guid caseId,
+            Guid specificationId,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<RepairSpecificationVersion?>(
+                accepted.SingleOrDefault(item => item.CaseId == caseId
+                    && item.SpecificationId == specificationId));
+
+        public Task<RepairSpecificationVersion?> GetCurrentAcceptedAsync(
+            Guid caseId,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<RepairSpecificationVersion?>(
+                accepted.Count > 0 ? accepted[0] : null);
+
+        public Task<IReadOnlyList<RepairSpecificationVersion>> ListAcceptedAsync(
+            Guid caseId,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<RepairSpecificationVersion>>(
+                accepted.Where(item => item.CaseId == caseId).ToArray());
+
+        public Task<RepairSpecificationVersion?> GetCurrentDraftAsync(
+            Guid caseId,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<RepairSpecificationVersion?>(null);
     }
 
     private sealed class FakeRenderer(byte[] pdfBytes) : IAssessmentReportRenderer
