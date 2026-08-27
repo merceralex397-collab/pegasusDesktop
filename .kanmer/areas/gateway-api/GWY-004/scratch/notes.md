@@ -15,3 +15,7 @@
 2026-08-27 re-review: Hilbert returned PASS for final head ff2fb8bf after raw snapshot comparison and LF attributes. Review confirms gate/transformer/route wiring, test-host SQL isolation, snapshots/exporter, prior-snapshot logic, scope, package lock/security, and simplification. Non-blocking note was stale report text; reconciled post-implementation-report through MCP with final head, CI run 33048018900, and review evidence.
 
 2026-08-27 — Promoted reviewed dev exact SHA ae2ce74a8eea31232203971415fe6b652c89ea84 to origin/main with the documented atomic lease-guarded ref update after confirming origin/main was an ancestor. Read-back confirmed origin/dev and origin/main both equal ae2ce74a8eea31232203971415fe6b652c89ea84. PR #30 was already merged; next: run merged-main proof and close the Kanmer ticket.
+
+2026-08-27 — On detached origin/main ae2ce74a8eea31232203971415fe6b652c89ea84, locked restore and Release build passed (0 warnings/0 errors); exporter was successful and git diff --exit-code -- openapi/ was clean; current/previous snapshot hashes both DF3761703FB4122C4E173D091BB6D654D49DA4EEF2895952F5180E8E998395E4; contract tests 5/5, Core 935/935, Architecture 110/110; proof worktree clean. Wrote Kanmer proof with exact main SHA, PR #30, CI run 33048018900, and Hilbert PASS.
+
+2026-08-27 — Fresh Kanmer gate check passed for done; moved review → verifying → done one boundary at a time after proof. GWY-004 is complete on merged main.
