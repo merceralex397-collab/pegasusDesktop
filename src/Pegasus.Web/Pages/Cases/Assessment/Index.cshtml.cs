@@ -79,10 +79,23 @@ public sealed class IndexModel(
 
     public string ReportRetryTime(DateTimeOffset value) => OperatorLabels.OfficeTime(value);
 
-    public bool CanRetryReport(AssessmentReportVersion version) =>
-        version.State is AssessmentReportGenerationState.Pending or AssessmentReportGenerationState.Failed
-        && AssessmentReportRetryPolicy.CanRetry(version.AttemptCount)
-        && (version.NextAttemptAtUtc is null || version.NextAttemptAtUtc <= timeProvider.GetUtcNow());
+    public bool CanRetryReport(AssessmentReportVersion version)
+    {
+        if (!AssessmentReportRetryPolicy.CanRetry(version.AttemptCount))
+        {
+            return false;
+        }
+
+        var now = timeProvider.GetUtcNow();
+        return version.State switch
+        {
+            AssessmentReportGenerationState.Pending or AssessmentReportGenerationState.Failed =>
+                version.NextAttemptAtUtc is null || version.NextAttemptAtUtc <= now,
+            AssessmentReportGenerationState.Rendering =>
+                version.LeaseExpiresAtUtc is { } leaseExpiresAtUtc && leaseExpiresAtUtc <= now,
+            _ => false
+        };
+    }
 
     /// <summary>
     /// ENG-003: the one readiness list the page renders. <see cref="ReportDraftPreparation"/>'s
@@ -309,6 +322,12 @@ public sealed class IndexModel(
         {
             TempData["AssessmentError"] = "The form has expired. Retry the operation.";
             return RedirectToPage(new { id });
+        }
+
+        var details = await getCase.ExecuteAsync(new(id, actor), cancellationToken);
+        if (details is null)
+        {
+            return NotFound();
         }
 
         GenerateCaseAssessmentReportDraftResult result;

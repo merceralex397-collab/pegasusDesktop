@@ -148,7 +148,8 @@ public sealed record AssessmentReportVersion(
     DateTimeOffset? CompletedAtUtc,
     string? FailureReason,
     int AttemptCount = 0,
-    DateTimeOffset? NextAttemptAtUtc = null)
+    DateTimeOffset? NextAttemptAtUtc = null,
+    DateTimeOffset? LeaseExpiresAtUtc = null)
 {
     public void Validate()
     {

@@ -78,6 +78,7 @@ public sealed partial class AssessmentReportDraftWebTests
         var html = await GetHtmlAsync(client, $"/Cases/{caseId:D}/Assessment");
         Assert.Contains(AssessmentReportProjection.RepairCostRequirement, html, StringComparison.Ordinal);
         Assert.DoesNotContain("Generate report draft", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("report-draft-title", html, StringComparison.Ordinal);
 
         using var response = await client.PostAsync(
             $"/Cases/{caseId:D}/Assessment?handler=GenerateReportDraft",
@@ -129,6 +130,109 @@ public sealed partial class AssessmentReportDraftWebTests
         Assert.Contains("Retry report draft", html, StringComparison.Ordinal);
         Assert.Contains("Renderer unavailable", html, StringComparison.Ordinal);
         Assert.DoesNotContain("Report drafts are not approved or sent.", html, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task RetryReauthorizesTheTargetCaseBeforeUsingItsStoredVersion()
+    {
+        using var baseFactory = new IntakeWebApplicationFactory();
+        var visibleCaseId = Guid.NewGuid();
+        var hiddenCaseId = Guid.NewGuid();
+        var store = new FakeAssessmentReportStore();
+        var hiddenVersion = StoredVersion(
+            hiddenCaseId,
+            AssessmentReportGenerationState.Pending,
+            nextAttemptAtUtc: DateTimeOffset.UtcNow.AddMinutes(-1));
+        store.Seed(hiddenVersion);
+        using var factory = Compose(
+            baseFactory,
+            new FakeGetCase(visibleCaseId),
+            new FakeGetCaseAssessment(FullAssessmentProjection(visibleCaseId)),
+            new FakeProjectionSource(ReadyInput(visibleCaseId)),
+            new FakeRenderer([1]),
+            store);
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("https://localhost")
+        });
+
+        var html = await GetHtmlAsync(client, $"/Cases/{visibleCaseId:D}/Assessment");
+        using var response = await client.PostAsync(
+            $"/Cases/{hiddenCaseId:D}/Assessment?handler=GenerateReportDraft",
+            Form(
+                AntiforgeryValue(html),
+                ("id", hiddenCaseId.ToString("D")),
+                ("operationKey", NewOperationKey()),
+                ("reportVersionId", hiddenVersion.Id.ToString("D"))));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(0, store.BeginCount);
+    }
+
+    [Fact]
+    public async Task ExpiredRenderingVersionIsRetryableFromItsStoredCanonicalPayload()
+    {
+        using var baseFactory = new IntakeWebApplicationFactory();
+        var caseId = Guid.NewGuid();
+        var store = new FakeAssessmentReportStore();
+        var version = StoredVersion(
+            caseId,
+            AssessmentReportGenerationState.Rendering,
+            leaseExpiresAtUtc: DateTimeOffset.UtcNow.AddMinutes(-1));
+        store.Seed(version);
+        using var factory = Compose(
+            baseFactory,
+            new FakeGetCase(caseId),
+            new FakeGetCaseAssessment(FullAssessmentProjection(caseId)),
+            new FakeProjectionSource(ReadyInput(caseId)),
+            new FakeRenderer([4, 5, 6]),
+            store);
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false,
+            BaseAddress = new Uri("https://localhost")
+        });
+
+        var html = await GetHtmlAsync(client, $"/Cases/{caseId:D}/Assessment");
+        Assert.Contains("Current report: Rendering", html, StringComparison.Ordinal);
+        Assert.Contains("Retry report draft", html, StringComparison.Ordinal);
+
+        using var response = await client.PostAsync(
+            $"/Cases/{caseId:D}/Assessment?handler=GenerateReportDraft",
+            Form(
+                AntiforgeryValue(html),
+                ("id", caseId.ToString("D")),
+                ("operationKey", NewOperationKey()),
+                ("reportVersionId", version.Id.ToString("D"))));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/pdf", response.Content.Headers.ContentType?.MediaType);
+        Assert.Equal([4, 5, 6], await response.Content.ReadAsByteArrayAsync());
+        Assert.Equal(1, store.BeginCount);
+    }
+
+    private static AssessmentReportVersion StoredVersion(
+        Guid caseId,
+        AssessmentReportGenerationState state,
+        DateTimeOffset? nextAttemptAtUtc = null,
+        DateTimeOffset? leaseExpiresAtUtc = null)
+    {
+        var snapshot = AssessmentReportProjection.Project(ReadyInput(caseId)).Snapshot!;
+        return new(
+            Guid.NewGuid(),
+            caseId,
+            1,
+            AssessmentReportPayload.Key(snapshot),
+            state,
+            AssessmentReportPayload.Serialize(snapshot),
+            null,
+            [],
+            DateTimeOffset.UtcNow,
+            null,
+            "Renderer unavailable",
+            1,
+            nextAttemptAtUtc,
+            leaseExpiresAtUtc);
     }
 
     private static WebApplicationFactory<Program> Compose(
@@ -311,6 +415,8 @@ public sealed partial class AssessmentReportDraftWebTests
     {
         private readonly Dictionary<string, (AssessmentReportVersion Version, AssessmentReportDraft Draft)> versions = [];
 
+        public int BeginCount { get; private set; }
+
         public void Seed(AssessmentReportVersion version)
         {
             var assessment = new RenderedReportArtifact(
@@ -344,10 +450,27 @@ public sealed partial class AssessmentReportDraftWebTests
             AssessmentReportGenerationRequest request,
             CancellationToken cancellationToken = default)
         {
+            BeginCount++;
             var payload = AssessmentReportPayload.Serialize(request.Snapshot);
             var key = AssessmentReportPayload.Key(request.Snapshot);
             if (versions.TryGetValue(key.Value, out var existing))
             {
+                if (existing.Version.State == AssessmentReportGenerationState.Rendering
+                    && existing.Version.LeaseExpiresAtUtc is { } leaseExpiresAtUtc
+                    && leaseExpiresAtUtc <= DateTimeOffset.UtcNow)
+                {
+                    var reclaimed = existing.Version with
+                    {
+                        AttemptCount = existing.Version.AttemptCount + 1,
+                        LeaseExpiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(5)
+                    };
+                    versions[key.Value] = (reclaimed, existing.Draft);
+                    return Task.FromResult(new AssessmentReportGenerationReservation(
+                        reclaimed,
+                        "reclaimed",
+                        ShouldRender: true));
+                }
+
                 return Task.FromResult(new AssessmentReportGenerationReservation(
                     existing.Version,
                     string.Empty,

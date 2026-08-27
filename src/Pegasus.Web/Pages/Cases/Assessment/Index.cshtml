@@ -240,11 +240,13 @@
             DELIV-012: the reachable report-draft entry point. It renders
             from already-saved assessment values (the same store the
             readiness list above reads), never from the unbound section
-            forms below. A case that is not ready stays visible with every
-            outstanding reason named, per docs/design/README.md's
-            absent-versus-disabled rule.
+            forms below. The panel is shown only when stored versions or a
+            currently available generate action exist; readiness remains in
+            the single rail above, per docs/design/README.md's page-economy rule.
         *@
-        <section class="panel" aria-labelledby="report-draft-title">
+        @if (Model.ReportVersions.Count > 0 || Model.ReportDraftPreparation?.CanGenerate == true)
+        {
+            <section class="panel" aria-labelledby="report-draft-title">
             <h2 id="report-draft-title" class="section-label">Report draft</h2>
 
             @if (Model.ReportVersions.Count > 0)
@@ -291,7 +293,8 @@
                     </div>
                 </form>
             }
-        </section>
+            </section>
+        }
     </aside>
 
     <div>

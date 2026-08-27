@@ -695,7 +695,8 @@ internal sealed class EfAssessmentReportStore(
             entity.CompletedAtUtc,
             entity.FailureReason,
             entity.AttemptCount,
-            entity.NextAttemptAtUtc);
+            entity.NextAttemptAtUtc,
+            entity.LeaseExpiresAtUtc);
         result.Validate();
         return result;
     }
