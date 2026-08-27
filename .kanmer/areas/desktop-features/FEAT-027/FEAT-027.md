@@ -29,7 +29,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.602Z'
-updated: '2026-08-24T21:31:39.549Z'
+updated: '2026-08-27T04:00:15.469Z'
 ---
 
 ## What
@@ -102,7 +102,7 @@ Tier 5 obliges evidence that the actual `/api/v1` routes reach Core with authent
 
 - **Azure**: no write. Reads of App Insights or storage for diagnosis are permitted without approval (`docs/runbook.md` § Live-operation approval matrix; mirrored in `docs/desktop/11-azure-disposition/README.md`).
 - **Scope boundary**: may touch `src/Pegasus.Web` (the `/api/v1` operations group only), `src/Pegasus.Contracts`, `tests/Pegasus.Api.ContractTests`, `tests/Pegasus.IntegrationTests`. Must not touch `src/Pegasus.Worker`, `src/Pegasus.Infrastructure/Email/`, or any Razor page.
-- **Traps**: poison-queue visibility must not disappear behind a friendly status; `unknown` never becomes success; the Worker keeps every Graph credential (ADR-0106) and a step that puts a provider secret in the desktop package or in a response body is a defect; a new table would need a runtime-role `Grant*` migration checked by `scripts/Test-MigrationGrants.ps1` — this ticket must not add one; run the upstream sync before relying on mailbox behaviour, because PLAT-039 and the mail fixes arrive with it (`docs/desktop/01-inventory-and-parity/upstream-kanmer-carryover.md`).
+- **Traps**: poison-queue visibility must not disappear behind a friendly status; `unknown` never becomes success; the Worker keeps every Graph credential (ADR-0106) and a step that puts a provider secret in the desktop package or in a response body is a defect; a new table would need a runtime-role `Grant*` migration checked by `scripts/Test-MigrationGrants.ps1` — this ticket must not add one; do not run or rely on an upstream sync; this fork is authoritative and any missing mailbox behaviour must be implemented or evidenced in this repository.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
 
 ## Outcome
