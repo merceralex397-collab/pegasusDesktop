@@ -1,15 +1,14 @@
-# Files — TEST-002 Authorization and failure-path template
+# Files — TEST-002 Authorization and failure-path test template
 
-| File or area | Intended work | Risk / reuse |
+| File or area | Change | Evidence / reuse |
 | --- | --- | --- |
-| tests/Pegasus.Api.ContractTests/* command test base | Implement the ticket-scoped test, script or configuration change. | Reuse existing fixtures, test conventions and local-stack evidence. |
-| Gateway endpoint inventory/contract fixtures | Implement the ticket-scoped test, script or configuration change. | Reuse existing fixtures, test conventions and local-stack evidence. |
-| Shared problem-details assertions | Implement the ticket-scoped test, script or configuration change. | Reuse existing fixtures, test conventions and local-stack evidence. |
-
-## Context files
-
-Read docs/desktop/08-testing/README.md, docs/desktop/08-testing/test-uat-stack.md, docs/runbook.md test guidance, .github/workflows/ci.yml where relevant, and the ticket body. Load pegasus-desktop first, then run-tests and the routed test/UI/packaging skill.
+| `tests/Pegasus.Api.ContractTests/CommandCoverage/CommandEndpointCatalogue.cs` | Derive command route/method identities from the host `EndpointDataSource`; read future access-right metadata when present. | Uses ASP.NET routing metadata and the existing factory service provider; no second endpoint list. |
+| `tests/Pegasus.Api.ContractTests/CommandCoverage/CommandCoverageTable.cs` | Define the literal per-command row and symmetric endpoint/table guard. | Empty on the current merged host because the live inventory has zero command endpoints; future command tickets add rows. |
+| `tests/Pegasus.Api.ContractTests/CommandCoverage/CommandCoverageTestSupport.cs` | Share request construction, problem-details, bearer-challenge, response equality, and effect-snapshot assertions. | Reuses `ContractTestWebApplicationFactory`; does not duplicate Core policy. |
+| `tests/Pegasus.Api.ContractTests/CommandCoverage/CommandCoverageGuardTests.cs` | Verify the normal host and a test-only unlisted `POST /api/v1/__probe`. | The probe is an in-memory `RouteEndpointBuilder`; it never changes product routing. |
+| `tests/Pegasus.Api.ContractTests/{UnauthenticatedCommandTests,WrongRightCommandTests,StaleVersionCommandTests,InvalidRequestCommandTests,IdempotentReplayCommandTests}.cs` | Provide five shared theories over future literal rows. | The theories early-exit only for the documented zero-command table; once a row exists it must provide real request/effect factories. |
+| `docs/desktop/08-testing/README.md` | Document TEST-002 ownership and the future row-extension rule. | One named testing-programme sentence; no new product requirement. |
 
 ## Out of scope
 
-No Azure test resource, production deployment, provider credential, test-only business-rule implementation, or unrelated CI refactor.
+No endpoint implementation, bearer-token pipeline, Core policy, database migration, CI lane, cloud/Azure write, upstream sync, `corpus/`, or unrelated documentation.

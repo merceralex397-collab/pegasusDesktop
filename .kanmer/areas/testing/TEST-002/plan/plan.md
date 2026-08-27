@@ -33,3 +33,11 @@ Create a reusable contract-test harness for every command endpoint under `/api/v
 - Throwaway `POST /api/v1/__probe` causes the guard to fail naming `/api/v1/__probe`; removing the probe restores green.
 - The contract project builds with warnings as errors and the five theories are wired over the applicable literal rows.
 - Simplification pass and independent review are recorded before the PR.
+
+## Simplification pass — 2026-08-27
+
+- Reused the existing `ContractTestWebApplicationFactory`, xUnit project, and shared ASP.NET problem contract; no second host, auth implementation, business-policy fixture, or new dependency was introduced.
+- Kept one endpoint catalogue and one literal row type. The five required theories are thin consumers of row-supplied request/effect delegates instead of repeating endpoint-specific setup.
+- The current row set remains empty because the verified host has no command endpoints. xUnit requires at least one data item for a theory, so a private placeholder row is used only to keep each future-row theory discoverable; each theory exits before creating a request, and the placeholder cannot satisfy the coverage guard because it is not in `Rows`.
+- The probe is an in-memory `RouteEndpointBuilder` rather than a derived web host, eliminating static-assets and application-startup machinery while still exercising the real catalogue/guard code path.
+- No behaviour-changing simplification was identified. Reflection-based access-right discovery is limited to test-side endpoint metadata and avoids inventing or duplicating the not-yet-merged GWY-003 metadata type; it will be exercised by the guard when that production metadata exists.
