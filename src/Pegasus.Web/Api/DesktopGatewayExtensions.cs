@@ -18,6 +18,7 @@ public static class DesktopGatewayExtensions
         services.AddSingleton(options);
         services.AddProblemDetails();
         services.AddExceptionHandler<DesktopGatewayExceptionHandler>();
+        services.AddSingleton<DesktopDocumentUploadSessions>();
         return services;
     }
 
@@ -32,8 +33,11 @@ public static class DesktopGatewayExtensions
         ArgumentNullException.ThrowIfNull(app);
 
         var group = app.MapGroup(DesktopGateway.BasePath);
+        group.AllowAnonymous();
         group.AddEndpointFilter<CorrelationIdEndpointFilter>();
         group.AddEndpointFilter<ClientVersionEndpointFilter>();
+        group.AddEndpointFilter<DesktopGatewayAuthorizationEndpointFilter>();
+        group.MapBoxDocumentBroker();
         return group;
     }
 }
