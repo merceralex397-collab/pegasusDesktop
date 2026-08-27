@@ -318,3 +318,7 @@ None that block. Five points that could look like questions have named owners:
   acceptance criterion gates the two affected endpoints on it and records the
   sync check, which is the correct handling of an external dependency rather
   than an open question.
+
+## Operator boundary and current-fork check — 2026-08-27
+
+The operator has prohibited all upstream synchronization and requires all work to remain in this repository on the configured `pegasusDesktop` remote. A read-only `git remote -v` check found only `origin`. Searches of the current fork found the Box custody implementation under `src/Pegasus.Infrastructure/Custody/` and historical PLAT-039/PLAT-041 planning references, but no imported upstream proof that can substitute for current-fork evidence. The plan is amended accordingly: verify or implement requirements in-repo, and leave any dependency without an honest local proof blocked rather than fetching upstream.
