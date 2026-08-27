@@ -4,12 +4,15 @@ type: ticket
 title: >-
   DSK-07-05 · Box broker endpoints: list, metadata, download session, upload
   session, remove, confirm evidence
-status: preparing
+status: implementing
 area: desktop-features
-assignee: ''
+assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:31:41.111Z'
+taken_at: '2026-08-27T00:49:07.557Z'
+branch: task/dsk-07-05-box-broker-endpoints
+worktree: ../pegasus-worktrees/dsk-07-05-box-broker-endpoints
 labels:
   - desktop-conversion
   - plan-07
@@ -30,7 +33,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.673Z'
-updated: '2026-08-24T21:31:41.111Z'
+updated: '2026-08-27T00:49:07.557Z'
 ---
 
 ## What
