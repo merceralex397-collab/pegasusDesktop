@@ -202,7 +202,8 @@ Deviations from the proposal, stated explicitly:
   tests before moving any business rule. No business rule moves — Core stays
   the single owner and the desktop reaches it through the gateway — so
   characterization is limited to (a) the read-model shapes the Razor pages
-  compose today and (b) the `OperatorLabels` vocabulary map, both captured as
+  compose today and (b) the shared `OperatorVocabulary` map with its Web
+  adapter, both captured as
   contract snapshots rather than behaviour tests. Page-level behaviours
   (TempData proposed values, PRG redirects, antiforgery) are transport
   mechanics, not behaviour to preserve.
