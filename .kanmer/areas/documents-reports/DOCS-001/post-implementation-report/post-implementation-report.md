@@ -59,3 +59,7 @@ Plato's fresh review of exact head `7039bdf7` returned FAIL on the browser test'
 ## Exact-head CI checkpoint — 2026-08-27
 
 Run `33116768838` passed fully for exact head `8f60fc47f97f9e6ca18078a3341f6b0795dcc77d`, including browser, all SQL integration shards, and coverage. This replaces the superseded non-green run. Fresh independent review remains the final pre-merge gate.
+
+## Independent review follow-up — 2026-08-27
+
+Curie's fresh exact-head review returned **FAIL**. The review found raw exception messages could be persisted and rendered directly from the report-version failure field, exposing internal renderer/database/path details; this will be replaced by stable operator wording with raw detail retained only as structured diagnostics. It also found that the operator-recorded multiple-estimate decision was not implemented: the current page exposes one accepted estimate and a disabled placeholder rather than separately selectable accepted estimates with one Generate action per estimate. Curie's non-blocking warning is that web fake fixtures use direct costs rather than the production accepted-basis conversion; the production persistence coverage and an explicit test disposition will be recorded after remediation. Merge remains prohibited until both blocking findings have fresh review and exact-head CI evidence.

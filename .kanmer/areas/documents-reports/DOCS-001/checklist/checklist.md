@@ -70,3 +70,11 @@ Implementation and independent review are complete on the local branch; PR, merg
 - [x] Exact-head CI run `33116768838` for `8f60fc47` is fully green, including browser, SQL shards 1/2/3, and coverage.
 - [ ] Fresh independent review of exact head `8f60fc47` passes.
 - [ ] Merge, proof, and Kanmer closeout remain pending.
+
+## Independent review follow-up — 2026-08-27
+
+- [ ] Curie's blocking finding on raw exception detail is fixed: only stable operator wording is persisted/rendered, with raw detail limited to structured diagnostics.
+- [ ] Curie's blocking finding on multiple accepted estimate tabs is fixed: accepted estimates are separately selectable and each has its own Generate action with source provenance.
+- [ ] Curie's non-blocking production-cost-composition warning is addressed or honestly dispositioned.
+- [ ] Fresh independent review and exact-head CI pass on the resulting commit.
+- [ ] Merge, proof, and Kanmer closeout remain pending.

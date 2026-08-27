@@ -123,3 +123,7 @@ Plato independently reviewed exact head `7039bdf7fe24c8d9d94f21db3721a5918ec148f
 ## Exact-head CI checkpoint — 2026-08-27
 
 GitHub Actions run `33116768838` completed green for exact head `8f60fc47f97f9e6ca18078a3341f6b0795dcc77d`: changes, documentation, local-development-scripts, reference-data, infrastructure, unit, browser, SQL integration shards 1/2/3, and `sql-integration-coverage` all passed. Fresh independent review of this exact head remains pending before merge.
+
+## Independent review follow-up — 2026-08-27
+
+Curie reviewed exact head `8f60fc47f97f9e6ca18078a3341f6b0795dcc77d` against `origin/dev` `67109b45066648b3256eff8d4bc3491a18bfeb7d` and returned **FAIL**. Two blocking findings are accepted as implementation work: raw exception detail must not be persisted or rendered as operator-facing failure text; raw diagnostics may be logged in structured form, while the page uses the approved stable retry message. The recorded product decision that multiple accepted estimates remain separate tabs with one Generate action per estimate is not implemented by the current single-current-estimate/disabled-tab surface, so the accepted-estimate list and per-estimate report action must be wired in the owned page/store path. Curie's warning that the web fake does not exercise `ReportRepairCosts.FromAcceptedBasis` will be covered by the production persistence path or documented as a non-blocking test-gap disposition after the blocking fixes.
