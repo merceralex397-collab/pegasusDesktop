@@ -170,14 +170,15 @@ public sealed class DependencyDirectionTests
             .ToArray();
 
         Assert.Equal(
-            // FND-029, FND-030, FND-031, and FND-038 extend this exact list as
-            // their projects are added to Pegasus.slnx.
+            // FND-029, FND-030, FND-031, FND-038, and TEST-001 extend this
+            // exact list as their projects are added to Pegasus.slnx.
             [
                 "src/Pegasus.Contracts/Pegasus.Contracts.csproj",
                 "src/Pegasus.Core/Pegasus.Core.csproj",
                 "src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj",
                 "src/Pegasus.Web/Pegasus.Web.csproj",
                 "src/Pegasus.Worker/Pegasus.Worker.csproj",
+                "tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj",
                 "tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj",
                 "tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj",
                 "tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj"
