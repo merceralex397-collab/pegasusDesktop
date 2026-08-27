@@ -64,8 +64,7 @@ public sealed class AssessmentReadinessSummaryBrowserTests
         // The report-draft panel is intentionally absent for this not-ready
         // fixture; the readiness panel is the sole owner of the blockers.
         var reportDraft = support.Page.Locator("section[aria-labelledby='report-draft-title']");
-        Assert.Equal(0, await reportDraft.Locator(".status-card--attention").CountAsync());
-        Assert.DoesNotContain("see Readiness above", await reportDraft.InnerTextAsync(), StringComparison.Ordinal);
+        Assert.Equal(0, await reportDraft.CountAsync());
 
         // Collapsed by default: the disclosure content is not visible.
         Assert.False(await items.First.IsVisibleAsync());
