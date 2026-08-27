@@ -26,3 +26,5 @@ One box per plan step, in plan order. The last box produces `proof`.
 - [x] Steps 3–8: gateway constants/options, composition extensions, Program wiring, problem mapping, correlation/client-version filters, and Razor machine-surface guard implemented.
 - [x] Focused DesktopGateway validation: 11 passed, 0 failed, 0 skipped.
 - [x] Step 10 fallback recorded in the plan: direct handler tests cover all mappings because the production route group intentionally has no endpoint.
+
+- [x] CI-accounting remediation: replaced the six-row `MemberData` gateway theory with six facts so `Invoke-TestShard.ps1` enumerates the same 302 tests that execute; commit `920dad00`; shard 2 passed 301 with 1 expected skip and confirmed all 302 ran.

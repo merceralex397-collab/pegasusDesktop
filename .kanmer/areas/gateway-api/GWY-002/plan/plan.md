@@ -336,3 +336,9 @@ After the review remediation, the full repository checks completed:
 - `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -c Release -nr:false` — 958 passed, 16 skipped, 0 failed (974 total); skips are expected absent-local-corpus cases.
 - `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj -c Release -nr:false` — 110 passed, 0 failed, 0 skipped.
 - Static checks — exactly one `AddProblemDetails` registration and exactly one literal for each gateway constant; `git diff --check` clean.
+
+## CI accounting remediation — 2026-08-27
+
+The exact-head PR run exposed a deterministic repository test-shard accounting defect: xUnit `--list-tests` reported the `[MemberData]` theory as one test while execution ran its six rows, so shard 2 was assigned 301 and ran 306. The smallest in-scope fix was to replace that six-row theory with six `[Fact]` methods calling one shared assertion helper. This preserves the same six exception mappings and keeps the host `[InlineData]` theory unchanged. Commit `920dad00` contains only this test-shape correction.
+
+Validation of the corrected enumeration: `Invoke-TestShard.ps1 -Project ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -Filter 'Category!=Corpus&Category!=Browser' -Shard 2 -ShardCount 3` reported 302 assigned and completed 301 passed, 1 expected corpus skip, 0 failed, with the script confirming all 302 assigned tests ran. Focused `DesktopGatewayProblemTests`: 16 passed, 0 failed, 0 skipped; solution build: 0 warnings, 0 errors; architecture tests: 110 passed, 0 failed, 0 skipped.
