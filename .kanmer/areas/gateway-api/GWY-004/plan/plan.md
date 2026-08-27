@@ -289,3 +289,7 @@ The first six-line xUnit collection marker did not cover the separate `ContractT
 ## CI diagnostics follow-up — 2026-08-27
 
 The second exact-head run `33045186858` still failed the unit contract tests after assembly-level serialization: the first request returned HTTP 500 after 14 seconds, followed by the remaining three. The test assertions previously discarded the response body, so `OpenApiSnapshotTests` now reports the status and bounded response text for enabled and disabled-host failures. The targeted contract suite remains 5/5 locally. Fresh exact-head CI is required to capture the server exception.
+
+## CI root-cause follow-up — 2026-08-27
+
+Run `33045552935` exposed the concrete failure: the DevelopmentOffline authentication handler queried the configured `PegasusDevelopment` SQL database for every request, and the unit runner's login `runnervm6iq3x\\runneradmin` received SQL error 4060 because that database/login is intentionally unavailable in the unit job. The contract factory now replaces `IAuthenticationService` only inside the test host with a no-op service; this preserves the real Web routing/OpenAPI pipeline while keeping anonymous contract requests independent of SQL. Its challenge/forbid behavior remains 401/403, and sign-in/out are unused no-ops. The targeted build and contract suite pass locally after this fix.

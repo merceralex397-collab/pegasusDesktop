@@ -43,3 +43,7 @@ The initial class-level collection marker did not serialize the separate host fi
 ## CI diagnostics follow-up — 2026-08-27
 
 Run `33045186858` confirmed the host failure remains after serialization; the first request returned HTTP 500 in 14 seconds and the subsequent requests failed immediately. Added test-only response-body diagnostics so the next CI run identifies the server exception. Local targeted build and contract tests remain green. Fresh exact-head CI run is pending.
+
+## CI root-cause follow-up — 2026-08-27
+
+Run `33045552935` provided the evidence previously hidden by the assertion: SQL error 4060, `Cannot open database "PegasusDevelopment"`, from `DevelopmentOfflineAuthenticationHandler.HandleAuthenticateAsync` during the anonymous OpenAPI request. The existing contract factory now replaces `IAuthenticationService` with a test-only no-op implementation, leaving product authentication unchanged and allowing the real host's anonymous OpenAPI route to be tested without SQL. Targeted Release build and contract tests pass 5/5 locally. Fresh exact-head CI is required.

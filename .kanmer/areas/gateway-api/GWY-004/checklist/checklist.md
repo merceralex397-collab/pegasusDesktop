@@ -33,3 +33,5 @@ One box per plan step, in plan order. The last box produces `proof`.
 - 2026-08-27: Replaced the insufficient class-level collection marker with assembly-level xUnit test serialization covering both host-backed test classes; exact local unit sequence passed 935/935, 110/110, and 5/5.
 
 - 2026-08-27: Run 33045186858 still failed the unit contract host with HTTP 500 after serialization. Added test-only response-body diagnostics; local targeted build and contract suite remained green.
+
+- 2026-08-27: CI run 33045552935 identified SQL error 4060 from DevelopmentOfflineAuthenticationHandler querying unavailable PegasusDevelopment. Added test-only no-op IAuthenticationService in the existing contract factory; targeted build and contract tests pass 5/5 locally.
