@@ -38,7 +38,7 @@ public sealed class OpenApiSnapshotTests
                 + $"Review it and regenerate with {RegenerationCommand}.");
         }
 
-        var expected = Normalize(File.ReadAllText(snapshotPath));
+        var expected = File.ReadAllBytes(snapshotPath);
         Assert.True(actual.SequenceEqual(expected),
             $"The OpenAPI snapshot differs from {snapshotPath}. Review the contract and regenerate with {RegenerationCommand}.");
     }
