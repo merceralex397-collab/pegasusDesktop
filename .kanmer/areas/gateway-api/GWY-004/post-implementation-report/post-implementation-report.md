@@ -47,3 +47,11 @@ Run `33045186858` confirmed the host failure remains after serialization; the fi
 ## CI root-cause follow-up — 2026-08-27
 
 Run `33045552935` provided the evidence previously hidden by the assertion: SQL error 4060, `Cannot open database "PegasusDevelopment"`, from `DevelopmentOfflineAuthenticationHandler.HandleAuthenticateAsync` during the anonymous OpenAPI request. The existing contract factory now replaces `IAuthenticationService` with a test-only no-op implementation, leaving product authentication unchanged and allowing the real host's anonymous OpenAPI route to be tested without SQL. Targeted Release build and contract tests pass 5/5 locally. Fresh exact-head CI is required.
+
+## Final CI and review reconciliation — 2026-08-27
+
+- Final implementation head: `ff2fb8bf4e14bc3e58c22d4864ca83e33ec32448` on `task/openapi-snapshot`.
+- Exact-head repository-check run `33048018900` is terminal green: changes, documentation, local-development-scripts, reference-data, unit, browser, SQL integration shards 1/2/3, and sql-integration-coverage. Infrastructure was skipped by the workflow as expected.
+- The final contract test compares canonical normalized host output with the raw committed snapshot bytes. `.gitattributes` now explicitly pins LF for both tracked snapshots; `git check-attr` verified the rule and the exporter remains LF/no-BOM.
+- The disabled-gateway factory also uses the test-only authentication override, so the suite does not require SQL Server for anonymous route composition checks. Local rebuilt Contract tests pass 5/5.
+- Hilbert independently re-reviewed final head `ff2fb8bf` after the canonical-byte correction and returned `PASS` (merge-ready). The prior review blocker and stale predecessor-head reference are superseded by this final evidence.
