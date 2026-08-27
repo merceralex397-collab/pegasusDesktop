@@ -304,7 +304,7 @@ _Completed on 2026-08-27; see the dated `## Simplification pass` heading below._
 
 Implemented the planned gateway composition, path-scoped exception handler, correlation/client-version filter registration, safe problem mapping, Web → Contracts reference, architecture expectation, and current-state documentation. Microsoft Learn verification confirmed the .NET 10 `MapGroup`, endpoint-filter, `AddProblemDetails`, `IExceptionHandler`, and `UseExceptionHandler` shapes.
 
-The planned `IStartupFilter` throwing-endpoint harness was not used. The production group intentionally contains no endpoint, and adding a test-only route through minimal-host startup would require a production-facing test hook or alter route composition. The fallback named in step 10 is therefore used: `DesktopGatewayProblemTests` directly invoke the internal handler for every mapping branch, while `DesktopGatewayCompositionTests` exercise the real `WebApplicationFactory` composition and machine-surface behavior. This keeps production scope unchanged and preserves branch-complete coverage.
+The initial implementation at commit `6bf7a96c` used the documented direct-handler fallback because the production group intentionally contains no endpoint. Hilbert's independent review identified that host-level exception-handler wiring and unmatched API 404 behavior also needed executable proof. The remediation at commit `63293de6` therefore added a test-only `IStartupFilter` middleware that appends a throwing path after the application pipeline; it exercises the real path-scoped handler without adding a production route or hook. Direct handler facts remain as branch-level coverage, while `WebApplicationFactory` tests cover composition, correlation, status-code problem writing, and host-level exception handling.
 
 Focused validation completed: `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DesktopGateway" -nr:false` — 19 passed, 0 failed, 0 skipped.
 
@@ -314,7 +314,7 @@ Focused validation completed: `dotnet test ./tests/Pegasus.IntegrationTests/Pega
 - **Simplification:** the gateway adds no endpoint, controller, policy engine, compatibility path, deployment unit, or new dependency. The named client-version filter is the smallest required extension point and remains a no-op until [[GWY-023]].
 - **Efficiency:** the initial logging call triggered repository analyzers `CA1848` and `CA1873`; it was replaced with a source-generated `LoggerMessage` delegate. No unnecessary per-request allocation or logging-template parsing remains.
 - **Clarity/altitude:** exception branches are ordered before their `InvalidOperationException` base type, and the path-scoped handler is composed only when the feature gate is open. No business rules, authentication, authorization, or client-version policy were added outside their owning tickets.
-- **Disposition:** no behavior-preserving simplification findings remain unapplied. The documented direct-handler test fallback is retained because the production group intentionally has no endpoint and adding a test-only production hook would expand scope.
+- **Disposition:** no behavior-preserving simplification findings remain unapplied. Direct handler facts remain useful branch-level coverage; the host-level startup-filter middleware is test-only and does not enter production composition.
 
 
 ## Review remediation — 2026-08-27
