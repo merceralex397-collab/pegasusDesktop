@@ -25,3 +25,7 @@ The initial implementation at commit `6bf7a96c` used direct handler tests becaus
 ## Review and delivery handoff
 
 Hilbert's independent review at the final head found no remaining implementation or plan-coverage defect; the prior evidence findings were remediated and the plan now records the final strategy and counts. PR #28 targets `dev` and is pushed to the configured `origin` remote. The next required action is to wait for every required exact-head CI job to finish green, then merge to `dev` and perform the post-merge main/proof closeout.
+
+## Current exact-head update — 2026-08-27
+
+The validation bullets above are explicitly for predecessor commit `63293de6`. Current PR head is `920dad00427585a974208a7c95725edc4780d204`; its only delta is the six-Fact test-enumeration correction described in the plan. Local validation passed: focused `DesktopGatewayProblemTests` 16 passed, 0 failed, 0 skipped; shard 2 `Invoke-TestShard.ps1` 302 assigned, 301 passed, 1 expected skip, all 302 executed; solution build 0 warnings/0 errors; architecture tests 110 passed, 0 failed, 0 skipped. Exact-head PR run `33026927409` is terminal green for changes, documentation, local-development-scripts, reference-data, unit, browser, SQL integration shards 1–3, and SQL integration coverage; infrastructure is expectedly skipped. No production code changed after `63293de6`.

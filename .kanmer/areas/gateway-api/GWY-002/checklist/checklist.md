@@ -28,3 +28,7 @@ One box per plan step, in plan order. The last box produces `proof`.
 - [x] Step 10 fallback recorded in the plan: direct handler tests cover all mappings because the production route group intentionally has no endpoint.
 
 - [x] CI-accounting remediation: replaced the six-row `MemberData` gateway theory with six facts so `Invoke-TestShard.ps1` enumerates the same 302 tests that execute; commit `920dad00`; shard 2 passed 301 with 1 expected skip and confirmed all 302 ran.
+
+## Historical checkpoint disposition — 2026-08-27
+
+The two progress notes immediately above are historical evidence from the initial pre-remediation commit `6bf7a96c): the focused run was 11 passed and the direct-handler fallback was the then-current test strategy. They are superseded by the review-remediation evidence recorded above and in the plan: commit `63293de6` added host-level proof and the focused run became 19 passed; commit `920dad00` changed only the six-row xUnit test shape for exact shard enumeration. Current exact-head evidence is recorded in the plan and post-implementation report.

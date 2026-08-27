@@ -7,3 +7,5 @@
 2026-08-27: Reconciled plan/report evidence after independent review. Final authoritative strategy is direct branch facts plus test-only host middleware; final counts are focused 19/19, full 958 passed + 16 expected corpus skips, architecture 110/110, build clean.
 
 2026-08-27: Exact-head CI shard 2 undercount traced to xUnit MemberData list-tests behavior. Converted six gateway exception cases to explicit Facts in commit 920dad00. Local shard 2: 302 assigned, 301 passed, 1 expected skip, all 302 ran; focused problem tests 16/16; build 0/0; architecture 110/110.
+
+Reconciled historical checklist/report notes. Current head 920dad00427585a974208a7c95725edc4780d204; exact CI run 33026927409 terminal green across required lanes, infrastructure expectedly skipped. Review requested again after evidence update.
