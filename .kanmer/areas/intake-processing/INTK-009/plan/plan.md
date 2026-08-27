@@ -30,3 +30,9 @@ No changes to cloud/deployment state, credentials, upstream remotes, PR #14, unr
 ## Simplification pass
 
 Pending implementation. The dated result will be appended here before review.
+
+## Disposition audit — 2026-08-27
+
+The clean `origin/dev` worktree already contains the completion-concurrency handling from commit `ec49e409` (the `5373d9c1` change on its ancestry): `CompleteProcessingAsync` classifies SQL deadlock 1205 as the existing retryable `IntakeVersionConflictException`, and the durable worker schedules a bounded retry. The focused 12-iteration `GroupedImageIntakeConcurrencyTests.ConcurrentGroupMembersNeverSplitAcrossRepeatedRuns` run passed locally in 49.566 seconds.
+
+Read-only comparison shows PR #14 head `bb263b20a49af1375d2823ce5c4a803dd66bdc39` does not contain that current-dev change. Its CI failure is therefore actionable as a stale PR branch/base integration issue, not as an unimplemented current-dev fix. No code change is justified in INTK-009; adding a duplicate retry, changing the test helper, or weakening the race assertion would be incorrect. This ticket is non-actionable as a separate implementation ticket and will be archived with this evidence. The next action is to update/retest PR #14 through the DOCS-001 delivery path after its required review conditions are satisfied.

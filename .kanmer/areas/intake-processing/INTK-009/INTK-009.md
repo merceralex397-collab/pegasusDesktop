@@ -8,9 +8,6 @@ assignee: codex-mcp-client
 profile: fix
 stageEntered:
   preparing: '2026-08-27T20:06:15.606Z'
-taken_at: '2026-08-27T20:09:17.307Z'
-branch: task/intk-009-intake-completion-deadlock
-worktree: ../pegasus-worktrees/intk-009-intake-completion-deadlock
 labels:
   - defect
   - intake
@@ -23,9 +20,9 @@ blocks:
   - DOCS-001
 refs:
   - docs/frd/frd-02-intake-and-source-identity.md
-archived: false
+archived: true
 created: '2026-08-27T20:06:12.155Z'
-updated: '2026-08-27T20:09:17.307Z'
+updated: '2026-08-27T20:13:23.133Z'
 ---
 
 ## What
