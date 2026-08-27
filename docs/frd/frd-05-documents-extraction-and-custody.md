@@ -30,6 +30,23 @@ Receipt/staging and accepted case custody are different states.
 - Default local alpha work must not mutate any Outlook mailbox or Box location. The separately approved Box integration-test profile and explicitly approved non-production test deployments may create and update controlled non-corpus artifacts only in the approved disposable test subtree recorded in [operations](../operations.md#approved-box-integration-test-target); they must not delete, move, copy, or share Box content. Outlook tests use immutable local copies or an explicitly approved test mailbox and operation.
 - A custody transition records source identity, content hash, target identity/version, actor/caller, time, and failure/retry state without deleting the source proof prematurely.
 
+#### Desktop brokered transfer
+
+For the native desktop current fork, the gateway exposes authenticated document
+list and metadata reads, content streaming, bounded upload sessions, reasoned
+logical removal, and third-party vehicle-evidence confirmation under the case
+document routes. The gateway checks the Pegasus case/document right immediately
+before invoking the Core use case or custody provider, projects canonical
+metadata, and does not expose Box URLs, tokens, or provider object IDs to the
+desktop. Upload completion, logical removal, and confirmation record permanent
+action history; an abandoned upload leaves no canonical document, receipt, or
+temporary file.
+
+The current fork does not expose export or evidence-gallery routes. Those routes
+remain gated until PLAT-041 proves and measures the required O(1)+N call budget;
+PLAT-039 token-age renewal proof is likewise still open. This clause records
+the local gateway contract and does not claim live Box or Key Vault evidence.
+
 An Image-initiated Case also has its own Box folder from registration
 (INTK-014): the folder is named for the permanent Image Intake Reference,
 sits directly under the approved custody root, and retains every registered
