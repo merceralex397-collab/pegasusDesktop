@@ -37,3 +37,15 @@ Hilbert's independent review was initially FAIL. Before merge, the findings were
 - the focused suite was rerun after these changes: 19 passed, 0 failed, 0 skipped.
 
 The stale plan placeholder and test-count inconsistency were corrected in the plan document. Hilbert's review findings are therefore addressed pending the final exact-head CI result.
+
+## Final validation checkpoint — 2026-08-27
+
+The remediated tree was validated again after Hilbert's review findings were addressed:
+
+- Full integration suite: 958 passed, 16 expected corpus-dependent skipped, 0 failed (974 total).
+- Architecture suite: 110 passed, 0 failed, 0 skipped.
+- Focused DesktopGateway suite: 19 passed, 0 failed, 0 skipped.
+- Release solution build: 0 warnings, 0 errors.
+- Static registration/literal and `git diff --check` checks passed.
+
+The branch is now ready for a fresh independent review at its new exact head and a fresh exact-head CI run.

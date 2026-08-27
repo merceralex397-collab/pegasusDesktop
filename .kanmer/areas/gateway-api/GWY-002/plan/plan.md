@@ -326,3 +326,13 @@ Hilbert's independent review identified evidence and boundary gaps. Remediated t
 - The enabled path branch now applies correlation middleware before the path-scoped exception handler and a path-scoped status-code writer, so unmatched API 404s and pre-endpoint failures receive the same correlation/problem boundary as matched endpoints. The endpoint filter remains attached for later routes and reuses the middleware's correlation value.
 - A test-only `IStartupFilter` appends a throwing middleware after the application pipeline, allowing the real host's path-scoped exception handler to be exercised without a production route or hook. The direct handler facts remain as branch-level coverage.
 - Focused validation after remediation: 19 passed, 0 failed, 0 skipped.
+
+## Final validation checkpoint — 2026-08-27
+
+After the review remediation, the full repository checks completed:
+
+- `dotnet build Pegasus.slnx -c Release -nr:false` — 0 warnings, 0 errors.
+- `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DesktopGateway" -nr:false` — 19 passed, 0 failed, 0 skipped.
+- `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -c Release -nr:false` — 958 passed, 16 skipped, 0 failed (974 total); skips are expected absent-local-corpus cases.
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj -c Release -nr:false` — 110 passed, 0 failed, 0 skipped.
+- Static checks — exactly one `AddProblemDetails` registration and exactly one literal for each gateway constant; `git diff --check` clean.
