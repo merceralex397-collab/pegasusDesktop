@@ -52,3 +52,14 @@ Proof is local merged-code evidence unless a later separately authorized deploym
 - **Scope creep into CASE-23:** correction can tempt lifecycle design. Mitigation: keep current lifecycle guards and leave all query/dispute/due/chaser/closure behavior to [[TICK-055]].
 - **Migration/concurrency risk:** unique current pointers and competing staff/Worker links can conflict. Mitigation: explicit uniqueness/concurrency constraints, transactional mutation, deterministic idempotent replay, and race tests.
 - **No operator question:** the preservation invariant is settled; CASE-23 remains explicitly parked.
+
+## Implementation reconciliation — 2026-08-28
+
+DOCS-001 is merged at `80bbb6fe86916a0c499a70480121e278ab114e7a` and supplies `AssessmentReportVersion`, `AssessmentReportArtifact`, `AssessmentReportVersionStore`, and the existing report-version predecessor chain. DOCS-003 adds only the missing workflow association slice: `CaseReportVersionLedgers`, `CaseReportAssociationHistory`, exact source artifact fields on retained Sent evidence, version-aware approval/link/auto-link/unlink, and the existing Web projection/forms. Legacy rows are preserved with `Unresolved` status; no inferred version is backfilled. Reassociation uses the existing reasoned unlink/relink commands and records former link metadata; CASE-23 lifecycle is unchanged. The migration grants are kept in the existing role bootstrap matrix. No new project, runtime, external API, mailbox write, cloud write, or upstream operation was introduced.
+
+## Simplification pass — 2026-08-28
+
+- Reuse: retained the existing `AssessmentReportVersion`/artifact model, approved-mailbox evidence store, workflow commands, report lifecycle, Web pages, migration grant matrix, and existing query projection rather than adding a second report aggregate or send path.
+- Simplification: version-specific custody is one ledger keyed by the existing report-version ID; the workflow's existing approval/Sent pointers remain only as current convenience projections. No new CASE-23 states, delivery adapter, external API, or compatibility implementation was added.
+- Reliability: association history stores the ledger mutation version so same-clock operations retain deterministic order; former-link values are captured on unlink. This is a behavior-preserving correction to audit ordering, not extra presentation machinery.
+- Scope/altitude: documentation changes are limited to the FRD, as-built architecture map, screen spec, and historical carryover entry that own the affected requirements. No finding is deferred.
