@@ -1,0 +1,3 @@
+## Blocker and handback — 2026-08-27
+
+After taking the ticket from origin/dev, the required desktop implementation surface is absent: `src/Pegasus.Desktop`, `src/Pegasus.Desktop.Infrastructure`, and `tests/Pegasus.Desktop.ViewModelTests` are not present in the repository. The dependency is concrete, not inferred: FND-030 owns the active desktop scaffold and is claimed by another agent in `../pegasus-worktrees/desktop-scaffold`. Creating the projects or tests here would exceed DUI-005's scope and overlap that claim. DSK-03-16/GWY-016 is done and the shared Contract vocabulary now exists, but this ticket is handed back pending FND-030's scaffold merge. No product decision or external approval is needed; next action is to recheck after FND-030 lands.
