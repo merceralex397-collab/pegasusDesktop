@@ -15,49 +15,55 @@ namespace Pegasus.IntegrationTests;
 
 public sealed class DesktopGatewayProblemTests
 {
-    public static TheoryData<Exception, int, string, string?> KnownExceptions => new()
-    {
-        {
+    [Fact]
+    public Task AuthorizationExceptionsBecomeNotAuthorizedProblems() =>
+        AssertKnownExceptionAsync(
             new StaffAuthorizationException(StaffAccessRight.PerformCasework),
             StatusCodes.Status403Forbidden,
             PegasusProblemTypes.NotAuthorized,
-            null
-        },
-        {
+            null);
+
+    [Fact]
+    public Task VersionConflictsBecomeVersionConflictProblems() =>
+        AssertKnownExceptionAsync(
             new CaseVersionConflictException(Guid.NewGuid(), 1, 2),
             StatusCodes.Status409Conflict,
             PegasusProblemTypes.VersionConflict,
-            "2"
-        },
-        {
+            "2");
+
+    [Fact]
+    public Task LeaseConflictsBecomeLeaseConflictProblems() =>
+        AssertKnownExceptionAsync(
             new CaseEditLeaseConflictException(Guid.NewGuid(), 3),
             StatusCodes.Status409Conflict,
             PegasusProblemTypes.LeaseConflict,
-            "3"
-        },
-        {
+            "3");
+
+    [Fact]
+    public Task ExpiredLeasesBecomeLeaseExpiredProblems() =>
+        AssertKnownExceptionAsync(
             new CaseEditLeaseExpiredException(Guid.NewGuid(), 4),
             StatusCodes.Status409Conflict,
             PegasusProblemTypes.LeaseExpired,
-            "4"
-        },
-        {
+            "4");
+
+    [Fact]
+    public Task OperationConflictsBecomeOperationConflictProblems() =>
+        AssertKnownExceptionAsync(
             new CaseOperationConflictException(Guid.NewGuid(), "operation-1"),
             StatusCodes.Status409Conflict,
             PegasusProblemTypes.OperationConflict,
-            null
-        },
-        {
+            null);
+
+    [Fact]
+    public Task ArgumentExceptionsBecomeValidationProblems() =>
+        AssertKnownExceptionAsync(
             new ArgumentException("invalid input"),
             StatusCodes.Status400BadRequest,
             PegasusProblemTypes.Validation,
-            null
-        }
-    };
+            null);
 
-    [Theory]
-    [MemberData(nameof(KnownExceptions))]
-    public async Task KnownExceptionsBecomeTypedSafeProblems(
+    private static async Task AssertKnownExceptionAsync(
         Exception exception,
         int expectedStatus,
         string expectedType,
