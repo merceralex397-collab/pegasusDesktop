@@ -1,0 +1,1 @@
+2026-08-27 read-only audit: origin/dev ae66cbf has the empty DesktopGateway /api/v1 group and OpenAPI paths {}. No real command route exists yet; GWY-007..015 are the live route-producing prerequisites. No test-only endpoints or zero-test placeholders added. Leaving TEST-003 Preparing and unclaimed pending the first merged command route.
