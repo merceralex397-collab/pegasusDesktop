@@ -4,12 +4,16 @@ type: ticket
 title: >-
   DSK-08-01 · Scaffold `tests/Pegasus.Api.ContractTests` (xunit 2.9.3,
   WebApplicationFactory, locked restore)
-status: preparing
+status: implementing
 area: testing
-assignee: ''
+assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:34:12.811Z'
+taken_at: '2026-08-27T04:04:50.853Z'
+branch: task/dsk-08-01-contract-test-scaffold
+worktree: >-
+  C:\Users\PC\Documents\GitHub\pegasus-worktrees\dsk-08-01-contract-test-scaffold
 labels:
   - desktop-conversion
   - plan-08
@@ -24,7 +28,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:12.549Z'
-updated: '2026-08-24T21:34:12.811Z'
+updated: '2026-08-27T04:04:50.853Z'
 ---
 
 ## What
