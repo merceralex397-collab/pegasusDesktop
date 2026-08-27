@@ -35,3 +35,7 @@ Commit: `8d3827c68530ae7db8468d3bf6a488511c10b4a0`
 ## CI follow-up — 2026-08-27
 
 The first exact-head CI run `33043859460` exposed parallel `WebApplicationFactory` startup contention in the contract class: build passed, but the four concurrent OpenAPI requests returned HTTP 500 after the runner timeout. The class was changed to an xUnit collection with parallelization disabled. The exact unit command sequence was reproduced locally afterward with Core 935/935, Architecture 110/110, and Contract 5/5 passing. A fresh commit and exact-head CI run are required before merge.
+
+## CI follow-up correction — 2026-08-27
+
+The initial class-level collection marker did not serialize the separate host fixture as observed in the second CI run. The final fix is assembly-level xUnit parallelization disabled for this small host-backed contract-test project, with no product or workflow change. The exact repository unit sequence passed locally afterward with Core 935/935, Architecture 110/110, and Contract 5/5.

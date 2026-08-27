@@ -281,3 +281,7 @@ The branch diff was reviewed against the required reuse, simplification, efficie
 ## CI follow-up — 2026-08-27
 
 PR #30 exact-head run `33043859460` built successfully, and documentation/changes/local-script/reference-data/browser jobs passed. Its unit job initially failed only in the parallel contract-host tests: 4 OpenAPI requests returned HTTP 500 after the shared runner's approximately 100-second startup/request timeout, while the same suite passed standalone locally. The contract test class now uses an xUnit collection with parallelization disabled, preventing concurrent WebApplicationFactory startup contention. The repository-equivalent sequence was rerun locally after that change: Core 935/935 passed, Architecture 110/110 passed, and contract 5/5 passed. This is a test-host reliability fix; product behavior is unchanged.
+
+## CI follow-up correction — 2026-08-27
+
+The first six-line xUnit collection marker did not cover the separate `ContractTestHostTests` fixture under the runner. It was replaced by the smaller assembly-level `CollectionBehavior(DisableTestParallelization = true)` in `tests/Pegasus.Api.ContractTests/TestAssembly.cs`, and the redundant class marker was removed. The exact unit sequence then passed locally: Core 935/935, Architecture 110/110, Contract 5/5.
