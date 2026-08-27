@@ -35,7 +35,7 @@ prs:
   - '29'
 archived: false
 created: '2026-08-24T07:46:12.549Z'
-updated: '2026-08-27T05:22:23.394Z'
+updated: '2026-08-27T05:22:50.260Z'
 ---
 
 ## What
@@ -122,7 +122,9 @@ Tier 5 — Web/API/MCP caller. It obliges that actual `/api/v1` routes are reach
 
 ## Outcome
 
-_Filled at closeout._
+PR #29 was merged into dev as c2939f7e7301b36d5c93eccff498550b76d9a87a and the exact merge commit was fast-forward promoted to main on 2026-08-27. Delivered scope is the single locked Pegasus.Api.ContractTests scaffold, WebApplicationFactory host-composition smoke fact, solution registration, CI execution, and supporting documentation.
+
+Follow-ups remain with GWY-004 (OpenAPI export/snapshot), GWY-005 (Kiota client), TEST-002 (authorization/failure-path contracts), and TEST-003 (persistence paths).
 
 
 ## Scope reconciliation — 2026-08-27
