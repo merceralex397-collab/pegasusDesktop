@@ -9,3 +9,5 @@
 2026-08-27: Exact-head CI shard 2 undercount traced to xUnit MemberData list-tests behavior. Converted six gateway exception cases to explicit Facts in commit 920dad00. Local shard 2: 302 assigned, 301 passed, 1 expected skip, all 302 ran; focused problem tests 16/16; build 0/0; architecture 110/110.
 
 Reconciled historical checklist/report notes. Current head 920dad00427585a974208a7c95725edc4780d204; exact CI run 33026927409 terminal green across required lanes, infrastructure expectedly skipped. Review requested again after evidence update.
+
+2026-08-27 independent review refreshed by Hilbert at exact head 920dad00427585a974208a7c95725edc4780d204: PASS, no actionable findings. Review confirms only test-shape delta since 63293de6, host proof/404 coverage intact, simplification honest, current shard accounting reconciled, and exact CI run 33026927409 terminal green. Proof remains correctly deferred until post-merge main verification.
