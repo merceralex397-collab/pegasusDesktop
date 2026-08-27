@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -14,7 +15,7 @@ public sealed class ContractTestWebApplicationFactory : WebApplicationFactory<Pr
         builder.UseEnvironment("Development");
         builder.UseSetting("Runtime:Profile", "DevelopmentOffline");
         builder.UseSetting("Features:DesktopGateway", "true");
-        builder.ConfigureServices(services =>
+        builder.ConfigureTestServices(services =>
         {
             // The contract endpoints are anonymous. Avoid the DevelopmentOffline
             // identity lookup so this unit-test host does not require SQL Server.

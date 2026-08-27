@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -368,7 +369,7 @@ public sealed class OpenApiSnapshotTests
             builder.UseEnvironment("Development");
             builder.UseSetting("Runtime:Profile", "DevelopmentOffline");
             builder.UseSetting("Features:DesktopGateway", "false");
-            builder.ConfigureServices(services =>
+            builder.ConfigureTestServices(services =>
             {
                 services.RemoveAll<IPolicyEvaluator>();
                 services.AddSingleton<IPolicyEvaluator, AllowAllPolicyEvaluator>();
