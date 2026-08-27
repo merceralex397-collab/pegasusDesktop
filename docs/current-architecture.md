@@ -57,13 +57,13 @@ The repository identifies its package and release target as `0.1.0-alpha.1`. Peg
 | Component | Ownership and permitted dependencies |
 | --- | --- |
 | `src/Pegasus.Core/` | Business use cases, invariants, models, decisions, and ports. It must not depend on Web, Worker, Infrastructure, EF Core, Azure, Graph, Box, or other adapter implementations. |
-| `src/Pegasus.Contracts/` | Dependency-free shared request, response, problem-details, paging, concurrency, operation-key, and compatibility DTOs for the gateway and desktop. It depends only on the .NET base class library. |
+| `src/Pegasus.Contracts/` | Dependency-free shared request, response, problem-details, paging, concurrency, operation-key, compatibility DTOs, and operator vocabulary for the gateway and desktop. It depends only on the .NET base class library. |
 | `src/Pegasus.Core/ReferenceData/` | Exact provider/domain-suffix package validation, deterministic candidate semantics, and the catalog port. It contains no workbook, package-file, or EF implementation. |
 | `src/Pegasus.Infrastructure/` | EF persistence and source, artifact, package, and future external-system adapters implementing Core ports. It depends on Core. |
 | `src/Pegasus.Web/` | Razor Pages and HTTP composition root, request translation, configuration, route gates, and health endpoints. It invokes Core through configured ports and Infrastructure adapters. |
 | `src/Pegasus.Worker/` | Isolated Functions composition root. Its timer and queue triggers translate persisted intake, external-work, mailbox, sent-evidence, and reconciliation signals into Core use cases; it contains no duplicate business policy. |
 
-Web and Worker may translate transport, identity, and configuration. They must not reproduce business policy. Infrastructure may implement Core ports but does not own business decisions.
+Web and Worker may translate transport, identity, and configuration. They must not reproduce business policy. Infrastructure may implement Core ports but does not own business decisions. Core-typed Web label calls use the thin `Pegasus.Web.Presentation.OperatorLabels` adapter; the words and persisted-code maps are owned by `Pegasus.Contracts.Vocabulary.OperatorVocabulary` so the desktop and gateway share one vocabulary without a Core dependency.
 
 A new project, runtime, store, migration stream, deployment unit, or top-level application boundary requires an accepted ADR demonstrating that these owners cannot carry the change. Decision status and supersession are maintained in the [decision index](adr/README.md).
 

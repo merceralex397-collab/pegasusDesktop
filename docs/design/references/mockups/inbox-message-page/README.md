@@ -71,18 +71,14 @@ All of it already banned by the design authority:
 | Every `DialogConsequence` sentence, the partial's default, and the `Required.` hint | `README:400` — necessary copy is an approved list, and it is closed |
 | The second sentence of the correction notice | `README:431` |
 
-## Two labels that do not exist yet
+## Label provenance
 
-Both are raw machine text reaching the operator, and both need an
-`OperatorLabels` map — tracked as [[MAIL-008]].
-
-1. **The classification value.** `DecisionLabel` renders `MailCategory.Name`,
-   which for received families is `new-instruction-received`,
-   `in-progress-cases`, `pre-instruction-emails`. `Filed.dc.html` shows
-   `New instruction · Inspection` as a **proposal**, not a settled term.
-2. **The folder-move reason.** `Moving.dc.html` shows
-   `Classified as a new inspection instruction` as a **proposal**; the stored
-   `RetainedMailSuggestedMove.Reason` is machine-worded.
+The classification value is now rendered through the shared
+`Pegasus.Contracts.Vocabulary.OperatorVocabulary` map, reached from Web by
+the Core-typed `OperatorLabels` adapter (GWY-016). It uses settled family and
+subtype words rather than the persisted registry keys. The folder-move reason
+remains a separate proposal until its own acceptance is recorded; this
+mock-up does not make that text normative.
 
 ## The folder move is a confirmation
 
