@@ -5,3 +5,7 @@
 2026-08-27 — Final review remediation: preserved CaseTypeLabel's exact `Inspection and Audit` output via shared contextual vocabulary; preserved MailClassification malformed-input family precedence/exception semantics and added exact family/subtype assertions. Current-head independent review has PASS for code/content; plan evidence reconciled to 53 focused tests and final full run 1003 passed/16 skipped/0 failed.
 
 2026-08-27 — Final independent review PASS: no remaining code, architecture, test, or documentation blocker. Reviewer confirmed CaseType contextual output, strengthened ownership guard, and consistent validation evidence. Ready to commit and open PR.
+
+## Merged-main proof — 2026-08-27
+
+PR #32 merged into dev as `67109b45066648b3256eff8d4bc3491a18bfeb7d`; exact same SHA promoted non-force to origin/main under the user's literal MERGE AUTH GRANTED. Exact-head repository-check run `33107680685` is green, including rerun SQL shard job `98645658145` and coverage aggregation. Proof document written with independent review PASS, local final build (0 warnings/0 errors), focused 53/53, architecture 111/111, baseline 8/8, and no cloud writes.
