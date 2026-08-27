@@ -24,18 +24,18 @@ Export and evidence-gallery paths remain unexposed until their current-fork call
 3. Each operation performs case/document authorization/state checks immediately before the provider-facing Core call. Responses omit provider tokens, URLs, object IDs, secrets, and fabricated replay claims.
 4. Upload sessions enforce `IntakeEnvelopeLimits.MaximumContentLength`, cap active sessions and buffered bytes, re-check expiry under the owner lock, dispose expired sessions safely, and serialize completion per session. Retry guidance uses numeric `Retry-After`.
 5. Contract facts remain in the existing IntegrationTests project. The overlapping standalone contract-test scaffold was removed; no solution or CI changes were introduced.
-6. A real-host LocalDB/Ef custody test now proves the gateway reaches the existing persistence/content adapter for a completed image upload, matching canonical SHA/metadata, no abandoned-session document or temporary file, confirmation action history, and exact operation-key replay.
+6. A real-host LocalDB/Ef custody test now proves the gateway reaches the existing persistence/content adapter for a completed image upload, matching canonical SHA/metadata, no abandoned-session receipt/document or temporary file, confirmation action history, logical-removal action history with before/after snapshots, and exact operation-key replay.
 
 ## Exact branch history
 
 - Initial implementation: `f31d5aefdb48575c9ee990a0515c0e68374f8d63`.
 - Review remediation: `42250fd20fcf917081bb919c140a4797ce557150`, `8ff40b2720fef1e6a36b46a4124fe1578f6c7082`, `fcf5145c5bf14354aeaee87429f45e9c7826c591`.
-- Final lifecycle/persistence evidence: `3860d43f`.
-- Current exact head: `3860d43f` on `task/dsk-07-05-box-broker-endpoints`.
+- Final lifecycle/persistence evidence: `3860d43f`; removal audit remediation: `c3d06081`.
+- Current exact head: `c3d06081a09a47798ac7e333dcf9e0afeac026a9` on `task/dsk-07-05-box-broker-endpoints`.
 
 ## Validation
 
-Coordinator-owned exact-head checks at `3860d43f`:
+Coordinator-owned exact-head checks at `c3d06081a09a47798ac7e333dcf9e0afeac026a9`:
 
 - `dotnet build .\\Pegasus.slnx --configuration Release --no-restore -nr:false` — passed; 0 warnings, 0 errors.
 - `dotnet test .\\tests\\Pegasus.IntegrationTests\\Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter FullyQualifiedName~BoxDocumentBroker -nr:false` — passed; 26 passed, 0 failed, 0 skipped.
@@ -56,11 +56,23 @@ Coordinator-owned exact-head checks at `3860d43f`:
 
 ## Review and remaining acceptance gates
 
-The first independent review of the initial implementation failed on the overlapping test scaffold, upload/session hardening, response-cache/ETag details, and missing adapter/persistence evidence. Those findings were remediated through `3860d43f`, which includes the final lifecycle and real-host custody evidence. A fresh independent review is required on the exact final head.
+The first independent review of the initial implementation failed on the overlapping test scaffold, upload/session hardening, response-cache/ETag details, and missing adapter/persistence evidence. Those findings were remediated through `3860d43f`; the final removal-audit and persistence-evidence remediation is `c3d06081a09a47798ac7e333dcf9e0afeac026a9`. The review at `3860d43f` returned FAIL with findings on PLAT-039/041, removal audit history, persistence evidence strength, and exact replay assertion; those findings are addressed or remain explicitly blocked as described below.
 
 The ticket is not acceptance-complete yet:
 
 - PLAT-039: the required document-download and case-export success after more than one hour of gateway revision age has no current-fork proof. The referenced upstream IDs do not exist on this board, and upstream synchronization is prohibited.
 - PLAT-041: export/evidence-gallery O(1)+N resolution and measurement have no current-fork implementation/proof, so those routes remain intentionally unexposed. The referenced upstream IDs do not exist on this board, and upstream synchronization is prohibited.
 
-Next action: obtain fresh independent review of `3860d43f`; if it passes supported scope, run exact-head CI and manage the PR. The two inherited acceptance conditions remain blockers for closing FEAT-031 until implemented/proven in this repository or explicitly resolved through a truthful Kanmer scope decision. Do not use upstream synchronization or cloud/deployment writes.
+Next action: obtain fresh independent review of `c3d06081a09a47798ac7e333dcf9e0afeac026a9`; if supported scope passes, run exact-head CI and manage the PR. The two inherited acceptance conditions remain blockers for closing FEAT-031 until implemented/proven in this repository or explicitly resolved through a truthful Kanmer scope decision. Do not use upstream synchronization or cloud/deployment writes.
+
+## Review remediation — 2026-08-27
+
+The independent review of `3860d43f` returned FAIL. Its merge-blocking findings were that logical removal had no action-history row, the real-host evidence did not prove abandoned receipt preservation or all canonical metadata, and the confirmation replay response bodies were not compared. It also kept PLAT-039 token-age and PLAT-041 O(1)+N/export-gallery requirements open, because those are absent from this fork and cannot be satisfied by upstream synchronization.
+
+Remediation committed at `c3d06081a09a47798ac7e333dcf9e0afeac026a9`: logical removal now persists a `document_logically_removed` action with reason, operation key, and serialized before/after document state, rejects an already-removed document missing its audit row, and validates same-key replay against the persisted outcome. The real-host LocalDB/Ef test now proves intake-receipt count is unchanged for an abandoned upload, checks the complete response/persisted canonical metadata projection, verifies removal audit state, and compares original/replayed mutation responses.
+
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false` passed with 0 warnings and 0 errors.
+- `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter FullyQualifiedName~BoxDocumentBroker -nr:false` passed 26/26.
+- `git diff --check` passed and the branch worktree is clean.
+
+A fresh independent re-review of the exact current head is required. PLAT-039 token-age proof, PLAT-041 call-budget/export-gallery implementation and measurement, and the repository/cloud boundary evidence remain open acceptance blockers; no export/gallery route is exposed and no cloud/deployment read or write is being used under the current operator boundary.
