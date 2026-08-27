@@ -57,3 +57,18 @@ Move the pure code → operator-label map out of `src/Pegasus.Web/Presentation/O
 - [[GWY-016]] performs the single `OperatorLabels` relocation because it is the gateway-side ticket that names the shared `Pegasus.Contracts` home and is currently unblocked by [[GWY-001]]. It absorbs the required fold-in from [[FEAT-023]]: the two page-local `IntakeDecision` maps and their `docs/design/README.md:541-542` reconciliation, plus the third `VrmRecognitionOutcomeKind` map with its existing wording.
 - [[FEAT-023]] is covered by this ticket and will not perform a second move. Its downstream [[DUI-005]] relationship is retained through the completed relocation; no duplicate branch or PR is created.
 - The relocation remains a string-keyed contract vocabulary plus a thin Web adapter because `Pegasus.Contracts` must not reference `Pegasus.Core`; Web signatures remain unchanged and the desktop can consume the shared string vocabulary without ASP.NET or EF dependencies.
+
+## Implementation evidence — 2026-08-27
+
+- Classification: pure code/name-to-operator-label members now live in `src/Pegasus.Contracts/Vocabulary/OperatorVocabulary.cs`, keyed by stable string names so Contracts has no Core dependency. The Web adapter retains the existing Core-typed signatures and keeps the Web-only Europe/London formatter and Core-shaped provenance/configuration translation at that boundary.
+- The relocated pure members cover attachment searchability, unidentified reason/state/media, e-mail handle and association, case stage/type, chase state, operational destination, repair route, estimate line type, document role/origin, image-intake state, custody/upload state, intake failure, intake decision, history event, route scope, chase reason, inspection mode, Automation actor, mileage, source channel, recognition outcome, provenance words/icons, mail classification, and humanisation.
+- The two page-local `IntakeDecision` maps and the `VrmRecognitionOutcomeKind` map now delegate through `OperatorLabels`; no `.cshtml` call-site changes were required. The sanctioned FEAT-023 fold-in corrects only the two design-authority terms from `Document text required` to `Needs text extraction`, and from `Technical failure` to `Failed`.
+- `tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs` now guards one Contract vocabulary owner and rejects the former page-local label-switch shapes. `tests/Pegasus.IntegrationTests/OperatorVocabularyTests.cs` covers all intake decisions, all recognition outcomes, and Web-to-Contract decision delegation.
+- Baseline characterization: the unchanged base commit `ae66cbf6` was tested in a detached temporary worktree with the existing label suites: 8 passed, 0 failed. Post-move focused suites pass with the same existing 8 tests plus 12 new vocabulary/decision tests; the two sanctioned design wording changes are explicitly asserted.
+
+## Simplification pass — 2026-08-27
+
+- Reuse: one shared `OperatorVocabulary` owns every moved map; `OperatorLabels` only translates Core/Web-specific shapes and retains the two formatters that require Web/runtime types.
+- Simplification: no new interface, project, package, compatibility path, or duplicate page map was introduced. The shared helper uses stable names instead of adding a Core reference to Contracts.
+- Efficiency: label calls remain direct static calls; no cache, reflection, service, or extra runtime hop was added.
+- Altitude: documentation names the actual as-built owner and adapter; the architecture test checks the ownership boundary without adding production infrastructure. No unapplied simplification finding remains.
