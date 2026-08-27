@@ -66,3 +66,9 @@ The review also found that CI built but did not execute the new project. The exi
 The reviewer identified that the former HTTP probe could receive 401 from the global fallback policy before route matching. The test was changed to assert only the observable `DesktopGatewayOptions` registration from the real `WebApplicationFactory<Program>` host; it no longer claims an endpoint is mapped.
 
 The reviewer also identified that the unit CI job did not execute the new project. The existing chained unit lane now includes the focused Contract command. A fresh local Release solution build passed with 0 warnings/errors; the focused Contract project test passed 1/1; the solution-level Contract selection passed 1/1; `git diff --check` passed. PR #29 at the pre-correction SHA remains superseded by the next pushed head; exact-head CI must be rechecked after push.
+
+## Final review and delivery evidence — 2026-08-27
+
+- Fresh independent review by Hilbert (pegasus-desktop-reviewer) returned PASS for PR #29 at exact head ee9cba4d8c15e1a1e6c89b3f4941f84cc2c0f5e4. The review confirmed the host-composition-only smoke assertion, explicit Contract CI execution, and corrected documentation ownership; no remaining scope, validation, or documentation blocker was identified.
+- GitHub Actions run 33040668468, attempt 2, is green at that exact head. The initial shard-2 post-login SQL timeout was rerun as the failed job; the retry passed, as did all other checks and coverage.
+- PR #29 is merge-ready against dev. Merge, then write merged-main proof before Kanmer closeout.

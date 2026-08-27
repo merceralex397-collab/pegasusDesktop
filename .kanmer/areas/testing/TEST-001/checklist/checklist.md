@@ -7,4 +7,4 @@
 - [x] Verify: The project appears once in Pegasus.slnx and builds with warnings-as-errors.
 - [x] Verify: Focused API contract test command passes using the detected test runner.
 - [x] Verify: Fixture does not require live Azure, Box or Graph.
-- [ ] Record exact test command/output, simplification pass and independent review.
+- [x] Record exact test command/output, simplification pass and independent review.

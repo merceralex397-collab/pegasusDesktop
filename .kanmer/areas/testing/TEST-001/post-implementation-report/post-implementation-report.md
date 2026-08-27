@@ -37,3 +37,7 @@ OpenAPI snapshot/export, Kiota generated-client freshness, endpoint authorizatio
 ## Review state
 
 A fresh independent review and exact-head CI run are required after the correction commit.
+
+## Final review and delivery state — 2026-08-27
+
+Hilbert (pegasus-desktop-reviewer) independently returned PASS for PR #29 at exact head ee9cba4d8c15e1a1e6c89b3f4941f84cc2c0f5e4. GitHub Actions run 33040668468, attempt 2, is green across all checks, including the retried SQL shard and coverage. The PR is merge-ready; merged-main proof remains required after merge.

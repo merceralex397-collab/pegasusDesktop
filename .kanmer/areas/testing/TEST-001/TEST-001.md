@@ -4,13 +4,14 @@ type: ticket
 title: >-
   DSK-08-01 · Scaffold `tests/Pegasus.Api.ContractTests` (xunit 2.9.3,
   WebApplicationFactory, locked restore)
-status: review
+status: verifying
 area: testing
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:34:12.811Z'
   review: '2026-08-27T04:33:01.669Z'
+  verifying: '2026-08-27T05:18:27.512Z'
 taken_at: '2026-08-27T04:04:50.853Z'
 branch: task/dsk-08-01-contract-test-scaffold
 worktree: >-
@@ -28,12 +29,12 @@ blocks:
   - TEST-002
 docs_todo: true
 commits:
-  - 1fddd2d1
+  - ee9cba4d8c15e1a1e6c89b3f4941f84cc2c0f5e4
 prs:
   - '29'
 archived: false
 created: '2026-08-24T07:46:12.549Z'
-updated: '2026-08-27T04:50:10.416Z'
+updated: '2026-08-27T05:18:27.512Z'
 ---
 
 ## What
