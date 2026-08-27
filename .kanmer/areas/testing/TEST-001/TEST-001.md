@@ -13,10 +13,6 @@ stageEntered:
   review: '2026-08-27T04:33:01.669Z'
   verifying: '2026-08-27T05:18:27.512Z'
   done: '2026-08-27T05:22:23.394Z'
-taken_at: '2026-08-27T04:04:50.853Z'
-branch: task/dsk-08-01-contract-test-scaffold
-worktree: >-
-  C:\Users\PC\Documents\GitHub\pegasus-worktrees\dsk-08-01-contract-test-scaffold
 labels:
   - desktop-conversion
   - plan-08
@@ -35,7 +31,7 @@ prs:
   - '29'
 archived: false
 created: '2026-08-24T07:46:12.549Z'
-updated: '2026-08-27T05:22:50.260Z'
+updated: '2026-08-27T05:24:46.542Z'
 ---
 
 ## What

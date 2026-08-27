@@ -16,8 +16,8 @@
 - [x] PR merge verified (PR #29 state MERGED, mergedAt 2026-08-27)
 - [x] proof.md finalised (PR URL and merge date recorded)
 - [x] Moved to final stage (`done`)
-- [ ] Outcome recorded in ticket body (PR link, follow-ups)
-- [ ] cd out of worktree; remove this ticket worktree
-- [ ] Delete this ticket branch after merged PR
-- [ ] fetch --prune origin and worktree prune
-- [ ] take_ticket action: release
+- [x] Outcome recorded in ticket body (PR link, follow-ups)
+- [x] cd out of worktree; remove this ticket worktree
+- [x] Delete this ticket branch after merged PR
+- [x] fetch --prune origin and worktree prune
+- [x] take_ticket action: release
