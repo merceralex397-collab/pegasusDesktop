@@ -218,7 +218,7 @@ Target state when this area is complete:
 | Layer (§22.2) | Home | State |
 | --- | --- | --- |
 | Domain/application unit tests | `tests/Pegasus.Core.Tests` (reused) | Unchanged; gaps listed by `test-gap-analysis` are closed as slices touch a rule |
-| API contract tests | EXISTING `tests/Pegasus.Api.ContractTests` | Scaffold and host-composition discovery are present; GWY-004 owns the OpenAPI snapshot, GWY-005 owns generated-client freshness, and later testing tickets add authorization, persistence and compatibility cases |
+| API contract tests | EXISTING `tests/Pegasus.Api.ContractTests` | Scaffold and host-composition discovery are present; GWY-004 owns the OpenAPI snapshot, GWY-005 owns generated-client freshness, TEST-002 owns the EndpointDataSource-derived command coverage guard and five reusable authorization/failure-path theories, and later command tickets add their literal rows |
 | Server integration | `tests/Pegasus.IntegrationTests` (extended) | Every `/api/v1` command has authorization and failure-path tests; LocalDB shards still partition-verified |
 | View-model tests | NEW `tests/Pegasus.Desktop.ViewModelTests` | Commands and availability, loading/empty/error/success, cancellation, dirty state, validation, navigation, stale session, mandatory update |
 | WinUI UI automation | NEW `tests/Pegasus.Desktop.UITests` (script-driven `winapp ui`) | Small high-value suite: launch/update/login, open case, edit/save, concurrency message, document upload, vehicle lookup, report preview/finalize, logout, keyboard navigation, core accessibility properties |
