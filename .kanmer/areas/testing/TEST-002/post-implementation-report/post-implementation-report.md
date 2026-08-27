@@ -5,7 +5,7 @@
 - Added a test-side `EndpointDataSource` catalogue for POST/PUT/PATCH/DELETE routes under `/api/v1`.
 - Added a symmetric literal command coverage table and guard. The table is intentionally empty for the verified merged host because no command endpoint is currently present; a future command without a reviewed row fails the guard with its method and route.
 - Added reusable row-driven theories for unauthenticated, wrong-right, stale-version, invalid-request, and idempotent-replay contracts. Their endpoint-specific requests and effect snapshots are supplied by future concrete rows; the zero-row placeholder is not part of the table and performs no HTTP call.
-- Added an in-memory `POST /api/v1/__probe` guard test and shared problem/challenge/equality/effect assertions.
+- Added a derived-host `POST /api/v1/__probe` guard test and shared problem/challenge/equality/effect assertions.
 - Updated `docs/desktop/08-testing/README.md` to document TEST-002 and the future row-extension rule.
 - No product endpoint, authentication pipeline, Core policy, database, cloud, deployment, upstream, or corpus change was made.
 

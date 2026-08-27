@@ -26,7 +26,7 @@ Keep only one fixture taxonomy and preserve the gateway/Core boundary.
 - The application currently exposes no `POST`, `PUT`, `PATCH`, or `DELETE` route under `/api/v1`; the command catalogue therefore returns zero endpoints.
 - `GWY-003` and `GWY-021` remain unmerged, so there is no authoritative command authorization metadata or command handler to test yet.
 - The harness records this zero state explicitly and makes the first future command endpoint fail the symmetric coverage guard until its literal row is reviewed and added.
-- The in-memory probe test supplies a `POST /api/v1/__probe` route directly to the catalogue/guard; it is test-only and does not alter the application host.
+- The derived-host probe test maps `POST /api/v1/__probe` through a test-only startup filter, then reads it from the catalogue/guard; it does not alter product routing.
 
 ## Review correction — 2026-08-27
 
