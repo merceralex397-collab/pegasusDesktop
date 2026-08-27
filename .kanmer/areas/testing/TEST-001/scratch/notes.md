@@ -7,3 +7,5 @@ Independent review verdict FAIL at 2026-08-27: (1) docs/desktop/08-testing/READM
 Review corrections applied: smoke fact narrowed to DesktopGatewayOptions registration from the real host; CI unit chain now executes Category=Contract. Fresh local Release solution build 0 warnings/errors, focused Contract 1/1, solution-level Contract 1/1, diff check passed. Need commit/push and fresh review plus exact-head CI.
 
 2026-08-27 — Final independent review by Hilbert returned PASS for PR #29 at exact head ee9cba4d8c15e1a1e6c89b3f4941f84cc2c0f5e4. GitHub Actions run 33040668468 attempt 2 is green; the initial sql-integration (2) post-login timeout passed on the authorized failed-job rerun. Ticket is merge-ready; merge to dev, promote exact merged SHA to main, write proof on main, then close Kanmer.
+
+2026-08-27 — PR #29 merged into dev as c2939f7e7301b36d5c93eccff498550b76d9a87a and exact fast-forward promoted to main under the supplied merge authorization. Merged-main proof worktree validated locked restore, Release build (0 warnings/errors), focused Contract 1/1, solution Contract 1/1, and diff check. Proof document written; ready for Verifying→Done.

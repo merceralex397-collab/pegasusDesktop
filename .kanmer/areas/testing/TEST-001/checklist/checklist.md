@@ -8,3 +8,16 @@
 - [x] Verify: Focused API contract test command passes using the detected test runner.
 - [x] Verify: Fixture does not require live Azure, Box or Graph.
 - [x] Record exact test command/output, simplification pass and independent review.
+
+# Closeout checklist
+
+## Closeout — TEST-001
+
+- [x] PR merge verified (PR #29 state MERGED, mergedAt 2026-08-27)
+- [x] proof.md finalised (PR URL and merge date recorded)
+- [x] Moved to final stage (`done`)
+- [ ] Outcome recorded in ticket body (PR link, follow-ups)
+- [ ] cd out of worktree; remove this ticket worktree
+- [ ] Delete this ticket branch after merged PR
+- [ ] fetch --prune origin and worktree prune
+- [ ] take_ticket action: release

@@ -4,7 +4,7 @@ type: ticket
 title: >-
   DSK-08-01 · Scaffold `tests/Pegasus.Api.ContractTests` (xunit 2.9.3,
   WebApplicationFactory, locked restore)
-status: verifying
+status: done
 area: testing
 assignee: codex-mcp-client
 profile: feature
@@ -12,6 +12,7 @@ stageEntered:
   preparing: '2026-08-24T21:34:12.811Z'
   review: '2026-08-27T04:33:01.669Z'
   verifying: '2026-08-27T05:18:27.512Z'
+  done: '2026-08-27T05:22:23.394Z'
 taken_at: '2026-08-27T04:04:50.853Z'
 branch: task/dsk-08-01-contract-test-scaffold
 worktree: >-
@@ -34,7 +35,7 @@ prs:
   - '29'
 archived: false
 created: '2026-08-24T07:46:12.549Z'
-updated: '2026-08-27T05:18:27.512Z'
+updated: '2026-08-27T05:22:23.394Z'
 ---
 
 ## What
