@@ -426,6 +426,45 @@ public sealed class BoxDocumentBrokerWebTests
     }
 
     [Fact]
+    public void NonOwnerLookupDoesNotDiscardSessionOrLeakBufferedQuota()
+    {
+        var clock = new TestTimeProvider(DateTimeOffset.UnixEpoch);
+        var sessions = new DesktopDocumentUploadSessions(clock);
+        var owner = ActionActor.Staff(
+            Guid.Parse("50617283-94a5-b6c7-d8e9-fafb0c1d2e3f"),
+            [StaffRole.Administrator]);
+        var otherActor = ActionActor.Staff(
+            Guid.Parse("61728394-a5b6-c7d8-e9fa-bc0d1e2f3a4b"),
+            [StaffRole.Administrator]);
+
+        Assert.True(sessions.TryCreate(
+            CaseId,
+            owner,
+            "bounded.bin",
+            "application/octet-stream",
+            DocumentSemanticRole.Other,
+            out var session));
+        Assert.NotNull(session);
+        Assert.True(session!.TrySetContent(
+            new byte[(int)DesktopDocumentUploadSessions.MaximumBufferedBytes]));
+
+        Assert.Null(sessions.Find(session.Id, otherActor));
+        Assert.Same(session, sessions.Find(session.Id, owner));
+
+        clock.Advance(TimeSpan.FromMinutes(31));
+        Assert.True(sessions.TryCreate(
+            CaseId,
+            owner,
+            "after-expiry.bin",
+            "application/octet-stream",
+            DocumentSemanticRole.Other,
+            out var afterExpiry));
+        Assert.NotNull(afterExpiry);
+        Assert.True(afterExpiry!.TrySetContent(
+            new byte[(int)DesktopDocumentUploadSessions.MaximumBufferedBytes]));
+    }
+
+    [Fact]
     public async Task OversizedUploadIsRejectedWithoutCallingCore()
     {
         var getCase = new RecordingGetCase(CreateDetails());

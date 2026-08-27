@@ -24,7 +24,6 @@ internal static class BoxDocumentBrokerEndpoints
     private const string StaffUploadIdentityPrefix = "staff-upload:";
     private const int MaximumFileNameLength = 255;
     private const int MaximumMediaTypeLength = 200;
-    private const int MaximumSourceIdentityLength = 512;
 
     public static void MapBoxDocumentBroker(this RouteGroupBuilder group)
     {
@@ -685,7 +684,6 @@ internal sealed class DesktopDocumentUploadSessions : IDisposable
             if (!sessions.TryGetValue(id, out var session)
                 || !session.BelongsTo(actor))
             {
-                sessions.TryRemove(id, out _);
                 return null;
             }
 
