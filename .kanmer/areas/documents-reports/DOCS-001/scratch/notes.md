@@ -29,3 +29,5 @@ PR #14 exact-head CI initially failed `changes` because the new report migration
 2026-08-27 checkpoint: merged current origin/dev into the claimed PR branch, resolved the sole OperatorLabels.cs conflict by retaining report-state handling and current shared vocabulary adapters, and pushed merge commit e8348318cfe06fafa03d4851b296a5bd4cec19f6 to origin/task/upstream-docs-001-report-aggregate. PR #14 is now CLEAN/MERGEABLE; GitHub checks have not appeared yet. No upstream remote or cloud operation used.
 
 2026-08-27 validation: locked restore on merge head e8348318 passed; `dotnet build .\Pegasus.slnx --configuration Release --no-restore -nr:false --nologo` passed with 0 warnings/0 errors; `dotnet test .\tests\Pegasus.Api.ContractTests\Pegasus.Api.ContractTests.csproj --configuration Release --no-build --logger "console;verbosity=minimal"` passed 12/12. GitHub run 33112687249 remains in progress for browser and SQL shards.
+
+2026-08-27 validation: focused report persistence/draft/renderer integration filter passed 22/22 in 1m26s on merge head e8348318. Locked restore, Release solution build, and API contract tests remain green.
