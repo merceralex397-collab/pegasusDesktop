@@ -253,3 +253,16 @@ The `proof` document is produced from these command logs:
 
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this branch's own
 diff before the PR, recorded here under a dated heading._
+
+## Revalidated execution facts — 2026-08-27
+
+The branch is `task/openapi-snapshot` from `origin/dev` at
+`c2939f7e7301b36d5c93eccff498550b76d9a87a`. The assumption outcomes are now
+known: central package management is present, so the package version belongs in
+`Directory.Packages.props`; TEST-001 has landed, so the existing
+`Pegasus.Api.ContractTests` project and factory are extended in place; and
+the existing CI unit job already has TEST-001's third chained test command and
+correct three-project comment. No duplicate project or CI command is permitted.
+The Microsoft Learn OpenAPI generation and customization pages were searched
+and fetched on 2026-08-27. No product decision or external approval is needed
+for this ticket.

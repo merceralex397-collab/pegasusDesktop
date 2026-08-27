@@ -1,0 +1,1 @@
+2026-08-27: Refreshed live Kanmer status and dependency links; GWY-004 remained unclaimed, GWY-002 is done, and GWY-005 is the direct downstream. Took GWY-004 on task/openapi-snapshot from origin/dev c2939f7. Revalidated Directory.Packages.props, TEST-001 contract scaffold, and existing unit CI before implementation. Microsoft Learn OpenAPI pages fetched 2026-08-27.

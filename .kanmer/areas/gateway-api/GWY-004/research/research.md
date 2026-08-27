@@ -221,3 +221,48 @@ an offline development host and writes a JSON file.
   applies. The four assumptions each name the command inside this ticket's own steps that settles them.
   The promotion of `openapi/pegasus-v1.previous.json` is a scope boundary owned by [[GWY-017]] and area
   09, recorded in the plan's Risks section rather than opened as a question.
+
+## Revalidation — 2026-08-27
+
+The live board was refreshed before taking the ticket. GWY-004 was unclaimed,
+GWY-002 was done, and the ticket was taken on
+`task/openapi-snapshot` at `origin/dev` commit `c2939f7e7301b36d5c93eccff498550b76d9a87a`.
+The implementation worktree is
+`C:\Users\PC\Documents\GitHub\pegasus-worktrees\openapi-snapshot`.
+No upstream remote or upstream synchronization was used.
+
+The commands below rechecked the assumptions that were stale in the original
+research:
+
+- `Test-Path Directory.Packages.props` = **True**. FND-027's central package
+  management has landed, so `Microsoft.AspNetCore.OpenApi` must be versioned
+  there and referenced without a version in `Pegasus.Web.csproj`.
+- `Test-Path tests/Pegasus.Api.ContractTests` = **True**. TEST-001 has landed
+  and owns the existing project, solution entry, lock file, and
+  `ContractTestWebApplicationFactory`; this ticket extends it and does not
+  scaffold a second project.
+- The existing factory already sets `UseEnvironment("Development")`,
+  `Runtime:Profile=DevelopmentOffline`, and
+  `Features:DesktopGateway=true`.
+- `.github/workflows/ci.yml` already contains the TEST-001 contract test in
+  the existing `unit` job and already describes three projects. GWY-004 must
+  preserve that single-lane arrangement rather than append a duplicate command.
+
+Microsoft Learn was searched first and the official pages were fetched again
+on 2026-08-27:
+
+- [Generate OpenAPI documents](https://learn.microsoft.com/aspnet/core/fundamentals/openapi/aspnetcore-openapi?view=aspnetcore-10.0)
+  confirms .NET 10's `AddOpenApi("v1")`, the default
+  `/openapi/{documentName}.json` route, runtime generation, and build-time
+  generation through `Microsoft.Extensions.ApiDescription.Server`.
+- [Customize OpenAPI documents](https://learn.microsoft.com/aspnet/core/fundamentals/openapi/customize-openapi?view=aspnetcore-10.0)
+  confirms document transformers and the .NET 10 schema-generation path through
+  `GetOrCreateSchemaAsync`; it also confirms that document transformers can
+  set `OpenApiDocument.Info`.
+
+The live source still has an empty `DesktopGatewayExtensions` group and no
+OpenAPI package or `InternalsVisibleTo` entry for the contract project. The
+ticket therefore owns adding the central package version, the Web package
+reference, the friend assembly, the gated OpenAPI composition, the transformer,
+the snapshot/export assets, and the tests. The no-upstream and no-cloud
+boundaries remain unchanged.
