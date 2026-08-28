@@ -54,3 +54,28 @@ Add an automated check that every table a composition root actually writes is gr
 ## Simplification pass
 
 Before the PR, independently assess the branch diff for unnecessary abstractions, duplicated policy, or scope expansion and record the disposition here.
+
+## Implementation and simplification pass — 2026-08-28
+
+Implementation completed on the assigned branch `task/dsk-10-18-runtime-grant-composition-gate` at final HEAD `f171eadb2db862a3fb4ec279b08509b90ae30c21` (parent `6129ddc94db928690c8f838f60f46fbb5ef94b52`). The branch changes only:
+
+- `tests/Pegasus.ArchitectureTests/RuntimeGrantCompositionTests.cs`
+- `docs/current-architecture.md`
+
+Validation on the final HEAD:
+
+- `dotnet build tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-restore -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false --verbosity minimal` — passed, 0 warnings/errors.
+- Focused PLAT-018 tests — 6 passed, 0 failed.
+- Full architecture suite — 117 passed, 0 failed, 0 skipped.
+- `pwsh ./scripts/Test-MigrationGrants.ps1` — 71 migration files passed.
+- `git diff --check` — passed.
+- Worktree clean after commit and push.
+
+### Simplification pass
+
+- Reuse — no change; the existing migration grant shapes and opt-out marker are reused.
+- Simplification — removed the redundant `StartsWith('E')` precheck, retaining the required `StartsWith("Ef")` test.
+- Efficiency — no change; the scan remains lightweight and adds no dependency or CI job.
+- Altitude — no change; the diff remains limited to the architecture test and current-architecture snapshot.
+
+The final branch is ready for independent review. No migration, source composition root, CI, cloud, upstream, or deployment file was changed.
