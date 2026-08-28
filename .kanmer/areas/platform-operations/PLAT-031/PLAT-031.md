@@ -2,10 +2,12 @@
 id: PLAT-031
 type: ticket
 title: Grant Worker INSERT on CaseReportVersionLedgers exposed by PLAT-018
-status: implementing
+status: review
 area: platform-operations
 assignee: codex-mcp-client
 profile: fix
+stageEntered:
+  review: '2026-08-28T07:56:28.928Z'
 taken_at: '2026-08-28T07:46:10.698Z'
 branch: task/plat-031-worker-case-report-ledger-grant
 worktree: ../pegasus-worktrees/plat-031-worker-case-report-ledger-grant
@@ -26,9 +28,13 @@ refs:
   - docs/desktop/10-security-observability-performance/README.md
   - docs/current-architecture.md
 docs_todo: true
+commits:
+  - 59af1b21fa9a09cffc370d299f5c10363e7a4edb
+prs:
+  - '38'
 archived: false
 created: '2026-08-28T07:45:21.624Z'
-updated: '2026-08-28T07:46:10.698Z'
+updated: '2026-08-28T07:56:28.928Z'
 ---
 
 ## What
