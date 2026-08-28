@@ -334,6 +334,11 @@ dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --c
 dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter "Category=Browser&Category!=Corpus" -- xUnit.MaxParallelThreads=2
 ```
 
+The Windows-only `Pegasus.Desktop.ViewModelTests` project uses one shared
+`Support/FixedTimeProvider` with the default instant `2026-01-01T00:00:00Z`.
+Desktop tests advance or set that clock explicitly and do not define private
+copies.
+
 Test classes run in parallel. The integration project caps concurrency at four
 in `tests/Pegasus.IntegrationTests/xunit.runner.json`: several agents may run
 suites at once against one LocalDB instance, and the cap is what bounds the
