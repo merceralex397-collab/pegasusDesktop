@@ -391,3 +391,21 @@ The operator explicitly confirmed the permanent package identity values before p
 - `Identity/@Publisher`: `CN=Collision Engineers`
 
 Use these exact strings in `Package.appxmanifest`. The Publisher value is the required manifest/certificate-subject match under D-002; no certificate was created, changed, or uploaded by this task.
+
+## Implementation checkpoint — 2026-08-28
+
+- Operator confirmation is fixed verbatim: `Identity.Name=CollisionEngineers.Pegasus`; `Identity.Publisher=CN=Collision Engineers`.
+- `dotnet new winui-mvvm -n Pegasus.Desktop -o src/Pegasus.Desktop` created the project in the existing task worktree. The generated underscore namespace was changed to `Pegasus.Desktop` so the repository's warnings-as-errors policy remains clean.
+- The project now targets `net10.0-windows10.0.26100.0`, x64, `win-x64`, self-contained .NET and Windows App SDK, with ReadyToRun and trimming disabled. Windows App SDK is centrally pinned to stable `2.4.0` (release date recorded in the area plan); BuildTools is `10.0.26100.7705`, WinApp support is `0.3.1`, and CommunityToolkit.Mvvm is `8.4.2`.
+- `dotnet package search Microsoft.WindowsAppSDK.Analyzers` returned no NuGet package. The explicit analyzer reference therefore uses the vendored DLL in the desktop project; a project-local `Directory.Build.props` imports the vendored XAML-file target while importing the repository root props, so plain builds preserve the repository policy and BuildAndRun does not shadow it. This is the necessary implementation of the ticket's analyzer requirement, not a fabricated package dependency.
+- Manifest identity is `CollisionEngineers.Pegasus` / `CN=Collision Engineers`, version `0.1.0.0`; the version is a scaffold placeholder for the later release-version ticket.
+- Added the desktop project to `Pegasus.slnx` and the architecture solution-content expectation. Added the desktop client to current-architecture documentation. The runbook prerequisite sentence remains owned by [[FND-039]] and was not duplicated.
+- Packaged launch evidence: `BuildAndRun.ps1 ...` reported `CollisionEngineers.Pegasus_e6z0b4cw4baw launched (PID: 104480)`; screenshot captured at `artifacts/fnd-030/desktop-launch.png`. The app responded and was closed cleanly after capture.
+- Self-contained Release payload measurement: 522 files, 235,921,659 bytes (224.99 MiB) at `src/Pegasus.Desktop/bin/Release/net10.0-windows10.0.26100.0/win-x64`.
+
+## Simplification pass — 2026-08-28
+
+- Removed template inline package versions in favour of the repository's existing central package-management file.
+- Kept the analyzer wiring to one explicit project reference plus one local target import; no NuGet package or duplicate architecture layer was added.
+- Removed template platform alternatives, trimming, and ReadyToRun defaults that contradicted the ticket's fixed x64/self-contained target.
+- Replaced the generated underscore namespace instead of suppressing CA1707. No unrelated source, server, cloud, upstream, or certificate changes were made.
