@@ -57,3 +57,9 @@ Independent test analysis (Popper) initially found the first local implementatio
 - `pwsh ./scripts/Test-AzureDeploymentPlan.ps1 -Mode Local` passed.
 - The focused `LatestMigrationGrantsIssuedReportVersionLedgerToItsRuntimeCallers` test passed 1/1.
 - `Test-MigrationGrants.ps1` remains unchanged and continues to pass.
+
+## Independent review and combined validation — 2026-08-28
+
+- Boyle (`pegasus-desktop-reviewer`), who did not implement PLAT-031, reviewed PR #38 at exact head `59af1b21fa9a09cffc370d299f5c10363e7a4edb`. Plan coverage, implementation coverage, local evidence, simplification, and scope all passed; the review verdict was **not merge-ready at review time** only because exact-head CI was still running and the required combined validation had not yet been recorded. No implementation defect was found.
+- Clean detached validation combined exact PLAT-030 `c599a42b1f964c4e5a1dc13894f28f8300152984`, PLAT-018 `fca04a917f2f2e3c3abc7eeb93e46c9ca9a00ea5`, and PLAT-031 `59af1b21fa9a09cffc370d299f5c10363e7a4edb` without changing or pushing any task branch. Locked restore passed; focused `RuntimeGrantCompositionTests` passed 10/10; full ArchitectureTests passed 121/121; `Test-MigrationGrants.ps1` passed 73/73 migration files; `Test-AzureDeploymentPlan.ps1 -Mode Local` passed; and `git diff --check` passed.
+- Exact-head GitHub CI run `33153323761` remains the only open merge gate; its unit, browser, infrastructure, documentation, changes, local-development-scripts, and reference-data jobs have passed, while SQL shards 2 and 3 are still running. No merge is claimed until those jobs complete successfully.
