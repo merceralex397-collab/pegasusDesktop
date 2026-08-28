@@ -63,3 +63,11 @@ DOCS-001 is merged at `80bbb6fe86916a0c499a70480121e278ab114e7a` and supplies `A
 - Simplification: version-specific custody is one ledger keyed by the existing report-version ID; the workflow's existing approval/Sent pointers remain only as current convenience projections. No new CASE-23 states, delivery adapter, external API, or compatibility implementation was added.
 - Reliability: association history stores the ledger mutation version so same-clock operations retain deterministic order; former-link values are captured on unlink. This is a behavior-preserving correction to audit ordering, not extra presentation machinery.
 - Scope/altitude: documentation changes are limited to the FRD, as-built architecture map, screen spec, and historical carryover entry that own the affected requirements. No finding is deferred.
+
+## Final implementation corrections — 2026-08-28
+
+- Independent-review finding applied: Core commands and the persistence store now require an existing immutable report version for approval, manual link, and unlink; Worker auto-link retains a deterministic `report_version_required` result without calling persistence when the version is absent.
+- Independent-review finding applied: version-specific auto-link requires the ledger's current evidence pointer as well as exact version/artifact/hash authority, preventing replay or cross-case reuse after unlink.
+- Independent-review finding applied: association-history projection accepts both staff and system-worker actors; current approval/projection status and unresolved reason are exposed in the existing Case workflow view.
+- Existing integration scenarios were migrated to explicit versioned fixtures and now cover the rejection of unversioned operations, system-worker history projection, stale-version protection, cross-case reuse, and replay invariants.
+- Full Release validation completed after these corrections; no implementation finding remains deferred.
