@@ -279,7 +279,7 @@ public sealed class RuntimeGrantCompositionTests
                 var arguments = match.Groups["args"].Value.Split(',').Select(value => value.Trim()).ToArray();
                 foreach (var type in arguments)
                 {
-                    if (type.StartsWith('E') && type.StartsWith("Ef", StringComparison.Ordinal) ||
+                    if (type.StartsWith("Ef", StringComparison.Ordinal) ||
                         type.Equals("EvaHandoffStore", StringComparison.Ordinal))
                     {
                         var interfaceName = arguments.FirstOrDefault(value => value.StartsWith('I'));
