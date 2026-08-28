@@ -44,3 +44,7 @@ Applied the review corrections at the new task-branch head:
 - Updated the checklist and plan with honest package/analyzer, NoWarn, runbook, payload, and simplification dispositions.
 
 The exact-head GitHub Actions run for this new commit and merged-main proof are still required; no proof document is being fabricated before merge.
+
+## Independent review correction 2 — 2026-08-28
+
+At exact task head `93ff2663364b05293f25832c6aa7fd5b10c90687`, `BuildAndRun.ps1` rebuilt with 0 warnings/errors and launched package identity `CollisionEngineers.Pegasus_e6z0b4cw4baw0` as PID `119016`; the responsive window was captured at `artifacts/fnd-030/desktop-launch-final.png` and closed cleanly. The architecture diagram now marks the absent scaffold project references as planned dependencies. The exact-head CI run is `33202445712`; fresh independent review remains required before merge.

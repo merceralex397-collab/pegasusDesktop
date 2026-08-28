@@ -1,0 +1,1 @@
+2026-08-28: Exact head 93ff2663 relaunched successfully via BuildAndRun (0 warnings/errors; package CollisionEngineers.Pegasus_e6z0b4cw4baw0 launched PID 119016; responsive screenshot artifacts/fnd-030/desktop-launch-final.png). Diagram now marks absent scaffold references planned; CI wording corrected; item commits updated. Fresh CI run 33202445712 and independent review remain.

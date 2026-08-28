@@ -426,3 +426,12 @@ The simplification evidence is now explicit by required lens:
 - Efficiency: used one project-local props import to preserve the root warning policy and analyzer target without adding an analyzer package that NuGet does not provide; no cache, service, or compatibility layer was introduced.
 - Altitude: kept shell, gateway, UI test lane, signing, and runbook prerequisites in their owning tickets; corrected the as-built sentence rather than implying future gateway behavior is already implemented.
 - Unapplied finding: exact-head CI was still running at the time of this correction and must complete on the new commit before merge. Proof remains intentionally deferred until merged-main verification.
+
+## Independent review correction 2 — 2026-08-28
+
+The fresh review's evidence and truthfulness findings were addressed:
+
+- The corrected XAML was rebuilt and relaunched from exact task head `93ff2663364b05293f25832c6aa7fd5b10c90687` using `BuildAndRun.ps1`. It reported `0 Warning(s)` and `0 Error(s)`, launched package identity `CollisionEngineers.Pegasus_e6z0b4cw4baw0` as PID `119016`, and the responsive `Pegasus.Desktop` window was captured at `artifacts/fnd-030/desktop-launch-final.png`. The process was closed cleanly after capture.
+- The current-architecture diagram now marks Desktop → Core and Desktop → Contracts as planned dependencies because the scaffold intentionally has no `ProjectReference`; the component row remains the future allowed boundary.
+- Corrected the evidence statement: exact-head `unit` CI compiles the full `Pegasus.slnx`, including the desktop scaffold; [[FND-040]] still owns the dedicated desktop build/package/UI lanes.
+- Exact task-head PR CI run `33202445712` is the run for this commit and must be green before merge.
