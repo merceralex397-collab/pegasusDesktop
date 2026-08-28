@@ -1,4 +1,7 @@
 using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Pegasus.Infrastructure.Persistence;
 namespace Pegasus.ArchitectureTests;
 
 public sealed class RuntimeGrantCompositionTests
@@ -35,19 +38,11 @@ public sealed class RuntimeGrantCompositionTests
         string verb)
     {
         var root = FindRepositoryRoot();
-        var catalogue = RuntimeGrantCatalogue.Load(root);
-        var grantsBeforeFix = catalogue.Grants
-            .Where(grant => !string.Equals(grant.SourceFile, grantMigration, StringComparison.Ordinal))
-            .Where(grant => !(grant.Table == table && grant.Verb == verb))
-            .ToHashSet();
-
-        var writesBeforeFix = catalogue.Writes
+        var catalogue = RuntimeGrantCatalogue.Load(root, grantMigration);
+        var historicalWrites = catalogue.Writes
             .Concat(RuntimeGrantCatalogue.InferHistoricalStoreWrites(root, table))
             .ToArray();
-        var failures = catalogue.FindMissingGrants(
-            grantsBeforeFix,
-            writesBeforeFix,
-            honorOptOuts: false);
+        var failures = catalogue.FindMissingGrants(catalogue.Grants, historicalWrites, honorOptOuts: false);
 
         Assert.Contains(
             failures,
@@ -60,10 +55,7 @@ public sealed class RuntimeGrantCompositionTests
         var root = FindRepositoryRoot();
         var catalogue = RuntimeGrantCatalogue.Load(root);
         var fixtureTable = "ArchitectureTestUnGrantedTable";
-        var withoutFixtureGrant = catalogue.WithInferredFixture(
-            "Worker",
-            "context.Set<ArchitectureTestUnGrantedTableEntity>().Add(new());",
-            fixtureTable);
+        var withoutFixtureGrant = catalogue.WithInferredFixture("Worker", fixtureTable);
         var failures = catalogue.FindMissingGrants(catalogue.Grants, withoutFixtureGrant);
         Assert.Contains(
             failures,
@@ -86,10 +78,7 @@ public sealed class RuntimeGrantCompositionTests
         var catalogue = RuntimeGrantCatalogue.Load(FindRepositoryRoot());
         Assert.Contains("CaseDocuments", catalogue.OptedOutTables);
 
-        var writes = catalogue.WithInferredFixture(
-            "Worker",
-            "context.Set<CaseDocumentEntity>().Add(new());",
-            "CaseDocuments");
+        var writes = catalogue.WithInferredFixture("Worker", "CaseDocuments");
         var grantsWithoutTable = catalogue.Grants
             .Where(grant => !grant.Table.Equals("CaseDocuments", StringComparison.Ordinal))
             .ToHashSet();
@@ -145,21 +134,32 @@ public sealed class RuntimeGrantCompositionTests
             @"GRANT[^;]*;",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-        private static readonly Regex GrantTable = new(
-            @"\]\s*\.\s*\[(?<table>[A-Za-z0-9_]+)\]",
+        private static readonly Regex BracketedIdentifier = new(
+            @"\[(?<name>[^]]+)\]",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly Regex GrantRole = new(
             @"\bTO\s+\[(?<role>[^]]+)\]",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+        private static readonly Regex RoleVariable = new(
+            @"(?<name>WebRole|WorkerRole)\s*=\s*""(?<role>[^""\r\n]*runtime_role)""",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        private static readonly Regex InterpolatedGrant = new(
+            @"GRANT\s+(?<permissions>[A-Z][A-Z, ]*)\s+ON[^;]*?(?:\[[^]]+\]\.)?\[(?<table>[^]]+)\][^;]*?\{(?<role>WebRole|WorkerRole)\}",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
         private static readonly Regex TupleGrant = new(
-            @"\(\s*""(?<table>[A-Za-z0-9_]+)""\s*,\s*""(?<permissions>[A-Z, ]+)""\s*\)",
+            @"\(\s*""(?<table>[A-Za-z0-9_]+)""\s*,\s*""(?<permissions>[A-Z][A-Z, ]*)""\s*\)",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly Regex GrantArray = new(
             @"(?<name>[A-Za-z]*Grants)\s*=\s*\[(?<body>.*?)\];",
             RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Singleline);
+
+        private static readonly HashSet<string> InsertOnly = new(StringComparer.Ordinal) { "INSERT" };
+        private static readonly string[] HostRoles = ["Web", "Worker"];
 
         private RuntimeGrantCatalogue(
             IReadOnlyList<RuntimeWrite> writes,
@@ -177,7 +177,7 @@ public sealed class RuntimeGrantCompositionTests
 
         internal IReadOnlySet<string> OptedOutTables { get; }
 
-        internal static RuntimeGrantCatalogue Load(string root)
+        internal static RuntimeGrantCatalogue Load(string root, string? beforeMigration = null)
         {
             var persistenceRoot = Path.Combine(root, "src", "Pegasus.Infrastructure", "Persistence");
             var migrationRoot = Path.Combine(persistenceRoot, "Migrations");
@@ -232,23 +232,27 @@ public sealed class RuntimeGrantCompositionTests
                 }
             }
 
-            var parsed = ParseGrants(migrationRoot);
+            var parsed = ParseGrants(migrationRoot, beforeMigration);
             return new(writes, parsed.Grants, parsed.OptedOutTables);
         }
 
-        internal RuntimeWrite[] WithInferredFixture(
-            string role,
-            string source,
-            string table)
+        internal RuntimeWrite[] WithInferredFixture(string role, string table)
         {
-            var entity = ContextSet.Match(source).Groups["entity"].Value;
-            if (string.IsNullOrEmpty(entity))
+            var services = new ServiceCollection();
+            services.AddScoped<ArchitectureTestUnGrantedTableStore>();
+            var registration = services.Single(descriptor => descriptor.ServiceType == typeof(ArchitectureTestUnGrantedTableStore));
+            if (registration.ImplementationType != typeof(ArchitectureTestUnGrantedTableStore))
             {
-                throw new InvalidOperationException("Fixture source did not contain a context entity set.");
+                throw new InvalidOperationException("Fixture store was not registered as the expected concrete type.");
             }
 
-            var verbs = InferVerbs(source, entity);
-            var fixture = new RuntimeWrite(role, table, verbs, "fixture: inferred ungranted table");
+            var modelBuilder = new ModelBuilder();
+            modelBuilder.Entity<ArchitectureTestUnGrantedTableEntity>().ToTable(table);
+            var entity = modelBuilder.FinalizeModel().FindEntityType(typeof(ArchitectureTestUnGrantedTableEntity));
+            var fixtureTable = entity?.GetTableName()
+                ?? throw new InvalidOperationException("Fixture entity did not have an EF table mapping.");
+            var fixture = new RuntimeWrite(role, fixtureTable, InsertOnly,
+                "fixture: registered store and EF IModel entity");
             return Writes.Append(fixture).ToArray();
         }
 
@@ -261,41 +265,20 @@ public sealed class RuntimeGrantCompositionTests
                 "CaseDocuments" => "EfDocumentCustodyStore",
                 _ => throw new ArgumentOutOfRangeException(nameof(table), table, null)
             };
-            var sourcePath = Path.Combine(
-                root,
-                "src",
-                "Pegasus.Infrastructure",
-                "Persistence",
-                storeName + ".cs");
+            var sourcePath = Path.Combine(root, "src", "Pegasus.Infrastructure", "Persistence", storeName + ".cs");
             var source = File.ReadAllText(sourcePath);
-            var tableNames = BuildTableNames(
-                File.ReadAllText(Path.Combine(root, "src", "Pegasus.Infrastructure", "Persistence", "PegasusDbContext.cs")),
-                Path.Combine(root, "src", "Pegasus.Infrastructure", "Persistence"));
-            var inferred = new List<RuntimeWrite>();
-            foreach (var entity in ContextSet.Matches(source)
-                         .Select(match => match.Groups["entity"].Value)
-                         .Where(tableNames.ContainsKey)
-                         .Distinct(StringComparer.Ordinal))
-            {
-                var verbs = InferVerbs(source, entity);
-                if (verbs.Count > 0 && tableNames[entity].Equals(table, StringComparison.Ordinal))
-                {
-                    inferred.Add(new("Worker", table, verbs, sourcePath));
-                }
-            }
-            foreach (var property in ContextProperty.Matches(source)
-                         .Select(match => match.Groups["property"].Value)
-                         .Where(tableNames.ContainsKey)
-                         .Distinct(StringComparer.Ordinal))
-            {
-                var verbs = InferVerbs(source, property);
-                if (verbs.Count > 0 && tableNames[property].Equals(table, StringComparison.Ordinal))
-                {
-                    inferred.Add(new("Worker", table, verbs, sourcePath));
-                }
-            }
-
-            return inferred.ToArray();
+            var contextPath = Path.Combine(root, "src", "Pegasus.Infrastructure", "Persistence", "PegasusDbContext.cs");
+            var tableNames = BuildTableNames(File.ReadAllText(contextPath), Path.GetDirectoryName(contextPath)!);
+            return ContextSet.Matches(source)
+                .Select(match => match.Groups["entity"].Value)
+                .Concat(ContextProperty.Matches(source).Select(match => match.Groups["property"].Value))
+                .Where(tableNames.ContainsKey)
+                .Distinct(StringComparer.Ordinal)
+                .Where(name => tableNames[name].Equals(table, StringComparison.Ordinal))
+                .Select(name => (Name: name, Verbs: InferVerbs(source, name)))
+                .Where(item => item.Verbs.Count > 0)
+                .Select(item => new RuntimeWrite("Worker", table, item.Verbs, sourcePath))
+                .ToArray();
         }
 
         internal string[] FindMissingGrants(
@@ -320,25 +303,26 @@ public sealed class RuntimeGrantCompositionTests
         private static Dictionary<string, string> BuildTableNames(string contextSource, string persistenceRoot)
         {
             var names = new Dictionary<string, string>(StringComparer.Ordinal);
+            using var context = new PegasusDbContext(new DbContextOptionsBuilder<PegasusDbContext>()
+                .UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=ArchitectureModelOnly;")
+                .Options);
+            var mappings = context.Model.GetEntityTypes()
+                .Select(entity => (Entity: entity.ClrType.Name, Table: entity.GetTableName()))
+                .Where(mapping => mapping.Table is not null)
+                .ToDictionary(mapping => mapping.Entity, mapping => mapping.Table!, StringComparer.Ordinal);
+
+            foreach (var mapping in mappings)
+            {
+                names[mapping.Key] = mapping.Value;
+            }
+
             foreach (Match match in DbSetProperty.Matches(contextSource))
             {
                 var entity = match.Groups["entity"].Value;
                 var property = match.Groups["property"].Value;
-                names[property] = property;
-                names[entity] = property;
-            }
-
-            foreach (var sourcePath in Directory.EnumerateFiles(persistenceRoot, "*ModelConfiguration.cs"))
-            {
-                var source = File.ReadAllText(sourcePath);
-                foreach (Match match in Regex.Matches(
-                             source,
-                             @"(?:modelBuilder|builder)\.Entity<(?<entity>[A-Za-z_][A-Za-z0-9_]*)>[\s\S]{0,500}?\.ToTable\(""(?<table>[A-Za-z0-9_]+)""",
-                             RegexOptions.CultureInvariant))
+                if (mappings.TryGetValue(entity, out var table))
                 {
-                    var table = match.Groups["table"].Value;
-                    names[table] = table;
-                    names[match.Groups["entity"].Value] = table;
+                    names[property] = table;
                 }
             }
 
@@ -385,7 +369,7 @@ public sealed class RuntimeGrantCompositionTests
                         continue;
                     }
 
-                    foreach (var role in new[] { "Web", "Worker" })
+                    foreach (var role in HostRoles)
                     {
                         var directory = role == "Web" ? "Pages" : "Functions";
                         var hostRoot = Path.Combine(root, "src", role == "Web" ? "Pegasus.Web" : "Pegasus.Worker", directory);
@@ -484,7 +468,9 @@ public sealed class RuntimeGrantCompositionTests
             });
         }
 
-        private static (HashSet<RuntimeGrant> Grants, HashSet<string> OptedOutTables) ParseGrants(string migrationRoot)
+        private static (HashSet<RuntimeGrant> Grants, HashSet<string> OptedOutTables) ParseGrants(
+            string migrationRoot,
+            string? beforeMigration)
         {
             // Keep this parser local because the PowerShell script is the CI-side
             // executable; this mirrors its literal GRANT and interpolated tuple
@@ -499,8 +485,15 @@ public sealed class RuntimeGrantCompositionTests
                 {
                     continue;
                 }
+                if (beforeMigration is not null && string.CompareOrdinal(fileName, beforeMigration) >= 0)
+                {
+                    continue;
+                }
 
                 var source = File.ReadAllText(path);
+                var roleVariables = RoleVariable.Matches(source).Cast<Match>()
+                    .ToDictionary(match => match.Groups["name"].Value, match => match.Groups["role"].Value,
+                        StringComparer.Ordinal);
                 var upStart = source.IndexOf("void Up(", StringComparison.Ordinal);
                 var downStart = source.IndexOf("void Down(", StringComparison.Ordinal);
                 var up = upStart >= 0
@@ -522,8 +515,22 @@ public sealed class RuntimeGrantCompositionTests
                 }
                 foreach (Match match in GrantStatement.Matches(source))
                 {
-                    var table = GrantTable.Match(match.Value).Groups["table"].Value;
-                    var role = GrantRole.Match(match.Value).Groups["role"].Value;
+                    var table = GrantTargetTable(match.Value);
+                    var roleMatch = GrantRole.Match(match.Value);
+                    var role = roleMatch.Success
+                        ? roleMatch.Groups["role"].Value
+                        : Regex.Match(match.Value, @"\[\{(?<name>WebRole|WorkerRole)\}\]", RegexOptions.CultureInvariant)
+                            .Groups["name"].Value is { Length: > 0 } variable && roleVariables.TryGetValue(variable, out var resolvedRole)
+                            ? resolvedRole
+                            : string.Empty;
+                    if (string.IsNullOrEmpty(role) && match.Value.Contains("{WebRole}", StringComparison.Ordinal))
+                    {
+                        role = "pegasus_web_runtime_role";
+                    }
+                    if (string.IsNullOrEmpty(role) && match.Value.Contains("{WorkerRole}", StringComparison.Ordinal))
+                    {
+                        role = "pegasus_worker_runtime_role";
+                    }
                     if (string.IsNullOrEmpty(table) || string.IsNullOrEmpty(role))
                     {
                         continue;
@@ -535,18 +542,27 @@ public sealed class RuntimeGrantCompositionTests
                     }
                 }
 
-                foreach (Match match in GrantArray.Matches(source))
+                foreach (Match tuple in TupleGrant.Matches(source))
                 {
-                    var role = match.Groups["name"].Value.Contains("Worker", StringComparison.Ordinal)
+                    var containingArray = GrantArray.Matches(source).Cast<Match>().FirstOrDefault(array =>
+                        tuple.Index >= array.Groups["body"].Index &&
+                        tuple.Index + tuple.Length <= array.Groups["body"].Index + array.Groups["body"].Length);
+                    var role = containingArray?.Groups["name"].Value.Contains("Worker", StringComparison.Ordinal) == true
                         || fileName.Contains("Worker", StringComparison.Ordinal)
                         ? "Worker"
                         : "Web";
-                    foreach (Match tuple in TupleGrant.Matches(match.Groups["body"].Value))
+                    foreach (var permission in Permissions(tuple.Groups["permissions"].Value))
                     {
-                        foreach (var permission in Permissions(tuple.Groups["permissions"].Value))
-                        {
-                            grants.Add(new(role, tuple.Groups["table"].Value, permission, fileName));
-                        }
+                        grants.Add(new(role, tuple.Groups["table"].Value, permission, fileName));
+                    }
+                }
+
+                foreach (Match match in InterpolatedGrant.Matches(source))
+                {
+                    var role = match.Groups["role"].Value == "WorkerRole" ? "Worker" : "Web";
+                    foreach (var permission in Permissions(match.Groups["permissions"].Value))
+                    {
+                        grants.Add(new(role, match.Groups["table"].Value, permission, fileName));
                     }
                 }
             }
@@ -563,5 +579,24 @@ public sealed class RuntimeGrantCompositionTests
 
         private static string RoleName(string role) =>
             role.Contains("worker", StringComparison.OrdinalIgnoreCase) ? "Worker" : "Web";
+
+        private static string GrantTargetTable(string statement)
+        {
+            var target = statement[..statement.IndexOf("TO", StringComparison.OrdinalIgnoreCase)];
+            var identifiers = BracketedIdentifier.Matches(target)
+                .Cast<Match>()
+                .Select(match => match.Groups["name"].Value)
+                .ToArray();
+            return identifiers.LastOrDefault() ?? string.Empty;
+        }
+    }
+
+    private sealed class ArchitectureTestUnGrantedTableStore
+    {
+    }
+
+    private sealed class ArchitectureTestUnGrantedTableEntity
+    {
+        public int Id { get; set; }
     }
 }
