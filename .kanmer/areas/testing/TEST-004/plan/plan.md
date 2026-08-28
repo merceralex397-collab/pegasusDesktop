@@ -54,3 +54,7 @@ Validation:
 - Used one support test class for deterministic support behavior rather than duplicating one test file per fake; kept the required ViewModel trait on every test class.
 - Updated the existing architecture expectation because solution registration is part of the actual project graph; no new architecture rule was added.
 - The negative probe was temporary and is absent from the final diff.
+
+## Governance correction — 2026-08-28
+
+The ticket body requested a new test-project README, but the repository's governing Markdown-placement rule and live documentation regression test permit new Markdown only under the approved documentation/integration roots. The new README was removed before merge. The same fixed-clock convention is recorded in the existing canonical docs/runbook.md section, and the source comment plus plan retain the exact date. The project remains otherwise unchanged.
