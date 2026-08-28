@@ -80,6 +80,7 @@ activation; installing a tool never establishes a caller.
 | `Performance` | No lane. The nightly in-process pressure probe was retired on 2026-08-18 (DELIV-007) as diagnostic-only CI that gated nothing; the trait stays reserved for a future lane with an accepted capacity claim. |
 | `Security` | .NET dependency vulnerability checks and OWASP ZAP; ZAP uses the conditional container profile. |
 | `Containers` | A container runtime (Docker Desktop in Linux-container mode on Windows, the native engine on Linux), conditionally for ZAP, optional telemetry, optional SQL compatibility, or a specifically approved licensed Document Intelligence container. Docker is never required merely for Azurite. On Linux the local database is a container, so a container runtime is a base prerequisite there rather than a conditional one. |
+| `Contract` | `Pegasus.Api.ContractTests` reaches the enabled `/api/v1` host boundary and proves contract-test discovery through the registered project. It does not prove endpoint authorization, OpenAPI stability, generated-client freshness, or live deployment. |
 | `LiveIntegration` | The existing approved developer identity/secret tooling and exact SDK/CLI owned by the feature. Never part of the default local check. |
 
 Storage Explorer, SSMS, and Postman are optional conveniences.
@@ -96,7 +97,7 @@ application registers no acceptance gate. It never promotes offline evidence to
 deployed, live-verified, release-accepted, QDOS operator-accepted, or Collision
 Engineers management-accepted evidence.
 
-Traits currently in use are `SqlServer`, `Browser`, `Corpus`, and
+Traits currently in use are `SqlServer`, `Browser`, `Corpus`, `Contract`, and
 `QdosAlphaAcceptance`. Additional stable planned traits (unused until their
 lanes exist) are `Unit`, `Integration`, `Storage`, `FunctionsHost`,
 `Performance`, `Security`, `Recovery`, and `LiveIntegration`.

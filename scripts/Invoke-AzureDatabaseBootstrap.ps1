@@ -322,6 +322,29 @@ function Get-MigrationPermissionMatrix {
     foreach ($permission in @('SELECT', 'INSERT', 'UPDATE')) {
         $expected.Add("pegasus_worker_runtime_role|G|$permission|DocumentVersions")
     }
+    # 20260826075756_AssessmentReportGeneration: report drafts and their
+    # generated artifact metadata are owned by the Web report-generation path.
+    foreach ($permission in @('SELECT', 'INSERT', 'UPDATE')) {
+        $expected.Add("pegasus_web_runtime_role|G|$permission|AssessmentReportVersions")
+    }
+    foreach ($permission in @('SELECT', 'INSERT')) {
+        $expected.Add("pegasus_web_runtime_role|G|$permission|AssessmentReportArtifacts")
+    }
+    # 20260827231948_IssuedReportVersionEvidenceLedger: the Web records the
+    # immutable version approval and staff association history; the Worker
+    # only reads the ledger and appends automatic association history.
+    foreach ($permission in @('SELECT', 'INSERT', 'UPDATE')) {
+        $expected.Add("pegasus_web_runtime_role|G|$permission|CaseReportVersionLedgers")
+    }
+    foreach ($permission in @('SELECT', 'INSERT')) {
+        $expected.Add("pegasus_web_runtime_role|G|$permission|CaseReportAssociationHistory")
+    }
+    foreach ($permission in @('SELECT', 'UPDATE')) {
+        $expected.Add("pegasus_worker_runtime_role|G|$permission|CaseReportVersionLedgers")
+    }
+    foreach ($permission in @('SELECT', 'INSERT')) {
+        $expected.Add("pegasus_worker_runtime_role|G|$permission|CaseReportAssociationHistory")
+    }
     return @($expected | Sort-Object -Unique)
 }
 

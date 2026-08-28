@@ -859,10 +859,11 @@ public sealed partial class MimeKitPdfPigOpenXmlIntakeSourceReader(TimeProvider 
         var fileName = part.FileName ?? InferFileName(part, limits);
         var format = DetectFormat(fileName, part.ContentType.MimeType);
         var isExplicitAttachment = part.ContentDisposition?.IsAttachment == true;
-        var isInlineImage = format == SourceFormat.Image
-            && !isExplicitAttachment
-            && (part.ContentDisposition?.Disposition.Equals("inline", StringComparison.OrdinalIgnoreCase) == true
-                || !string.IsNullOrWhiteSpace(part.ContentId));
+        var isInlineImage = IsInlineImage(
+            format,
+            isExplicitAttachment,
+            part.ContentDisposition?.Disposition.Equals("inline", StringComparison.OrdinalIgnoreCase) == true,
+            part.ContentId);
         var descriptorOrdinal = result.Attachments.Count;
         var shouldRetain = format is SourceFormat.Pdf
             or SourceFormat.Email
@@ -1020,6 +1021,16 @@ public sealed partial class MimeKitPdfPigOpenXmlIntakeSourceReader(TimeProvider 
 
         return "image/png";
     }
+
+    // Keep EML and DOC/MSG inline-image classification on one policy to prevent the drift that caused INTK-030.
+    private static bool IsInlineImage(
+        SourceFormat format,
+        bool isExplicitAttachment,
+        bool isInlineDisposition,
+        string? contentId) =>
+        format == SourceFormat.Image
+        && !isExplicitAttachment
+        && (isInlineDisposition || !string.IsNullOrWhiteSpace(contentId));
 
     private static string SourceLabel(string fileName) => $"uploaded {Path.GetFileName(fileName)}";
 

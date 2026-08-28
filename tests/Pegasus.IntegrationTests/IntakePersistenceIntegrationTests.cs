@@ -90,7 +90,14 @@ public sealed class IntakePersistenceIntegrationTests
                 "20260820144004_RetainedMailFolderMoves",
                 "20260821095500_GrantWorkerVehicleLookupRequests",
                 "20260821100623_GrantImageIntakeLifecycleUpdates",
-                "20260822044425_GrantWorkerCaseDocuments"
+                "20260822044425_GrantWorkerCaseDocuments",
+                "20260825122524_DropEvaHandoffProvenanceAndManifest",
+                "20260825202208_CanonicalCaseMileageProvenance",
+                "20260826075756_AssessmentReportGeneration",
+                "20260826084843_AssessmentReportRetryPolicy",
+                "20260826095720_AssessmentReportPendingState",
+                "20260827214843_AllowMultipleAcceptedRepairSpecifications",
+                "20260827231948_IssuedReportVersionEvidenceLedger"
             ],
             (await context.Database.GetAppliedMigrationsAsync()).ToArray());
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
@@ -192,6 +199,72 @@ public sealed class IntakePersistenceIntegrationTests
             "SELECT COUNT(*) FROM sys.tables WHERE name = N'CaseDueWork'"));
         Assert.Equal(1, await database.ScalarAsync<int>(
             "SELECT COUNT(*) FROM sys.tables WHERE name = N'CaseManualChases'"));
+    }
+
+    [Fact]
+    public async Task CompletionPassesThroughNonTransientProviderFailure()
+    {
+        await using var database = await LocalDbTestDatabase.CreateAsync();
+        var processed = await database.StoreAsync(CreateDraft(801, IntakeDecision.CaseCreated));
+        var staged = new IntakeStagedReceipt(
+            Guid.NewGuid(),
+            "completion-fault.bin",
+            "application/octet-stream",
+            801,
+            "completion-fault-hash",
+            new(IntakeSourceChannel.ManualUpload, "completion-fault-source"),
+            FixedTime,
+            "Integration test",
+            "completion-fault.bin",
+            FixedTime);
+
+        await using var scope = database.CreateAsyncScope();
+        var store = ActivatorUtilities.CreateInstance<EfIntakeWorkStore>(scope.ServiceProvider);
+        var received = await store.ReceiveAsync(staged, "completion-fault-operation", CancellationToken.None);
+        var dispatch = await store.ClaimDispatchAsync(
+            FixedTime,
+            TimeSpan.FromMinutes(5),
+            CancellationToken.None);
+        Assert.NotNull(dispatch);
+        await store.MarkDispatchedAsync(
+            dispatch!.Id,
+            dispatch.LeaseToken!,
+            FixedTime,
+            CancellationToken.None);
+        var claimed = await store.ClaimProcessingAsync(
+            received.StagedReceiptId,
+            FixedTime,
+            TimeSpan.FromMinutes(5),
+            CancellationToken.None);
+        Assert.NotNull(claimed);
+
+        await database.ExecuteAsync(
+            "CREATE TRIGGER [dbo].[FailIntakeCompletion] ON [dbo].[IntakeWorkItems] " +
+            "AFTER UPDATE AS BEGIN SET NOCOUNT ON; " +
+            "IF EXISTS (SELECT 1 FROM inserted WHERE [State] = N'completed') " +
+            "BEGIN RAISERROR(N'non-transient completion failure', 16, 1); " +
+            "ROLLBACK TRANSACTION; END END");
+        try
+        {
+            var exception = await Record.ExceptionAsync(() => store.CompleteProcessingAsync(
+                claimed!.Value.WorkItem.Id,
+                claimed.Value.WorkItem.LeaseToken!,
+                processed.Id,
+                FixedTime,
+                CancellationToken.None));
+
+            Assert.NotNull(exception);
+            Assert.IsNotType<IntakeVersionConflictException>(exception);
+            var providerException = Assert.IsType<SqlException>(exception.GetBaseException());
+            // SQL Server rejects EF's OUTPUT clause when the target has a
+            // trigger before the trigger body runs. Error 334 is deliberately
+            // non-transient and must not enter the 1205 translation.
+            Assert.Equal(334, providerException.Number);
+        }
+        finally
+        {
+            await database.ExecuteAsync("DROP TRIGGER [dbo].[FailIntakeCompletion]");
+        }
     }
 
     /// <remarks>

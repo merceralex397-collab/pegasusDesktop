@@ -819,7 +819,7 @@ internal sealed class EfQueuedCustodyProcessor(
             .ToArrayAsync(cancellationToken))
             .ToDictionary(source => source.IntakeReceiptId, source => source.Payload);
 
-        var registeredDecision = EfIntakeReceiptStore.ToCode(IntakeDecision.ImageIntakeRegistered);
+        var registeredDecision = IntakeDecisionCodes.ToCode(IntakeDecision.ImageIntakeRegistered);
         var assets = new List<ImageAssetPayload>();
         foreach (var receiptId in receiptIds)
         {

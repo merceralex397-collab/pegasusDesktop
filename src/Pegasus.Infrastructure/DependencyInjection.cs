@@ -149,15 +149,12 @@ public static class DependencyInjection
         services.AddScoped<ISentEvidencePollOutcomeQueries, EfSentEvidencePollOutcomeQueries>();
         services.AddScoped<ReplaySentEmailEvidence>();
         services.AddScoped<IProviderReferenceCatalog, EfProviderReferenceCatalog>();
-        services.TryAddSingleton<IIntakeTriageMatcher, NoAcceptedIntakeTriageMatcher>();
         services.AddSingleton<IMailRoutePolicy, QdosMailRoutePolicy>();
         services.AddSingleton<IMailClassificationPolicy, QdosMailClassificationPolicy>();
         services.AddSingleton<IProviderCaseMatchPolicy, QdosCaseMatchPolicy>();
         services.AddScoped<ICaseMatchCandidateQueries, EfCaseMatchIndex>();
         services.AddScoped<EvaluateIntakeCaseMatch>();
-        services.AddSingleton<IInstructionExtractionPolicy>(provider =>
-            new QdosInstructionExtractionPolicy(
-                provider.GetRequiredService<IIntakeTriageMatcher>()));
+        services.AddSingleton<IInstructionExtractionPolicy, QdosInstructionExtractionPolicy>();
         services.AddScoped<ICaseAcceptanceStore, EfCaseAcceptanceStore>();
 
         // Registered here rather than only in the Web composition root, because
@@ -448,6 +445,8 @@ public static class DependencyInjection
         services.AddSingleton<IAssessmentReportRenderer, PlaywrightAssessmentReportRenderer>();
         services.AddScoped<GenerateAssessmentReportDraft>();
         services.AddScoped<IAssessmentReportProjectionSource, EfAssessmentReportProjectionSource>();
+        services.AddScoped<AssessCaseReportReadiness>();
+        services.AddScoped<IAssessmentReportStore, EfAssessmentReportStore>();
         services.AddScoped<GenerateCaseAssessmentReportDraft>();
         return services;
     }

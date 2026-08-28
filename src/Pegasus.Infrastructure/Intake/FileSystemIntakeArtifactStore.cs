@@ -26,11 +26,18 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
         }
 
         var storageKey = $"sha256/{normalisedHash[..2]}/{normalisedHash}";
-        await StoreImmutableAsync(
-            Resolve(storageKey),
-            normalisedHash,
-            content,
-            cancellationToken);
+        try
+        {
+            await StoreImmutableAsync(
+                Resolve(storageKey),
+                normalisedHash,
+                content,
+                cancellationToken);
+        }
+        catch (IOException exception)
+        {
+            throw DependencyUnavailable(exception);
+        }
         return storageKey;
     }
 
@@ -47,13 +54,13 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
         }
 
         var temporaryDirectory = Path.Combine(rootPath, "quarantine-staging");
-        Directory.CreateDirectory(temporaryDirectory);
         var temporary = Path.Combine(temporaryDirectory, $".{Guid.NewGuid():N}.tmp");
         var buffer = ArrayPool<byte>.Shared.Rent(81920);
         string contentHash;
         long retainedLength = 0;
         try
         {
+            Directory.CreateDirectory(temporaryDirectory);
             using var hasher = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
             await using (var destination = new FileStream(
                              temporary,
@@ -112,17 +119,18 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
                 retainedLength);
             return artifact;
         }
+        catch (IOException exception)
+        {
+            throw DependencyUnavailable(exception);
+        }
         finally
         {
             ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
-            if (File.Exists(temporary))
-            {
-                File.Delete(temporary);
-            }
+            DeleteTemporaryIfPresent(temporary);
         }
     }
 
-    public Task VerifyAsync(
+    public async Task VerifyAsync(
         IntakeQuarantineArtifact artifact,
         CancellationToken cancellationToken)
     {
@@ -147,11 +155,18 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
             throw new IntakeArtifactIntegrityException();
         }
 
-        return VerifyFileAsync(
-            path,
-            normalisedHash,
-            artifact.ContentLength,
-            cancellationToken);
+        try
+        {
+            await VerifyFileAsync(
+                path,
+                normalisedHash,
+                artifact.ContentLength,
+                cancellationToken);
+        }
+        catch (IOException exception)
+        {
+            throw DependencyUnavailable(exception);
+        }
     }
 
     public async Task<ReadOnlyMemory<byte>?> ReadAsync(
@@ -166,15 +181,22 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
             return null;
         }
 
-        var content = await File.ReadAllBytesAsync(path, cancellationToken);
-        var expectedHash = Path.GetFileName(path);
-        var actualHash = Convert.ToHexString(SHA256.HashData(content));
-        if (!actualHash.Equals(expectedHash, StringComparison.Ordinal))
+        try
         {
-            throw new IntakeArtifactIntegrityException();
-        }
+            var content = await File.ReadAllBytesAsync(path, cancellationToken);
+            var expectedHash = Path.GetFileName(path);
+            var actualHash = Convert.ToHexString(SHA256.HashData(content));
+            if (!actualHash.Equals(expectedHash, StringComparison.Ordinal))
+            {
+                throw new IntakeArtifactIntegrityException();
+            }
 
-        return content;
+            return content;
+        }
+        catch (IOException exception)
+        {
+            throw DependencyUnavailable(exception);
+        }
     }
 
     public async Task<StagedArtifactInventoryItem> StageAsync(
@@ -202,9 +224,11 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
 
         var storageKey = $"staging/{stagedReceiptId:D}/{hash}";
         var path = ResolveStaged(storageKey);
-        await stagingGate.WaitAsync(cancellationToken);
+        var acquired = false;
         try
         {
+            await stagingGate.WaitAsync(cancellationToken);
+            acquired = true;
             await StoreImmutableAsync(path, hash, content, cancellationToken);
             var existing = await ReadStagedMetadataAsync(path, cancellationToken);
             var metadata = IsValidMetadata(path, existing)
@@ -218,9 +242,16 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
             await WriteStagedMetadataAsync(path, metadata, cancellationToken);
             return MapStaged(storageKey, path, metadata);
         }
+        catch (IOException exception)
+        {
+            throw DependencyUnavailable(exception);
+        }
         finally
         {
-            stagingGate.Release();
+            if (acquired)
+            {
+                stagingGate.Release();
+            }
         }
     }
 
@@ -228,44 +259,51 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
         string storageKey,
         CancellationToken cancellationToken)
     {
-        var path = ResolveStaged(storageKey);
-        if (!File.Exists(path) && !File.Exists(MetadataPath(path)))
+        try
         {
-            return null;
-        }
+            var path = ResolveStaged(storageKey);
+            if (!File.Exists(path) && !File.Exists(MetadataPath(path)))
+            {
+                return null;
+            }
 
-        var metadata = await ReadStagedMetadataAsync(path, cancellationToken);
-        if (metadata is not null
-            && File.Exists(path)
-            && string.Equals(metadata.ContentHash, Path.GetFileName(path), StringComparison.Ordinal)
-            && metadata.ContentLength == new FileInfo(path).Length
-            && Enum.TryParse<StagedArtifactDisposition>(
-                metadata.Disposition,
-                ignoreCase: false,
-                out var disposition)
-            && Enum.IsDefined(disposition)
-            && !string.IsNullOrWhiteSpace(metadata.ConcurrencyToken))
-        {
+            var metadata = await ReadStagedMetadataAsync(path, cancellationToken);
+            if (metadata is not null
+                && File.Exists(path)
+                && string.Equals(metadata.ContentHash, Path.GetFileName(path), StringComparison.Ordinal)
+                && metadata.ContentLength == new FileInfo(path).Length
+                && Enum.TryParse<StagedArtifactDisposition>(
+                    metadata.Disposition,
+                    ignoreCase: false,
+                    out var disposition)
+                && Enum.IsDefined(disposition)
+                && !string.IsNullOrWhiteSpace(metadata.ConcurrencyToken))
+            {
+                return new(
+                    storageKey,
+                    metadata.ContentHash,
+                    metadata.ContentLength,
+                    metadata.FirstSeenAtUtc,
+                    disposition,
+                    metadata.ConcurrencyToken);
+            }
+
+            var file = new FileInfo(path);
             return new(
                 storageKey,
-                metadata.ContentHash,
-                metadata.ContentLength,
-                metadata.FirstSeenAtUtc,
-                disposition,
-                metadata.ConcurrencyToken);
+                HashRegex().IsMatch(file.Name) ? file.Name : string.Empty,
+                file.Exists ? file.Length : metadata?.ContentLength ?? 0,
+                metadata?.FirstSeenAtUtc
+                    ?? (file.Exists
+                        ? new DateTimeOffset(file.CreationTimeUtc, TimeSpan.Zero)
+                        : DateTimeOffset.UnixEpoch),
+                StagedArtifactDisposition.Unmatched,
+                metadata?.ConcurrencyToken ?? string.Empty);
         }
-
-        var file = new FileInfo(path);
-        return new(
-            storageKey,
-            HashRegex().IsMatch(file.Name) ? file.Name : string.Empty,
-            file.Exists ? file.Length : metadata?.ContentLength ?? 0,
-            metadata?.FirstSeenAtUtc
-                ?? (file.Exists
-                    ? new DateTimeOffset(file.CreationTimeUtc, TimeSpan.Zero)
-                    : DateTimeOffset.UnixEpoch),
-            StagedArtifactDisposition.Unmatched,
-            metadata?.ConcurrencyToken ?? string.Empty);
+        catch (IOException exception)
+        {
+            throw DependencyUnavailable(exception);
+        }
     }
 
     public async Task<IReadOnlyList<StagedArtifactInventoryItem>> ListStagedAsync(
@@ -279,36 +317,43 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
             return [];
         }
 
-        var items = new List<StagedArtifactInventoryItem>(maximumItems);
-        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var candidatePath in Directory.EnumerateFiles(
-                     stagingRoot,
-                     "*",
-                     SearchOption.AllDirectories))
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var path = candidatePath.EndsWith(MetadataSuffix, StringComparison.Ordinal)
-                ? candidatePath[..^MetadataSuffix.Length]
-                : candidatePath;
-            if (!HashRegex().IsMatch(Path.GetFileName(path)) || !visited.Add(path))
+            var items = new List<StagedArtifactInventoryItem>(maximumItems);
+            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var candidatePath in Directory.EnumerateFiles(
+                         stagingRoot,
+                         "*",
+                         SearchOption.AllDirectories))
             {
-                continue;
-            }
-
-            var storageKey = Path.GetRelativePath(rootPath, path)
-                .Replace(Path.DirectorySeparatorChar, '/');
-            var item = await GetStagedAsync(storageKey, cancellationToken);
-            if (item is not null)
-            {
-                items.Add(item);
-                if (items.Count == maximumItems)
+                cancellationToken.ThrowIfCancellationRequested();
+                var path = candidatePath.EndsWith(MetadataSuffix, StringComparison.Ordinal)
+                    ? candidatePath[..^MetadataSuffix.Length]
+                    : candidatePath;
+                if (!HashRegex().IsMatch(Path.GetFileName(path)) || !visited.Add(path))
                 {
-                    break;
+                    continue;
+                }
+
+                var storageKey = Path.GetRelativePath(rootPath, path)
+                    .Replace(Path.DirectorySeparatorChar, '/');
+                var item = await GetStagedAsync(storageKey, cancellationToken);
+                if (item is not null)
+                {
+                    items.Add(item);
+                    if (items.Count == maximumItems)
+                    {
+                        break;
+                    }
                 }
             }
-        }
 
-        return items;
+            return items;
+        }
+        catch (IOException exception)
+        {
+            throw DependencyUnavailable(exception);
+        }
     }
 
     public async Task<StagedArtifactInventoryItem?> TrySetStagedDispositionAsync(
@@ -323,9 +368,11 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
         }
 
         var path = ResolveStaged(storageKey);
-        await stagingGate.WaitAsync(cancellationToken);
+        var acquired = false;
         try
         {
+            await stagingGate.WaitAsync(cancellationToken);
+            acquired = true;
             var current = await GetStagedAsync(storageKey, cancellationToken);
             if (current is null
                 || !string.Equals(
@@ -345,9 +392,16 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
             await WriteStagedMetadataAsync(path, metadata, cancellationToken);
             return MapStaged(storageKey, path, metadata);
         }
+        catch (IOException exception)
+        {
+            throw DependencyUnavailable(exception);
+        }
         finally
         {
-            stagingGate.Release();
+            if (acquired)
+            {
+                stagingGate.Release();
+            }
         }
     }
 
@@ -357,9 +411,11 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
         CancellationToken cancellationToken)
     {
         var path = ResolveStaged(storageKey);
-        await stagingGate.WaitAsync(cancellationToken);
+        var acquired = false;
         try
         {
+            await stagingGate.WaitAsync(cancellationToken);
+            acquired = true;
             var current = await GetStagedAsync(storageKey, cancellationToken);
             if (current is null
                 || current.Disposition != StagedArtifactDisposition.Completed
@@ -375,9 +431,16 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
             File.Delete(MetadataPath(path));
             return true;
         }
+        catch (IOException exception)
+        {
+            throw DependencyUnavailable(exception);
+        }
         finally
         {
-            stagingGate.Release();
+            if (acquired)
+            {
+                stagingGate.Release();
+            }
         }
     }
     public void Dispose()
@@ -431,10 +494,7 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
         }
         finally
         {
-            if (File.Exists(temporary))
-            {
-                File.Delete(temporary);
-            }
+            DeleteTemporaryIfPresent(temporary);
         }
     }
 
@@ -503,10 +563,7 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
         }
         finally
         {
-            if (File.Exists(temporary))
-            {
-                File.Delete(temporary);
-            }
+            DeleteTemporaryIfPresent(temporary);
         }
     }
 
@@ -579,6 +636,25 @@ public sealed partial class FileSystemIntakeArtifactStore(string rootPath)
 
     private static string MetadataPath(string artifactPath) =>
         artifactPath + MetadataSuffix;
+
+    private static IntakeDependencyUnavailableException DependencyUnavailable(
+        IOException exception) =>
+        new("The local intake artifact store is unavailable.", exception);
+
+    private static void DeleteTemporaryIfPresent(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch (IOException)
+        {
+            // Cleanup must not replace the operation's primary exception.
+        }
+    }
 
     private sealed record StagedArtifactMetadata(
         string ContentHash,

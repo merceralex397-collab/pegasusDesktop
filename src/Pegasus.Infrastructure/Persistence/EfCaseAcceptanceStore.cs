@@ -197,7 +197,7 @@ public sealed class EfCaseAcceptanceStore(
         // refused here, so the fail-closed boundary does not depend on which
         // caller asked.
         if (!IntakeDecisionPolicy.CanBecomeCase(
-                EfIntakeReceiptStore.ParseDecision(receipt.Decision)))
+                IntakeDecisionCodes.Parse(receipt.Decision)))
         {
             throw new InvalidOperationException(
                 "Only a definitive instruction or an item that needs sorting can become a case.");

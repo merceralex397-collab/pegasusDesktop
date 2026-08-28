@@ -34,12 +34,15 @@ A current business workflow does not prove a corresponding Pegasus integration. 
 
 ## Stage 0 — Triage
 
-Triage does not technically count as a case, but its emails must be stored. A work provider asks Collision Engineers to assess whether a vehicle is roadworthy or unroadworthy.
+Triage is a distinct product case in its own right, separate from the normal
+Case aggregate. Each Triage receives an immutable `T-00001`-style identity and
+has its own evidence and custody. It is not a normal Case/PO or Principal
+allocation. A work provider asks Collision Engineers to assess whether a
+vehicle is roadworthy or unroadworthy.
 
 The normal workflow is:
 
-1. retain the provider request as separate pre-case Triage work;
-2. keep it as **Unidentified** (formerly `Needs sorting`; see [Unidentified received material](#unidentified-received-material)) until a vehicle registration is known, then open the Triage;
+1. retain a provider request without a usable vehicle registration as **Unidentified** (formerly `Needs sorting`; see [Unidentified received material](#unidentified-received-material)) until the registration is known, then open the Triage with its Triage identity;
 3. obtain any missing information and record at least one accepted finding;
 4. send the response on the original reply chain; and
 5. complete the Triage only when the exact approved-mailbox reply-chain Sent item is confirmed.
@@ -56,17 +59,25 @@ Neither finding category is independently mandatory, but at least one must be po
 Triage is:
 
 - a distinct inbox classification or label;
-- a separate pre-case reference record;
+- a separate product-case aggregate with its own immutable Triage identity and custody;
 - optional and not guaranteed to progress into a full case; and
-- potentially followed later by instructions for the same vehicle.
+- potentially converted into a linked normal Case when later formal instructions pass the normal acceptance, Principal, and allocation gates.
 
 Triage is never:
 
-- a case state;
+- a normal Case state or aggregate;
+- a Principal or Case/PO allocation;
 - definitive or final; or
-- a decision input for a subsequent case.
+- a bypass of normal Case acceptance or allocation.
 
-A case’s `has Triage` value is Boolean/reference-only. Triage findings have no bearing on the Case/PO/reference, workflow, final outcome, Engineer report, Audit suffix or allocation, or any other decision. The Engineer report remains definitive.
+Triage findings do not alter a normal Case/PO, Principal, workflow, final
+outcome, Engineer report, Audit suffix, or allocation. A later formal
+instruction creates the linked normal Case only through its normal gates. At
+that conversion, Triage evidence moves into the normal Case's custody. The
+immutable transfer record identifies the source Triage, transfer time,
+actor/system, destination Case, and each transferred content/version identity;
+the evidence is not retained as duplicate copies. The Triage and transfer
+history remain attributable. The Engineer report remains definitive.
 
 `Completed` and `Cancelled` close only the separate Triage workflow. They do not make a Triage finding definitive or final for a later Case, and a reasoned reopen returns that Triage to `Open`.
 

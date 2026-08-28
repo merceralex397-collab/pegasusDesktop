@@ -19,7 +19,12 @@ public sealed record RetainedApprovedMailboxReportSentEvidence(
     string MimeSha256,
     DateTimeOffset SentAtUtc,
     DateTimeOffset DiscoveredAtUtc,
-    ActionActor DiscoveredBy);
+    ActionActor DiscoveredBy,
+    Guid? ReportVersionId = null,
+    string? ArtifactIdentity = null,
+    string? ArtifactSha256 = null,
+    string? AssociationStatus = null,
+    string? AssociationStatusReason = null);
 
 public sealed record RetainApprovedMailboxReportSentEvidenceRequest(
     Guid EvidenceId,
@@ -35,7 +40,10 @@ public sealed record RetainApprovedMailboxReportSentEvidenceRequest(
     DateTimeOffset SentAtUtc,
     DateTimeOffset DiscoveredAtUtc,
     ActionActor DiscoveredBy,
-    string OperationKey);
+    string OperationKey,
+    Guid? ReportVersionId = null,
+    string? ArtifactIdentity = null,
+    string? ArtifactSha256 = null);
 
 public interface IApprovedMailboxReportSentEvidenceQueries
 {
@@ -100,6 +108,27 @@ public sealed class RetainApprovedMailboxReportSentEvidence(
         RequireSha256(request.SourceSha256, nameof(request));
         RequireSha256(request.MimeSha256, nameof(request));
         RequireText(request.OperationKey, 100, "A retention operation key is required.", nameof(request));
+
+        if ((request.ReportVersionId is null) != string.IsNullOrWhiteSpace(request.ArtifactIdentity)
+            || (request.ReportVersionId is null) != string.IsNullOrWhiteSpace(request.ArtifactSha256))
+        {
+            throw new ArgumentException(
+                "A report version and its exact artifact identity and hash must be supplied together.",
+                nameof(request));
+        }
+
+        if (request.ReportVersionId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "A report version identifier must be non-empty.",
+                nameof(request));
+        }
+
+        if (request.ReportVersionId is not null)
+        {
+            RequireText(request.ArtifactIdentity!, 200, "A report artifact identity is required.", nameof(request));
+            RequireSha256(request.ArtifactSha256!, nameof(request));
+        }
 
         if (request.SentAtUtc == default || request.DiscoveredAtUtc == default)
         {

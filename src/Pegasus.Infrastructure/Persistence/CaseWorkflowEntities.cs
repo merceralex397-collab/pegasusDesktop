@@ -11,6 +11,7 @@ internal sealed class CaseWorkflowEntity : IApplicationManagedConcurrencyToken
     public CaseReportApprovalEntity? ReportApproval { get; set; }
     public Guid? ReportSentEvidenceId { get; set; }
     public CaseReportSentEvidenceEntity? ReportSentEvidence { get; set; }
+    public List<CaseReportVersionLedgerEntity> ReportVersionLedgers { get; set; } = [];
     public CaseDueWorkEntity? DueWork { get; set; }
     public string? ClosureOutcome { get; set; }
     public Guid? ReplacementCaseId { get; set; }
@@ -77,6 +78,8 @@ internal sealed class CaseReportApprovalEntity
     public required string ApprovedBySubjectId { get; set; }
     public required string ApprovedByRolesJson { get; set; }
     public DateTimeOffset ApprovedAtUtc { get; set; }
+    public string? AssociationStatus { get; set; }
+    public string? AssociationStatusReason { get; set; }
 }
 
 internal sealed class CaseReportSentEvidenceEntity
@@ -102,6 +105,51 @@ internal sealed class CaseReportSentEvidenceEntity
     public string? LinkedByKind { get; set; }
     public string? LinkedBySubjectId { get; set; }
     public string? LinkedByRolesJson { get; set; }
+    public Guid? SourceReportVersionId { get; set; }
+    public string? SourceArtifactIdentity { get; set; }
+    public string? SourceArtifactSha256 { get; set; }
+    public string? AssociationStatus { get; set; }
+    public string? AssociationStatusReason { get; set; }
+}
+
+internal sealed class CaseReportVersionLedgerEntity : IApplicationManagedConcurrencyToken
+{
+    public Guid ReportVersionId { get; set; }
+    public AssessmentReportVersionEntity ReportVersion { get; set; } = null!;
+    public Guid CaseId { get; set; }
+    public CaseWorkflowEntity Workflow { get; set; } = null!;
+    public Guid? ApprovalId { get; set; }
+    public CaseReportApprovalEntity? Approval { get; set; }
+    public Guid? CurrentEvidenceId { get; set; }
+    public CaseReportSentEvidenceEntity? CurrentEvidence { get; set; }
+    public string? CorrectionReason { get; set; }
+    public long Version { get; set; }
+    public Guid ConcurrencyToken { get; set; }
+    public List<CaseReportAssociationHistoryEntity> AssociationHistory { get; set; } = [];
+}
+
+internal sealed class CaseReportAssociationHistoryEntity
+{
+    public Guid Id { get; set; }
+    public Guid LedgerReportVersionId { get; set; }
+    public CaseReportVersionLedgerEntity Ledger { get; set; } = null!;
+    public Guid? EvidenceId { get; set; }
+    public Guid? ApprovalId { get; set; }
+    public Guid? BeforeReportVersionId { get; set; }
+    public Guid? AfterReportVersionId { get; set; }
+    public required string Action { get; set; }
+    public required string ActorKind { get; set; }
+    public required string ActorSubjectId { get; set; }
+    public required string ActorRolesJson { get; set; }
+    public required string Reason { get; set; }
+    public required string OperationKey { get; set; }
+    public long LedgerVersion { get; set; }
+    public DateTimeOffset OccurredAtUtc { get; set; }
+    public Guid? FormerCaseId { get; set; }
+    public DateTimeOffset? FormerLinkedAtUtc { get; set; }
+    public string? FormerLinkedByKind { get; set; }
+    public string? FormerLinkedBySubjectId { get; set; }
+    public string? FormerLinkedByRolesJson { get; set; }
 }
 
 internal sealed class CaseDueWorkEntity : IApplicationManagedConcurrencyToken

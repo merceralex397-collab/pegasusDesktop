@@ -345,6 +345,7 @@ public sealed partial class DetailsModel(
         DateOnly? inspectionDeadline,
         string? inspectionAddress,
         CaseInspectionMode? inspectionMode,
+        long? vehicleMileageKilometres,
         CancellationToken cancellationToken) =>
         ExecuteCaseCommandAsync(
             id,
@@ -376,7 +377,8 @@ public sealed partial class DetailsModel(
                         inspectionDate,
                         inspectionDeadline,
                         inspectionAddress,
-                        inspectionMode)),
+                        inspectionMode,
+                        vehicleMileageKilometres)),
                 cancellationToken),
             "Case data was saved with attributable field provenance.");
 

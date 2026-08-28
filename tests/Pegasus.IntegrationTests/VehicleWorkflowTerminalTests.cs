@@ -105,6 +105,55 @@ public sealed class VehicleWorkflowTerminalTests
     }
 
     [Fact]
+    public async Task KilometreCorrectionIsStoredAsCanonicalMilesWithOriginalReading()
+    {
+        await using var database = await CreateDatabaseAsync();
+        var caseId = await SeedCaseAsync(database, CaseLifecycleState.Review);
+        var editLeaseToken = await PrepareCanonicalRegistrationAsync(database, caseId, "AB12CDE");
+        var workItemId = Guid.NewGuid();
+        var observationId = Guid.NewGuid();
+
+        await using (var context = await database.CreateContextAsync())
+        {
+            await context.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO ExternalWorkItems (Id, CaseId, Kind, OperationKey, State, AttemptCount, DueAtUtc, CompletedAtUtc) VALUES ({workItemId}, {caseId}, {ExternalWorkKinds.VehicleLookup}, {"seeded-vehicle-observation"}, {"completed"}, {1}, {FixedUtcNow}, {FixedUtcNow})");
+            await context.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO VehicleLookupRequests (WorkItemId, CaseId, Registration, OperationKey, RequestFingerprint, RequestedByKind, RequestedBySubjectId, RequestedByRolesJson, RequestedAtUtc, ResultingCaseVersion) VALUES ({workItemId}, {caseId}, {"AB12CDE"}, {"seeded-vehicle-observation"}, {new string('0', 64)}, {ActorKind.Staff.ToString()}, {Staff.SubjectId}, {"[\"User\"]"}, {FixedUtcNow}, {0L})");
+            await context.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO VehicleLookupObservations (Id, WorkItemId, AttemptNumber, Outcome, Registration, Provider, ProviderVersion, ResponseIdentity, RetrievedAtUtc, EffectiveAtUtc, SourceObservedAtUtc, Make, Model, ManufactureYear, EngineCapacityCc, FuelType, MotTestsJson, MileageValue, MileageUnit, MileageObservedOn, MileageMethodKey, MileageMethodVersion, MileageSupportingObservationCount, FailureCode, FailureRetryable, FailureRetryAfterTicks, RecordedAtUtc) VALUES ({observationId}, {workItemId}, {1}, {"current"}, {"AB12CDE"}, {"offline-replay"}, {"fixture-v1"}, {"response-current"}, {FixedUtcNow}, {null}, {FixedUtcNow}, {"Example"}, {"Model"}, {2020}, {1600}, {"petrol"}, {"{\"version\":1,\"observations\":[]}"}, {null}, {null}, {null}, {null}, {null}, {null}, {null}, {null}, {null}, {FixedUtcNow})");
+        }
+
+        await using var scope = database.CreateAsyncScope();
+        var accepted = await scope.ServiceProvider
+            .GetRequiredService<IAcceptVehicleSuggestion>()
+            .ExecuteAsync(
+                new(
+                    caseId,
+                    0,
+                    observationId,
+                    VehicleSuggestionDecision.Correct,
+                    new("AB12CDE", "Example", "Model", 100_000, VehicleMileageUnit.Kilometres),
+                    Staff,
+                    "correct-kilometre-mileage",
+                    "Corrected against the retained vehicle evidence.",
+                    editLeaseToken),
+                CancellationToken.None);
+
+        Assert.Equal(62_137, accepted.Values.Mileage);
+        Assert.Equal(VehicleMileageUnit.Miles, accepted.Values.MileageUnit);
+        Assert.Equal(62_137L, await database.ScalarAsync<long>(
+            $"SELECT CONVERT(bigint, Value) FROM CaseDataFields WHERE CaseId = '{caseId:D}' AND FieldName = 'vehicle_mileage'"));
+        Assert.Equal("Miles", await database.ScalarAsync<string>(
+            $"SELECT Value FROM CaseDataFields WHERE CaseId = '{caseId:D}' AND FieldName = 'vehicle_mileage_unit'"));
+        Assert.Equal(100_000L, await database.ScalarAsync<long>(
+            $"SELECT CONVERT(bigint, Value) FROM CaseDataFields WHERE CaseId = '{caseId:D}' AND FieldName = 'vehicle_mileage_kilometres'"));
+        Assert.Equal(62_137L, await database.ScalarAsync<long>(
+            $"SELECT Mileage FROM VehicleConfirmations WHERE CaseId = '{caseId:D}'"));
+        Assert.Equal("Miles", await database.ScalarAsync<string>(
+            $"SELECT MileageUnit FROM VehicleConfirmations WHERE CaseId = '{caseId:D}'"));
+    }
+
+    [Fact]
     public async Task ExactConfirmedRegistrationCreatesOneWorkItemAndReplaysExactly()
     {
         await using var database = await CreateDatabaseAsync();

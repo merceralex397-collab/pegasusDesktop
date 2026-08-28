@@ -51,8 +51,12 @@ being chased, not a new instruction.
 
 Outcomes: exactly one category predicate → that category; more than one → the
 recorded **Ambiguous** outcome (never an invented winner); none →
-**Unclassified**, failing closed. Nested-message content is excluded from the
-attachment tells.
+**Unclassified**, failing closed. A classified `pre-instruction-emails/triage-request`
+is pre-case work and is not sent to normal case allocation. Intake derives one
+strong `AcceptedTriageMatch` from the matched classification predicate, retaining the
+classification policy key/version, predicate key, detail, and source; the
+retired `IIntakeTriageMatcher` is not a second policy owner. Nested-message
+content is excluded from the attachment tells.
 
 Display labels for the taxonomy (family · subtype) are owned by
 `src/Pegasus.Web/Presentation/OperatorLabels.cs`
@@ -100,7 +104,7 @@ Owner: `src/Pegasus.Core/Intake/DirectProviders/Qdos/QdosCaseMatchPolicy.cs`
 Owners: `src/Pegasus.Core/Intake/InstructionFieldExtraction.cs` (the
 provider-neutral `InstructionFieldEngine`) and
 `src/Pegasus.Core/Intake/DirectProviders/Qdos/QdosInstructionExtractionPolicy.cs`
-(the QDOS grammar, `Version 4`). The engine carries no QDOS knowledge; every
+(the QDOS grammar, `Version 6` after the subject-fact/evidence change). The engine carries no QDOS knowledge; every
 QDOS-specific label, guard, and synthesis rule is supplied by the policy.
 
 Mechanics (engine):
@@ -141,7 +145,9 @@ QDOS grammar (policy):
   `Pre-existing damage`, `TP `, `If you need`). Audit letters carry no prompt
   — circumstances legitimately stay empty.
 - **Subject facts last**: settled facts in the provider's own subject grammar
-  rank below every document.
+  rank below every document. The subject template's `Vehicle Registration`
+  label is extracted in both colon and non-colon spacing, and the vehicle
+  description rule does not consume that label.
 
 Corpus tests: `tests/Pegasus.IntegrationTests/QdosMappingExtractionTests.cs`
 (per-file expectation table over the real local corpus, skip-if-absent —

@@ -134,7 +134,7 @@ public sealed class AssessmentReportRendererTests
         return string.Join(Environment.NewLine, document.GetPages().Select(page => page.Text));
     }
 
-    private static AssessmentReportSnapshot Snapshot(AssessmentReportOutcome outcome)
+    internal static AssessmentReportSnapshot Snapshot(AssessmentReportOutcome outcome)
     {
         var image = File.ReadAllBytes(Path.Combine(RepositoryRoot(), "reference", "eva_information", "screenshots", "engineer-screens", "engineer1.png"));
         return new(

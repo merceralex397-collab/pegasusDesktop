@@ -6,6 +6,7 @@ using Pegasus.Web.Authentication;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Pegasus.Core.Intake;
+using Pegasus.Core.Intake.Unidentified;
 using Pegasus.Core.Triage;
 using Pegasus.Core.Identity;
 using Pegasus.Core.Workflow;
@@ -17,6 +18,86 @@ public sealed partial class QdosTriageIntegrationTests
 {
     private const string AcceptedMatcherKey = "integration-test-accepted-triage-matcher";
     private const long SeededCaseEntityVersion = 37;
+
+    [Fact]
+    [Trait("Category", "QdosAlphaAcceptance")]
+    public async Task ClassifiedTriageRequestCreatesPreCaseTriageAndNoUnidentifiedItem()
+    {
+        using var factory = new IntakeWebApplicationFactory();
+        using var client = IntakeWebDriver.CreateClient(factory);
+        var email = IntakeTestEvidence.CreateEmail(
+            "classified-triage-request.eml",
+            "Triage Only Request\r\nClaimant Name: Triage Claimant\r\nClaim Number: TRIAGE-ROUTE-001\r\nVehicle Registration: AB12 CDE");
+
+        var upload = await IntakeWebDriver.UploadAndProcessAsync(
+            factory,
+            client,
+            email.FileName,
+            email.MediaType,
+            email.Content);
+        var receiptId = IntakeWebDriver.ReceiptId(upload);
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var services = scope.ServiceProvider;
+        var receipt = Assert.IsType<IntakeReceipt>(
+            await services.GetRequiredService<IIntakeReceiptQueries>()
+                .GetAsync(receiptId, CancellationToken.None));
+        var classification = Assert.IsType<MailClassificationResult>(receipt.MailClassificationDecision);
+        var match = Assert.Single(
+            receipt.Evidence,
+            evidence => evidence.Finding == IntakeEvidenceFinding.AcceptedTriageMatch);
+        var triage = Assert.Single(
+            await services.GetRequiredService<ITriageQueries>()
+                .ListAsync(null, CancellationToken.None));
+        var unidentified = await services.GetRequiredService<IUnidentifiedStore>()
+            .GetByOriginAsync(UnidentifiedOrigin.Receipt(receiptId));
+
+        Assert.Equal(IntakeDecision.NeedsSorting, receipt.Decision);
+        Assert.True(classification.IsTriageRequest);
+        Assert.Equal(IntakeEvidenceSource.EmailBody, match.Source);
+        Assert.Equal("body.triage-only-request", match.Signal);
+        Assert.Equal(QdosMailClassificationPolicy.Key, match.MatcherKey);
+        Assert.Equal(QdosMailClassificationPolicy.Version, match.MatcherVersion);
+        Assert.Null(receipt.CurrentCaseId);
+        Assert.Equal("AB12CDE", triage.NormalizedVehicleRegistration);
+        Assert.Equal(TriageState.Open, triage.State);
+        Assert.Null(unidentified);
+    }
+
+    [Fact]
+    [Trait("Category", "QdosAlphaAcceptance")]
+    public async Task ClassifiedTriageRequestWithoutRegistrationRemainsUnidentified()
+    {
+        using var factory = new IntakeWebApplicationFactory();
+        using var client = IntakeWebDriver.CreateClient(factory);
+        var email = IntakeTestEvidence.CreateEmail(
+            "classified-triage-without-registration.eml",
+            "Triage Only Request\r\nClaimant Name: Triage Claimant\r\nClaim Number: TRIAGE-ROUTE-002");
+
+        var upload = await IntakeWebDriver.UploadAndProcessAsync(
+            factory,
+            client,
+            email.FileName,
+            email.MediaType,
+            email.Content);
+        var receiptId = IntakeWebDriver.ReceiptId(upload);
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var services = scope.ServiceProvider;
+        var receipt = Assert.IsType<IntakeReceipt>(
+            await services.GetRequiredService<IIntakeReceiptQueries>()
+                .GetAsync(receiptId, CancellationToken.None));
+        var unidentified = await services.GetRequiredService<IUnidentifiedStore>()
+            .GetByOriginAsync(UnidentifiedOrigin.Receipt(receiptId));
+
+        Assert.Equal(IntakeDecision.NeedsSorting, receipt.Decision);
+        Assert.True(Assert.IsType<MailClassificationResult>(receipt.MailClassificationDecision).IsTriageRequest);
+        Assert.Null(receipt.CurrentCaseId);
+        Assert.Empty(await services.GetRequiredService<ITriageQueries>()
+            .ListAsync(null, CancellationToken.None));
+        Assert.NotNull(unidentified);
+        Assert.Equal(UnidentifiedState.Open, unidentified!.State);
+    }
 
     [Fact]
     [Trait("Category", "QdosAlphaAcceptance")]

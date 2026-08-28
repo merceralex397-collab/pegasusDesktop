@@ -4,14 +4,11 @@ using System.Text.RegularExpressions;
 
 namespace Pegasus.Core.Intake;
 
-public sealed class QdosInstructionExtractionPolicy(
-    IIntakeTriageMatcher? triageMatcher = null) : IInstructionExtractionPolicy
+public sealed class QdosInstructionExtractionPolicy : IInstructionExtractionPolicy
 {
     public const string Key = "qdos_instruction";
-    public const int Version = 5;
+    public const int Version = 6;
     public const string SupportedPrincipalCode = "QDOS";
-    private readonly IIntakeTriageMatcher triageMatcher =
-        triageMatcher ?? new NoAcceptedIntakeTriageMatcher();
 
     public string PrincipalCode => SupportedPrincipalCode;
 
@@ -124,20 +121,6 @@ public sealed class QdosInstructionExtractionPolicy(
         missingFields = missingFields.Where(name => !derivedNames.Contains(name)).ToArray();
         evidence.AddRange(fieldEvidence);
         var draft = CreateInstructionDraft(fields, principalContext.PrincipalCode);
-        var triageMatches = triageMatcher.Match(readResult, draft);
-        ArgumentNullException.ThrowIfNull(triageMatches);
-        foreach (var match in triageMatches)
-        {
-            ValidateTriageMatch(match);
-            evidence.Add(new(
-                match.Source,
-                IntakeEvidenceStrength.Strong,
-                IntakeEvidenceFinding.AcceptedTriageMatch,
-                match.Signal.Trim(),
-                match.Detail.Trim(),
-                match.MatcherKey.Trim(),
-                match.MatcherVersion));
-        }
         if (readResult.RequiresOcr)
         {
             evidence.Add(new(
@@ -421,10 +404,20 @@ public sealed class QdosInstructionExtractionPolicy(
         }
 
         var vehicle = Regex.Match(
-            subject, @"\bVehicle[:.]?\s+([^,()]+)", RegexOptions.IgnoreCase);
+            subject, @"\bVehicle(?!\s+Registration\b)[:.]?\s+([^,()]+)", RegexOptions.IgnoreCase);
         if (vehicle.Success)
         {
             lines.Add($"Our Client's Vehicle: {vehicle.Groups[1].Value.Trim().TrimEnd(',', '.')}");
+        }
+
+        var registration = Regex.Match(
+            subject,
+            @"\bVehicle\s+Registration\s*:?\s+([A-Za-z0-9]{3,4}\s?[A-Za-z0-9]{3,4})\b",
+            RegexOptions.IgnoreCase);
+        if (registration.Success
+            && InstructionFieldEngine.IsUkRegistration(registration.Groups[1].Value))
+        {
+            lines.Add($"Vehicle Registration: {registration.Groups[1].Value.Trim()}");
         }
 
         return [.. lines];
@@ -539,15 +532,6 @@ public sealed class QdosInstructionExtractionPolicy(
             InstructionFieldEngine.ParseDate(values["Instruction date"]),
             InstructionFieldEngine.TypedString(values["Inspection address"], 1000),
             InstructionFieldEngine.ParseDate(values["Inspection date"]));
-    }
-
-    private static void ValidateTriageMatch(IntakeTriageMatch match)
-    {
-        ArgumentNullException.ThrowIfNull(match);
-        ArgumentException.ThrowIfNullOrWhiteSpace(match.Signal);
-        ArgumentException.ThrowIfNullOrWhiteSpace(match.Detail);
-        ArgumentException.ThrowIfNullOrWhiteSpace(match.MatcherKey);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(match.MatcherVersion);
     }
 
 }

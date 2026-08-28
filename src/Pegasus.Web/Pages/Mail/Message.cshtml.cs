@@ -1011,15 +1011,7 @@ public sealed class MessageModel(
         _ => OutcomeLabel(summary.ProcessingOutcome)
     };
 
-    private static string OutcomeLabel(IntakeDecision? decision) => decision switch
-    {
-        IntakeDecision.CaseCreated => "Ready for case allocation",
-        IntakeDecision.NeedsSorting => "Unidentified",
-        IntakeDecision.BlockedIntake => "Blocked",
-        IntakeDecision.OcrRequired => "Document text required",
-        IntakeDecision.TechnicalFailure => "Technical failure",
-        IntakeDecision.Unsupported => "Unsupported",
-        IntakeDecision.ImageIntakeRegistered => "Vehicle images registered",
-        _ => "Not yet processed"
-    };
+    private static string OutcomeLabel(IntakeDecision? decision) => decision is null
+        ? "Not yet processed"
+        : OperatorLabels.IntakeDecisionLabel(decision.Value);
 }

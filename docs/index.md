@@ -23,6 +23,7 @@ design assets remain under [`docs/design/`](design/).
 | What are the UI rules? | [Design](design/README.md) |
 | Which approved prototype was each screen drawn from? | [Screen map](design/references/screen-map.md) |
 | How is a provider's email identified, classified, and mapped? | [Principal rules and mappings](principal-rules-and-mappings/README.md) — descriptive companions; the cited FRD/ADR/policy owners bind |
+| Where is the native desktop gateway contract? | [OpenAPI snapshot](../openapi/pegasus-v1.json) — the committed `/api/v1` document used for contract tests and client generation |
 | What is the Azure production state? | [Operations § Production environment](operations.md#production-environment) — the sole current-state owner; `.azure/deployment-plan.md` is the immutable 2026-08-02 execution record |
 | What do the imported source workspaces own? | [Workspaces](../workspaces/README.md) |
 | What do domain terms mean? | [`CONTEXT.md`](../CONTEXT.md) (repo root) |
@@ -37,7 +38,12 @@ current-architecture.md and operations.md (current state) > runbook.md, engineer
 and design/README.md (working rules within their scopes). Code plus passing tests beat any document about
 current state. On conflict: fix the losing document in the same commit you
 notice it; if the conflict is material and you cannot resolve it, put one line
-in [open decisions](open-decisions.md) and stop the affected work.
+in [open decisions](open-decisions.md) and stop the affected work. The proposal's
+authority order cites three prior documents — *Pegasus Desktop Conversion Plan*,
+*Desktop Azure Conversion Plan*, *Recommended desktop API architecture*. They
+are not present in this repository and are not retrievable; they are therefore
+not an input to any conversion ticket. Their substantive positions are
+reconciled in proposal §3.
 
 ## New Markdown files
 

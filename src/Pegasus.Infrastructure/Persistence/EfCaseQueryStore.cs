@@ -144,6 +144,15 @@ public sealed class EfCaseQueryStore(
                 .ThenInclude(item => item.Principal)
             .Include(item => item.ReportApproval)
             .Include(item => item.ReportSentEvidence)
+            .Include(item => item.ReportVersionLedgers)
+                .ThenInclude(item => item.ReportVersion)
+                    .ThenInclude(item => item.Artifacts)
+            .Include(item => item.ReportVersionLedgers)
+                .ThenInclude(item => item.Approval)
+            .Include(item => item.ReportVersionLedgers)
+                .ThenInclude(item => item.CurrentEvidence)
+            .Include(item => item.ReportVersionLedgers)
+                .ThenInclude(item => item.AssociationHistory)
             .Include(item => item.DueWork)
             .SingleOrDefaultAsync(item => item.CaseId == query.CaseId, cancellationToken);
         if (workflow is null)
@@ -359,6 +368,8 @@ public sealed class EfCaseQueryStore(
 
     private static CaseWorkflowRecord MapWorkflow(CaseWorkflowEntity entity)
     {
+        var currentApprovalLedger = entity.ReportVersionLedgers
+            .FirstOrDefault(item => item.ApprovalId == entity.ReportApprovalId);
         var workflow = new CaseWorkflowRecord(
             entity.CaseId,
             new CaseIdentity(
@@ -380,7 +391,11 @@ public sealed class EfCaseQueryStore(
                         entity.ReportApproval.ApprovedByKind,
                         entity.ReportApproval.ApprovedBySubjectId,
                         entity.ReportApproval.ApprovedByRolesJson),
-                    entity.ReportApproval.ApprovedAtUtc),
+                    entity.ReportApproval.ApprovedAtUtc,
+                    currentApprovalLedger?.ReportVersionId,
+                    entity.ReportApproval.AssociationStatus
+                        ?? (currentApprovalLedger is null ? "Unresolved" : "Authoritative"),
+                    entity.ReportApproval.AssociationStatusReason),
             entity.ReportSentEvidence is null ? null : MapLinkedEvidence(entity.ReportSentEvidence),
             entity.DueWork is null
                 ? null
@@ -404,7 +419,10 @@ public sealed class EfCaseQueryStore(
                 : Enum.Parse<CaseClosureOutcome>(entity.ClosureOutcome),
             entity.OriginalCaseId,
             entity.ReplacementCaseId,
-            entity.Version);
+            entity.Version)
+        {
+            IssuedReportVersions = MapIssuedReportVersions(entity.ReportVersionLedgers)
+        };
         if (entity.ArchivedAtUtc is null)
         {
             if (entity.ArchivedByKind is not null
@@ -437,6 +455,60 @@ public sealed class EfCaseQueryStore(
         };
     }
 
+    private static IssuedReportVersion[] MapIssuedReportVersions(
+        IEnumerable<CaseReportVersionLedgerEntity> ledgers) => ledgers
+        .OrderBy(item => item.ReportVersion.Version)
+        .ThenBy(item => item.ReportVersionId)
+        .Select(item => new IssuedReportVersion(
+            item.ReportVersionId,
+            item.ReportVersion.Version,
+            item.Approval?.ArtifactIdentity,
+            item.Approval?.ArtifactSha256,
+            item.ReportVersion.PredecessorId,
+            item.CorrectionReason,
+            item.Approval is null
+                ? null
+                : new ReportApprovalEvidence(
+                    item.Approval.Id,
+                    item.Approval.ArtifactIdentity,
+                    item.Approval.ArtifactSha256,
+                    MapStaffActor(
+                        item.Approval.ApprovedByKind,
+                        item.Approval.ApprovedBySubjectId,
+                        item.Approval.ApprovedByRolesJson),
+                    item.Approval.ApprovedAtUtc,
+                    item.ReportVersionId,
+                    item.Approval.AssociationStatus ?? "Authoritative",
+                    item.Approval.AssociationStatusReason),
+            item.CurrentEvidence is null ? null : MapLinkedEvidence(item.CurrentEvidence),
+            item.AssociationHistory
+                .OrderBy(history => history.LedgerVersion)
+                .ThenBy(history => history.OccurredAtUtc)
+                .ThenBy(history => history.Id)
+                .Select(history => new ReportEvidenceAssociationHistory(
+                    history.Id,
+                    history.EvidenceId,
+                    history.ApprovalId,
+                    history.BeforeReportVersionId,
+                    history.AfterReportVersionId,
+                    history.Action,
+                    history.ActorKind == nameof(ActorKind.SystemWorker)
+                        ? ActionActor.SystemWorker(history.ActorSubjectId)
+                        : MapStaffActor(
+                            history.ActorKind,
+                            history.ActorSubjectId,
+                            history.ActorRolesJson),
+                    history.Reason,
+                    history.OccurredAtUtc,
+                    history.FormerCaseId,
+                    history.FormerLinkedAtUtc,
+                    OptionalActor(
+                        history.FormerLinkedByKind,
+                    history.FormerLinkedBySubjectId,
+                    history.FormerLinkedByRolesJson)))
+                .ToArray()))
+        .ToArray();
+
     private static ApprovedMailboxReportSentEvidence? MapLinkedEvidence(
         CaseReportSentEvidenceEntity entity)
     {
@@ -468,7 +540,12 @@ public sealed class EfCaseQueryStore(
             entity.DiscoveredAtUtc,
             MapDiscoveryActor(entity.DiscoveredByKind, entity.DiscoveredBySubjectId),
             linkedAtUtc,
-            MapLinkActor(entity.LinkedByKind, entity.LinkedBySubjectId, entity.LinkedByRolesJson));
+            MapLinkActor(entity.LinkedByKind, entity.LinkedBySubjectId, entity.LinkedByRolesJson),
+            entity.SourceReportVersionId,
+            entity.SourceArtifactIdentity,
+            entity.SourceArtifactSha256,
+            entity.AssociationStatus ?? (entity.SourceReportVersionId is null ? "Unresolved" : "Authoritative"),
+            entity.AssociationStatusReason);
     }
 
     private static RetainedApprovedMailboxReportSentEvidence MapRetainedEvidence(
@@ -485,7 +562,12 @@ public sealed class EfCaseQueryStore(
         entity.MimeSha256,
         entity.SentAtUtc,
         entity.DiscoveredAtUtc,
-        MapDiscoveryActor(entity.DiscoveredByKind, entity.DiscoveredBySubjectId));
+        MapDiscoveryActor(entity.DiscoveredByKind, entity.DiscoveredBySubjectId),
+        entity.SourceReportVersionId,
+        entity.SourceArtifactIdentity,
+        entity.SourceArtifactSha256,
+        entity.AssociationStatus ?? (entity.SourceReportVersionId is null ? "Unresolved" : "Authoritative"),
+        entity.AssociationStatusReason);
 
     private static ActionActor MapLinkActor(string kind, string subjectId, string rolesJson)
     {
@@ -516,6 +598,27 @@ public sealed class EfCaseQueryStore(
         return ActionActor.Staff(
             staffId,
             JsonSerializer.Deserialize<StaffRole[]>(rolesJson) ?? []);
+    }
+
+    private static ActionActor? OptionalActor(
+        string? kind,
+        string? subjectId,
+        string? rolesJson)
+    {
+        if (kind is null && subjectId is null && rolesJson is null)
+        {
+            return null;
+        }
+
+        if (kind is null || subjectId is null || rolesJson is null)
+        {
+            throw new InvalidDataException(
+                "Report-evidence association history contains incomplete former-link actor metadata.");
+        }
+
+        return kind == nameof(ActorKind.SystemWorker)
+            ? ActionActor.SystemWorker(subjectId)
+            : MapStaffActor(kind, subjectId, rolesJson);
     }
 
     private static ActionActor MapDiscoveryActor(string kind, string subjectId) => kind switch
