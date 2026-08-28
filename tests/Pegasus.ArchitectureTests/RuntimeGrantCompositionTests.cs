@@ -88,6 +88,14 @@ public sealed class RuntimeGrantCompositionTests
             failure => failure.Contains("CaseDocuments", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public void NoRuntimeGrantMarkerRequiresCreateAndReason()
+    {
+        Assert.True(RuntimeGrantCatalogue.IsValidOptOutMarker("// no-runtime-grant: Cases - consolidated role migration", true));
+        Assert.False(RuntimeGrantCatalogue.IsValidOptOutMarker("// no-runtime-grant: Cases", true));
+        Assert.False(RuntimeGrantCatalogue.IsValidOptOutMarker("// no-runtime-grant: Cases - consolidated role migration", false));
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -131,7 +139,15 @@ public sealed class RuntimeGrantCompositionTests
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly Regex ContextMutation = new(
-            @"\b(?:context|dbContext|verification|finalContext)\.(?:(?<property>[A-Z][A-Za-z0-9_]*)|Set<(?<entity>[A-Za-z_][A-Za-z0-9_]*)>\(\))\s*\.\s*(?<verb>Add|AddAsync|Remove|ExecuteDelete|ExecuteUpdate)\s*\(",
+            @"\b(?:context|dbContext|verification|finalContext)\.(?:(?<property>[A-Z][A-Za-z0-9_]*)|Set<(?<entity>[A-Za-z_][A-Za-z0-9_]*)>\(\))\s*\.\s*(?<verb>Add|AddAsync|Remove|RemoveRange|ExecuteDelete|ExecuteUpdate)\s*\(",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        private static readonly Regex DirectContextMutation = new(
+            @"\b(?:context|dbContext|verification|finalContext)\.(?<verb>Add|AddAsync|Remove|RemoveRange)\s*\(\s*(?:new\s+)?(?<entity>[A-Za-z_][A-Za-z0-9_]*)",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        private static readonly Regex TrackedEntityMutation = new(
+            @"\b(?<entity>[A-Za-z_][A-Za-z0-9_]*Entity)\s+(?<variable>[a-z][A-Za-z0-9_]*)\b[\s\S]*?\b\k<variable>\.[A-Z][A-Za-z0-9_]*\s*=",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly Regex GrantStatement = new(
@@ -166,10 +182,6 @@ public sealed class RuntimeGrantCompositionTests
             @"(?<name>[A-Za-z]*Grants)\s*=\s*\[(?<body>.*?)\];",
             RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Singleline);
 
-        private static readonly Regex TrackedMutation = new(
-            @"\b[A-Za-z_][A-Za-z0-9_]*\.[A-Z][A-Za-z0-9_]*\s*=",
-            RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
         private static readonly HashSet<string> InsertOnly = new(StringComparer.Ordinal) { "INSERT" };
         private static readonly HashSet<string> UpdateOnly = new(StringComparer.Ordinal) { "UPDATE" };
         private static readonly string[] HostRoles = ["Web", "Worker"];
@@ -190,6 +202,14 @@ public sealed class RuntimeGrantCompositionTests
         internal IReadOnlySet<RuntimeGrant> Grants { get; }
 
         internal IReadOnlySet<string> OptedOutTables { get; }
+
+        internal static bool IsValidOptOutMarker(string line, bool createsTable)
+        {
+            var marker = Regex.Match(line,
+                @"//\s*no-runtime-grant:\s*(?<table>[A-Za-z0-9_]+)\b(?<reason>.*)$",
+                RegexOptions.CultureInvariant);
+            return createsTable && marker.Success && !string.IsNullOrWhiteSpace(marker.Groups["reason"].Value.Trim(' ', '-', '\t'));
+        }
 
         internal static RuntimeGrantCatalogue Load(string root, string? beforeMigration = null)
         {
@@ -504,6 +524,13 @@ public sealed class RuntimeGrantCompositionTests
 
                 AddVerb(verbs, mutation.Groups["verb"].Value);
             }
+            foreach (Match mutation in DirectContextMutation.Matches(source))
+            {
+                if (mutation.Groups["entity"].Value.Equals(property, StringComparison.Ordinal))
+                {
+                    AddVerb(verbs, mutation.Groups["verb"].Value);
+                }
+            }
             if (Regex.IsMatch(
                     source,
                     $@"Set<{Regex.Escape(property)}>\(\)[\s\S]{{0,2000}}?\bcontext\.Add\s*\(",
@@ -511,29 +538,7 @@ public sealed class RuntimeGrantCompositionTests
             {
                 verbs.Add("INSERT");
             }
-            var propertyOccurrences = Regex.Matches(
-                source,
-                $@"\b{Regex.Escape(property)}\b",
-                RegexOptions.CultureInvariant);
-            foreach (Match occurrence in propertyOccurrences)
-            {
-                var start = Math.Max(0, occurrence.Index - 250);
-                var length = Math.Min(source.Length - start, 500);
-                var window = source.Substring(start, length);
-                if (Regex.IsMatch(window, @"\.(?:Add|AddAsync)\s*\(", RegexOptions.CultureInvariant))
-                {
-                    verbs.Add("INSERT");
-                }
-                if (Regex.IsMatch(window, @"\.(?:Remove|ExecuteDelete)\s*\(", RegexOptions.CultureInvariant))
-                {
-                    verbs.Add("DELETE");
-                }
-                if (Regex.IsMatch(window, @"ExecuteUpdate\s*\(", RegexOptions.CultureInvariant))
-                {
-                    verbs.Add("UPDATE");
-                }
-            }
-            if (property.EndsWith("Entity", StringComparison.Ordinal) && TrackedMutation.IsMatch(source))
+            if (property.EndsWith("Entity", StringComparison.Ordinal) && TrackedEntityMutation.IsMatch(source))
             {
                 verbs.Add("UPDATE");
             }
@@ -546,7 +551,7 @@ public sealed class RuntimeGrantCompositionTests
             verbs.Add(verb switch
             {
                 "Add" or "AddAsync" => "INSERT",
-                "Remove" or "ExecuteDelete" => "DELETE",
+                "Remove" or "RemoveRange" or "ExecuteDelete" => "DELETE",
                 "ExecuteUpdate" => "UPDATE",
                 _ => throw new ArgumentOutOfRangeException(nameof(verb), verb, null)
             });
@@ -585,14 +590,14 @@ public sealed class RuntimeGrantCompositionTests
                     : string.Empty;
                 foreach (Match marker in Regex.Matches(
                              source,
-                             @"//\s*no-runtime-grant:\s*(?<table>[A-Za-z0-9_]+)\b",
-                             RegexOptions.CultureInvariant))
+                             @"//\s*no-runtime-grant:\s*(?<table>[A-Za-z0-9_]+)\b(?<reason>.*)$",
+                             RegexOptions.CultureInvariant | RegexOptions.Multiline))
                 {
                     var table = marker.Groups["table"].Value;
-                    if (Regex.IsMatch(
+                    if (IsValidOptOutMarker(marker.Value, Regex.IsMatch(
                             up,
                             $@"CreateTable\s*\(\s*(?:name\s*:\s*)?""{Regex.Escape(table)}""",
-                            RegexOptions.CultureInvariant))
+                            RegexOptions.CultureInvariant)))
                     {
                         optedOutTables.Add(table);
                     }
