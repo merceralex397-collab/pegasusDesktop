@@ -29,6 +29,10 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.20.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="Microsoft.Playwright" Version="$(PlaywrightVersion)" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools.WinApp" Version="0.3.1" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="MimeKit" Version="4.17.0" />
     <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="2.0.0" />
     <PackageVersion Include="OpenIddict.AspNetCore" Version="7.6.0" />
