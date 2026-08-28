@@ -182,8 +182,9 @@ The following remain planned or absent, not merely unverified:
   window covers a working day (PLAT-034, open).
 - an automated check that composition-root persistence writes remain covered by
    the runtime-role grant catalogue. The architecture suite now derives registered
-   EF stores, their model entity/table mappings, and detected INSERT/UPDATE/DELETE writes,
-   then compares them with both grant shapes already accepted by
+   EF stores (including concrete stores resolved by their registered factory interfaces),
+   their EF `IModel` entity/table mappings, and detected INSERT/UPDATE/DELETE writes,
+   then compares them with the two grant shapes accepted by
    `scripts/Test-MigrationGrants.ps1`. It also reconstructs the three shipped
    missing-write regressions — `20260814092852`, `20260821095500` and
    `20260822044425` — and carries a forward ungranted-table fixture. The static

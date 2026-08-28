@@ -114,6 +114,10 @@ public sealed class RuntimeGrantCompositionTests
             @"(?:services|builder\.Services)\.Add(?:Scoped|Singleton|Transient)<(?<args>[^>]+)>",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+        private static readonly Regex FactoryRegistration = new(
+            @"(?:services|builder\.Services)\.Add(?:Scoped|Singleton|Transient)<(?<interface>I[A-Za-z0-9_]+)>[\s\S]{0,220}?GetRequiredService<(?<store>Ef[A-Za-z0-9_]+)>",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
         private static readonly Regex DbSetProperty = new(
             @"DbSet<(?<entity>[^>]+)>\s+(?<property>[A-Za-z_][A-Za-z0-9_]*)\s*=>",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -150,6 +154,10 @@ public sealed class RuntimeGrantCompositionTests
             @"GRANT\s+(?<permissions>[A-Z][A-Z, ]*)\s+ON[^;]*?(?:\[[^]]+\]\.)?\[(?<table>[^]]+)\][^;]*?\{(?<role>WebRole|WorkerRole)\}",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+        private static readonly Regex DirectGrant = new(
+            @"GRANT\s+(?<permissions>[A-Z][A-Z, ]*)\s+ON\s+OBJECT::(?:\[[^]]+\]\.)?\[(?<table>[^]]+)\]\s+TO\s+\[(?<role>[^]]+)\]",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
         private static readonly Regex TupleGrant = new(
             @"\(\s*""(?<table>[A-Za-z0-9_]+)""\s*,\s*""(?<permissions>[A-Z][A-Z, ]*)""\s*\)",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -158,8 +166,14 @@ public sealed class RuntimeGrantCompositionTests
             @"(?<name>[A-Za-z]*Grants)\s*=\s*\[(?<body>.*?)\];",
             RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Singleline);
 
+        private static readonly Regex TrackedMutation = new(
+            @"\b[A-Za-z_][A-Za-z0-9_]*\.[A-Z][A-Za-z0-9_]*\s*=",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
         private static readonly HashSet<string> InsertOnly = new(StringComparer.Ordinal) { "INSERT" };
+        private static readonly HashSet<string> UpdateOnly = new(StringComparer.Ordinal) { "UPDATE" };
         private static readonly string[] HostRoles = ["Web", "Worker"];
+        private static readonly string[] WebOnly = ["Web"];
 
         private RuntimeGrantCatalogue(
             IReadOnlyList<RuntimeWrite> writes,
@@ -230,6 +244,20 @@ public sealed class RuntimeGrantCompositionTests
 
                     AddRoleWrites(writes, registeredStoreRoles, storeName, entity.Table, verbs, sourcePath);
                 }
+                if (source.Contains("ExecuteSql", StringComparison.Ordinal))
+                {
+                    foreach (var table in tableNames.Values.Distinct(StringComparer.Ordinal)
+                                 .Where(table => source.Contains(table, StringComparison.Ordinal)))
+                    {
+                        AddRoleWrites(
+                            writes,
+                            registeredStoreRoles,
+                            storeName,
+                            table,
+                            UpdateOnly,
+                            sourcePath);
+                    }
+                }
             }
 
             var parsed = ParseGrants(migrationRoot, beforeMigration);
@@ -251,7 +279,11 @@ public sealed class RuntimeGrantCompositionTests
             var entity = modelBuilder.FinalizeModel().FindEntityType(typeof(ArchitectureTestUnGrantedTableEntity));
             var fixtureTable = entity?.GetTableName()
                 ?? throw new InvalidOperationException("Fixture entity did not have an EF table mapping.");
-            var fixture = new RuntimeWrite(role, fixtureTable, InsertOnly,
+            var fixtureSource = "context.Set<ArchitectureTestUnGrantedTableEntity>().Add(new());";
+            var fixture = new RuntimeWrite(
+                role,
+                fixtureTable,
+                InferVerbs(fixtureSource, nameof(ArchitectureTestUnGrantedTableEntity)),
                 "fixture: registered store and EF IModel entity");
             return Writes.Append(fixture).ToArray();
         }
@@ -374,14 +406,62 @@ public sealed class RuntimeGrantCompositionTests
                         var directory = role == "Web" ? "Pages" : "Functions";
                         var hostRoot = Path.Combine(root, "src", role == "Web" ? "Pegasus.Web" : "Pegasus.Worker", directory);
                         if (Directory.Exists(hostRoot) && Directory.EnumerateFiles(hostRoot, "*.cs", SearchOption.AllDirectories)
-                            .Any(path => File.ReadAllText(path).Contains(interfaceName, StringComparison.Ordinal)))
+                            .Any(path =>
+                            {
+                                var hostSource = File.ReadAllText(path);
+                                return HasWriteCall(hostSource, interfaceName);
+                            }))
                         {
                             roles.Add(role);
                         }
                     }
                 }
             }
+            foreach (Match match in FactoryRegistration.Matches(source))
+            {
+                if (!names.TryGetValue(match.Groups["store"].Value, out var roles))
+                {
+                    roles = new HashSet<string>(StringComparer.Ordinal);
+                    names[match.Groups["store"].Value] = roles;
+                }
+                AddInterfaceRoles(roles, match.Groups["interface"].Value, directRole, root);
+            }
         }
+
+        private static void AddInterfaceRoles(HashSet<string> roles, string interfaceName, string? directRole, string root)
+        {
+            if (directRole is not null)
+            {
+                roles.Add(directRole);
+                return;
+            }
+            foreach (var role in HostRoles)
+            {
+                var directory = role == "Web" ? "Pages" : "Functions";
+                var hostRoot = Path.Combine(root, "src", role == "Web" ? "Pegasus.Web" : "Pegasus.Worker", directory);
+                if (Directory.Exists(hostRoot) && Directory.EnumerateFiles(hostRoot, "*.cs", SearchOption.AllDirectories)
+                    .Any(path =>
+                    {
+                        var hostSource = File.ReadAllText(path);
+                        return HasWriteCall(hostSource, interfaceName);
+                    }))
+                {
+                    roles.Add(role);
+                }
+            }
+        }
+
+        private static bool HasWriteCall(string source, string interfaceName)
+        {
+            var variable = Regex.Match(source, $@"\b{Regex.Escape(interfaceName)}\s+(?<variable>[a-z][A-Za-z0-9_]*)\b")
+                .Groups["variable"].Value;
+            return variable.Length > 0 && Regex.IsMatch(
+                source,
+                $@"\b{Regex.Escape(variable)}\s*{WriteCallPattern}",
+                RegexOptions.CultureInvariant);
+        }
+
+        private const string WriteCallPattern = @"\.(?:Register|Create|Add|Save|Update|Delete|Remove|Resolve)[A-Za-z0-9_]*(?:Async)?\s*\(";
 
         private static bool IsStoreType(string type) =>
             type.StartsWith("Ef", StringComparison.Ordinal) || type.Equals("EvaHandoffStore", StringComparison.Ordinal);
@@ -452,6 +532,10 @@ public sealed class RuntimeGrantCompositionTests
                 {
                     verbs.Add("UPDATE");
                 }
+            }
+            if (property.EndsWith("Entity", StringComparison.Ordinal) && TrackedMutation.IsMatch(source))
+            {
+                verbs.Add("UPDATE");
             }
 
             return verbs;
@@ -547,13 +631,17 @@ public sealed class RuntimeGrantCompositionTests
                     var containingArray = GrantArray.Matches(source).Cast<Match>().FirstOrDefault(array =>
                         tuple.Index >= array.Groups["body"].Index &&
                         tuple.Index + tuple.Length <= array.Groups["body"].Index + array.Groups["body"].Length);
-                    var role = containingArray?.Groups["name"].Value.Contains("Worker", StringComparison.Ordinal) == true
-                        || fileName.Contains("Worker", StringComparison.Ordinal)
-                        ? "Worker"
-                        : "Web";
-                    foreach (var permission in Permissions(tuple.Groups["permissions"].Value))
+                    var roles = source.Contains("RuntimeRoles", StringComparison.Ordinal) &&
+                                source.Contains("foreach (var role in RuntimeRoles)", StringComparison.Ordinal)
+                        ? HostRoles
+                        : containingArray?.Groups["name"].Value.Contains("Worker", StringComparison.Ordinal) == true
+                            || fileName.Contains("Worker", StringComparison.Ordinal) ? new[] { "Worker" } : WebOnly;
+                    foreach (var role in roles)
                     {
-                        grants.Add(new(role, tuple.Groups["table"].Value, permission, fileName));
+                        foreach (var permission in Permissions(tuple.Groups["permissions"].Value))
+                        {
+                            grants.Add(new(role, tuple.Groups["table"].Value, permission, fileName));
+                        }
                     }
                 }
 
@@ -563,6 +651,13 @@ public sealed class RuntimeGrantCompositionTests
                     foreach (var permission in Permissions(match.Groups["permissions"].Value))
                     {
                         grants.Add(new(role, match.Groups["table"].Value, permission, fileName));
+                    }
+                }
+                foreach (Match match in DirectGrant.Matches(source))
+                {
+                    foreach (var permission in Permissions(match.Groups["permissions"].Value))
+                    {
+                        grants.Add(new(RoleName(match.Groups["role"].Value), match.Groups["table"].Value, permission, fileName));
                     }
                 }
             }
