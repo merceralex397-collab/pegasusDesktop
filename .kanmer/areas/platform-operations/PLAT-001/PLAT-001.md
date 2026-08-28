@@ -2,7 +2,7 @@
 id: PLAT-001
 type: ticket
 title: DSK-10-01 · Threat → control → test register for the desktop conversion
-status: review
+status: done
 area: platform-operations
 order: 60
 assignee: codex-mcp-client
@@ -10,9 +10,7 @@ profile: chore
 stageEntered:
   preparing: '2026-08-24T21:21:13.874Z'
   review: '2026-08-25T04:42:53.162Z'
-taken_at: '2026-08-25T04:34:55.319Z'
-branch: plat-001-threat-register
-worktree: .worktrees/plat-001
+  done: '2026-08-28T02:11:03.990Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -25,7 +23,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:05:04.668Z'
-updated: '2026-08-26T11:16:57.516Z'
+updated: '2026-08-28T02:11:17.200Z'
 ---
 
 ## What
