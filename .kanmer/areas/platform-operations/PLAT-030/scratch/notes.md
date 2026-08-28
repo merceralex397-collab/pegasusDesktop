@@ -7,3 +7,5 @@
 Review correction committed/pushed as c599a42b. Targeted CommittedMigrationCreatesTheSqlServerSchema passed 1/1 locally. PR #37 new exact-head CI and independent re-review pending.
 
 2026-08-28 exact-head CI run 33146340008: sql-integration (3) failed with two SQL Server resource timeouts (321/323 passed), not migration assertions. Failed-job logs identify AutomaticVehicleLookupTests.SweepSkipsTerminalCasesAndUnusableValues post-login timeout and MultiFormatIntakeWebTests.ConfirmingEmailWithDocxExtractedImagesOverTwentyFiveMbFailsClosedAndRetainsAttachment command timeout. All other jobs passed. Reran only failed jobs with `gh run rerun 33146340008 --failed`; rerun currently has sql-integration (3) in progress. Merge remains held pending rerun and fresh independent review.
+
+Rerun attempt 2 reached the repository-check job timeout: sql-integration (3) ran from 06:16:21 to 06:36:30 (20m09s), with Test cancelled and no failure log; coverage passed. The CI workflow declares a 20-minute timeout for this job. No assertion or migration error was emitted. Exact-head CI is still not green; another authorized retry is required before merge.
