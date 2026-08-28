@@ -1,0 +1,1 @@
+2026-08-28: Exact-head run 33153323761 failed SQL shard 3 because IntakePersistenceIntegrationTests omitted the new migration ID. Fixed in commit 0ab518e3; focused CommittedMigrationCreatesTheSqlServerSchema passed 1/1 and git diff --check passed. Fresh exact-head CI and independent re-review required; do not merge the superseded 59af head.

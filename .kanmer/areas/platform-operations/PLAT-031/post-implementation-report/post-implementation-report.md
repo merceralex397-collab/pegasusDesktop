@@ -48,3 +48,9 @@ The defect was independently exposed by PLAT-018's composition-root analysis: `E
 - Boyle (`pegasus-desktop-reviewer`) independently reviewed exact PR head `59af1b21fa9a09cffc370d299f5c10363e7a4edb`. The migration, bootstrap matrix, integration expectation, plan coverage, simplification pass, and scope passed review. The review was held **not merge-ready at that time** only because exact-head CI was incomplete and combined PLAT-018/030/031 evidence was pending; no implementation defect was identified.
 - Clean detached combined validation of exact PLAT-018 `fca04a917f2f2e3c3abc7eeb93e46c9ca9a00ea5`, PLAT-030 `c599a42b1f964c4e5a1dc13894f28f8300152984`, and PLAT-031 `59af1b21fa9a09cffc370d299f5c10363e7a4edb` passed: locked restore; focused runtime-grant tests 10/10; full ArchitectureTests 121/121; `Test-MigrationGrants.ps1` 73/73; `Test-AzureDeploymentPlan.ps1 -Mode Local`; and `git diff --check`.
 - Exact-head GitHub Actions run `33153323761`: unit, browser, infrastructure, documentation, changes, local-development-scripts, and reference-data have passed; SQL shards 2 and 3 remain in progress. Merge remains pending their successful completion.
+
+## Exact-head CI remediation — 2026-08-28
+
+- Run `33153323761` exposed a genuine omission in the ticket's migration census consumer: SQL shard 3 job `98790328153` showed `CommittedMigrationCreatesTheSqlServerSchema` expected migrations ending at `20260827231948_IssuedReportVersionEvidenceLedger`, while the database correctly applied `20260828074800_GrantWorkerCaseReportVersionLedgerInsert`.
+- Added that migration name to `tests/Pegasus.IntegrationTests/IntakePersistenceIntegrationTests.cs`. The focused test then passed 1/1; `git diff --check` passed; commit `0ab518e3` was pushed to PR #38.
+- The previous exact-head run is superseded. Fresh exact-head CI and Boyle's independent re-review of `0ab518e3` remain required before merge. No cloud or deployment write was performed.

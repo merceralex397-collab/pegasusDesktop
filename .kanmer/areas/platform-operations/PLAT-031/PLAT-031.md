@@ -29,12 +29,12 @@ refs:
   - docs/current-architecture.md
 docs_todo: true
 commits:
-  - 59af1b21fa9a09cffc370d299f5c10363e7a4edb
+  - 0ab518e3
 prs:
   - '38'
 archived: false
 created: '2026-08-28T07:45:21.624Z'
-updated: '2026-08-28T07:56:28.928Z'
+updated: '2026-08-28T17:17:38.256Z'
 ---
 
 ## What
