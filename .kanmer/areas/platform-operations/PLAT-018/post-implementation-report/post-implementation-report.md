@@ -71,3 +71,11 @@ HEAD `05b066df1613eff31d8e7d0b4e107a453c3e811a` is clean and locally green, but 
 ## Scope correction — 2026-08-28
 
 The ticket-owned test scope is expanded only as needed to make the acceptance evidence genuine: test-only syntax dependency metadata, immutable test fixtures, and test-only analyzer helpers are permitted. Production code, migrations, migration script, CI workflow, cloud, upstream, and deployment remain unchanged.
+
+## Final remediation and combined validation — 2026-08-28
+
+Exact implementation HEAD `2d069f0a6f7ea01564b6fdf3fac7efedbfad1f8b` is clean and pushed to `origin/task/dsk-10-18-runtime-grant-composition-gate`. The final bounded diff contains only the test package metadata, runtime-grant composition test/helper, immutable hashed fixtures, and the existing architecture snapshot. The final test helper normalizes CRLF to LF before hashing fixtures and the grant parser ignores prose “grant” text by requiring a real permission-bearing `GRANT ... ON` statement.
+
+A temporary local combined validation tree merged exact PLAT-018 `2d069f0a` with exact PLAT-030 `c599a42b` without pushing or changing either task branch. It passed focused runtime-grant tests 8/8, the full architecture suite 119/119, `Test-MigrationGrants.ps1` for 72 migration files, `Test-AzureDeploymentPlan.ps1 -Mode Local`, and `git diff --check`. The focused branch-only test remains dependent on PLAT-030's grant migration; this dependency is explicit and not treated as missing evidence.
+
+No cloud, deployment, credential, corpus, or upstream operation occurred. Fresh independent review is required before PR #36 can merge.

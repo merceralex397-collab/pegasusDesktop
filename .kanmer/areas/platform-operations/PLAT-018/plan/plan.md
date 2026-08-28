@@ -224,3 +224,26 @@ The repeated independent reviews established that the acceptance criteria cannot
 - the truthful `docs/current-architecture.md` update.
 
 This is not permission to change production `src/**`, migrations, `scripts/Test-MigrationGrants.ps1`, CI workflow, cloud state, upstream remotes, or deployment. Any new test-only dependency must have a concrete need, be centrally pinned, and be validated by the existing CI lanes. The acceptance evidence—not file-count minimization—controls completion.
+
+## Final remediation and combined validation — 2026-08-28
+
+The bounded implementation is committed and pushed at exact HEAD `2d069f0a6f7ea01564b6fdf3fac7efedbfad1f8b` (parent `65e1e809`). The final ticket-owned diff is:
+
+- `Directory.Packages.props`
+- `tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj`
+- `tests/Pegasus.ArchitectureTests/packages.lock.json`
+- `tests/Pegasus.ArchitectureTests/RuntimeGrantCompositionTests.cs`
+- `tests/Pegasus.ArchitectureTests/RuntimeGrantSyntaxEvaluator.cs`
+- six immutable hashed fixtures under `tests/Pegasus.ArchitectureTests/Fixtures/RuntimeGrant/`
+
+The final correction makes fixture hashes newline-stable across Windows and Linux and constrains literal grant discovery to permission-bearing statements, preventing prose comments containing “grant” from swallowing the real Eva handoff grant. No production source, migration, grant script, CI, cloud, deployment, corpus, or upstream file changed.
+
+Because PLAT-030 carries the two production grants this check must observe, the coordinator created a temporary local validation worktree by combining exact PLAT-018 HEAD `2d069f0a` with exact PLAT-030 HEAD `c599a42b`; that temporary merge was not pushed or used as a task branch. Combined validation passed:
+
+- focused `RuntimeGrantCompositionTests` — 8/8 passed;
+- full `Pegasus.ArchitectureTests` suite — 119/119 passed, 0 failed, 0 skipped;
+- `pwsh ./scripts/Test-MigrationGrants.ps1` — 72 migration files passed;
+- `pwsh ./scripts/Test-AzureDeploymentPlan.ps1 -Mode Local` — passed;
+- `git diff --check` — passed.
+
+The branch-only focused run is expected to remain unable to prove the two grants until PLAT-030 is merged; the combined validation is the evidence for the cross-ticket dependency. No merge or proof is claimed yet; fresh independent review of exact HEAD `2d069f0a` remains required.
