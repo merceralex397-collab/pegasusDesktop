@@ -47,3 +47,7 @@ Review of exact HEAD `3a644ed5258d365fec8ce17c9ca743a9f86ac3ad` returned FAIL. T
 ## Remediation 3 — 2026-08-28
 
 Exact HEAD `87933e0784cd2836dd043535b95346e30eaf4288` is clean and pushed. The five findings from the prior review were addressed within the assigned test and architecture-document files: concrete factory registrations, tracked/raw-SQL update coverage, inference-backed forward fixture, shared runtime-role tuple attribution, and truthful documentation. Reported validation is green (Release build 0 warnings/errors, focused 6/6, full architecture 117/117, migration scan 71/71, diff check). A new independent read-only review is pending; no merge or deployment proof is claimed.
+
+## Independent re-review 3 — 2026-08-28
+
+Review of exact HEAD `87933e0784cd2836dd043535b95346e30eaf4288` returned FAIL. Role closure, structural mutation inference, forward and historical fixture authenticity, opt-out reason enforcement, and documentation truthfulness remain insufficient. PR #36 remains held; another bounded remediation and fresh independent review are required.

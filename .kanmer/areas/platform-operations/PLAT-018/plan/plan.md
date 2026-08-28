@@ -163,3 +163,16 @@ Validation reported on the clean pushed branch:
 - Worktree clean; branch pushed to `origin/task/dsk-10-18-runtime-grant-composition-gate`.
 
 Fresh independent review has been requested against exact HEAD `87933e07`; PR #36 remains held pending PASS and exact-head CI.
+
+## Independent re-review 3 — 2026-08-28
+
+Fresh independent review of exact HEAD `87933e0784cd2836dd043535b95346e30eaf4288` returned **FAIL**. PR #36 remains held. Findings:
+
+- `RuntimeGrantCompositionTests.cs:364-480` attributes roles by scanning only Web Pages and Worker Functions. It misses Core services and extension-method registrations, so common stores used by both composition roots can receive no role. Evidence includes `src/Pegasus.Infrastructure/DependencyInjection.cs:95-108` and `src/Pegasus.Core/Intake/DurableIntake.cs:1055-1156`.
+- `RuntimeGrantCompositionTests.cs:125-135,494-539` does not structurally associate direct `context.Add(new Entity(...))` or navigation `context.Remove(...)`/`RemoveRange(...)` with EF tables. It relies on unrelated `Set<T>` calls and broad assignment heuristics; examples are `EfAssessmentReportStore.cs:389-423` and `EfIntakeReceiptStore.cs:721,802,835,866,901`.
+- `RuntimeGrantCompositionTests.cs:267-288` still manually constructs `RuntimeWrite`; its service registration, model, and source do not pass through `Load`, registration discovery, role attribution, or normal write inference.
+- `RuntimeGrantCompositionTests.cs:291-313` historical fixtures reuse current store source/model and only remove grants; they are not immutable pre-fix registration/write fixtures.
+- `RuntimeGrantCompositionTests.cs:586-599` accepts an opt-out marker without a reason, and tests do not cover a non-creating-file negative case.
+- `docs/current-architecture.md:183-193` still claims complete composition-root/write/historical coverage that is not implemented.
+
+Passed checks were noted (focused 6/6, full architecture 117/117, migration script 71/71, diff check clean, exact-head applicable CI green with infrastructure skipped), but they do not cure these acceptance gaps. Next action: remediate every finding in bounded scope, rerun validation, push a new exact HEAD, and obtain another independent review.
