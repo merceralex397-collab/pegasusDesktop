@@ -39,3 +39,7 @@ Final validation: Release build 0 warnings/errors; focused PLAT-018 tests 6 pass
 ## Remediation 2 — 2026-08-28
 
 Exact implementation HEAD `3a644ed5258d365fec8ce17c9ca743a9f86ac3ad` is pushed and clean. It addresses the second independent review's three acceptance gaps: EF model table metadata via `IModel`/`GetTableName()`, migration grant parsing aligned to the existing whole-folder literal/tuple check, and real registration/entity plus historical evaluator fixtures. Validation passed: Release architecture build with 0 warnings/errors; focused tests 6/6; full architecture suite 117/117; `Test-MigrationGrants.ps1` checked 71 migration files; `git diff --check`. Fresh independent review is pending; no merge or deployment proof is claimed.
+
+## Independent re-review 2 — 2026-08-28
+
+Review of exact HEAD `3a644ed5258d365fec8ce17c9ca743a9f86ac3ad` returned FAIL. The reviewer identified missing concrete-only store registration coverage, incomplete UPDATE inference for tracked/raw-SQL writes, a non-genuine forward fixture, incorrect tuple role attribution for a shared ImageIntake grant array, and overstated architecture documentation. PR #36 remains held; remediation and a fresh independent review are required.

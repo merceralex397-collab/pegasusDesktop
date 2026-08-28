@@ -136,3 +136,15 @@ Validation reported on the clean pushed branch:
 - Worktree clean; branch pushed to `origin/task/dsk-10-18-runtime-grant-composition-gate`.
 
 A fresh independent review has been requested against this exact HEAD. PR #36 remains held pending that review and exact-head CI completion.
+
+## Independent re-review 2 — 2026-08-28
+
+Fresh independent review of exact HEAD `3a644ed5258d365fec8ce17c9ca743a9f86ac3ad` returned **FAIL**. PR #36 remains held. Findings:
+
+- `RuntimeGrantCompositionTests.cs:349-369` drops concrete-only registrations. `EfDocumentCustodyStore` is registered in `src/Pegasus.Infrastructure/DependencyInjection.cs:402`, but its factory interface registrations at lines 403-414 are not associated with it; its writes in `EfDocumentCustodyStore.cs:72,124-127` are absent from the catalogue.
+- `RuntimeGrantCompositionTests.cs:414-457` does not infer tracked or raw-SQL updates. `EfApprovedInboxPollStore.cs:143-147` executes an UPDATE, and `EfDocumentCustodyStore.cs:78-81` mutates a tracked entity before `SaveChanges`, but neither produces UPDATE coverage.
+- The forward fixture at `RuntimeGrantCompositionTests.cs:239-256` still creates unused `ServiceCollection`/ `ModelBuilder` objects and manually constructs `RuntimeWrite`; a broken scanner would still pass the fixture assertions.
+- Tuple role inference at `RuntimeGrantCompositionTests.cs:545-557` classifies the tuples in `20260803071539_ImageIntakeRegistration.cs:144-169` as Web only although that tuple array is applied to both Web and Worker.
+- `docs/current-architecture.md:183-192` overstates the implemented coverage; green validation does not prove these gaps are closed.
+
+Next action: remediate every finding in the bounded ticket scope, rerun required validation, push a new exact HEAD, update the evidence, and obtain another independent review. Do not merge PR #36.
