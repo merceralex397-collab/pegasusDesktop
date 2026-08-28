@@ -89,3 +89,10 @@ A temporary local validation tree combined exact PLAT-018 `aaa025f4` with exact 
 ## Final dev-base integration and combined validation — 2026-08-28
 
 The PLAT-018 task branch merged current `origin/dev` after PLAT-030 and PLAT-031 completed, and was pushed at exact head `5061f226`. Local integrated validation passed: locked restore; full architecture suite 121/121; migration grant scan 73/73; local deployment-plan validation; and diff check. PLAT-030 and PLAT-031 are inherited as merged dependencies; the PLAT-018-owned diff remains test/documentation-only. Fresh exact-head CI and independent review of `5061f226` remain required. No cloud, deployment, credential, corpus, or upstream operation occurred.
+
+## Exact-head CI and independent review — 2026-08-28
+
+- Exact head: `5061f226cd3d8c795ccbb6c9e440ef9878d014fc`.
+- Exact-head CI run `33197299822`: passed, including the rerun SQL shard.
+- Fresh independent review: PASS; prior stale simplification and PR-evidence findings were corrected.
+- The ticket is ready for the normal review-stage move and merge process. Proof remains deferred until the reviewed change is merged to main.

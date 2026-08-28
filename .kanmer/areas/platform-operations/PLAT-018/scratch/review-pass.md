@@ -1,0 +1,1 @@
+2026-08-28: Exact-head CI run 33197299822 passed. Fresh independent re-review of 5061f226 returned PASS; prior stale evidence findings resolved. Ready for review-stage move and merge; proof waits for merged main.

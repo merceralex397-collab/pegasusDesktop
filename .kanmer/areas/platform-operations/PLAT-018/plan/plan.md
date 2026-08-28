@@ -296,3 +296,7 @@ Updated exact integrated evidence:
 - `pwsh ./scripts/Test-MigrationGrants.ps1` — passed, 73 migration files.
 - `pwsh ./scripts/Test-AzureDeploymentPlan.ps1 -Mode Local` — passed.
 - `git diff --check origin/dev...HEAD` — passed.
+
+## Independent re-review PASS — 2026-08-28
+
+Fresh independent review of exact head `5061f226cd3d8c795ccbb6c9e440ef9878d014fc` returned **PASS**. The reviewer confirmed the prior evidence defects are resolved: the final integrated-diff simplification pass is recorded, the PR validation body reports exact integrated evidence, the evaluator covers composition-root/DI closure, EF model table mapping, structural INSERT/UPDATE/DELETE detection, grant parsing, historical and forward fixtures, and reasoned create-file-only opt-outs, and the documentation matches the implementation. Exact-head CI run `33197299822` passed. No remaining concrete review blocker was identified.
