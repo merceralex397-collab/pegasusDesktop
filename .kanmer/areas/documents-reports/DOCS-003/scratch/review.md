@@ -8,3 +8,13 @@
 - High acceptance finding: src/Pegasus.Infrastructure/Persistence/EfCaseWorkflowStore.cs:641-650 still clears the evidence row's case/link metadata on unlink. The former values are retained in append-only history and projected, so the audit history is present, but this differs from the plan's explicit “never clears the source item or former association record” / “stops erasing link metadata” wording. Disposition required: explicitly accept history as the sole authoritative former-association record in the ticket, or retain immutable association metadata separately.
 - Validation evidence: Kanmer checklist/report claims full Release validation, but PR #33 exact-head CI currently has infrastructure, changes, documentation, local-development-scripts, and reference-data passed while unit, browser, and sql-integration (1-3) are still pending. Merge remains blocked until all exact-head checks are green.
 - Simplification pass: present in the plan with reuse/simplification/reliability/scope/altitude dispositions and no deferred findings; honest by inspection, subject to the scope gap above being resolved or explicitly dispositioned.
+
+## Independent re-review — PR #33 / 33f0017c — 2026-08-28
+
+**Code review: PASS; merge status: HOLD pending exact-head CI.**
+
+- The formal scope disposition resolves the prior surface finding: FEAT-042/DSK-07-16 owns the gateway report-finalise contract and FEAT-018/DSK-05-18 owns the native Reports flow; both are blocked by DOCS-003, and the DOCS-003 guardrail prohibits implementing them. This PR's Core/persistence/Case-projection ledger scope is therefore correct.
+- The unlink clarification resolves the prior metadata finding: CaseReportAssociationHistory is explicitly the append-only authoritative former-association record; retained-row association fields are mutable current-candidate state. The implementation captures and projects the former case/time/actor/roles/reason/version values accordingly.
+- No remaining implementation blocker found. Version-specific approval/Sent custody, conservative legacy migration without fabricated matches, staff/Worker fail-closed linking, replay/concurrency, system-worker history projection, and unchanged CASE-23 are covered by source and tests.
+- Evidence blocker remains: exact-head PR checks show unit passed, but browser and sql-integration (1-3) are still pending. Merge recommendation remains on hold until every check for 33f0017c is green.
+- Plan coverage is complete. Simplification is documented with reuse/simplification/reliability/scope/altitude dispositions; after the formal scope clarification, the dispositions are honest and no finding is deferred.
