@@ -25,3 +25,7 @@ No cloud, deployment, credential, corpus, or upstream operation occurred.
 The first PR head failed the repository `changes` job because the new grant-carrying migration was not represented in `scripts/Invoke-AzureDatabaseBootstrap.ps1`. The exact expected matrix entry has now been added locally; `Test-AzureDeploymentPlan.ps1 -Mode Local` passes. The first `sql-integration-coverage` failure was consequential because `changes` failed before its shard matrix ran, leaving no `listed-1.txt`; it will be re-evaluated on the corrected head.
 
 The corrected final PR head and its CI/review state will replace the provisional values above before any merge.
+
+## Exact-head review correction — 2026-08-28
+
+Independent reviewer Boyle returned FAIL on exact PR head `e87e30aa819b0ac7753ae8e95b5a5cc97b7a474f`: the committed migration census in `tests/Pegasus.IntegrationTests/IntakePersistenceIntegrationTests.cs` omitted `20260828052825_GrantWebApprovedSentPollOutcomeUpdate`. Exact-head run `33145461491` failed `sql-integration (3)` in `CommittedMigrationCreatesTheSqlServerSchema` (322 passed, 1 failed). The expected migration name has now been added to the census in the PLAT-030 worktree. Review remains failed pending local confirmation and a new exact-head CI run. The reviewer confirmed the SQL guard, managed-role check, exact grant/revoke, EF discoverability, bootstrap matrix entry, and scope/simplification were otherwise correct.
