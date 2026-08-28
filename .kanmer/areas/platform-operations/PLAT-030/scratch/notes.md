@@ -5,3 +5,5 @@
 2026-08-28 exact-head review: Boyle FAIL on e87e30aa. SQL CI shard 3 failed because IntakePersistenceIntegrationTests pinned migration census omitted 20260828052825_GrantWebApprovedSentPollOutcomeUpdate. Added the expected migration name in the own task worktree. Revalidation and new CI are required; no merge yet.
 
 Review correction committed/pushed as c599a42b. Targeted CommittedMigrationCreatesTheSqlServerSchema passed 1/1 locally. PR #37 new exact-head CI and independent re-review pending.
+
+2026-08-28 exact-head CI run 33146340008: sql-integration (3) failed with two SQL Server resource timeouts (321/323 passed), not migration assertions. Failed-job logs identify AutomaticVehicleLookupTests.SweepSkipsTerminalCasesAndUnusableValues post-login timeout and MultiFormatIntakeWebTests.ConfirmingEmailWithDocxExtractedImagesOverTwentyFiveMbFailsClosedAndRetainsAttachment command timeout. All other jobs passed. Reran only failed jobs with `gh run rerun 33146340008 --failed`; rerun currently has sql-integration (3) in progress. Merge remains held pending rerun and fresh independent review.
