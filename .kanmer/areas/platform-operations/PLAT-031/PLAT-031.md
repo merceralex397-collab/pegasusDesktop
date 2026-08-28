@@ -32,13 +32,13 @@ refs:
 docs_todo: true
 commits:
   - 0ab518e3
-  - c97e8e1d
-  - 6d5ee8e4
+  - c97e8e1db774b8b7d6c38ac2fcc24520d27a1150
+  - 6d5ee8e4fb14b711fe8f00f2936bf1ce4fc2dc52
 prs:
   - '38'
 archived: false
 created: '2026-08-28T07:45:21.624Z'
-updated: '2026-08-28T21:04:57.885Z'
+updated: '2026-08-28T21:05:08.823Z'
 ---
 
 ## What
@@ -68,3 +68,8 @@ PLAT-018 must compare every composition-root write against the migration grant m
 ## Guardrails
 
 This is a grant-only migration ticket. Do not alter the existing migration; add one new migration with the next repository timestamp/name convention. No Azure or deployment write is permitted. Work only in the configured `pegasusDesktop` repository and remote; never sync upstream.
+
+
+## Outcome
+
+PR #38 (`https://github.com/merceralex397-collab/pegasusDesktop/pull/38`) merged the Worker `INSERT` grant into `dev` at `6d5ee8e4fb14b711fe8f00f2936bf1ce4fc2dc52` on 2026-08-28 and it is included in `main` at `28ba13a4fcdb51270b24a48725d53b1de5bcae87`. Merged-main proof is recorded in `proof.md`; no cloud or deployment operation was performed. PLAT-018's runtime-grant gate now has the Worker ledger grant covered.
