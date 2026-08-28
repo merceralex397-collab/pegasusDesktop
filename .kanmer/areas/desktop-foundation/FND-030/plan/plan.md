@@ -435,3 +435,14 @@ The fresh review's evidence and truthfulness findings were addressed:
 - The current-architecture diagram now marks Desktop → Core and Desktop → Contracts as planned dependencies because the scaffold intentionally has no `ProjectReference`; the component row remains the future allowed boundary.
 - Corrected the evidence statement: exact-head `unit` CI compiles the full `Pegasus.slnx`, including the desktop scaffold; [[FND-040]] still owns the dedicated desktop build/package/UI lanes.
 - Exact task-head PR CI run `33202445712` is the run for this commit and must be green before merge.
+
+## Independent review correction 3 — 2026-08-28
+
+Fresh review of `0fe020b2` required one new runtime evidence run and two wording/provenance corrections. Applied on exact head `93ff2663364b05293f25832c6aa7fd5b10c90687`:
+
+- Exact-head `BuildAndRun.ps1` run built with 0 warnings/errors and launched `CollisionEngineers.Pegasus_e6z0b4cw4baw0` as PID `119016`; `Pegasus.Desktop` was responsive and the screenshot is `artifacts/fnd-030/desktop-launch-final.png`. The process was closed cleanly.
+- The diagram now marks Desktop → Core and Desktop → Contracts as planned dependencies because this scaffold intentionally has no project references yet.
+- The evidence qualification is corrected: the existing `unit` CI path builds the full `Pegasus.slnx`, including this scaffold; [[FND-040]] remains the owner of a dedicated desktop build/package/UI lane.
+- Kanmer commit metadata now records `dc6bd81c`, `0fe020b2`, and `93ff2663` for PR `39`.
+
+Fresh exact-head CI run `33202445712` is the required merge gate for `93ff2663`.
