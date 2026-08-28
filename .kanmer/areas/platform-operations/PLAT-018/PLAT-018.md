@@ -4,12 +4,15 @@ type: ticket
 title: >-
   DSK-10-18 · PLAT-035 carry-over: gate that every table a composition root
   writes has its runtime-role grant
-status: preparing
+status: implementing
 area: platform-operations
-assignee: ''
+assignee: codex-mcp-client
 profile: fix
 stageEntered:
   preparing: '2026-08-24T21:21:15.725Z'
+taken_at: '2026-08-28T02:13:56.478Z'
+branch: task/dsk-10-18-runtime-grant-composition-gate
+worktree: ../pegasus-worktrees/dsk-10-18-runtime-grant-composition-gate
 labels:
   - desktop-conversion
   - plan-10
@@ -22,7 +25,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:16:25.644Z'
-updated: '2026-08-24T21:21:15.725Z'
+updated: '2026-08-28T02:13:56.478Z'
 ---
 
 ## What
