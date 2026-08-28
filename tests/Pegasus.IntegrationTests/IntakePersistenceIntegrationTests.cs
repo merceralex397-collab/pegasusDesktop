@@ -97,7 +97,8 @@ public sealed class IntakePersistenceIntegrationTests
                 "20260826084843_AssessmentReportRetryPolicy",
                 "20260826095720_AssessmentReportPendingState",
                 "20260827214843_AllowMultipleAcceptedRepairSpecifications",
-                "20260827231948_IssuedReportVersionEvidenceLedger"
+                "20260827231948_IssuedReportVersionEvidenceLedger",
+                "20260828052825_GrantWebApprovedSentPollOutcomeUpdate"
             ],
             (await context.Database.GetAppliedMigrationsAsync()).ToArray());
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
