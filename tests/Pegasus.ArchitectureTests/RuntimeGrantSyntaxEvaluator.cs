@@ -79,11 +79,11 @@ internal static class RuntimeGrantSyntaxEvaluator
                 _ => throw new InvalidOperationException($"Unsupported write method '{name}'.")
             };
 
-            var mutationTarget = member is null
-                ? null
-                : ResolveMutationTarget(member, invocation.ArgumentList.Arguments, variableTypes, contextMembers,
+            IReadOnlyList<string> mutationTargets = member is null
+                ? []
+                : ResolveMutationTargets(member, invocation.ArgumentList.Arguments, variableTypes, contextMembers,
                     navigationMembers);
-            if (mutationTarget is not null)
+            foreach (var mutationTarget in mutationTargets)
             {
                 writes.Add(new(mutationTarget, verb, method));
             }
@@ -133,7 +133,7 @@ internal static class RuntimeGrantSyntaxEvaluator
             .ToArray();
     }
 
-    private static string? ResolveMutationTarget(
+    private static string[] ResolveMutationTargets(
         MemberAccessExpressionSyntax member,
         IReadOnlyList<ArgumentSyntax> arguments,
         IReadOnlyDictionary<string, string> variableTypes,
@@ -144,19 +144,25 @@ internal static class RuntimeGrantSyntaxEvaluator
         var receiverTarget = ResolveEntity(receiver, variableTypes, contextMembers, navigationMembers);
         if (receiverTarget is not null && IsEntityName(receiverTarget))
         {
-            return receiverTarget;
+            return [receiverTarget];
         }
 
         if (IsContext(receiver))
         {
             return arguments
                 .Select(argument => ResolveEntity(argument.Expression, variableTypes, contextMembers, navigationMembers))
-                .FirstOrDefault(IsEntityName);
+                .OfType<string>()
+                .Where(IsEntityName)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
         }
 
         return arguments
             .Select(argument => ResolveEntity(argument.Expression, variableTypes, contextMembers, navigationMembers))
-            .FirstOrDefault(IsEntityName);
+            .OfType<string>()
+            .Where(IsEntityName)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static string? ResolveEntity(
@@ -567,10 +573,15 @@ internal static class RuntimeGrantCompositionAnalyzer
             {
                 foreach (var invocation in declaration.DescendantNodes().OfType<InvocationExpressionSyntax>())
                 {
-                    if (invocation.Expression is MemberAccessExpressionSyntax access &&
-                        methods.ContainsKey(access.Name.Identifier.ValueText))
+                    var calledMethod = invocation.Expression switch
                     {
-                        queue.Enqueue(access.Name.Identifier.ValueText);
+                        MemberAccessExpressionSyntax access => access.Name.Identifier.ValueText,
+                        IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+                        _ => null
+                    };
+                    if (calledMethod is not null && methods.ContainsKey(calledMethod))
+                    {
+                        queue.Enqueue(calledMethod);
                     }
                 }
             }

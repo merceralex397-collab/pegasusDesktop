@@ -105,6 +105,58 @@ public sealed class RuntimeGrantCompositionTests
         Assert.Contains(grants, grant => grant.Role == "Worker" && grant.Table == "LiteralTable" && grant.Verb == "UPDATE");
     }
 
+    [Fact]
+    public void AddRangeTracksEveryEntityArgument()
+    {
+        const string source = """
+            sealed class Store
+            {
+                public void Write(
+                    PegasusDbContext context,
+                    CaseDocumentEntity document,
+                    IssuedReportVersionEntity version,
+                    ReportOccurrenceEntity occurrence,
+                    IntakeReceiptEntity receipt)
+                {
+                    context.AddRange(document, version, occurrence, receipt);
+                }
+            }
+            """;
+
+        var writes = RuntimeGrantSyntaxEvaluator.Collect(
+            source,
+            new Dictionary<string, string>(StringComparer.Ordinal),
+            "Store");
+
+        Assert.Equal(
+            ["CaseDocumentEntity", "IssuedReportVersionEntity", "ReportOccurrenceEntity", "IntakeReceiptEntity"],
+            writes.Select(write => write.Target));
+        Assert.All(writes, write => Assert.Equal("INSERT", write.Verb));
+    }
+
+    [Fact]
+    public void ReachabilityFollowsUnqualifiedSameTypeHelpers()
+    {
+        const string source = """
+            sealed class Store
+            {
+                public void Entry() => ApplyInstructionDraft();
+
+                private void ApplyInstructionDraft()
+                {
+                    var value = 1;
+                }
+            }
+            """;
+
+        var reachable = RuntimeGrantCompositionAnalyzer.ReachableMethods(
+            [source],
+            ["Entry"],
+            "Store");
+
+        Assert.Contains("ApplyInstructionDraft", reachable);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
