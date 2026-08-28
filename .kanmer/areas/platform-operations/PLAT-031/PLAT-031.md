@@ -2,13 +2,14 @@
 id: PLAT-031
 type: ticket
 title: Grant Worker INSERT on CaseReportVersionLedgers exposed by PLAT-018
-status: verifying
+status: done
 area: platform-operations
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
   review: '2026-08-28T07:56:28.928Z'
   verifying: '2026-08-28T17:56:37.062Z'
+  done: '2026-08-28T21:04:57.885Z'
 taken_at: '2026-08-28T07:46:10.698Z'
 branch: task/plat-031-worker-case-report-ledger-grant
 worktree: ../pegasus-worktrees/plat-031-worker-case-report-ledger-grant
@@ -37,7 +38,7 @@ prs:
   - '38'
 archived: false
 created: '2026-08-28T07:45:21.624Z'
-updated: '2026-08-28T17:56:37.062Z'
+updated: '2026-08-28T21:04:57.885Z'
 ---
 
 ## What
