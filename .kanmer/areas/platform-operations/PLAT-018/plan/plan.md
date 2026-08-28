@@ -111,3 +111,13 @@ Final validation:
 - Worktree clean; final branch pushed to `origin/task/dsk-10-18-runtime-grant-composition-gate`.
 
 Fresh independent review of this exact HEAD is required before merge.
+
+## Independent re-review — 2026-08-28
+
+Fresh independent review of exact HEAD `b29466a87f44d6187e0fdf55f5dfc65d30e5a7f3` returned **FAIL**. Although validation passed (focused 6/6, full architecture 117/117, migration-grant script 71 files), acceptance remains unproven:
+
+- `RuntimeGrantCompositionTests.cs:184-185,320-343` still derives table mappings with source regexes instead of the required EF `IModel`/`GetTableName()` metadata.
+- `RuntimeGrantCompositionTests.cs:148-162,487-550` does not match `scripts/Test-MigrationGrants.ps1` semantics: tuple parsing is restricted to `*Grants = [...]`, and literal parsing requires schema-qualified brackets while the script scans whole-folder GRANT statements.
+- `RuntimeGrantCompositionTests.cs:39-50,63-80` still reconstructs historical writes by deleting current grants/appending records and uses a source snippet for the forward fixture, rather than exercising real pre-fix migration fixtures and a real fake registration/entity through the registration/model path.
+
+PR #36 remains blocked. Remediate all three findings, rerun validation, push a new exact HEAD, and obtain another independent review.
