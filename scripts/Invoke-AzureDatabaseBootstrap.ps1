@@ -345,6 +345,9 @@ function Get-MigrationPermissionMatrix {
     foreach ($permission in @('SELECT', 'INSERT')) {
         $expected.Add("pegasus_worker_runtime_role|G|$permission|CaseReportAssociationHistory")
     }
+    # 20260828052825_GrantWebApprovedSentPollOutcomeUpdate: the Web triage
+    # response-link transaction updates the related Approved Sent outcome.
+    $expected.Add('pegasus_web_runtime_role|G|UPDATE|ApprovedSentPollOutcomes')
     return @($expected | Sort-Object -Unique)
 }
 
