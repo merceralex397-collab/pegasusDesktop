@@ -40,3 +40,9 @@ Read-only diff checks found no new external/cloud/mailbox API references in adde
 ## Delivery state
 
 The implementation is complete on branch `task/upstream-tick-208-issued-version-ledger`, pending the required independent review, PR/CI, merge to `dev`, merged-main proof, and Kanmer closeout.
+
+## Independent-review scope disposition — 2026-08-28
+
+Curie identified that the plan text names a gateway/native Reports surface absent from this PR. Live board evidence resolves this as a documented ownership boundary, not an omitted DOCS-003 implementation: FEAT-042 (DSK-07-16) owns the `/api/v1` finalise/content contract and FEAT-018 (DSK-05-18) owns the native Reports flow; both are currently blocked by DOCS-003. DOCS-003's guardrail prohibits building those surfaces. This PR supplies the truthful Core/persistence/Case-projection ledger they require. No downstream surface is claimed as shipped here.
+
+Curie also identified that unlink clears the retained row's mutable current-candidate association fields. That is the chosen model: `CaseReportAssociationHistory` is append-only and authoritative for former case, source identity, time, actor, roles, reason, and before/after report version; the retained row fields describe only its current candidate association. The plan now states this explicitly and the projection reads the authoritative history.

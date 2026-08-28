@@ -71,3 +71,9 @@ DOCS-001 is merged at `80bbb6fe86916a0c499a70480121e278ab114e7a` and supplies `A
 - Independent-review finding applied: association-history projection accepts both staff and system-worker actors; current approval/projection status and unresolved reason are exposed in the existing Case workflow view.
 - Existing integration scenarios were migrated to explicit versioned fixtures and now cover the rejection of unversioned operations, system-worker history projection, stale-version protection, cross-case reuse, and replay invariants.
 - Full Release validation completed after these corrections; no implementation finding remains deferred.
+
+## Scope clarification after independent review — 2026-08-28
+
+The live board resolves the apparent surface gap without expanding this ticket. FEAT-042 (board ticket for DSK-07-16) and FEAT-018 (board ticket for DSK-05-18) explicitly own the `/api/v1` report-finalise contract and native desktop Reports flow, and both are blocked by DOCS-003. DOCS-003's copied guardrail explicitly prohibits implementing those routes/UI. Therefore DOCS-003's acceptance is the truthful Core/persistence/Case-projection contract and evidence ledger that those downstream surfaces consume; it does not claim to ship their gateway or native UI. The downstream dependency is already present in the live board and no ticket is being closed or dependency altered to make the work appear complete.
+
+The unlink design is also intentional and bounded: the retained Sent row's CaseId/link-time/link-actor fields are mutable current-candidate state, while the append-only `CaseReportAssociationHistory` row stores the former case, time, actor, roles, source identity, reason, and before/after version as the authoritative audit record. The projection reads that history consistently. This satisfies the acceptance requirement to retain former metadata/source identity without adding a second mutable association model.
