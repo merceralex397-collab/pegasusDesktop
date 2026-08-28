@@ -11,7 +11,7 @@
 - [x] `Test-MigrationGrants.ps1` passes: 72 migration files.
 - [x] `Test-AzureDeploymentPlan.ps1 -Mode Local` passes.
 - [x] `git diff --check` passes.
-- [ ] PLAT-018 focused coverage passes after its parser correction and this migration is present.
+- [x] PLAT-018 focused coverage passes after its parser correction and this migration is present: combined temporary validation of exact PLAT-018 `2d069f0a` + exact PLAT-030 `c599a42b` passed RuntimeGrantCompositionTests 8/8.
 - [ ] Independent review passes on the exact PR head.
 - [ ] PR is merged to `dev`; proof and Kanmer closeout are completed.
 - [x] No cloud, deployment execution, credential, corpus, or upstream operation occurred.

@@ -36,3 +36,9 @@ Exact GitHub Actions run `33146340008` for `c599a42b`:
 The latest exact-head CI state is therefore not green. No merge is claimed.
 
 No cloud, deployment, credential, corpus, or upstream operation occurred.
+
+## Cross-ticket focused validation — 2026-08-28
+
+PLAT-018's parser correction and PLAT-030's grant migration were validated together in a temporary local worktree, without changing either task branch or pushing the temporary merge. Exact PLAT-018 HEAD `2d069f0a6f7ea01564b6fdf3fac7efedbfad1f8b` plus exact PLAT-030 HEAD `c599a42b1f964c4e5a1dc13894f28f8300152984` passed the focused `RuntimeGrantCompositionTests` 8/8 and the full architecture suite 119/119. The same tree passed `Test-MigrationGrants.ps1` (72 files), `Test-AzureDeploymentPlan.ps1 -Mode Local`, and `git diff --check`.
+
+This supplies the previously unchecked PLAT-018 focused acceptance evidence. The temporary merge is validation evidence only; PR #37 remains the three-file PLAT-030 diff at exact head `c599a42b`.
