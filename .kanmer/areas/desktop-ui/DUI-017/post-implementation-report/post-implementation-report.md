@@ -27,3 +27,7 @@ The first independent review reported one fidelity finding: preserve the literal
 ## Delivery blocker
 
 The branch is pushed at `060dd9be` and review is `PASS`, but `gh pr create --base dev --head dui-017-screen-map` failed with `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`. No PR, CI, merge, merged-main proof, or closeout is claimed.
+
+## Delivery update — 2026-08-28
+
+The former `gh pr create` permission failure is historical; PR #34 now exists and is open against `dev` at `7f9f21475f09874107fbb3391d005c63b3a89cb5`. An exact-head review found and corrected one PAR-23 merge-resolution defect: the branch row was missing `Queues workspace, Triage list`; commit `7f9f2147` restores it. The four-file scope remains intact and excludes `docs/design/README.md`. Post-fix placement, link, and whitespace validation passed. Exact-head PR CI run `33134896568` is queued and a fresh independent review is pending. No merge, main proof, or closeout is claimed yet.

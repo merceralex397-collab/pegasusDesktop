@@ -55,3 +55,10 @@ Post-fix validation: `Test-DocumentationLinks.ps1` passed with 233 files; `Test-
 - Branch `dui-017-screen-map` is pushed through commit `060dd9be`; independent review is `PASS`.
 - `gh pr create --base dev --head dui-017-screen-map` failed with exact error: `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`.
 - Ticket cannot proceed to CI, merge, merged-main proof, or closeout until repository collaborator permission is available. No PR or proof is claimed.
+
+## Delivery update — 2026-08-28
+
+- The historical PR-creation failure is superseded: PR #34 is open against `dev` at exact head `7f9f21475f09874107fbb3391d005c63b3a89cb5`.
+- Curie’s exact-head review of the preceding merge commit found that PAR-23 had lost the `Queues workspace, Triage list` mapping. The row was restored verbatim from the current `origin/dev`/`add9da25` line in commit `7f9f2147`; the branch diff remains exactly the four planned documentation paths and excludes `docs/design/README.md`.
+- Post-fix `Test-TestMarkdownPlacement.ps1`, `Test-DocumentationLinks.ps1` (237 Markdown files), and `git diff --check` passed. PR CI run `33134896568` is queued for exact head `7f9f2147`; fresh independent review of that exact head is pending.
+- The proof document remains intentionally unwritten until the reviewed PR is merged to `dev`, the resulting exact SHA is promoted to `main`, and main push CI succeeds.
