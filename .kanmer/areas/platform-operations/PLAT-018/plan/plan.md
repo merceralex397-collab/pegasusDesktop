@@ -191,3 +191,16 @@ Validation reported on the clean pushed branch:
 - Worktree clean; branch pushed to `origin/task/dsk-10-18-runtime-grant-composition-gate`.
 
 A fresh independent review has been requested against exact HEAD `16d96600`; PR #36 remains held.
+
+## Independent re-review 4 — 2026-08-28
+
+Fresh independent review of exact HEAD `16d96600a041ef3ae54a71d59dfb5ccb9b86596f` returned **FAIL**. PR #36 remains held. Findings:
+
+- `RuntimeGrantCompositionTests.cs:384-480,125-127` still misses transitive Web/Worker DI closure through Core-mediated services, extension registrations, and `EvaHandoffStore` factory interfaces. The required fix is actual registration/constructor closure with fixtures.
+- `RuntimeGrantCompositionTests.cs:141-150,517-544` still misses `ExecuteUpdateAsync`, variable-based `Add`, `var` tracked updates, and navigation removals, and maps raw-SQL UPDATE to every table. The required fix is structural per-entity syntax/semantic analysis.
+- `RuntimeGrantCompositionTests.cs:287-308` forward fixture still manually constructs `RuntimeWrite` and bypasses normal discovery.
+- `RuntimeGrantCompositionTests.cs:311-333` historical cases still use current source plus manually constructed writes rather than immutable/equivalent pre-fix fixtures through normal inference.
+- `RuntimeGrantCompositionTests.cs:634-648` remains narrower than `scripts/Test-MigrationGrants.ps1:29-49` for tuple/shared-role whole-folder semantics; differential fixtures or a shared parser are required.
+- `docs/current-architecture.md:183-193` still overclaims complete coverage.
+
+The reviewer verified local build, focused 7/7, full architecture 118/118, migration scan 71 files, exact scope, and unchanged script/CI; those checks do not cure the acceptance gaps. Next action: remediate all findings, rerun validation, push a new exact HEAD, and obtain another independent review.

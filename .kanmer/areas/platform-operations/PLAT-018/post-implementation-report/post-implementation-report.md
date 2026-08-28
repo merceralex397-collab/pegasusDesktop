@@ -55,3 +55,7 @@ Review of exact HEAD `87933e0784cd2836dd043535b95346e30eaf4288` returned FAIL. R
 ## Remediation 4 — 2026-08-28
 
 Exact HEAD `16d96600a041ef3ae54a71d59dfb5ccb9b86596f` is clean and pushed. Reported validation is green: Release build 0 warnings/errors, focused 7/7, full architecture 118/118, migration scan 71/71, and diff check. The implementation remains test/docs-only and no merge or deployment proof is claimed pending fresh independent review.
+
+## Independent re-review 4 — 2026-08-28
+
+Review of exact HEAD `16d96600a041ef3ae54a71d59dfb5ccb9b86596f` returned FAIL. Transitive DI role closure, structural mutation inference, genuine forward/historical fixtures, exact tuple/parser parity, and documentation truthfulness remain unresolved. PR #36 remains held pending bounded remediation and fresh independent review.
