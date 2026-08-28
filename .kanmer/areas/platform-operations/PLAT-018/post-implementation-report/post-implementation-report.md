@@ -96,3 +96,7 @@ The PLAT-018 task branch merged current `origin/dev` after PLAT-030 and PLAT-031
 - Exact-head CI run `33197299822`: passed, including the rerun SQL shard.
 - Fresh independent review: PASS; prior stale simplification and PR-evidence findings were corrected.
 - The ticket is ready for the normal review-stage move and merge process. Proof remains deferred until the reviewed change is merged to main.
+
+## Merged-main verification — 2026-08-28
+
+At exact `main` SHA `6606771c15ed5b71262ae0debb2e1981313bf217`, locked restore and full Release build passed with 0 warnings/errors; architecture tests passed 121/121; the migration scan passed for 73 files; local deployment-plan validation and diff check passed. Proof was written after this validation.

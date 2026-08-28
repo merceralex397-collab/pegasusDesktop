@@ -1,0 +1,1 @@
+2026-08-28: Main promoted to 6606771c after PR #36 review/CI. Detached main validation passed: locked restore, Release build 0/0, ArchitectureTests 121/121, migration scan 73 files, local deployment plan, diff check. Proof written; ready for verifying move.

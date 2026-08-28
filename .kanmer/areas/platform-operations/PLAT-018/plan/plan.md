@@ -300,3 +300,7 @@ Updated exact integrated evidence:
 ## Independent re-review PASS — 2026-08-28
 
 Fresh independent review of exact head `5061f226cd3d8c795ccbb6c9e440ef9878d014fc` returned **PASS**. The reviewer confirmed the prior evidence defects are resolved: the final integrated-diff simplification pass is recorded, the PR validation body reports exact integrated evidence, the evaluator covers composition-root/DI closure, EF model table mapping, structural INSERT/UPDATE/DELETE detection, grant parsing, historical and forward fixtures, and reasoned create-file-only opt-outs, and the documentation matches the implementation. Exact-head CI run `33197299822` passed. No remaining concrete review blocker was identified.
+
+## Merged-main proof — 2026-08-28
+
+Proof was written after PR #36 merged and exact `main` SHA `6606771c15ed5b71262ae0debb2e1981313bf217` was validated. Locked restore, Release build (0 warnings/errors), ArchitectureTests 121/121, migration scan 73 files, local deployment-plan validation, and diff check all passed. The proof records the exact reviewed head, merge SHA, CI run, and evidence limits.
