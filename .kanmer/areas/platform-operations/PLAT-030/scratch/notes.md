@@ -3,3 +3,5 @@
 2026-08-28 PR checkpoint: committed 61-line grant-only migration at 76f5558b9b8c2e2c47d52617f7c08cfe19dd7679 and pushed only to origin/task/plat-030-runtime-permissions. Opened PR #37 targeting dev. Independent review and exact-head CI are required before merge; PLAT-018 remains the downstream gate owner.
 
 2026-08-28 exact-head review: Boyle FAIL on e87e30aa. SQL CI shard 3 failed because IntakePersistenceIntegrationTests pinned migration census omitted 20260828052825_GrantWebApprovedSentPollOutcomeUpdate. Added the expected migration name in the own task worktree. Revalidation and new CI are required; no merge yet.
+
+Review correction committed/pushed as c599a42b. Targeted CommittedMigrationCreatesTheSqlServerSchema passed 1/1 locally. PR #37 new exact-head CI and independent re-review pending.

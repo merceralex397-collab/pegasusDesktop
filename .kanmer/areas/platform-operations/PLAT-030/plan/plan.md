@@ -66,3 +66,12 @@ After this correction, local `pwsh ./scripts/Test-AzureDeploymentPlan.ps1 -Mode 
 ## Exact-head review correction — 2026-08-28
 
 Independent reviewer Boyle reviewed PR #37 at exact head `e87e30aa819b0ac7753ae8e95b5a5cc97b7a474f` and returned FAIL with one concrete issue: `tests/Pegasus.IntegrationTests/IntakePersistenceIntegrationTests.cs:28-101` pins the applied migration list and omitted `20260828052825_GrantWebApprovedSentPollOutcomeUpdate`. Exact-head CI run `33145461491`, `sql-integration (3)`, failed `CommittedMigrationCreatesTheSqlServerSchema` (322 passed, 1 failed). The migration entry was added after `20260827231948_IssuedReportVersionEvidenceLedger`; no production code or unrelated migration was changed. Rerun the affected local integration test and exact-head CI before merge. The review also notes that the previously attempted focused `RuntimeGrantCompositionTests` filter matched no tests on this branch; it is not counted as passing evidence, and PLAT-018 owns that downstream focused gate.
+
+## Review correction implementation — 2026-08-28
+
+Added the missing `20260828052825_GrantWebApprovedSentPollOutcomeUpdate` entry to the applied-migration census in `tests/Pegasus.IntegrationTests/IntakePersistenceIntegrationTests.cs`, as required by Boyle's independent review. Targeted local validation passed:
+
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false --filter "FullyQualifiedName~IntakePersistenceIntegrationTests.CommittedMigrationCreatesTheSqlServerSchema" --verbosity minimal` — passed, 1/1.
+- `git diff --check` — passed.
+
+Committed and pushed as `c599a42b` to the configured `origin`; PR #37 now requires a fresh exact-head review and CI run.

@@ -29,3 +29,7 @@ The corrected final PR head and its CI/review state will replace the provisional
 ## Exact-head review correction — 2026-08-28
 
 Independent reviewer Boyle returned FAIL on exact PR head `e87e30aa819b0ac7753ae8e95b5a5cc97b7a474f`: the committed migration census in `tests/Pegasus.IntegrationTests/IntakePersistenceIntegrationTests.cs` omitted `20260828052825_GrantWebApprovedSentPollOutcomeUpdate`. Exact-head run `33145461491` failed `sql-integration (3)` in `CommittedMigrationCreatesTheSqlServerSchema` (322 passed, 1 failed). The expected migration name has now been added to the census in the PLAT-030 worktree. Review remains failed pending local confirmation and a new exact-head CI run. The reviewer confirmed the SQL guard, managed-role check, exact grant/revoke, EF discoverability, bootstrap matrix entry, and scope/simplification were otherwise correct.
+
+## Review correction pushed — 2026-08-28
+
+The reviewer-required migration-census expectation was added in commit `c599a42b`; the current PR #37 head is `c599a42b`. The affected local integration test passed 1/1. The prior exact-head CI failure remains historical evidence for the correction; new exact-head CI and a new independent review are pending.
