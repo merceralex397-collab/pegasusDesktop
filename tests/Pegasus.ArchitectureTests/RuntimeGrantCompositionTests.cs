@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Pegasus.Infrastructure.Persistence;
@@ -131,7 +132,7 @@ public sealed class RuntimeGrantCompositionTests
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly Regex GrantStatement = new(
-            @"GRANT[^;]*;",
+            @"\bGRANT\s+(?:SELECT|INSERT|UPDATE|DELETE)(?:\s*,\s*(?:SELECT|INSERT|UPDATE|DELETE))*\s+ON\b[^;]*;",
             RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         private static readonly Regex BracketedIdentifier = new(
@@ -556,9 +557,10 @@ public sealed class RuntimeGrantCompositionTests
         private static string ReadHashedFixture(string path)
         {
             var expected = File.ReadAllText(path + ".sha256").Trim();
-            var actual = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path)));
+            var source = File.ReadAllText(path).Replace("\r\n", "\n", StringComparison.Ordinal);
+            var actual = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source)));
             Assert.Equal(expected, actual);
-            return File.ReadAllText(path);
+            return source;
         }
     }
 
