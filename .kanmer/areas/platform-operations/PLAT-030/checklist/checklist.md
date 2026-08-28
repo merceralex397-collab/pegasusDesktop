@@ -15,3 +15,18 @@
 - [x] Independent review passes on the exact PR head `c599a42b`; Boyle returned PASS after fresh review.
 - [x] PR #37 is merged to `dev` at `acc715c2`.
 - [x] No cloud, deployment execution, credential, corpus, or upstream operation occurred.
+
+# Closeout checklist
+
+---
+
+## Closeout — PLAT-030
+
+- [x] PR merge verified (`gh pr view --json state,mergedAt`)
+- [x] proof.md finalised (PR URL + merge date)
+- [x] Moved to final stage
+- [x] Outcome recorded in ticket body (PR link, follow-ups)
+- [x] cd out of worktree; `git worktree remove`
+- [x] `git branch -d` (squash/rebase merge requires `-D`)
+- [x] `git fetch --prune` + `git worktree prune`
+- [ ] `take_ticket action: "release"`

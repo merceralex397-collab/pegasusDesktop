@@ -2,7 +2,7 @@
 id: PLAT-030
 type: ticket
 title: Grant Web UPDATE on ApprovedSentPollOutcomes exposed by PLAT-018
-status: verifying
+status: done
 area: platform-operations
 assignee: codex-mcp-client
 profile: fix
@@ -10,9 +10,7 @@ stageEntered:
   implementing: '2026-08-28T05:25:55.425Z'
   review: '2026-08-28T17:29:45.306Z'
   verifying: '2026-08-28T17:30:13.765Z'
-taken_at: '2026-08-28T05:23:21.646Z'
-branch: task/plat-030-runtime-permissions
-worktree: ../pegasus-worktrees/plat-030-runtime-permissions
+  done: '2026-08-28T21:00:18.764Z'
 labels:
   - desktop-conversion
   - plan-10
@@ -32,7 +30,7 @@ prs:
   - '37'
 archived: false
 created: '2026-08-28T05:22:38.415Z'
-updated: '2026-08-28T17:30:13.765Z'
+updated: '2026-08-28T21:00:59.640Z'
 ---
 
 ## What
@@ -70,3 +68,8 @@ May add one additive, grant-only migration following the existing runtime-role m
 ## Evidence
 
 Read-only inspection on 2026-08-28 confirmed `20260819180000_GrantEvaHandoffDownloadOperations.cs` contains `GRANT SELECT, INSERT` for `pegasus_web_runtime_role`. The remaining real gap is Web UPDATE on `ApprovedSentPollOutcomes`, written by `EfTriageStore.LinkResponseEvidenceAsync`. This ticket remains a dependency of PLAT-018 until its migration is merged to dev and the focused gate passes.
+
+
+## Outcome
+
+PR #37 (`https://github.com/merceralex397-collab/pegasusDesktop/pull/37`) merged the grant-only migration into `dev` at `acc715c2f3779b360897455aaa8397e97e0ee870` on 2026-08-28 and it is included in `main` at `28ba13a4fcdb51270b24a48725d53b1de5bcae87`. Merged-main proof is recorded in `proof.md`; no cloud or deployment operation was performed. PLAT-018's dependent parser correction and runtime-grant gate are now satisfied.
