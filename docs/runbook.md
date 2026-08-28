@@ -323,7 +323,7 @@ lock files with the matching entry point and `--force-evaluate` before running t
 locked restore.
 
 The focused forms are below; the two integration filters are a complement pair, so
-their union with the two unit projects is exactly the canonical selection:
+their union with the three unit projects is exactly the canonical selection:
 
 ```powershell
 dotnet test ./tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release --no-build
