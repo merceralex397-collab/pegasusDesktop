@@ -11,3 +11,5 @@
 2026-08-28: remediation 2 pushed at 3a644ed5258d365fec8ce17c9ca743a9f86ac3ad. Clean branch. Release build 0 warnings/errors; focused 6/6; full architecture 117/117; migration script 71 files; diff check clean. Fresh independent review requested from Newton against exact HEAD; PR #36 remains held pending PASS and exact-head CI.
 
 2026-08-28: fresh independent review of 3a644ed5258d365fec8ce17c9ca743a9f86ac3ad returned FAIL. Findings: concrete-only EfDocumentCustodyStore registration missed; tracked/raw SQL UPDATE inference incomplete; forward fixture manually constructs RuntimeWrite; shared ImageIntake tuple array misclassified Web-only; docs overstate coverage. PR #36 held. Findings sent to Mencius for bounded remediation.
+
+2026-08-28: remediation 3 pushed at 87933e0784cd2836dd043535b95346e30eaf4288, clean. Added concrete factory registration association, tracked/raw SQL UPDATE detection, inference-backed forward fixture, shared Web/Worker tuple attribution, and narrower docs. Validation: Release build 0 warnings/errors; focused 6/6; full architecture 117/117; migration scan 71/71; diff check clean. Fresh independent reviewer Anscombe assigned; PR #36 held.

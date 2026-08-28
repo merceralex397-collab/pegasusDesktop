@@ -148,3 +148,18 @@ Fresh independent review of exact HEAD `3a644ed5258d365fec8ce17c9ca743a9f86ac3ad
 - `docs/current-architecture.md:183-192` overstates the implemented coverage; green validation does not prove these gaps are closed.
 
 Next action: remediate every finding in the bounded ticket scope, rerun required validation, push a new exact HEAD, update the evidence, and obtain another independent review. Do not merge PR #36.
+
+## Review remediation 3 — 2026-08-28
+
+The five findings from the review of `3a644ed5258d365fec8ce17c9ca743a9f86ac3ad` were addressed on exact HEAD `87933e0784cd2836dd043535b95346e30eaf4288` (parent `3a644ed5`). The bounded diff remains only `tests/Pegasus.ArchitectureTests/RuntimeGrantCompositionTests.cs` and `docs/current-architecture.md`. It adds concrete-store/factory-interface association, tracked and raw-SQL UPDATE detection, an inference-backed forward fixture, shared Web/Worker tuple attribution, and narrower documentation claims.
+
+Validation reported on the clean pushed branch:
+
+- Release architecture build — passed, 0 warnings/errors.
+- Focused PLAT-018 tests — 6/6 passed.
+- Full architecture suite — 117/117 passed.
+- `pwsh ./scripts/Test-MigrationGrants.ps1` — 71/71 migration files passed.
+- `git diff --check` — passed.
+- Worktree clean; branch pushed to `origin/task/dsk-10-18-runtime-grant-composition-gate`.
+
+Fresh independent review has been requested against exact HEAD `87933e07`; PR #36 remains held pending PASS and exact-head CI.
