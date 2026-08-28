@@ -7,3 +7,5 @@
 2026-08-28 — Review remediation completed and pushed at b29466a87f44d6187e0fdf55f5dfc65d30e5a7f3. All five findings addressed; final validation green (build 0 warnings/errors; focused 6/6; full architecture 117/117; migration-grant check 71/71; diff check clean). Fresh exact-head review required; PR #36 held.
 
 2026-08-28 — Fresh independent re-review of b294 FAIL: source regexes still replace required EF IModel/GetTableName; parser semantics diverge from Test-MigrationGrants.ps1; historical/forward fixtures still synthetic rather than real migration + registration/model paths. PR #36 remains blocked; remediation required.
+
+2026-08-28: remediation 2 pushed at 3a644ed5258d365fec8ce17c9ca743a9f86ac3ad. Clean branch. Release build 0 warnings/errors; focused 6/6; full architecture 117/117; migration script 71 files; diff check clean. Fresh independent review requested from Newton against exact HEAD; PR #36 remains held pending PASS and exact-head CI.

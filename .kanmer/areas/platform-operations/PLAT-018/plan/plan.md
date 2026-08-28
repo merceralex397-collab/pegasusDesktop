@@ -121,3 +121,18 @@ Fresh independent review of exact HEAD `b29466a87f44d6187e0fdf55f5dfc65d30e5a7f3
 - `RuntimeGrantCompositionTests.cs:39-50,63-80` still reconstructs historical writes by deleting current grants/appending records and uses a source snippet for the forward fixture, rather than exercising real pre-fix migration fixtures and a real fake registration/entity through the registration/model path.
 
 PR #36 remains blocked. Remediate all three findings, rerun validation, push a new exact HEAD, and obtain another independent review.
+
+## Review remediation 2 — 2026-08-28
+
+The second independent review findings were remediated on exact HEAD `3a644ed5258d365fec8ce17c9ca743a9f86ac3ad` (parent `b29466a87f44d6187e0fdf55f5dfc65d30e5a7f3`). The implementation remains within the owned architecture-test file; the existing documentation update remains unchanged. The remediation adds EF `IModel`/`GetTableName()` table mapping, aligns literal and tuple grant discovery with the existing migration-script shapes across the whole migration folder, and exercises the registration/entity fixture and historical inference through the evaluator path.
+
+Validation reported on the clean pushed branch:
+
+- `dotnet build tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-restore -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false --verbosity minimal` — passed, 0 warnings/errors.
+- Focused PLAT-018 tests — 6 passed, 0 failed.
+- Full architecture suite — 117 passed, 0 failed, 0 skipped.
+- `pwsh ./scripts/Test-MigrationGrants.ps1` — 71 migration files passed.
+- `git diff --check` — passed.
+- Worktree clean; branch pushed to `origin/task/dsk-10-18-runtime-grant-composition-gate`.
+
+A fresh independent review has been requested against this exact HEAD. PR #36 remains held pending that review and exact-head CI completion.
