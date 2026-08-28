@@ -409,3 +409,20 @@ Use these exact strings in `Package.appxmanifest`. The Publisher value is the re
 - Kept the analyzer wiring to one explicit project reference plus one local target import; no NuGet package or duplicate architecture layer was added.
 - Removed template platform alternatives, trimming, and ReadyToRun defaults that contradicted the ticket's fixed x64/self-contained target.
 - Replaced the generated underscore namespace instead of suppressing CA1707. No unrelated source, server, cloud, upstream, or certificate changes were made.
+
+## Independent review correction — 2026-08-28
+
+The independent review of exact head `dc6bd81c0c9e5f8f73d3dd0642c72ddedf338ad7` found two implementation/evidence corrections, which were applied in the task worktree:
+
+- Added `AutomationProperties.AutomationId` and `AutomationProperties.Name` to both starter counter buttons in `src/Pegasus.Desktop/MainPage.xaml`.
+- Removed trailing whitespace from `src/Pegasus.Desktop/app.manifest`.
+- Corrected `docs/current-architecture.md` to describe a packaged desktop scaffold with local launch evidence; the gateway caller remains future work owned by the desktop feature tickets.
+- Rebuilt the desktop and full solution after the correction: both Release builds passed with 0 warnings and 0 errors; architecture tests passed 111/111; `git diff --check` passed.
+
+The simplification evidence is now explicit by required lens:
+
+- Reuse: retained the vendored `winui-mvvm` composition and repository central package management; no second client framework, package source, or business-policy owner was added.
+- Simplification: kept x64, self-contained, no-trimming/no-AOT scope; removed the generated underscore namespace issue instead of suppressing CA1707; no NoWarn entries were required.
+- Efficiency: used one project-local props import to preserve the root warning policy and analyzer target without adding an analyzer package that NuGet does not provide; no cache, service, or compatibility layer was introduced.
+- Altitude: kept shell, gateway, UI test lane, signing, and runbook prerequisites in their owning tickets; corrected the as-built sentence rather than implying future gateway behavior is already implemented.
+- Unapplied finding: exact-head CI was still running at the time of this correction and must complete on the new commit before merge. Proof remains intentionally deferred until merged-main verification.

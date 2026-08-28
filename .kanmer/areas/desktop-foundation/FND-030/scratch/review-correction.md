@@ -1,0 +1,1 @@
+2026-08-28: Applied independent-review corrections: added button automation IDs/names, corrected as-built wording, removed manifest whitespace; reran desktop/full Release builds and architecture tests (0 warnings/errors; 111/111). Updated checklist/plan/report. New commit and exact-head CI are still required before merge.

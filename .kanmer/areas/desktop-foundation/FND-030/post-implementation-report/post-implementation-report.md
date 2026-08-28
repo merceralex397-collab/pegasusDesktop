@@ -32,3 +32,15 @@ Implemented the packaged WinUI 3 scaffold in the existing `task/desktop-scaffold
 ## Evidence limits
 
 This proves the scaffold builds and launches with package identity on this workstation. It does not prove the future desktop shell, gateway capabilities, clean-machine installation, signing, CI desktop lane, or production deployment; those remain owned by their separate tickets.
+
+## Independent review response — 2026-08-28
+
+Applied the review corrections at the new task-branch head:
+
+- Added unique automation IDs and accessible names to the increment and decrement buttons.
+- Corrected the current-architecture wording to distinguish the launchable scaffold from the future gateway caller.
+- Removed manifest trailing whitespace.
+- Rebuilt the changed desktop project and full solution successfully with 0 warnings/errors; architecture tests remain 111/111.
+- Updated the checklist and plan with honest package/analyzer, NoWarn, runbook, payload, and simplification dispositions.
+
+The exact-head GitHub Actions run for this new commit and merged-main proof are still required; no proof document is being fabricated before merge.
