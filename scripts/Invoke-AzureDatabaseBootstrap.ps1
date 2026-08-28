@@ -349,6 +349,9 @@ function Get-MigrationPermissionMatrix {
     # creates the issued-version ledger row; retain the existing read grant
     # and add only the missing INSERT permission.
     $expected.Add('pegasus_worker_runtime_role|G|INSERT|CaseReportVersionLedgers')
+    # 20260828052825_GrantWebApprovedSentPollOutcomeUpdate: the Web triage
+    # response-link transaction updates the related Approved Sent outcome.
+    $expected.Add('pegasus_web_runtime_role|G|UPDATE|ApprovedSentPollOutcomes')
     return @($expected | Sort-Object -Unique)
 }
 
