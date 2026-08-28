@@ -1,0 +1,1 @@
+2026-08-28 — Curie’s exact-head review finding was reproduced against current origin/dev and add9da25: branch PAR-23 had 11 pipe fields and omitted the required `Queues workspace, Triage list` mapping. Corrected only that row in `docs/desktop/01-inventory-and-parity/parity-matrix.md`; revalidation and a fresh exact-head review are required before merge.
