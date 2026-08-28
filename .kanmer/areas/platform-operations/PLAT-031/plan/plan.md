@@ -44,3 +44,16 @@ The initial implementation scope omitted two expected-state consumers. Independe
 - `tests/Pegasus.IntegrationTests/AzureSqlRuntimeRoleMigrationTests.cs` includes `CaseReportVersionLedgers:INSERT` in the existing Worker expectation.
 
 These are the only scope additions. The existing table-creation migration, production code, CI, cloud/deployment state, credentials, upstream remotes, and corpus remain out of scope. The combined PLAT-018 + PLAT-030 + PLAT-031 validation must run the bootstrap local-plan check and the focused permission assertion after these consumers are updated.
+
+## Simplification pass — 2026-08-28
+
+Independent read-only simplification review (Aristotle) passed with no code changes recommended:
+- Reused the existing SQL Server guard, managed-role validation, and direct grant/revoke migration shape.
+- The repeated managed-role validation in both `Up` and `Down` is retained because rollback is also fail-closed.
+- No unnecessary loop, dependency, abstraction, or compatibility path was introduced.
+- Scope altitude is correct: one Worker `INSERT` permission, plus the two required expected-state consumers.
+
+Independent test analysis (Popper) initially found the first local implementation incomplete because the bootstrap expected matrix and focused Worker permission expectation did not include the new grant. The files map and plan were corrected before review. After that correction:
+- `pwsh ./scripts/Test-AzureDeploymentPlan.ps1 -Mode Local` passed.
+- The focused `LatestMigrationGrantsIssuedReportVersionLedgerToItsRuntimeCallers` test passed 1/1.
+- `Test-MigrationGrants.ps1` remains unchanged and continues to pass.
