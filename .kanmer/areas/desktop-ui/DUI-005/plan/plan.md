@@ -32,3 +32,13 @@ The implementation worktree must record its simplification pass and independent 
 - Read-only Kanmer checks confirm [[GWY-001]] is `done` and [[GWY-016]] is `done` at merged commit `67109b45066648b3256eff8d4bc3491a18bfeb7d`; it owns the single `Pegasus.Contracts/Vocabulary/OperatorVocabulary` implementation.
 - [[FEAT-023]] is archived with documented duplicate/coverage rationale and will not be implemented separately. Its required relocation decision is therefore resolved by GWY-016; no duplicate map or dependency edit is introduced here.
 - This ticket may proceed against the current `origin/dev` contract owner, with desktop-side formatting/test work only. No product decision, Azure write, upstream synchronization, or shared-map modification is required for this ticket.
+
+## Blocker — 2026-08-28
+
+- The coordinator-specified worktree `C:\\Users\\PC\\Documents\\GitHub\\pegasus-worktrees\\dui-005-operator-vocabulary` is absent (`Test-Path` returned `False`); Git has no `task/dui-005-operator-vocabulary` local ref and no registered DUI-005 worktree.
+- Read-only `origin/dev` inspection finds `src/Pegasus.Contracts/Vocabulary/OperatorVocabulary.cs`, but no `src/Pegasus.Desktop`, `src/Pegasus.Desktop.Infrastructure`, or `tests/Pegasus.Desktop.ViewModelTests` paths. The targeted build and test therefore fail with MSB1009 because their project files do not exist; the required grep cannot scan `src/Pegasus.Desktop` (rg exit 2, path not found).
+- The missing prerequisites are owned by `FND-038` / `DSK-02-13` and `TEST-004` / `DSK-08-04` (both `preparing`, `blocked`). `TEST-004` explicitly depends on the absent DSK-02-05 desktop scaffold. No desktop architecture or project was invented.
+
+## Simplification pass — 2026-08-28
+
+- N/A — blocked before implementation; there is no DUI-005 branch diff to simplify. No code, tests, documentation paths, commit, push, or Kanmer stage mutation was made for the product change.
