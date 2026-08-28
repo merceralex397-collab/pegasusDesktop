@@ -180,7 +180,7 @@ The following remain planned or absent, not merely unverified:
   produces most of the volume, so measuring before buying quota is the cheaper
   order. Correlation, retention and alert delivery remain unproved until the
   window covers a working day (PLAT-034, open).
-- an automated check that composition-root persistence writes remain covered by
+- an implemented automated check that composition-root persistence writes remain covered by
    the runtime-role grant catalogue. The architecture suite now derives registered
    EF stores (including concrete stores resolved by their registered factory interfaces),
    their EF `IModel` entity/table mappings, and detected INSERT/UPDATE/DELETE writes,

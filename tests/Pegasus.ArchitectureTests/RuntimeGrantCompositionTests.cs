@@ -139,11 +139,19 @@ public sealed class RuntimeGrantCompositionTests
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly Regex ContextMutation = new(
-            @"\b(?:context|dbContext|verification|finalContext)\.(?:(?<property>[A-Z][A-Za-z0-9_]*)|Set<(?<entity>[A-Za-z_][A-Za-z0-9_]*)>\(\))\s*\.\s*(?<verb>Add|AddAsync|Remove|RemoveRange|ExecuteDelete|ExecuteUpdate)\s*\(",
+            @"\b(?:context|dbContext|verification|finalContext)\.(?:(?<property>[A-Z][A-Za-z0-9_]*)|Set<(?<entity>[A-Za-z_][A-Za-z0-9_]*)>\(\))\s*\.\s*(?<verb>Add|AddAsync|Remove|RemoveRange|ExecuteDelete|ExecuteUpdate)(?:Async)?\s*\(",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly Regex DirectContextMutation = new(
             @"\b(?:context|dbContext|verification|finalContext)\.(?<verb>Add|AddAsync|Remove|RemoveRange)\s*\(\s*(?:new\s+)?(?<entity>[A-Za-z_][A-Za-z0-9_]*)",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        private static readonly Regex VariableContextMutation = new(
+            @"\b(?:context|dbContext|verification|finalContext)\.(?<verb>Add|AddAsync|Remove|RemoveRange)\s*\(\s*(?<variable>[a-z][A-Za-z0-9_]*)\s*\)",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        private static readonly Regex VariableEntity = new(
+            @"\b(?<entity>[A-Za-z_][A-Za-z0-9_]*Entity)\s+(?<variable>[a-z][A-Za-z0-9_]*)\s*=",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly Regex TrackedEntityMutation = new(
@@ -299,7 +307,10 @@ public sealed class RuntimeGrantCompositionTests
             var entity = modelBuilder.FinalizeModel().FindEntityType(typeof(ArchitectureTestUnGrantedTableEntity));
             var fixtureTable = entity?.GetTableName()
                 ?? throw new InvalidOperationException("Fixture entity did not have an EF table mapping.");
-            var fixtureSource = "context.Set<ArchitectureTestUnGrantedTableEntity>().Add(new());";
+            var fixtureFile = Path.Combine(FindRepositoryRoot(), "tests", "Pegasus.ArchitectureTests", "RuntimeGrantCompositionTests.cs");
+            var fixtureSource = File.ReadAllText(fixtureFile);
+            var fixtureStart = fixtureSource.IndexOf("private sealed class ArchitectureTestUnGrantedTableStore", StringComparison.Ordinal);
+            fixtureSource = fixtureStart >= 0 ? fixtureSource[fixtureStart..] : throw new InvalidOperationException("Fixture store source was not found.");
             var fixture = new RuntimeWrite(
                 role,
                 fixtureTable,
@@ -531,6 +542,16 @@ public sealed class RuntimeGrantCompositionTests
                     AddVerb(verbs, mutation.Groups["verb"].Value);
                 }
             }
+            foreach (Match mutation in VariableContextMutation.Matches(source))
+            {
+                var variable = mutation.Groups["variable"].Value;
+                if (VariableEntity.Matches(source).Cast<Match>().Any(declaration =>
+                        declaration.Groups["variable"].Value.Equals(variable, StringComparison.Ordinal) &&
+                        declaration.Groups["entity"].Value.Equals(property, StringComparison.Ordinal)))
+                {
+                    AddVerb(verbs, mutation.Groups["verb"].Value);
+                }
+            }
             if (Regex.IsMatch(
                     source,
                     $@"Set<{Regex.Escape(property)}>\(\)[\s\S]{{0,2000}}?\bcontext\.Add\s*\(",
@@ -693,6 +714,10 @@ public sealed class RuntimeGrantCompositionTests
 
     private sealed class ArchitectureTestUnGrantedTableStore
     {
+        public static void Write(PegasusDbContext context)
+        {
+            context.Set<ArchitectureTestUnGrantedTableEntity>().Add(new());
+        }
     }
 
     private sealed class ArchitectureTestUnGrantedTableEntity
