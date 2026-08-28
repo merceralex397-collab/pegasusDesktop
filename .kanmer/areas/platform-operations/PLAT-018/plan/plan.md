@@ -262,3 +262,17 @@ A new temporary local validation tree combined exact PLAT-018 HEAD `aaa025f4` wi
 - `git diff --check` — passed.
 
 The temporary merge was validation-only and was not pushed. PR #36 now requires fresh exact-head CI and independent review.
+
+## Final dev-base integration and combined validation — 2026-08-28
+
+After PLAT-030 and PLAT-031 merged into `dev`, this task branch merged current `origin/dev` and was pushed at exact head `5061f226`. The branch now validates the gate against both production grant migrations. The PLAT-018-owned diff remains test/documentation-only; the two grant migrations and expected-state consumers are inherited from `origin/dev`.
+
+Combined local validation on the integrated branch:
+
+- `dotnet restore Pegasus.slnx --locked-mode` — passed.
+- `dotnet test tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false --verbosity minimal` — passed, 121/121.
+- `pwsh ./scripts/Test-MigrationGrants.ps1` — passed, 73 migration files.
+- `pwsh ./scripts/Test-AzureDeploymentPlan.ps1 -Mode Local` — passed; Worker Disabled settings rendered `true`.
+- `git diff --check origin/dev...HEAD` — passed.
+
+Fresh exact-head CI and independent review are required for `5061f226` before merge. No cloud, deployment, credential, corpus, or upstream operation occurred.
