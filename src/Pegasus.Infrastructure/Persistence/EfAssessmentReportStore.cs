@@ -225,6 +225,12 @@ internal sealed partial class EfAssessmentReportStore(
             AttemptCount = 1
         };
         context.AssessmentReportVersions.Add(entity);
+        context.CaseReportVersionLedgers.Add(new CaseReportVersionLedgerEntity
+        {
+            ReportVersionId = entity.Id,
+            CaseId = entity.CaseId,
+            Version = 0
+        });
         try
         {
             await context.SaveChangesAsync(cancellationToken);

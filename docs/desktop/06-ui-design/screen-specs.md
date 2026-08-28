@@ -380,8 +380,11 @@ the record key: `Cases.List.Row.576059`. Every interactive control has one;
   status bar; cancel), Preview (PDF viewer in-app; the preview surface is a
   document viewer, not Pegasus UI in a WebView), Finalise/Send (reasoned;
   idempotent), list of issued versions with custody and sent evidence shown
-  separately; regeneration rules surfaced as enabled/disabled named
-  conditions.
+  separately; each version binds only to its exact approved artifact identity
+  and hash, while a correction leaves predecessor Sent evidence visible. An
+  explicit reasoned unlink/relink retains the evidence and ordered association
+  history; legacy rows without exact version proof render as `Unresolved`.
+  Regeneration rules are surfaced as enabled/disabled named conditions.
 - AutomationIds: `Case.Assessment.Damage.Grid`, `Case.Assessment.Import`,
   `Case.Assessment.AcceptSpecification`, `Case.Reports.Generate`,
   `Case.Reports.Preview`, `Case.Reports.Send`.

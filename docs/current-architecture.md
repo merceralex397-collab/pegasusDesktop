@@ -423,6 +423,18 @@ A release-owned migration bundle or explicit operation must apply deployed migra
 
 The platform's supported local SQL Server (LocalDB on Windows, a per-run container on Linux) is the canonical local provider for persistence, migration, concurrency, and recovery evidence. Each disposable result proves only the exercised local behavior; it does not prove Azure SQL locking, upgrade behavior, recovery, or live deployment.
 
+Report custody is implemented in the existing workflow boundary. Each generated
+report version has a `CaseReportVersionLedgers` row, and
+`CaseReportAssociationHistory` records approval, link, unlink, and relink actions
+with ordered ledger versions and former-link metadata. Versioned approval and
+Sent evidence carry the exact report-version artifact identity and hash; a
+correction therefore leaves predecessor custody intact while the workflow's
+current pointer advances to the successor. The latest migration preserves
+pre-ledger approval and Sent rows and marks them `Unresolved` rather than
+guessing a report-version association. This is implemented and covered by
+local Release/LocalDB evidence; no deployed schema or cloud migration is claimed
+here.
+
 ## Authentication and authorization boundary
 
 Staff authentication and authorization are implemented and enforced:
@@ -654,6 +666,7 @@ The staff `/Received/{id}`, `/Received/{id}/Source`, and `/Inbox` routes are ser
 | Dependency-direction evidence | `tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs` |
 | Core assessment-report draft contract and caller | `src/Pegasus.Core/Reports/AssessmentReportRendering.cs` |
 | Integrated Scriban/Playwright/PDFsharp report adapter and governed resources | `src/Pegasus.Infrastructure/Reports/`, composed by `src/Pegasus.Infrastructure/DependencyInjection.cs` in the existing Web boundary |
+| Issued report-version custody ledger and association history | `src/Pegasus.Infrastructure/Persistence/CaseWorkflowEntities.cs`, `EfCaseWorkflowStore.cs`, and the latest EF migration; projected by `CaseWorkflowRecord.IssuedReportVersions` |
 
 Relevant architectural decisions include ADR-0003 for PdfPig, ADR-0005 for multi-format assets, ADR-0006 for provider-neutral intake with a contained QDOS policy, and ADR-0007 for direct-terminal Azure deployment. Their status and supersession must be read through the [decision index](adr/README.md).
 
