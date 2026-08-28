@@ -276,3 +276,23 @@ Combined local validation on the integrated branch:
 - `git diff --check origin/dev...HEAD` — passed.
 
 Fresh exact-head CI and independent review are required for `5061f226` before merge. No cloud, deployment, credential, corpus, or upstream operation occurred.
+
+## Exact-head review correction — 2026-08-28
+
+The previous simplification entry described the pre-integration head and did not cover the final integrated diff at exact head `5061f226cd3d8c795ccbb6c9e440ef9878d014fc`. The final diff remains test/documentation-only; PLAT-030 and PLAT-031 are inherited from `origin/dev`.
+
+Simplification review of the exact final diff:
+
+- Reuse: the evaluator reuses the existing composition-root registrations, EF `IModel`/ `GetTableName()` mapping, migration grant shapes, and `no-runtime-grant` marker instead of adding production abstractions or a second policy list.
+- Simplification: the implementation stays in test-only evaluator/fixture files and one current-architecture snapshot; no migration edits, production source edits, or separate CI job were added.
+- Efficiency: the gate runs in the existing architecture/unit path, uses immutable local fixtures, and adds no runtime/cloud dependency.
+- Altitude: the check remains an architecture acceptance test; deployment permissions, migration ownership, and runtime validation stay in their existing layers.
+- Unapplied findings: none from the prior review remain after the evidence correction. Exact-head CI is green (run `33197299822`); a fresh independent review of the exact head is recorded separately before merge.
+
+Updated exact integrated evidence:
+
+- `dotnet restore Pegasus.slnx --locked-mode` — passed.
+- Architecture tests — 121/121 passed.
+- `pwsh ./scripts/Test-MigrationGrants.ps1` — passed, 73 migration files.
+- `pwsh ./scripts/Test-AzureDeploymentPlan.ps1 -Mode Local` — passed.
+- `git diff --check origin/dev...HEAD` — passed.

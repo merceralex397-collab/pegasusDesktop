@@ -1,0 +1,1 @@
+2026-08-28: Corrected the plan with exact integrated-head (5061f226) simplification evidence by reuse/simplification/efficiency/altitude lenses, with no unapplied findings. Exact CI run 33197299822 is green; fresh independent re-review remains required.
