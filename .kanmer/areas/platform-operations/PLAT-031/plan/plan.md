@@ -36,3 +36,11 @@ This ticket is limited to the missing grant. PLAT-018 remains the owner of the c
 ## Simplification pass
 
 _To be recorded after the implementation diff exists, before PR review._
+
+## Scope correction from independent test analysis — 2026-08-28
+
+The initial implementation scope omitted two expected-state consumers. Independent analysis found that the new migration is not locally complete until:
+- `scripts/Invoke-AzureDatabaseBootstrap.ps1` includes `pegasus_worker_runtime_role|G|INSERT|CaseReportVersionLedgers` in its existing matrix; this is a local/effective matrix expectation, not an Azure write and not the unchanged `Test-MigrationGrants.ps1`.
+- `tests/Pegasus.IntegrationTests/AzureSqlRuntimeRoleMigrationTests.cs` includes `CaseReportVersionLedgers:INSERT` in the existing Worker expectation.
+
+These are the only scope additions. The existing table-creation migration, production code, CI, cloud/deployment state, credentials, upstream remotes, and corpus remain out of scope. The combined PLAT-018 + PLAT-030 + PLAT-031 validation must run the bootstrap local-plan check and the focused permission assertion after these consumers are updated.
