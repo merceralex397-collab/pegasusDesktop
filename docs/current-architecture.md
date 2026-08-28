@@ -180,14 +180,16 @@ The following remain planned or absent, not merely unverified:
   produces most of the volume, so measuring before buying quota is the cheaper
   order. Correlation, retention and alert delivery remain unproved until the
   window covers a working day (PLAT-034, open).
-- an automated check that a runtime role may write what the code writes. The
-  least-privilege grant matrix (`20260729199000_RuntimeRoleReconciliation`) is
-  the one list of what Web and Worker may touch, and nothing verifies it against
-  the stores each composition root actually registers. Tests and LocalDB runs are
-  full-privilege, so the suite is green while the deployed estate refuses the
-  write. This has now shipped three times — `20260814092852`, `20260821095500`
-  and `20260822044425`, the last of which broke case custody for every case
-  created after release 17 (PLAT-035, open).
+- an automated check that composition-root persistence writes remain covered by
+   the runtime-role grant catalogue. The architecture suite now derives registered
+   EF stores, their model entity/table mappings, and detected INSERT/DELETE writes,
+   then compares them with both grant shapes already accepted by
+   `scripts/Test-MigrationGrants.ps1`. It also reconstructs the three shipped
+   missing-write regressions — `20260814092852`, `20260821095500` and
+   `20260822044425` — and carries a forward ungranted-table fixture. The static
+   migration-grant script remains unchanged; full-privilege tests and LocalDB runs
+   therefore no longer provide the only signal for this boundary (PLAT-035,
+   automated coverage added).
 
 ## Current intake and extraction boundary
 
