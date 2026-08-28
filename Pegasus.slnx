@@ -11,6 +11,7 @@
     <Project Path="tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj" />
     <Project Path="tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj" />
     <Project Path="tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj" />
+    <Project Path="tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj" />
     <Project Path="tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj" />
   </Folder>
 </Solution>
