@@ -8,3 +8,18 @@
 - [x] Run Release build and focused Core/integration validation, then write the post-implementation report with exact results.
 
 The final focused reevaluation suite passed 7 tests; the affected CaseMatch suite passed 7 tests; the full Core suite passed 920 tests; and the Release build passed with 0 warnings and 0 errors. The broader non-Corpus/non-Browser integration run remains non-green only because of the separately recorded SQL deadlock in existing grouped-image concurrency code.
+
+# Closeout checklist
+
+---
+
+## Closeout — INTK-004
+
+- [x] PR merge verified (`gh pr view --json state,mergedAt`)
+- [x] proof.md finalised (PR URL + merge date)
+- [x] Moved to final stage
+- [ ] Outcome recorded in ticket body (PR link, follow-ups)
+- [ ] cd out of worktree; `git worktree remove`
+- [ ] `git branch -d` (squash/rebase merge requires `-D`)
+- [ ] `git fetch --prune` + `git worktree prune`
+- [ ] `take_ticket action: "release"`

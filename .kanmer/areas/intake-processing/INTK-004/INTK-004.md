@@ -4,7 +4,7 @@ type: ticket
 title: >-
   upstream:INTK-027 · Make policy re-evaluation work after transient staging
   cleanup
-status: verifying
+status: done
 area: intake-processing
 order: 100
 assignee: codex-mcp-client
@@ -13,6 +13,7 @@ stageEntered:
   preparing: '2026-08-24T21:23:32.702Z'
   review: '2026-08-25T20:13:23.068Z'
   verifying: '2026-08-25T20:13:47.885Z'
+  done: '2026-08-28T20:53:32.295Z'
 taken_at: '2026-08-25T19:17:45.434Z'
 branch: task/upstream-intk-027-reevaluation-after-cleanup
 worktree: ../pegasus-worktrees/upstream-intk-027-reevaluation-after-cleanup
@@ -40,7 +41,7 @@ prs:
   - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/11'
 archived: false
 created: '2026-08-24T11:47:12.109Z'
-updated: '2026-08-26T11:21:58.954Z'
+updated: '2026-08-28T20:53:57.706Z'
 ---
 
 ## What
@@ -157,7 +158,7 @@ Tier 2 obliges positive, contradictory and failure cases for the re-evaluation p
 
 ## Outcome
 
-_Filled at closeout._
+PR #11 (`https://github.com/merceralex397-collab/pegasusDesktop/pull/11`) merged the retained-source re-staging fix into `dev` on 2026-08-25 and it is included in `main` at `28ba13a4fcdb51270b24a48725d53b1de5bcae87`. Merged-main proof is recorded in `proof.md`; no deployment or external remediation was performed. Follow-up API and desktop consumer work remains with [[GWY-010]] and [[FEAT-009]].
 
 
 ## Operator scope amendment — 2026-08-25
