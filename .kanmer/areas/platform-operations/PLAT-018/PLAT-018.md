@@ -11,9 +11,6 @@ profile: fix
 stageEntered:
   preparing: '2026-08-24T21:21:15.725Z'
   review: '2026-08-28T02:47:16.287Z'
-taken_at: '2026-08-28T02:13:56.478Z'
-branch: task/dsk-10-18-runtime-grant-composition-gate
-worktree: ../pegasus-worktrees/dsk-10-18-runtime-grant-composition-gate
 labels:
   - desktop-conversion
   - plan-10
@@ -26,7 +23,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:16:25.644Z'
-updated: '2026-08-28T02:47:16.287Z'
+updated: '2026-08-28T04:39:17.736Z'
 ---
 
 ## What
