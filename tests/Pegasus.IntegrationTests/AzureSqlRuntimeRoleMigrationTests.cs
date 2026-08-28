@@ -670,6 +670,7 @@ public sealed class AzureSqlRuntimeRoleMigrationTests
             [
                 "CaseReportAssociationHistory:INSERT",
                 "CaseReportAssociationHistory:SELECT",
+                "CaseReportVersionLedgers:INSERT",
                 "CaseReportVersionLedgers:SELECT",
                 "CaseReportVersionLedgers:UPDATE"
             ]
