@@ -36,3 +36,7 @@ Fresh independent review is pending. This report does not claim review approval,
 ## Delivery blocker
 
 `gh pr create --base dev --head plat-001-threat-register` failed with `pull request create failed: GraphQL: must be a collaborator (createPullRequest)`. No PR, CI, merge, merged-main proof, or closeout is claimed.
+
+## Delivery update — 2026-08-28
+
+The former PR-creation permission failure is historical and superseded. PR #35 merged into `dev` at `76592d4666a41eeeddd4d993c135bd9a3bc56918` from exact reviewed head `b83f48296df1f1680563c9bbf0e0af6e70a7133b`; its CI run `33134297925` passed all applicable docs-only jobs. The final main head `5f7b85a2a8fb32102b859cad559dec33a14872fd` includes the ticket, and main push CI run `33134998958` completed success. Proof/closeout can now be recorded.
