@@ -332,7 +332,7 @@ function Get-MigrationPermissionMatrix {
     }
     # 20260827231948_IssuedReportVersionEvidenceLedger: the Web records the
     # immutable version approval and staff association history; the Worker
-    # only reads the ledger and appends automatic association history.
+    # reads and inserts the ledger and appends automatic association history.
     foreach ($permission in @('SELECT', 'INSERT', 'UPDATE')) {
         $expected.Add("pegasus_web_runtime_role|G|$permission|CaseReportVersionLedgers")
     }
@@ -345,6 +345,10 @@ function Get-MigrationPermissionMatrix {
     foreach ($permission in @('SELECT', 'INSERT')) {
         $expected.Add("pegasus_worker_runtime_role|G|$permission|CaseReportAssociationHistory")
     }
+    # 20260828074800_GrantWorkerCaseReportVersionLedgerInsert: the Worker
+    # creates the issued-version ledger row; retain the existing read grant
+    # and add only the missing INSERT permission.
+    $expected.Add('pegasus_worker_runtime_role|G|INSERT|CaseReportVersionLedgers')
     return @($expected | Sort-Object -Unique)
 }
 
