@@ -69,3 +69,14 @@ Independent test analysis (Popper) initially found the first local implementatio
 - Exact-head GitHub Actions run `33153323761` failed in SQL shard 3 (job `98790328153`), while the other jobs and SQL shards passed. The failed test was `IntakePersistenceIntegrationTests.CommittedMigrationCreatesTheSqlServerSchema`: the database applied the new `20260828074800_GrantWorkerCaseReportVersionLedgerInsert` migration but the test's expected migration list stopped at `20260827231948_IssuedReportVersionEvidenceLedger`. This was a ticket defect, not a transient CI failure.
 - Added the missing expected migration entry in `tests/Pegasus.IntegrationTests/IntakePersistenceIntegrationTests.cs`. Commit `0ab518e3` is pushed to PR #38's configured branch.
 - The focused census/schema test passed 1/1 after the fix. Exact-head CI and independent review must be refreshed for `0ab518e3` before merge.
+
+## Dev-base conflict resolution and exact-head refresh — 2026-08-28
+
+After PLAT-030 merged into `dev`, PR #38 became non-mergeable because both tickets had independently added their required entries to the same bootstrap permission matrix and committed-migration census. In the PLAT-031 task worktree only, `origin/dev` was merged and the conflicts were resolved by retaining both exact entries: Web UPDATE on `ApprovedSentPollOutcomes` and Worker INSERT on `CaseReportVersionLedgers`. The PLAT-031 branch diff against current `origin/dev` remains limited to its migration plus its two expected-state consumers. The merge-resolution commit is `c97e8e1db774b8b7d6c38ac2fcc24520d27a1150`, pushed to the configured remote.
+
+Post-resolution validation:
+
+- `dotnet build tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false --verbosity minimal` — passed, 0 warnings/errors.
+- `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build -nr:false -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false --filter "FullyQualifiedName~IntakePersistenceIntegrationTests.CommittedMigrationCreatesTheSqlServerSchema" --verbosity normal` — passed, 1/1.
+- `git diff --check origin/dev...HEAD` — passed; four changed files are the PLAT-031 migration, its bootstrap matrix entry, its migration expectation, and its focused runtime-role expectation.
+- Exact-head CI run `33193986163` for the prior head `0ab518e3` completed green; it is superseded by `c97e8e1d` because the PR head changed. Fresh exact-head CI and independent review are required for `c97e8e1d`.
