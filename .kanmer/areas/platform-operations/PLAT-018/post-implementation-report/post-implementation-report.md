@@ -29,3 +29,9 @@ The required pass covered reuse, simplification, efficiency, and altitude. One r
 ## Remaining delivery
 
 Independent review of final HEAD and the task PR are still required. No deployment or cloud proof is claimed.
+
+## Remediation update — 2026-08-28
+
+Final implementation HEAD is `b29466a87f44d6187e0fdf55f5dfc65d30e5a7f3`. The review findings were addressed without expanding the two-file scope: direct Web/Worker registrations and role-specific matching are covered; opt-out markers are applied by the evaluator and tested; historical regressions and the forward fixture use the real inference/evaluator path; grant scanning matches the existing whole-folder literal/tuple semantics; and the architecture wording matches the implemented INSERT/UPDATE/DELETE detection.
+
+Final validation: Release build 0 warnings/errors; focused PLAT-018 tests 6 passed; full architecture suite 117 passed, 0 failed, 0 skipped; `Test-MigrationGrants.ps1` 71 migration files passed; `git diff --check` passed; worktree clean and branch pushed. Fresh independent review is required; PR #36 remains held from merge until it passes.

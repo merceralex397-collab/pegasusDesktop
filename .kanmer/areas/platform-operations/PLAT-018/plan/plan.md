@@ -91,3 +91,23 @@ The independent review of exact HEAD `f171eadb2db862a3fb4ec279b08509b90ae30c21` 
 - `docs/current-architecture.md:183-192` claims EF-model mapping and only INSERT/DELETE detection, while the implementation uses regex source mapping and also detects UPDATE.
 
 Next action: remediate all findings within the same two owned files, rerun the required validation, publish a new exact HEAD, and obtain a fresh independent review. Do not merge PR #36 until the fresh review passes.
+
+## Review remediation — 2026-08-28
+
+The failed review findings were remediated on final HEAD `b29466a87f44d6187e0fdf55f5dfc65d30e5a7f3` (parents `f171eadb` and `6129ddc`). The same two owned files remain the complete diff:
+
+- `tests/Pegasus.ArchitectureTests/RuntimeGrantCompositionTests.cs`
+- `docs/current-architecture.md`
+
+Remediation now includes direct Web/Worker composition-root registration scanning (including `EfIntakeWorkStore`), role-specific Web/Worker matching, create-file-only `// no-runtime-grant` evaluation with a fixture, real store-source inference for all three historical regressions, the same literal/tuple whole-folder grant shapes as `Test-MigrationGrants.ps1`, and documentation matching the implemented INSERT/UPDATE/DELETE detection.
+
+Final validation:
+
+- Release architecture build — passed, 0 warnings/errors.
+- Focused PLAT-018 tests — 6 passed, 0 failed.
+- Full architecture suite — 117 passed, 0 failed, 0 skipped.
+- `pwsh ./scripts/Test-MigrationGrants.ps1` — 71 migration files passed.
+- `git diff --check` — passed.
+- Worktree clean; final branch pushed to `origin/task/dsk-10-18-runtime-grant-composition-gate`.
+
+Fresh independent review of this exact HEAD is required before merge.
