@@ -6,6 +6,7 @@ title: >-
   WebApplicationFactory, locked restore)
 status: done
 area: testing
+order: 330
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
@@ -31,7 +32,7 @@ prs:
   - '29'
 archived: false
 created: '2026-08-24T07:46:12.549Z'
-updated: '2026-08-27T05:24:46.542Z'
+updated: '2026-08-28T20:43:25.461Z'
 ---
 
 ## What

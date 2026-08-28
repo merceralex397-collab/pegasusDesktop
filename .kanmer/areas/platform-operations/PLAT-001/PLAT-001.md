@@ -4,7 +4,7 @@ type: ticket
 title: DSK-10-01 · Threat → control → test register for the desktop conversion
 status: done
 area: platform-operations
-order: 60
+order: 80
 assignee: codex-mcp-client
 profile: chore
 stageEntered:
@@ -23,7 +23,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T08:05:04.668Z'
-updated: '2026-08-28T02:11:17.200Z'
+updated: '2026-08-28T20:43:25.261Z'
 ---
 
 ## What

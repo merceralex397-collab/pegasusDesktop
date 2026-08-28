@@ -6,7 +6,7 @@ title: >-
   assessments and retain immutable report references
 status: done
 area: documents-reports
-order: 80
+order: 100
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
@@ -45,7 +45,7 @@ prs:
   - '14'
 archived: false
 created: '2026-08-24T11:41:20.415Z'
-updated: '2026-08-28T01:27:35.096Z'
+updated: '2026-08-28T20:43:25.275Z'
 ---
 
 ## What
