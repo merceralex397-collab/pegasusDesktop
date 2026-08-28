@@ -79,3 +79,9 @@ Exact implementation HEAD `2d069f0a6f7ea01564b6fdf3fac7efedbfad1f8b` is clean an
 A temporary local combined validation tree merged exact PLAT-018 `2d069f0a` with exact PLAT-030 `c599a42b` without pushing or changing either task branch. It passed focused runtime-grant tests 8/8, the full architecture suite 119/119, `Test-MigrationGrants.ps1` for 72 migration files, `Test-AzureDeploymentPlan.ps1 -Mode Local`, and `git diff --check`. The focused branch-only test remains dependent on PLAT-030's grant migration; this dependency is explicit and not treated as missing evidence.
 
 No cloud, deployment, credential, corpus, or upstream operation occurred. Fresh independent review is required before PR #36 can merge.
+
+## Final lock and validation correction — 2026-08-28
+
+Final implementation HEAD is `aaa025f41d9e60a6ed78c256a14832e014199c8c`, clean and pushed to `origin/task/dsk-10-18-runtime-grant-composition-gate`. The two Web/Infrastructure package lock files were refreshed after PR CI identified the locked-restore representation change caused by the centrally managed test-only Roslyn package.
+
+A temporary local validation tree combined exact PLAT-018 `aaa025f4` with exact PLAT-030 `c599a42b` and passed locked restore, focused runtime-grant tests 8/8, full architecture tests 119/119, `Test-MigrationGrants.ps1` 72/72, `Test-AzureDeploymentPlan.ps1 -Mode Local`, and `git diff --check`. The temporary merge was not pushed. Fresh exact-head CI and independent review remain required; no merge or proof is claimed.

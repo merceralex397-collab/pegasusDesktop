@@ -247,3 +247,18 @@ Because PLAT-030 carries the two production grants this check must observe, the 
 - `git diff --check` — passed.
 
 The branch-only focused run is expected to remain unable to prove the two grants until PLAT-030 is merged; the combined validation is the evidence for the cross-ticket dependency. No merge or proof is claimed yet; fresh independent review of exact HEAD `2d069f0a` remains required.
+
+## Lock-file correction and final validation — 2026-08-28
+
+PR #36 initially failed locked restore because centralizing the test-only `Microsoft.CodeAnalysis.CSharp` package changed its transitive representation in the Web and Infrastructure lock files. Regenerated `src/Pegasus.Infrastructure/packages.lock.json` and `src/Pegasus.Web/packages.lock.json` are committed at exact final HEAD `aaa025f41d9e60a6ed78c256a14832e014199c8c`. `dotnet restore Pegasus.slnx --locked-mode` now passes.
+
+A new temporary local validation tree combined exact PLAT-018 HEAD `aaa025f4` with exact PLAT-030 HEAD `c599a42b`. It passed:
+
+- full `Pegasus.ArchitectureTests` suite — 119/119 passed, 0 failed, 0 skipped;
+- focused `RuntimeGrantCompositionTests` — included in the 119/119 result and passed 8/8;
+- `pwsh ./scripts/Test-MigrationGrants.ps1` — 72 migration files passed;
+- `pwsh ./scripts/Test-AzureDeploymentPlan.ps1 -Mode Local` — passed;
+- `dotnet restore Pegasus.slnx --locked-mode` — passed;
+- `git diff --check` — passed.
+
+The temporary merge was validation-only and was not pushed. PR #36 now requires fresh exact-head CI and independent review.

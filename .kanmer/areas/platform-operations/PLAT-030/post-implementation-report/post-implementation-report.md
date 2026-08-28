@@ -42,3 +42,7 @@ No cloud, deployment, credential, corpus, or upstream operation occurred.
 PLAT-018's parser correction and PLAT-030's grant migration were validated together in a temporary local worktree, without changing either task branch or pushing the temporary merge. Exact PLAT-018 HEAD `2d069f0a6f7ea01564b6fdf3fac7efedbfad1f8b` plus exact PLAT-030 HEAD `c599a42b1f964c4e5a1dc13894f28f8300152984` passed the focused `RuntimeGrantCompositionTests` 8/8 and the full architecture suite 119/119. The same tree passed `Test-MigrationGrants.ps1` (72 files), `Test-AzureDeploymentPlan.ps1 -Mode Local`, and `git diff --check`.
 
 This supplies the previously unchecked PLAT-018 focused acceptance evidence. The temporary merge is validation evidence only; PR #37 remains the three-file PLAT-030 diff at exact head `c599a42b`.
+
+## Final cross-ticket validation correction — 2026-08-28
+
+The prior cross-ticket evidence used an intermediate PLAT-018 head. It has been rerun at final exact PLAT-018 HEAD `aaa025f41d9e60a6ed78c256a14832e014199c8c` plus exact PLAT-030 HEAD `c599a42b1f964c4e5a1dc13894f28f8300152984`. Locked restore, focused runtime-grant tests 8/8, full architecture tests 119/119, migration-grant scan 72/72, local deployment-plan validation, and diff check all passed in the temporary unpushed validation tree. PR #37 remains the exact three-file PLAT-030 change at c599a42b.

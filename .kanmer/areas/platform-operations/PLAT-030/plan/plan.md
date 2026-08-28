@@ -75,3 +75,7 @@ Added the missing `20260828052825_GrantWebApprovedSentPollOutcomeUpdate` entry t
 - `git diff --check` — passed.
 
 Committed and pushed as `c599a42b` to the configured `origin`; PR #37 now requires a fresh exact-head review and CI run.
+
+## Final cross-ticket validation evidence — 2026-08-28
+
+The PLAT-018 focused condition is satisfied by a temporary local validation tree combining exact PLAT-018 HEAD `aaa025f41d9e60a6ed78c256a14832e014199c8c` with exact PLAT-030 HEAD `c599a42b1f964c4e5a1dc13894f28f8300152984`. Locked restore passed; focused `RuntimeGrantCompositionTests` passed 8/8; full architecture tests passed 119/119; `Test-MigrationGrants.ps1` passed for 72 migration files; `Test-AzureDeploymentPlan.ps1 -Mode Local` passed; and `git diff --check` passed. The temporary merge was not pushed. This is the required cross-ticket evidence; no cloud or deployment proof is implied.
