@@ -2,10 +2,13 @@
 id: PLAT-030
 type: ticket
 title: Grant the two composition-root runtime permissions exposed by PLAT-018
-status: backlog
+status: preparing
 area: platform-operations
-assignee: ''
+assignee: codex-mcp-client
 profile: fix
+taken_at: '2026-08-28T05:23:21.646Z'
+branch: task/plat-030-runtime-permissions
+worktree: ../pegasus-worktrees/plat-030-runtime-permissions
 labels:
   - desktop-conversion
   - plan-10
@@ -23,7 +26,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-28T05:22:38.415Z'
-updated: '2026-08-28T05:22:38.415Z'
+updated: '2026-08-28T05:23:21.646Z'
 ---
 
 ## What
