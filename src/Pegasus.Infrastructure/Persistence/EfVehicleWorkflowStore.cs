@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Pegasus.Core.Cases;
 using Pegasus.Core.Identity;
 using Pegasus.Core.Lifecycle;
 using Pegasus.Core.Vehicle;
@@ -27,7 +28,8 @@ internal sealed class EfVehicleWorkflowStore(
         CaseDataFieldNames.VehicleMake,
         CaseDataFieldNames.VehicleModel,
         CaseDataFieldNames.VehicleMileage,
-        CaseDataFieldNames.VehicleMileageUnit
+        CaseDataFieldNames.VehicleMileageUnit,
+        CaseDataFieldNames.VehicleMileageKilometres
     ];
 
     public async Task<RequestedVehicleLookup> RequestAsync(
@@ -260,6 +262,16 @@ internal sealed class EfVehicleWorkflowStore(
             observation,
             command.Decision,
             command.Correction);
+        var normalizedMileage = CaseDataPolicy.Normalize(new(
+            VehicleMileage: proposedValues.Mileage,
+            VehicleMileageUnit: proposedValues.MileageUnit?.ToString()));
+        proposedValues = proposedValues with
+        {
+            Mileage = normalizedMileage.VehicleMileage,
+            MileageUnit = normalizedMileage.VehicleMileage is null
+                ? null
+                : VehicleMileageUnit.Miles
+        };
         if (!await context.CaseDataSnapshots
                 .AnyAsync(item => item.CaseId == command.CaseId, cancellationToken))
         {
@@ -338,7 +350,22 @@ internal sealed class EfVehicleWorkflowStore(
             sourceLabel,
             command.Actor.SubjectId,
             nowUtc,
-            removeWhenMissing: command.Decision == VehicleSuggestionDecision.Correct);
+            removeWhenMissing: command.Decision == VehicleSuggestionDecision.Correct
+                || proposedValues.Mileage is not null);
+        SetConfirmedField(
+            context,
+            confirmedFields,
+            command.CaseId,
+            CaseDataFieldNames.VehicleMileageKilometres,
+            CaseDataCodes.Integer,
+            normalizedMileage.VehicleMileageKilometres?.ToString(CultureInfo.InvariantCulture),
+            sourceKind,
+            sourceIdentity,
+            sourceLabel,
+            command.Actor.SubjectId,
+            nowUtc,
+            removeWhenMissing: command.Decision == VehicleSuggestionDecision.Correct
+                || proposedValues.Mileage is not null);
         SetConfirmedField(
             context,
             confirmedFields,

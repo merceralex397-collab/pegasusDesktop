@@ -76,7 +76,8 @@ public sealed record CaseVehicleData(
     CaseField<string> Make,
     CaseField<string> Model,
     CaseField<long> Mileage,
-    CaseField<string> MileageUnit);
+    CaseField<string> MileageUnit,
+    CaseField<long>? OriginalMileageKilometres = null);
 
 public sealed record CaseAccidentData(
     CaseField<DateOnly> IncidentDate,
@@ -140,7 +141,8 @@ public sealed record CaseEditableData(
     DateOnly? InspectionDate = null,
     DateOnly? InspectionDeadline = null,
     string? InspectionAddress = null,
-    CaseInspectionMode? InspectionMode = null);
+    CaseInspectionMode? InspectionMode = null,
+    long? VehicleMileageKilometres = null);
 
 public sealed record ConfirmCompletenessRequest(
     Guid CaseId,

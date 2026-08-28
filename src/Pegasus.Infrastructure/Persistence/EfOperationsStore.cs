@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using Microsoft.EntityFrameworkCore;
 using Pegasus.Core.Cases;
 using Pegasus.Core.Documents;
+using Pegasus.Core.Intake;
 using Pegasus.Core.Operations;
 using Pegasus.Core.Workflow;
 
@@ -159,8 +160,11 @@ internal sealed class EfOperationsStore(
             CaseId: null,
             CaseReference: null,
             PrincipalCode: null,
-            FailureCode: string.Equals(item.Decision, "technical_failure", StringComparison.Ordinal)
-                ? "technical_failure"
+            FailureCode: string.Equals(
+                item.Decision,
+                IntakeDecisionCodes.ToCode(IntakeDecision.TechnicalFailure),
+                StringComparison.Ordinal)
+                ? IntakeDecisionCodes.ToCode(IntakeDecision.TechnicalFailure)
                 : null,
             RetryMailboxId: null,
             RetryExpectedDueAtUtc: null)));
@@ -560,13 +564,20 @@ internal sealed class EfOperationsStore(
         _ => EmailOperationState.Unknown
     };
 
-    private static EmailOperationState MapIntakeState(string decision) => decision switch
-    {
-        "case_created" or "needs_sorting" or "unsupported" or "ocr_required" =>
-            EmailOperationState.Succeeded,
-        "technical_failure" => EmailOperationState.Failed,
-        _ => EmailOperationState.Unknown
-    };
+    private static EmailOperationState MapIntakeState(string decision) =>
+        IntakeDecisionCodes.TryParse(decision, out var parsed)
+            ? parsed switch
+            {
+                IntakeDecision.CaseCreated
+                    or IntakeDecision.NeedsSorting
+                    or IntakeDecision.Unsupported
+                    or IntakeDecision.OcrRequired
+                    or IntakeDecision.ImageIntakeRegistered => EmailOperationState.Succeeded,
+                IntakeDecision.TechnicalFailure => EmailOperationState.Failed,
+                IntakeDecision.BlockedIntake => EmailOperationState.Unknown,
+                _ => EmailOperationState.Unknown
+            }
+            : EmailOperationState.Unknown;
 
     private RequestOperationProjection MapUploadRequest(
         UploadRequestRow item,

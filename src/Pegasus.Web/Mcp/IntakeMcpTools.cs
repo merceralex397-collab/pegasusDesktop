@@ -59,7 +59,7 @@ internal sealed class IntakeMcpTools(
         Idempotent = true,
         OpenWorld = false,
         UseStructuredContent = true)]
-    [Description("Lists intake receipts with processing decision and allocation state kept separate. Filters are case_created, needs_sorting, blocked_intake, unsupported, ocr_required, technical_failure, or no filter for all. Page size is capped at 50.")]
+    [Description("Lists intake receipts with processing decision and allocation state kept separate. Filter by a persisted decision code or omit the filter for all decisions. Page size is capped at 50.")]
     public async Task<IntakeQueueToolResult> ListAsync(
         [Description("Optional decision filter code; omit for every decision.")] string? decision = null,
         [Description("1-based page number.")] int page = 1,
@@ -77,16 +77,12 @@ internal sealed class IntakeMcpTools(
                 IntakeDecision? decisionFilter = null;
                 if (!string.IsNullOrWhiteSpace(decision))
                 {
-                    decisionFilter = decision.Trim() switch
+                    if (!IntakeDecisionCodes.TryParse(decision.Trim(), out var parsed))
                     {
-                        "case_created" => IntakeDecision.CaseCreated,
-                        "needs_sorting" => IntakeDecision.NeedsSorting,
-                        "blocked_intake" => IntakeDecision.BlockedIntake,
-                        "unsupported" => IntakeDecision.Unsupported,
-                        "ocr_required" => IntakeDecision.OcrRequired,
-                        "technical_failure" => IntakeDecision.TechnicalFailure,
-                        _ => throw new McpException("The intake decision filter is not recognized.")
-                    };
+                        throw new McpException("The intake decision filter is not recognized.");
+                    }
+
+                    decisionFilter = parsed;
                 }
 
                 var effectivePage = page == 0 ? 1 : page;
@@ -113,7 +109,7 @@ internal sealed class IntakeMcpTools(
                             item.CaseId,
                             item.CaseReference))
                         .ToArray(),
-                    decisionFilter is { } filter ? DecisionCode(filter) : null,
+                    decisionFilter is { } filter ? IntakeDecisionCodes.ToCode(filter) : null,
                     result.Page,
                     result.PageSize,
                     result.TotalCount,
@@ -185,17 +181,7 @@ internal sealed class IntakeMcpTools(
             cancellationToken);
     }
 
-    private static string DecisionCode(IntakeDecision decision) => decision switch
-    {
-        IntakeDecision.CaseCreated => "case_created",
-        IntakeDecision.NeedsSorting => "needs_sorting",
-        IntakeDecision.BlockedIntake => "blocked_intake",
-        IntakeDecision.Unsupported => "unsupported",
-        IntakeDecision.OcrRequired => "ocr_required",
-        IntakeDecision.TechnicalFailure => "technical_failure",
-        _ => throw new InvalidOperationException(
-            $"Unknown intake decision '{(int)decision}'.")
-    };
+    private static string DecisionCode(IntakeDecision decision) => IntakeDecisionCodes.ToCode(decision);
 
     internal static string AllocationCode(IntakeReceiptSummary item) => item switch
     {

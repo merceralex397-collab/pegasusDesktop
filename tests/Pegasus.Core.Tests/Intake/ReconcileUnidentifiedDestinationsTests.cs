@@ -3,6 +3,7 @@ using Pegasus.Core.Identity;
 using Pegasus.Core.ImageIntake;
 using Pegasus.Core.Intake;
 using Pegasus.Core.Intake.Unidentified;
+using Pegasus.Core.Triage;
 
 namespace Pegasus.Core.Tests.Intake;
 
@@ -56,6 +57,44 @@ public sealed class ReconcileUnidentifiedDestinationsTests
         Assert.Equal(UnidentifiedResolutionTargetKind.InstructionCase, resolve.TargetKind);
         Assert.Equal(caseId.ToString("N"), resolve.TargetId);
         Assert.Equal("QDOS26009", resolve.TargetReference);
+    }
+
+    [Fact]
+    public async Task TriageCreatedInTheProcessingPassResolvesItsOpenItemToTriage()
+    {
+        var harness = new Harness();
+        var receipt = Receipt(Guid.NewGuid(), IntakeDecision.NeedsSorting) with
+        {
+            MailClassificationDecision = new QdosMailClassificationPolicy().Classify(new(
+                IntakeSourceReadStatus.Readable,
+                [new(IntakeEvidenceSource.EmailBody, "message body", "Triage Only Request")],
+                [new(IntakeEvidenceSource.Subject, "QDOS test instruction")],
+                [],
+                false))
+        };
+        harness.Receipts.Receipts[receipt.Id] = receipt;
+        var item = harness.AddOpenItem(3, UnidentifiedOrigin.Receipt(receipt.Id));
+        var triageId = Guid.NewGuid();
+        var triage = new TriageRecord(
+            triageId,
+            new(receipt.Id, receipt.SourceIdentity, receipt.SourceHash, Guid.NewGuid()),
+            "AB12CDE",
+            TriageState.Open,
+            null,
+            null,
+            0);
+
+        var resolved = await harness.Reconciler.ResolveForReceiptAsync(
+            receipt,
+            triage,
+            CancellationToken.None);
+
+        Assert.True(resolved);
+        var resolve = Assert.Single(harness.Resolve.Requests);
+        Assert.Equal(item.Id, resolve.UnidentifiedItemId);
+        Assert.Equal(UnidentifiedResolutionTargetKind.Triage, resolve.TargetKind);
+        Assert.Equal(triageId.ToString("N"), resolve.TargetId);
+        Assert.Null(resolve.TargetReference);
     }
 
     [Fact]
@@ -117,7 +156,10 @@ public sealed class ReconcileUnidentifiedDestinationsTests
         harness.ImageIntakes.DetailsByOriginReceipt[receipt.Id] = Detail(Guid.NewGuid(), receipt, "AB12CDE-01");
         harness.AddResolvedItem(8, UnidentifiedOrigin.Receipt(receipt.Id));
 
-        var resolved = await harness.Reconciler.ResolveForReceiptAsync(receipt, CancellationToken.None);
+        var resolved = await harness.Reconciler.ResolveForReceiptAsync(
+            receipt,
+            null,
+            CancellationToken.None);
 
         Assert.False(resolved);
         Assert.Empty(harness.Resolve.Requests);

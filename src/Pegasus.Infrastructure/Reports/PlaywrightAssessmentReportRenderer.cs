@@ -170,8 +170,13 @@ internal sealed class PlaywrightAssessmentReportRenderer : IAssessmentReportRend
         ("Condition", Display(snapshot.Vehicle.Condition)));
 
     private static string CostRows(ReportRepairCosts costs) => AmountRows(
-        ("Labour Hours", costs.LabourHours.ToString("0.00", CultureInfo.InvariantCulture)),
-        ("Hourly Rate", Money(costs.HourlyRate)), ("Total Labour", Money(costs.Labour)),
+        costs.IsImported
+            ? ("Imported Labour", Money(costs.Labour))
+            : ("Labour Hours", costs.LabourHours.ToString("0.00", CultureInfo.InvariantCulture)),
+        costs.IsImported
+            ? ("Estimate policy", Encode(costs.ImportedPolicyVersion ?? "accepted source"))
+            : ("Hourly Rate", Money(costs.HourlyRate)),
+        ("Total Labour", Money(costs.Labour)),
         ("Parts", Money(costs.Parts)), ("Paint / Materials", Money(costs.PaintMaterials)),
         ("Specialist / Other", Money(costs.SpecialistOther)), ("Sub Total", Money(costs.Subtotal)),
         (costs.RepairerVatRegistered ? "VAT (20%)" : "VAT (20% — parts & paint only)", Money(costs.Vat)),
@@ -234,7 +239,10 @@ internal sealed class PlaywrightAssessmentReportRenderer : IAssessmentReportRend
             : new[]
             {
                 ("Pre-Accident Value", Money(snapshot.EngineerValue), false),
-                ("Labour Hours", snapshot.Costs.LabourHours.ToString("0.00", CultureInfo.InvariantCulture), false),
+                (snapshot.Costs.IsImported ? "Imported Labour" : "Labour Hours",
+                    snapshot.Costs.IsImported
+                        ? Money(snapshot.Costs.Labour)
+                        : snapshot.Costs.LabourHours.ToString("0.00", CultureInfo.InvariantCulture), false),
                 (snapshot.Outcome == AssessmentReportOutcome.CashInLieu ? "Cash in Lieu Settlement" : "Repair Cost inc VAT", Money(snapshot.Costs.Total), true),
             };
         return string.Join(string.Empty, tiles.Select(x =>

@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -129,8 +130,9 @@ jobs:
         run: ./scripts/Test-AzureDeploymentPlan.ps1 -Mode Local
 
   unit:
-    # Both projects run whole and unfiltered: neither declares a single test
-    # trait, so no filter can drop one of their tests.
+    # These projects run whole and unfiltered: the unit and architecture
+    # projects do not declare a single test trait, while the contract project
+    # is explicitly selected so CI cannot silently omit the new boundary test.
     needs: changes
     if: needs.changes.outputs.build == 'true'
     runs-on: windows-latest
@@ -144,7 +146,8 @@ jobs:
         # code, so a failing first project would otherwise pass the step.
         run: >
           dotnet test ./tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release --no-build &&
-          dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build
+          dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build &&
+          dotnet test ./tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj --configuration Release --no-build --filter "Category=Contract"
 
   sql-integration:
     # Every integration test that is not a browser test. `Category=Browser` and

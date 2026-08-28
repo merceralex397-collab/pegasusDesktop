@@ -1,6 +1,7 @@
 using Pegasus.Core.Identity;
 using Pegasus.Core.ImageIntake;
 using Pegasus.Core.Intake.Unidentified;
+using Pegasus.Core.Triage;
 
 namespace Pegasus.Core.Intake;
 
@@ -11,8 +12,8 @@ public sealed record ReconcileUnidentifiedDestinationsResult(
 
 /// <summary>
 /// The one owner of INTK-007's supersession rule: an open Unidentified item
-/// whose origin receipt has since reached a real destination (a formal Case,
-/// or a registered Image intake) is resolved to that destination, which the
+/// whose origin receipt has since reached a real destination (a pre-case
+/// Triage, a formal Case, or a registered Image intake) is resolved to that destination, which the
 /// resolution history records permanently. <see cref="ResolveForReceiptAsync"/>
 /// runs inside the receipt's own processing/replay pass
 /// (<see cref="ProcessQueuedIntake"/>); <see cref="ExecuteAsync"/> is the
@@ -59,7 +60,7 @@ public sealed class ReconcileUnidentifiedDestinations(
             {
                 var receipt = await receiptQueries.GetAsync(item.Origin.Id, cancellationToken);
                 if (receipt is not null
-                    && await ResolveForReceiptAsync(receipt, cancellationToken))
+                    && await ResolveForReceiptAsync(receipt, null, cancellationToken))
                 {
                     resolved++;
                 }
@@ -81,8 +82,14 @@ public sealed class ReconcileUnidentifiedDestinations(
     /// force-closed, and a receipt with no open item is a no-op. Failures
     /// propagate — callers decide whether the write is advisory.
     /// </summary>
+    /// <summary>
+    /// Resolves an open Unidentified item to a Triage created in the same
+    /// processing pass, while retaining the existing receipt/image/case
+    /// reconciliation paths.
+    /// </summary>
     public async Task<bool> ResolveForReceiptAsync(
         IntakeReceipt receipt,
+        TriageRecord? createdTriage,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(receipt);
@@ -121,6 +128,14 @@ public sealed class ReconcileUnidentifiedDestinations(
             targetKind = UnidentifiedResolutionTargetKind.ImageIntake;
             targetId = detail.Record.Id.ToString("N");
             targetReference = detail.Record.ImageIntakeReference;
+        }
+        else if (createdTriage is not null
+            && createdTriage.Origin.ReceiptId == receipt.Id
+            && receipt.MailClassificationDecision?.IsTriageRequest == true)
+        {
+            targetKind = UnidentifiedResolutionTargetKind.Triage;
+            targetId = createdTriage.Id.ToString("N");
+            targetReference = null;
         }
         else
         {

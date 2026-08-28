@@ -65,6 +65,10 @@ public sealed class PegasusDbContext(DbContextOptions<PegasusDbContext> options)
         Set<EvaHandoffOperationEntity>();
     internal DbSet<CaseReportApprovalEntity> CaseReportApprovals => Set<CaseReportApprovalEntity>();
     internal DbSet<CaseReportSentEvidenceEntity> CaseReportSentEvidence => Set<CaseReportSentEvidenceEntity>();
+    internal DbSet<CaseReportVersionLedgerEntity> CaseReportVersionLedgers => Set<CaseReportVersionLedgerEntity>();
+    internal DbSet<CaseReportAssociationHistoryEntity> CaseReportAssociationHistory => Set<CaseReportAssociationHistoryEntity>();
+    internal DbSet<AssessmentReportVersionEntity> AssessmentReportVersions => Set<AssessmentReportVersionEntity>();
+    internal DbSet<AssessmentReportArtifactEntity> AssessmentReportArtifacts => Set<AssessmentReportArtifactEntity>();
     internal DbSet<CaseDueWorkEntity> CaseDueWork => Set<CaseDueWorkEntity>();
     internal DbSet<CaseManualChaseEntity> CaseManualChases => Set<CaseManualChaseEntity>();
     internal DbSet<CaseTaskEntity> CaseTasks => Set<CaseTaskEntity>();
@@ -176,6 +180,7 @@ public sealed class PegasusDbContext(DbContextOptions<PegasusDbContext> options)
         VehicleModelConfiguration.Configure(builder);
         EvaHandoffModelConfiguration.Configure(builder);
         AssessmentModelConfiguration.Configure(builder);
+        AssessmentReportModelConfiguration.Configure(builder);
         IntakeAllocationModelConfiguration.Configure(builder);
 
         builder.Entity<PegasusIdentityUser>(entity =>

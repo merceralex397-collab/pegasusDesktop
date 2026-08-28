@@ -364,7 +364,8 @@ Ticket handles are `DSK-05-nn` (see the work breakdown in
 - **Documentation**: parity rows (ten handlers + three byte pages).
 - **Rollback/compatibility**: default.
 - **Absorbs upstream**: INTK-001 (honest queued upload status), INTK-027
-  (re-evaluation after transient staging cleanup — gateway/worker fix),
+  (re-evaluation after transient staging cleanup — implemented by fork ticket
+  [[INTK-004]]; gateway/desktop consumers remain in this slice),
   INTK-033 (stranded triage-request email — worker fix), INTK-004 (labels
   reconciled with code).
 
@@ -409,8 +410,9 @@ Ticket handles are `DSK-05-nn` (see the work breakdown in
 
 - **User outcome**: work the triage queue — list, detail, source download,
   and every triage action (await information, record/supersede finding,
-  response link/unlink, complete, cancel, reopen, case link/unlink and the
-  remaining commands) with evidence (proposal §13.4).
+  response link/unlink, complete, cancel, reopen, and formal-instruction
+  conversion status/refusal/completion with its immutable transfer record) with
+  evidence (proposal §13.4). No arbitrary Case link/unlink command remains.
 - **Current behaviour**: `Pages/Triage/Index.cshtml.cs` (449),
   `Pages/Triage/Details.cshtml.cs` (496; `OnPostActionAsync` dispatching
   thirteen commands); Core `Triage/` (lifecycle 561 lines); MCP

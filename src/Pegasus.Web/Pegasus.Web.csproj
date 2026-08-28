@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
+    <ProjectReference Include="..\Pegasus.Contracts\Pegasus.Contracts.csproj" />
     <ProjectReference Include="..\Pegasus.Core\Pegasus.Core.csproj" />
     <ProjectReference Include="..\Pegasus.Infrastructure\Pegasus.Infrastructure.csproj" />
   </ItemGroup>
@@ -8,6 +9,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Pegasus.IntegrationTests" />
     <InternalsVisibleTo Include="Pegasus.ArchitectureTests" />
+    <InternalsVisibleTo Include="Pegasus.Api.ContractTests" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -33,13 +35,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Extensions.AspNetCore.DataProtection.Blobs" Version="1.5.3" />
-    <PackageReference Include="Azure.Identity" Version="1.21.0" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.0.0" />
-    <PackageReference Include="OpenIddict.AspNetCore" Version="7.6.0" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
+    <PackageReference Include="Azure.Extensions.AspNetCore.DataProtection.Blobs" />
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" />
+    <PackageReference Include="OpenIddict.AspNetCore" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

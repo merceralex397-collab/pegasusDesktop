@@ -230,8 +230,21 @@ public sealed class AutoLinkReportEvidence(IAutoLinkReportEvidenceStore store)
                 "Automatic report-evidence linking requires a system-worker actor.");
         }
 
+        if (request.ReportVersionId == Guid.Empty)
+        {
+            throw new ArgumentException("A report version identity cannot be empty.", nameof(request));
+        }
+
         RequireText(request.OperationKey, 100, nameof(request));
         RequireText(request.Reason, 500, nameof(request));
+        if (request.ReportVersionId is null)
+        {
+            return new(
+                AutoLinkReportEvidenceDisposition.NotLinked,
+                Link: null,
+                NotLinkedReasonCode: "report_version_required");
+        }
+
         var result = await _store.TryAutoLinkAsync(request, cancellationToken)
             ?? throw new InvalidDataException(
                 "The automatic report-evidence store returned no result.");
@@ -456,6 +469,15 @@ public static class CaseLifecycleRules
 
         RequireText(request.Approval.ArtifactIdentity, "An approved artifact identity is required.", 200, nameof(request));
         ValidateSha256(request.Approval.ArtifactSha256, nameof(request));
+        if (request.Approval.ReportVersionId is null)
+        {
+            throw new ArgumentException("An immutable report version identity is required.", nameof(request));
+        }
+
+        if (request.Approval.ReportVersionId == Guid.Empty)
+        {
+            throw new ArgumentException("A report version identity cannot be empty.", nameof(request));
+        }
     }
 
     public static void ValidateReportEvidence(
@@ -468,6 +490,31 @@ public static class CaseLifecycleRules
             throw new ArgumentException(
                 "A stable retained approved-mailbox Sent-evidence identifier is required.",
                 nameof(request));
+        }
+
+        if (request is LinkReportEvidenceRequest link)
+        {
+            if (link.ReportVersionId is null)
+            {
+                throw new ArgumentException("An immutable report version identity is required.", nameof(request));
+            }
+
+            if (link.ReportVersionId == Guid.Empty)
+            {
+                throw new ArgumentException("A report version identity cannot be empty.", nameof(request));
+            }
+        }
+        else if (request is UnlinkReportEvidenceRequest unlink)
+        {
+            if (unlink.ReportVersionId is null)
+            {
+                throw new ArgumentException("An immutable report version identity is required.", nameof(request));
+            }
+
+            if (unlink.ReportVersionId == Guid.Empty)
+            {
+                throw new ArgumentException("A report version identity cannot be empty.", nameof(request));
+            }
         }
     }
 

@@ -1,0 +1,86 @@
+{
+  "components": {
+    "schemas": {
+      "PagedResult": {
+        "properties": {
+          "hasNextPage": {
+            "type": "boolean"
+          },
+          "hasPreviousPage": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array"
+          },
+          "page": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "pageSize": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "hasPreviousPage",
+          "hasNextPage"
+        ],
+        "type": "object"
+      },
+      "PegasusProblem": {
+        "description": "RFC 9457 problem details returned by the desktop gateway.",
+        "properties": {
+          "correlationId": {
+            "type": "string"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "correlationId"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Versioned JSON API for the Pegasus native desktop (product version 0.1.0-alpha.1).",
+    "title": "Pegasus Desktop Gateway",
+    "version": "0.1.0-alpha.1"
+  },
+  "openapi": "3.1.1",
+  "paths": {}
+}

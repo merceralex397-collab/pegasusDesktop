@@ -164,14 +164,15 @@ The available evidence establishes review-visible uncertainty, but not an
 accepted numeric confidence score, threshold, or alternative confidence
 display. None should be inferred.
 
-The QDOS intake-to-Triage matcher remains the inactive
-`NoAcceptedIntakeTriageMatcher`: the downstream behavior is complete (accepted
-match evidence creates exactly one replay-safe Triage and multiple matches fail
-closed), so only the match predicates are missing. Activation needs the named
-predicates, exclusions, and ambiguity outcome accepted under this section, and
-is a deliberate change to a named, versioned matcher — the Production
-composition test pins the inactive matcher so it can never be activated as a
-side effect of composition.
+The QDOS intake-to-Triage route is owned by the accepted
+`qdos_mail_classification` policy. Its classified
+`pre-instruction-emails/triage-request` result is the trigger; `ProcessIntake`
+derives exactly one strong `AcceptedTriageMatch` evidence entry from that
+classification, preserving the policy key, version, matched predicate, detail,
+and source. The route never enters normal case allocation. The former
+`IIntakeTriageMatcher` / `NoAcceptedIntakeTriageMatcher` port is retired rather
+than activated, so the production composition test pins the classification
+route and no second policy owner can be introduced by composition.
 
 The QDOS-direct automatic incoming-case matching predicates and their
 conservative outcomes are accepted and owned by
@@ -274,7 +275,7 @@ Still open after the 2026-08-03 implementation:
 
 | Evidence needed | Impact | Recommended default | Decision question |
 |---|---|---|---|
-| Rate-card ownership and accepted derivation formulas (EXT-09): who owns published rate cards, and acceptance of WU÷10×rate, sundry percentages, material bands, and the VAT rule as Core policy. | Without accepted authority no estimate total, report worklist, or repair-cost-to-PAV ratio can be derived; the PAV slider names the missing costed total instead. | Keep derivation absent; raw line writes continue. | Which rate-card owner and derivation formulas are accepted for EXT-09? |
+| Rate-card ownership and accepted derivation formulas (EXT-09) | Settled by operator decision 2026-08-26: Pegasus does not derive report costs from an internal rate card. A selected accepted estimate is imported from an external estimator or estimate document, with its calculation basis and source/version/hash retained; missing or ambiguous selection remains a readiness blocker. | No internal rate-card owner, formula, or cross-estimate precedence is part of the current product. | None for the current report path; future rate-card derivation would require a new scoped decision. |
 | Assessment markup ambiguities recorded rather than guessed: betterment semantics, the estimate `guide` code meaning, approved signatory-list ownership, whether fee fields stay in the assessment record given EXT-11 is `1.2.0`, and where guide/external valuation figures are stored (EXT-10/EXT-13; the valuation API contract should name which figures it supplies). | Guessing any of these would invent business semantics the screens deliberately left unstated. | Store free text where shipped today; decide each with its owning capability. | What are the accepted semantics for each recorded ambiguity, and where do valuation-service figures land when EXT-10/EXT-13 are contracted? |
 | The Suggestions screen's fate and the PAV slider's parameters at the UI-15 re-entry review: repurpose the built Suggestions markup as a read-only automation-change review or retire it; confirm slider placement and step/rounding; resolve the recorded `.send-action` contrast shortfall (2.3–4.2:1 vs 4.5:1) before any activation puts the control in front of staff; ratio basis and threshold source (per-principal or per-instruction; QDOS 80% is the only evidenced example). | Unresolved presentation decisions block staff-facing activation, not gated local work. | Decide at the UI-15 re-entry review; keep the slider a review aid that writes nothing. | What does the UI-15 re-entry review accept for the Suggestions screen, the slider, the contrast fix, and the threshold source? |
 | Tier-5 external-client evidence: one recorded DevelopmentOffline round-trip run — real Claude Code channel session, send → channel event → Actor read → attributed write → reply → Completed on reconcile — over the full fourteen-tool inventory, plus the connector JSONL evidence-log retention rule beyond local-only/gitignored. | Without it no activation claim can be made; the surface stays composition-gated. | Fold into the queued tier-5 MCP evidence run. | When is the recorded round-trip run performed and where is its evidence filed? |

@@ -57,12 +57,6 @@ public sealed class EfRepairSpecificationStore(
                 throw new InvalidOperationException("A correction must supersede the accepted repair specification.");
             }
         }
-        else if (await AcceptedQuery(context, request.CaseId).AnyAsync(cancellationToken))
-        {
-            throw new InvalidOperationException(
-                "The accepted repair specification is immutable; start a reasoned correction that identifies it.");
-        }
-
         var nextVersion = (await context.CaseRepairSpecifications
             .Where(item => item.CaseId == request.CaseId)
             .MaxAsync(item => (int?)item.Version, cancellationToken) ?? 0) + 1;
@@ -140,14 +134,6 @@ public sealed class EfRepairSpecificationStore(
         }
         var candidate = Map(entity) with { Source = source, CalculationBasis = basis };
         RepairSpecificationPolicy.ValidateAcceptance(candidate, request.Actor);
-        if (await context.CaseRepairSpecifications.AnyAsync(
-                item => item.CaseId == request.CaseId && item.Id != entity.Id
-                    && item.State == RepairSpecificationState.Accepted.ToString()
-                    && item.Id != entity.SupersedesSpecificationId,
-                cancellationToken))
-        {
-            throw new InvalidOperationException("A current accepted repair specification already exists; start a reasoned correction.");
-        }
         if (entity.SupersedesSpecificationId is { } predecessorId)
         {
             var predecessor = await context.CaseRepairSpecifications.SingleAsync(
@@ -193,8 +179,19 @@ public sealed class EfRepairSpecificationStore(
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
         var entity = await AcceptedQuery(context, caseId).AsNoTracking().Include(item => item.Lines)
-            .SingleOrDefaultAsync(cancellationToken);
+            .OrderByDescending(item => item.Version)
+            .FirstOrDefaultAsync(cancellationToken);
         return entity is null ? null : Map(entity);
+    }
+
+    public async Task<IReadOnlyList<RepairSpecificationVersion>> ListAcceptedAsync(
+        Guid caseId, CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var entities = await AcceptedQuery(context, caseId).AsNoTracking().Include(item => item.Lines)
+            .OrderByDescending(item => item.Version)
+            .ToListAsync(cancellationToken);
+        return entities.Select(Map).ToArray();
     }
 
     public async Task<RepairSpecificationVersion?> GetCurrentDraftAsync(

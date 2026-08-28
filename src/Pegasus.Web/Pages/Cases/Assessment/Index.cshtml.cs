@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.IO;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Pegasus.Core.AiWork;
@@ -10,6 +11,7 @@ using Pegasus.Core.Identity;
 using Pegasus.Core.Reports;
 using Pegasus.Core.Vehicle;
 using Pegasus.Core.Workflow;
+using Pegasus.Web.Presentation;
 
 namespace Pegasus.Web.Pages.Cases.Assessment;
 
@@ -67,7 +69,50 @@ public sealed class IndexModel(
     /// </summary>
     public AssessmentReportDraftPreparation? ReportDraftPreparation { get; private set; }
 
+    public IReadOnlyList<AssessmentReportVersion> ReportVersions { get; private set; } = [];
+
+    public string ReportFailureLabel(AssessmentReportVersion _) =>
+        AssessmentReportFailureMessages.GenerationFailed;
+
+    public Guid? ReportVersionSpecificationId(AssessmentReportVersion version)
+    {
+        try
+        {
+            return AssessmentReportPayload.Deserialize(version.AcceptedPayloadJson).RepairSpecificationId;
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidDataException
+            or InvalidOperationException or ArgumentException)
+        {
+            return null;
+        }
+    }
+
     public string ReportDraftOperationKey { get; private set; } = NewOperationKey();
+
+    public string ReportStatusLabel(AssessmentReportVersion version) =>
+        OperatorLabels.ReportGenerationState(version.State, version.NextAttemptAtUtc);
+
+    public string ReportVersionLabel(int index) => index == 0 ? "Current report" : "Previous report";
+
+    public string ReportRetryTime(DateTimeOffset value) => OperatorLabels.OfficeTime(value);
+
+    public bool CanRetryReport(AssessmentReportVersion version)
+    {
+        if (!AssessmentReportRetryPolicy.CanRetry(version.AttemptCount))
+        {
+            return false;
+        }
+
+        var now = timeProvider.GetUtcNow();
+        return version.State switch
+        {
+            AssessmentReportGenerationState.Pending or AssessmentReportGenerationState.Failed =>
+                version.NextAttemptAtUtc is null || version.NextAttemptAtUtc <= now,
+            AssessmentReportGenerationState.Rendering =>
+                version.LeaseExpiresAtUtc is { } leaseExpiresAtUtc && leaseExpiresAtUtc <= now,
+            _ => false
+        };
+    }
 
     /// <summary>
     /// ENG-003: the one readiness list the page renders. <see cref="ReportDraftPreparation"/>'s
@@ -79,10 +124,20 @@ public sealed class IndexModel(
     /// </summary>
     public IReadOnlyList<AssessmentReadinessItem> CombinedReadiness { get; private set; } = [];
 
-    /// <summary>ENG-002: the case's current repair specification, draft first.</summary>
+    /// <summary>ENG-002: the case's current draft and accepted estimate tabs.</summary>
     public RepairSpecificationVersion? DraftSpecification { get; private set; }
 
     public RepairSpecificationVersion? AcceptedSpecification { get; private set; }
+
+    public IReadOnlyList<RepairSpecificationVersion> AcceptedSpecifications { get; private set; } = [];
+
+    public Guid? SelectedRepairSpecificationId { get; private set; }
+
+    public string EstimateTabUrl(Guid specificationId) =>
+        $"?section=estimate&selectedRepairSpecificationId={specificationId:D}";
+
+    public string EstimateTabLabel(RepairSpecificationVersion specification) =>
+        $"Estimate {specification.Version}";
 
     public bool ActorIsEngineer { get; private set; }
 
@@ -243,7 +298,10 @@ public sealed class IndexModel(
 
     public bool SendComposed => HttpContext.RequestServices.GetService<ISendCaseToAi>() is not null;
 
-    public async Task<IActionResult> OnGetAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> OnGetAsync(
+        Guid id,
+        Guid? selectedRepairSpecificationId,
+        CancellationToken cancellationToken)
     {
         if (!TryGetActor(out var actor))
         {
@@ -258,10 +316,22 @@ public sealed class IndexModel(
 
         Assessment = await getAssessment.ExecuteAsync(id, cancellationToken);
         DraftSpecification = await repairSpecifications.GetCurrentDraftAsync(id, cancellationToken);
-        AcceptedSpecification = await repairSpecifications.GetCurrentAcceptedAsync(id, cancellationToken);
+        AcceptedSpecifications = await repairSpecifications.ListAcceptedAsync(id, cancellationToken);
+        AcceptedSpecification = selectedRepairSpecificationId is { } requestedId
+            ? AcceptedSpecifications.SingleOrDefault(item => item.SpecificationId == requestedId)
+            : null;
+        AcceptedSpecification ??= AcceptedSpecifications.Count > 0
+            ? AcceptedSpecifications[0]
+            : null;
+        SelectedRepairSpecificationId = AcceptedSpecification?.SpecificationId;
         ActorIsEngineer = actor.IsInRole(StaffRole.Engineer);
         LatestRequest = await workRequests.GetLatestForCaseAsync(id, cancellationToken);
-        ReportDraftPreparation = await generateReportDraft.PrepareAsync(id, actor, cancellationToken);
+        ReportDraftPreparation = await generateReportDraft.PrepareAsync(
+            id,
+            actor,
+            AcceptedSpecification?.SpecificationId,
+            cancellationToken: cancellationToken);
+        ReportVersions = await generateReportDraft.GetVersionsAsync(id, cancellationToken);
         CombinedReadiness = ReportDraftPreparation?.Reasons ?? Assessment?.Readiness ?? [];
         await EvaluatePanelStateAsync(cancellationToken);
         return Page();
@@ -277,6 +347,8 @@ public sealed class IndexModel(
     public async Task<IActionResult> OnPostGenerateReportDraftAsync(
         Guid id,
         string operationKey,
+        Guid? selectedRepairSpecificationId,
+        Guid? reportVersionId,
         CancellationToken cancellationToken)
     {
         if (!TryGetActor(out var actor))
@@ -289,17 +361,28 @@ public sealed class IndexModel(
             return RedirectToPage(new { id });
         }
 
+        var details = await getCase.ExecuteAsync(new(id, actor), cancellationToken);
+        if (details is null)
+        {
+            return NotFound();
+        }
+
         GenerateCaseAssessmentReportDraftResult result;
         try
         {
-            result = await generateReportDraft.ExecuteAsync(id, actor, cancellationToken);
+            result = await generateReportDraft.ExecuteAsync(
+                id,
+                actor,
+                selectedRepairSpecificationId,
+                reportVersionId,
+                cancellationToken);
         }
         catch (Exception exception) when (exception is ReportRenderRejectedException
             or InvalidOperationException
             or IOException
             or TimeoutException)
         {
-            TempData["AssessmentError"] = "The report draft could not be generated. Retry the operation.";
+            TempData["AssessmentError"] = AssessmentReportFailureMessages.GenerationFailed;
             return RedirectToPage(new { id });
         }
 
@@ -385,14 +468,7 @@ public sealed class IndexModel(
                 + "Accept it or replace its lines before importing another estimate.";
             return RedirectToEstimate(id);
         }
-        var accepted = await repairSpecifications.GetCurrentAcceptedAsync(id, cancellationToken);
         var trimmedReason = reason?.Trim();
-        if (accepted is not null && string.IsNullOrEmpty(trimmedReason))
-        {
-            TempData["AssessmentError"] = "This case already has an accepted repair specification. "
-                + "Give the reason this import corrects it.";
-            return RedirectToEstimate(id);
-        }
 
         var caseVersion = details.Workflow.Version;
         var artifactIdentity = $"estimate-import:{operationKey}";
@@ -444,8 +520,8 @@ public sealed class IndexModel(
                     operationKey,
                     string.IsNullOrEmpty(trimmedReason) ? "Estimate imported from a document" : trimmedReason,
                     draftLease.Token,
-                    accepted?.SpecificationId,
-                    parsed.Lines),
+                    SupersedesSpecificationId: null,
+                    Lines: parsed.Lines),
                 cancellationToken);
             TempData["AssessmentStatus"] =
                 $"The estimate was imported as a draft with {parsed.Lines.Count} lines for your review. "

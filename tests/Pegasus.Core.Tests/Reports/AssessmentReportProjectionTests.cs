@@ -29,7 +29,7 @@ public sealed class AssessmentReportProjectionTests
         Assert.Equal(["Nearside door"], snapshot.Repairs);
         Assert.Equal(["Blend nearside wing"], snapshot.Operations);
         Assert.Single(snapshot.Photos);
-        Assert.Single(snapshot.Sources);
+        Assert.Equal(2, snapshot.Sources.Count);
 
         // A ready snapshot must also satisfy the renderer's own gate.
         snapshot.Validate();
@@ -143,16 +143,28 @@ public sealed class AssessmentReportProjectionTests
     }
 
     [Fact]
-    public void MissingRepairCostsIsNotReadyNamingTheAcceptedFormulaGap()
+    public void MissingRepairCostsIsNotReadyNamingTheSelectedEstimateGap()
     {
-        // Production never supplies Costs today: no accepted formula exists
-        // to convert estimate lines and a rate card into a labour rate
-        // (EXT-09, open decision D2). This is the honest, permanent state of
-        // the capability until that formula is accepted.
         var result = AssessmentReportProjection.Project(ReadyInput() with { Costs = null });
 
         var reason = AssertNotReady(result, AssessmentReportProjection.RepairCostRequirement);
-        Assert.Contains("EXT-09", reason.WhyOutstanding, StringComparison.Ordinal);
+        Assert.Contains("selected repair estimate", reason.WhyOutstanding, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task SharedReadinessUseCaseIsTheRegistrationFacingContract()
+    {
+        var source = new FakeProjectionSource(ReadyInput() with { Costs = null });
+        var readiness = new AssessCaseReportReadiness(source);
+
+        var result = await readiness.ExecuteAsync(
+            Guid.NewGuid(),
+            ActionActor.Staff(Guid.NewGuid(), [StaffRole.Engineer]));
+
+        Assert.NotNull(result);
+        Assert.Contains(
+            result!.Reasons,
+            item => item.Requirement == AssessmentReportProjection.RepairCostRequirement);
     }
 
     private static AssessmentReadinessItem AssertNotReady(
@@ -170,6 +182,7 @@ public sealed class AssessmentReportProjectionTests
         var photo = new ReportImageEvidence(
             "site.jpg", "image/jpeg", image, Convert.ToHexStringLower(SHA256.HashData(image)));
         var source = new AcceptedReportSource("instruction.pdf", "1", new string('a', 64));
+        var repairCostSource = new AcceptedReportSource("estimate.pdf", "2", new string('b', 64));
 
         var fields = new[]
         {
@@ -235,7 +248,10 @@ public sealed class AssessmentReportProjectionTests
             ReportDate: new DateOnly(2026, 8, 19),
             Photos: [photo],
             Sources: [source],
-            Costs: new ReportRepairCosts(5m, 30m, 50m, 20m, 5m, true));
+            Costs: new ReportRepairCosts(5m, 30m, 50m, 20m, 5m, true),
+            RepairCostSource: repairCostSource,
+            RepairSpecificationId: Guid.NewGuid(),
+            RepairSpecificationVersion: 2);
     }
 
     private static AssessmentFieldValue[] ReplaceField(
@@ -249,4 +265,15 @@ public sealed class AssessmentReportProjectionTests
         Guid.NewGuid(), position, type, null, description, 2.5m, null, false, null, null,
         "confirmed", "case", "Test evidence",
         ActorKind.Staff, "engineer-1", RecordedAtUtc, "engineer-1", RecordedAtUtc);
+
+    private sealed class FakeProjectionSource(AssessmentReportProjectionInput input)
+        : IAssessmentReportProjectionSource
+    {
+        public Task<AssessmentReportProjectionInput?> GetAsync(
+            Guid caseId,
+            ActionActor actor,
+            Guid? selectedRepairSpecificationId = null,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<AssessmentReportProjectionInput?>(input);
+    }
 }

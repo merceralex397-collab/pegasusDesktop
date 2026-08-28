@@ -57,12 +57,13 @@ The repository identifies its package and release target as `0.1.0-alpha.1`. Peg
 | Component | Ownership and permitted dependencies |
 | --- | --- |
 | `src/Pegasus.Core/` | Business use cases, invariants, models, decisions, and ports. It must not depend on Web, Worker, Infrastructure, EF Core, Azure, Graph, Box, or other adapter implementations. |
+| `src/Pegasus.Contracts/` | Dependency-free shared request, response, problem-details, paging, concurrency, operation-key, compatibility DTOs, and operator vocabulary for the gateway and desktop. It depends only on the .NET base class library. |
 | `src/Pegasus.Core/ReferenceData/` | Exact provider/domain-suffix package validation, deterministic candidate semantics, and the catalog port. It contains no workbook, package-file, or EF implementation. |
 | `src/Pegasus.Infrastructure/` | EF persistence and source, artifact, package, and future external-system adapters implementing Core ports. It depends on Core. |
 | `src/Pegasus.Web/` | Razor Pages and HTTP composition root, request translation, configuration, route gates, and health endpoints. It invokes Core through configured ports and Infrastructure adapters. |
 | `src/Pegasus.Worker/` | Isolated Functions composition root. Its timer and queue triggers translate persisted intake, external-work, mailbox, sent-evidence, and reconciliation signals into Core use cases; it contains no duplicate business policy. |
 
-Web and Worker may translate transport, identity, and configuration. They must not reproduce business policy. Infrastructure may implement Core ports but does not own business decisions.
+Web and Worker may translate transport, identity, and configuration. They must not reproduce business policy. Infrastructure may implement Core ports but does not own business decisions. Core-typed Web label calls use the thin `Pegasus.Web.Presentation.OperatorLabels` adapter; the words and persisted-code maps are owned by `Pegasus.Contracts.Vocabulary.OperatorVocabulary` so the desktop and gateway share one vocabulary without a Core dependency.
 
 A new project, runtime, store, migration stream, deployment unit, or top-level application boundary requires an accepted ADR demonstrating that these owners cannot carry the change. Decision status and supersession are maintained in the [decision index](adr/README.md).
 
@@ -117,6 +118,12 @@ in force here:
 
 - `/health/live` reports liveness.
 - `/health/ready` invokes the registered database health check.
+- `/api/v1` is the versioned native-desktop gateway route group. It is
+  composed only when `Features:DesktopGateway` is enabled; when the flag is
+  absent or false, no `/api/v1` route is mapped. The group currently provides
+  the shared correlation and problem-details boundary for later endpoint
+  tickets; authentication and endpoint capabilities are added by those
+  tickets.
 - These endpoints are technical probes, not evidence of a product mutation or external integration.
 
 ### Worker callers
@@ -416,6 +423,18 @@ A release-owned migration bundle or explicit operation must apply deployed migra
 
 The platform's supported local SQL Server (LocalDB on Windows, a per-run container on Linux) is the canonical local provider for persistence, migration, concurrency, and recovery evidence. Each disposable result proves only the exercised local behavior; it does not prove Azure SQL locking, upgrade behavior, recovery, or live deployment.
 
+Report custody is implemented in the existing workflow boundary. Each generated
+report version has a `CaseReportVersionLedgers` row, and
+`CaseReportAssociationHistory` records approval, link, unlink, and relink actions
+with ordered ledger versions and former-link metadata. Versioned approval and
+Sent evidence carry the exact report-version artifact identity and hash; a
+correction therefore leaves predecessor custody intact while the workflow's
+current pointer advances to the successor. The latest migration preserves
+pre-ledger approval and Sent rows and marks them `Unresolved` rather than
+guessing a report-version association. This is implemented and covered by
+local Release/LocalDB evidence; no deployed schema or cloud migration is claimed
+here.
+
 ## Authentication and authorization boundary
 
 Staff authentication and authorization are implemented and enforced:
@@ -516,6 +535,13 @@ A first Document Intelligence caller may submit only persisted scan-like PDF pag
 ### Provider API and Automation MCP
 
 Provider API and Automation MCP are separate Web ingress boundaries. They must invoke the same Core business actions as staff UI or Worker callers rather than introducing parallel policy engines. The provider API's exact client, actor, authentication, and activation evidence remain separately gated.
+
+The native desktop gateway is a third Web ingress boundary at `/api/v1`,
+composed in the existing `Pegasus.Web` host behind `Features:DesktopGateway`.
+Its route group supplies correlation identifiers and RFC 9457 problem details;
+endpoint authentication, authorization and business projections remain owned by
+the later gateway tickets. This source-state entry does not establish that the
+feature flag is enabled in any deployed environment.
 
 The Automation MCP ingress is implemented in `Pegasus.Web` per ADR-0011, ADR-0013 clause 10, and ADR-0026: `ActorKind.Automation` is a Core actor granted exactly the ordinary casework surface (every administration, system-work, and request-upload right is denied and unknown rights fail closed), one seeded OpenIddict registration authenticates the single vendor-neutral Automation client by client credentials or, for external connectors with administrator-configured redirect URIs, by authorization code with PKCE after Administrator consent (ADR-0027), and a streamable-HTTP MCP endpoint at `/mcp` exposes 35 typed tools wrapping existing Core case, intake, Unidentified, Triage, document, assessment, and mail use cases with per-area scopes (`automation.cases`, `automation.intake`, `automation.documents`, `automation.assessment`, `automation.mail`). Unidentified receipt/group detail and exact-member source download use the retained intake owners; Triage reads, source retrieval, lifecycle, evidence, and Case association use the same queries, commands, integrity checks, versions, replay rules, and Case leases as staff. Explicit named-Engineer assignment remains separately tracked by INTK-019 and no actor-relative assignment shortcut is exposed. Automation writes are direct writes with logging parity: they present the same edit lease, operation-key replay, and version guard as staff saves, they renew that lease through the same Core use case as the staff renew control rather than re-claiming, their assessment values are stored unconfirmed for review at manual engineer assignment, professional-finding confirmation stays staff-Engineer-only, and no confirmation, report-approval, or outward-dispatch tool exists. Every tool invocation and material denial is attributable permanent history. The whole surface registers only when `Features:AutomationMcp` enables it with valid Automation MCP settings (ADR-0026); the deployed state of that gate and its dated activation evidence are owned by [operations](operations.md#production-environment), and source inventory must not be mistaken for deployed inventory.
 
@@ -640,6 +666,7 @@ The staff `/Received/{id}`, `/Received/{id}/Source`, and `/Inbox` routes are ser
 | Dependency-direction evidence | `tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs` |
 | Core assessment-report draft contract and caller | `src/Pegasus.Core/Reports/AssessmentReportRendering.cs` |
 | Integrated Scriban/Playwright/PDFsharp report adapter and governed resources | `src/Pegasus.Infrastructure/Reports/`, composed by `src/Pegasus.Infrastructure/DependencyInjection.cs` in the existing Web boundary |
+| Issued report-version custody ledger and association history | `src/Pegasus.Infrastructure/Persistence/CaseWorkflowEntities.cs`, `EfCaseWorkflowStore.cs`, and the latest EF migration; projected by `CaseWorkflowRecord.IssuedReportVersions` |
 
 Relevant architectural decisions include ADR-0003 for PdfPig, ADR-0005 for multi-format assets, ADR-0006 for provider-neutral intake with a contained QDOS policy, and ADR-0007 for direct-terminal Azure deployment. Their status and supersession must be read through the [decision index](adr/README.md).
 

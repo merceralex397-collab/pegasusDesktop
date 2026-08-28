@@ -21,19 +21,21 @@ signature, and the fee note.
 | Outcome | Title and badge | Headline figures | Settlement meaning |
 | --- | --- | --- | --- |
 | `total_loss` | `TOTAL LOSS REPORT`; `TOTAL LOSS — CATEGORY x` | Pre-accident value, repair cost including VAT, salvage value, and recommended settlement | Recommended settlement is the accepted Engineer value less the accepted salvage value; the accepted category and its approved salvage treatment are required. |
-| `repairable` | `REPAIRABLE REPORT`; `REPAIRABLE` | Pre-accident value, labour hours, and repair cost including VAT | Recommended settlement is the calculated repair cost for the Engineer's repairable finding. |
-| `cash_in_lieu` | `CASH IN LIEU REPORT`; `CASH IN LIEU` | Pre-accident value, labour hours, and cash-in-lieu settlement | The recommended cash-in-lieu settlement is the calculated repair cost. |
-| `contract_repair` | `CONTRACT REPAIR REPORT`; `CONTRACT REPAIR` | Pre-accident value, labour hours, and repair cost including VAT | The Core-computed VAT-inclusive repair total is the agreed contract-repair cap and cannot increase. |
+| `repairable` | `REPAIRABLE REPORT`; `REPAIRABLE` | Pre-accident value, accepted labour figure, and repair cost including VAT | Recommended settlement is the accepted external estimate total for the Engineer's repairable finding. |
+| `cash_in_lieu` | `CASH IN LIEU REPORT`; `CASH IN LIEU` | Pre-accident value, accepted labour figure, and cash-in-lieu settlement | The recommended cash-in-lieu settlement is the accepted external estimate total. |
+| `contract_repair` | `CONTRACT REPAIR REPORT`; `CONTRACT REPAIR` | Pre-accident value, accepted labour figure, and repair cost including VAT | The accepted external estimate's VAT-inclusive total is the agreed contract-repair cap and cannot increase. |
 
 `Pegasus.Core` selects the outcome from the accepted Engineer finding and
-owns the calculation of each derived figure once from accepted, source-labelled
-inputs. A caller or renderer cannot select an outcome, provide a precomposed
-settlement in place of those inputs, or reinterpret one outcome as another.
+owns the report projection and validates the source-labelled cost basis once;
+the numeric repair figures and VAT are accepted from the selected external
+estimate rather than derived from a Pegasus rate card. A caller or renderer
+cannot select an outcome, provide a precomposed settlement in place of those
+inputs, or reinterpret one outcome as another.
 Missing, unknown, conflicting, or incomplete outcome data fails closed before
 an accepted report artifact is rendered. Outcome-specific data is required
 where it affects the document, including category and salvage for total loss
-and the accepted raw cost components from which Core computes the contract-repair
-cap.
+and the accepted raw cost components from which the selected estimate's
+VAT-inclusive contract-repair cap is retained.
 
 Supplied template, schema, wording, design, and sample material is evidence for
 this contract, not a second policy owner. Any category treatment, recovery or
@@ -93,10 +95,11 @@ a "Generate report draft" control on the case Assessment screen
 (`/Cases/{id}/Assessment`), open to the same staff roles as the rest of that
 screen (Administrator, Engineer, User). It projects the case's already-saved,
 confirmed assessment record into the accepted snapshot, renders it, and
-returns the assessment PDF to the operator's browser. Nothing is saved,
-approved, or sent by this action — it is strictly the draft-generation step
-the renderer boundary above already defines; approval and issue remain the
-separately owned human acts described below.
+creates or replays one immutable draft report version and returns the
+assessment PDF to the operator's browser. The version retains the accepted
+snapshot hash, template identity, source provenance, and the assessment/fee-note
+artifact pair. It is not approved, issued, sent, or received by this action;
+approval and issue remain the separately owned human acts described below.
 
 **Readiness.** A single readiness rail decides whether the control is enabled:
 `AssessmentPolicy.EvaluateReadiness` (the same list rendered elsewhere on the
@@ -112,20 +115,19 @@ outstanding reason by name; nothing is guessed to make the control available.
 `Image`-role documents (current, not logically removed, custody status
 Confirmed) — the same confirmation gate the EVA hand-off bundle already uses
 for its own image evidence. `Sources` are every other custody-confirmed case
-document, reported by its own file name, version and hash. Both are real
-custody facts, not curated: the Assessment screen's photograph
+document, reported by its own file name, version and hash, plus the selected
+accepted repair-estimate source. Both are real custody facts, not curated: the Assessment screen's photograph
 curation/ordering control is separately deferred (UI-15), so every confirmed
 image on the case is offered.
 
-**Repair-cost figures are not yet derivable.** No accepted formula exists
-anywhere in the domain to convert recorded estimate lines and a chosen rate
-card into a numeric labour rate or paint-materials charge — the rate card is
-explicitly published reference data the assessment screen never stores a
-figure for, and estimate-total derivation is documented as deliberately
-absent pending its own accepted authority (EXT-09, open decision D2). The
-report draft does not fabricate one: until EXT-09 is accepted, every case's
-readiness names "Repair cost figures" as outstanding and the control stays
-disabled. This is the current, honest state of the capability, not a defect.
+**Repair-cost figures are imported, not derived by Pegasus.** A selected
+accepted repair estimate may come from a connected estimating system or an
+imported estimate document. Its calculation basis and source/version/hash are
+copied into the accepted report snapshot. Multiple estimates remain separate
+and the operator explicitly selects the one used for generation; no internal
+rate-card formula or cross-estimate precedence is invented. A missing,
+unaccepted, or ambiguous selected estimate keeps "Repair cost figures" as a
+named readiness blocker.
 
 ### Report correction, finality, and post-report work
 
@@ -151,6 +153,16 @@ interaction, and closure rules remain `Next`/unallocated and unresolved; no
 mailbox adapter may invent them or create a new case/reference. See [external
 data, submission, and report
 contracts](../open-decisions.md#external-data-submission-and-report-contracts).
+
+**Version-specific custody.** Each issued report version has its own durable
+ledger entry. Approval and final Sent evidence are associated to the selected
+version only when the exact report-version artifact identity and SHA-256 match;
+the predecessor's approval and Sent evidence remain queryable when a correction
+creates a successor. Reassociation is an explicit, reasoned unlink/relink and
+records the actor, time, former case/link values, and ordered version history.
+Legacy approval or Sent rows that predate the ledger remain preserved and are
+shown as `Unresolved` until exact version evidence establishes their owner; the
+migration does not silently attach them to a report version.
 
 Requirements:
 
