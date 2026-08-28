@@ -2,10 +2,12 @@
 id: PLAT-030
 type: ticket
 title: Grant Web UPDATE on ApprovedSentPollOutcomes exposed by PLAT-018
-status: preparing
+status: implementing
 area: platform-operations
 assignee: codex-mcp-client
 profile: fix
+stageEntered:
+  implementing: '2026-08-28T05:25:55.425Z'
 taken_at: '2026-08-28T05:23:21.646Z'
 branch: task/plat-030-runtime-permissions
 worktree: ../pegasus-worktrees/plat-030-runtime-permissions
@@ -26,7 +28,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-28T05:22:38.415Z'
-updated: '2026-08-28T05:25:23.876Z'
+updated: '2026-08-28T05:25:55.425Z'
 ---
 
 ## What
