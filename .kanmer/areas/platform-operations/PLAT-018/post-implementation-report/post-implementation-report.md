@@ -63,3 +63,7 @@ Review of exact HEAD `16d96600a041ef3ae54a71d59dfb5ccb9b86596f` returned FAIL. T
 ## Remediation 5 — 2026-08-28
 
 Exact HEAD `7b084329f3974acf6b4b47d92cdc6eff9a09243a` is clean and pushed with reported green validation (Release build, focused 7/7, full architecture 118/118, migration scan 71/71, diff check). PR #36 remains held pending fresh independent review.
+
+## Remediation 6 status — 2026-08-28
+
+HEAD `05b066df1613eff31d8e7d0b4e107a453c3e811a` is clean and locally green, but the implementer reports unresolved acceptance gaps in transitive/Core-mediated role closure, immutable historical registration fixtures, and differential tuple semantics. No independent review or merge is claimed.

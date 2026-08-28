@@ -208,3 +208,7 @@ The reviewer verified local build, focused 7/7, full architecture 118/118, migra
 ## Review remediation 5 — 2026-08-28
 
 The findings from the review of `16d96600a041ef3ae54a71d59dfb5ccb9b86596f` were addressed on exact HEAD `7b084329f3974acf6b4b47d92cdc6eff9a09243a` (parent `16d96600`). The bounded diff remains limited to the runtime-grant architecture test and the architecture snapshot. Reported validation on the clean pushed branch: Release build 0 warnings/errors; focused tests 7/7; full architecture tests 118/118; migration script 71/71; `git diff --check` clean. Another independent review is required before merge; PR #36 remains held.
+
+## Remediation 6 status — 2026-08-28
+
+Mencius pushed exact HEAD `05b066df1613eff31d8e7d0b4e107a453c3e811a` with a clean worktree and reported green validation (Release build; focused architecture 7/7; full architecture 118/118; migration scan 71/71; `git diff --check`). The implementing agent explicitly reported that acceptance is still incomplete: transitive/Core-mediated role closure, immutable historical registration snapshots, and differential tuple fixtures remain unresolved. PR #36 is held and this HEAD is not being sent for independent review. Next action is to complete those gaps within the bounded ticket scope before another review.

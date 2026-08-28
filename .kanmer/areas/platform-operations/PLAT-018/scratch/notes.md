@@ -21,3 +21,5 @@
 2026-08-28: independent re-review of 16d96600a041ef3ae54a71d59dfb5ccb9b86596f returned FAIL. Blockers: transitive DI role closure; structural ExecuteUpdateAsync/variable Add/var tracked/navigation removal inference; forward and historical fixtures bypass normal evaluator; tuple/parser parity; docs overclaim. PR #36 held.
 
 2026-08-28: remediation 5 pushed at 7b084329f3974acf6b4b47d92cdc6eff9a09243a, clean, with Release build green, focused 7/7, full architecture 118/118, migration scan 71/71, diff check clean. PR #36 held pending fresh independent review.
+
+2026-08-28: Mencius pushed 05b066df1613eff31d8e7d0b4e107a453c3e811a clean/green but reports unresolved acceptance: transitive/Core-mediated role closure, immutable historical registration snapshots, and differential tuple fixtures. PR #36 held; no review requested for this head.
