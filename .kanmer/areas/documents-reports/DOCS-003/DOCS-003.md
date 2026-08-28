@@ -29,9 +29,14 @@ blocks:
 refs:
   - docs/frd/frd-11-reports-correspondence-and-reviewed-proposals.md
 docs_todo: true
+commits:
+  - 33f0017c
+  - add9da25
+prs:
+  - '33'
 archived: false
 created: '2026-08-24T11:41:20.454Z'
-updated: '2026-08-28T01:17:17.520Z'
+updated: '2026-08-28T01:34:14.968Z'
 ---
 
 ## What
