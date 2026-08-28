@@ -15,3 +15,5 @@
 2026-08-28: remediation 3 pushed at 87933e0784cd2836dd043535b95346e30eaf4288, clean. Added concrete factory registration association, tracked/raw SQL UPDATE detection, inference-backed forward fixture, shared Web/Worker tuple attribution, and narrower docs. Validation: Release build 0 warnings/errors; focused 6/6; full architecture 117/117; migration scan 71/71; diff check clean. Fresh independent reviewer Anscombe assigned; PR #36 held.
 
 2026-08-28: independent re-review of 87933e0784cd2836dd043535b95346e30eaf4288 returned FAIL. Findings: incomplete DI role closure; structural direct/tracked/navigation mutation inference missing; forward fixture still manually constructs RuntimeWrite; historical fixtures use current source/model; opt-out reason and non-creating-file negative case absent; docs overstate coverage. PR #36 held.
+
+2026-08-28: remediation 4 pushed at 16d96600a041ef3ae54a71d59dfb5ccb9b86596f, clean. Validation: Release build 0 warnings/errors; focused 7/7; full architecture 118/118; migration scan 71/71; diff check clean. Fresh independent review required; PR #36 held.

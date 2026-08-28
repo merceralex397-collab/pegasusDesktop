@@ -176,3 +176,18 @@ Fresh independent review of exact HEAD `87933e0784cd2836dd043535b95346e30eaf4288
 - `docs/current-architecture.md:183-193` still claims complete composition-root/write/historical coverage that is not implemented.
 
 Passed checks were noted (focused 6/6, full architecture 117/117, migration script 71/71, diff check clean, exact-head applicable CI green with infrastructure skipped), but they do not cure these acceptance gaps. Next action: remediate every finding in bounded scope, rerun validation, push a new exact HEAD, and obtain another independent review.
+
+## Review remediation 4 — 2026-08-28
+
+The six findings from the review of `87933e0784cd2836dd043535b95346e30eaf4288` were addressed on exact HEAD `16d96600a041ef3ae54a71d59dfb5ccb9b86596f` (parent `87933e07`). The bounded diff remains in `tests/Pegasus.ArchitectureTests/RuntimeGrantCompositionTests.cs`; the architecture snapshot is unchanged because the prior wording is retained only after this implementation's reported scope. The test now includes direct and range mutation recognition, tracked-entity association, concrete/factory role closure improvements, inference-backed fixture logic, shared tuple role attribution, and opt-out reason/create validation.
+
+Validation reported on the clean pushed branch:
+
+- Release architecture build — passed, 0 warnings/errors.
+- Focused PLAT-018 tests — 7/7 passed.
+- Full architecture suite — 118/118 passed.
+- `pwsh ./scripts/Test-MigrationGrants.ps1` — 71/71 migration files passed.
+- `git diff --check` — passed.
+- Worktree clean; branch pushed to `origin/task/dsk-10-18-runtime-grant-composition-gate`.
+
+A fresh independent review has been requested against exact HEAD `16d96600`; PR #36 remains held.
