@@ -9,3 +9,5 @@
 - The manually started Web and Azurite processes were verified by exact INTK-002 worktree command lines and stopped. Ports 62470-62474 are no longer owned by those processes.
 
 INTK-002 stays in `review` and must not merge or move to verifying until L-02 is genuinely demonstrated or an explicitly scoped owner resolves the Worker composition blocker.
+
+2026-08-28 — Paused in review. PR #23 (head 56fb9b05c9609e08bf14a2e26f71e6d9b8ed5e1f) and its exact-head CI are green, but required L-02 caller-journey proof is still unavailable. The repository launcher fails before starting because its PowerShell-owned process has an empty Process.Path; a direct exact-worktree Functions-host run reaches Worker startup but fails existing composition with missing UserManager<Pegasus.Infrastructure.Persistence.PegasusIdentityUser>. INTK-002 scope explicitly excludes src/Pegasus.Worker, so do not claim or patch that defect here. Smallest next action: resolve the launcher/Worker composition under its owning ticket, then rerun the L-02 caller journey and attach truthful evidence before merge/proof.
