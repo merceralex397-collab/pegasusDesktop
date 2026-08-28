@@ -13,9 +13,6 @@
     <PublishProfile Condition="Exists('Properties\PublishProfiles\win-$(Platform).pubxml')">win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <WinUISDKReferences>false</WinUISDKReferences>
-    <!-- The scaffold has no WebView2 caller; prevent the transitive package's optional managed payload from shipping. -->
-    <WebView2EnableCsWinRTProjectionExcludeCoreRef>true</WebView2EnableCsWinRTProjectionExcludeCoreRef>
-    <WebView2NeverCopyLoaderDllToOutputDirectory>true</WebView2NeverCopyLoaderDllToOutputDirectory>
     <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>
 
@@ -57,22 +54,8 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools.WinApp" />
+    <PackageReference Include="Microsoft.Web.WebView2" ExcludeAssets="all" PrivateAssets="all" />
   </ItemGroup>
-
-  <!--
-    Windows App SDK brings WebView2 transitively for the optional WinUI WebView2
-    control. This scaffold has no WebView2 caller; keep that optional payload out
-    of its output until the isolated renderer is implemented by its owning ticket.
-  -->
-  <Target Name="ExcludeUnusedWebView2Payload" AfterTargets="ResolveReferences" BeforeTargets="CopyFilesToOutputDirectory;GetCopyToOutputDirectoryItems;ComputeFilesToPublish">
-    <ItemGroup>
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Filename)' == 'Microsoft.Web.WebView2.Core' Or '%(ReferenceCopyLocalPaths.Filename)' == 'Microsoft.Web.WebView2.Core.Projection' Or '%(ReferenceCopyLocalPaths.Filename)' == 'WebView2Loader'" />
-      <RuntimeTargetsCopyLocalItems Remove="@(RuntimeTargetsCopyLocalItems)" Condition="'%(RuntimeTargetsCopyLocalItems.Filename)' == 'Microsoft.Web.WebView2.Core' Or '%(RuntimeTargetsCopyLocalItems.Filename)' == 'Microsoft.Web.WebView2.Core.Projection' Or '%(RuntimeTargetsCopyLocalItems.Filename)' == 'WebView2Loader'" />
-      <NativeCopyLocalItems Remove="@(NativeCopyLocalItems)" Condition="'%(NativeCopyLocalItems.Filename)' == 'Microsoft.Web.WebView2.Core' Or '%(NativeCopyLocalItems.Filename)' == 'Microsoft.Web.WebView2.Core.Projection' Or '%(NativeCopyLocalItems.Filename)' == 'WebView2Loader'" />
-      <Content Remove="@(Content)" Condition="'%(Content.Filename)' == 'Microsoft.Web.WebView2.Core' Or '%(Content.Filename)' == 'Microsoft.Web.WebView2.Core.Projection' Or '%(Content.Filename)' == 'WebView2Loader'" />
-    </ItemGroup>
-    <Delete Files="$(TargetDir)AppX\Microsoft.Web.WebView2.Core.dll;$(TargetDir)AppX\Microsoft.Web.WebView2.Core.Projection.dll;$(TargetDir)AppX\Microsoft.Web.WebView2.Core.winmd;$(TargetDir)AppX\WebView2Loader.dll" />
-  </Target>
 
   <!-- The vendored analyzer is explicit because no Microsoft.WindowsAppSDK.Analyzers NuGet package exists. -->
   <ItemGroup>
