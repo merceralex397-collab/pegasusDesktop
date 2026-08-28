@@ -26,3 +26,9 @@ How can every desktop-facing state, time, size and identifier be presented throu
 FEAT-023's unresolved ownership split must remain unresolved here; this plan consumes its eventual decision rather than duplicating the question.
 
 The implementation worktree must record its simplification pass and independent desktop review before merge.
+
+## Dependency resolution — 2026-08-28
+
+- Read-only Kanmer checks confirm [[GWY-001]] is `done` and [[GWY-016]] is `done` at merged commit `67109b45066648b3256eff8d4bc3491a18bfeb7d`; it owns the single `Pegasus.Contracts/Vocabulary/OperatorVocabulary` implementation.
+- [[FEAT-023]] is archived with documented duplicate/coverage rationale and will not be implemented separately. Its required relocation decision is therefore resolved by GWY-016; no duplicate map or dependency edit is introduced here.
+- This ticket may proceed against the current `origin/dev` contract owner, with desktop-side formatting/test work only. No product decision, Azure write, upstream synchronization, or shared-map modification is required for this ticket.
