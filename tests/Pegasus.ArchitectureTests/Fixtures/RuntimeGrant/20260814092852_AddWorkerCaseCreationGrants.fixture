@@ -1,0 +1,21 @@
+using Microsoft.Extensions.DependencyInjection;
+using Pegasus.Infrastructure.Persistence;
+
+static class WorkerCompositionFixture
+{
+    public static IServiceCollection Register(IServiceCollection services)
+    {
+        services.AddScoped<EfCaseAcceptanceStore>();
+        services.AddScoped<ICaseAcceptanceStore>(provider =>
+            provider.GetRequiredService<EfCaseAcceptanceStore>());
+        return services;
+    }
+}
+
+sealed class EfCaseAcceptanceStore
+{
+    public void Create(PegasusDbContext context)
+    {
+        context.Cases.Add(new CaseEntity());
+    }
+}

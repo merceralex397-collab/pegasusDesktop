@@ -1,0 +1,25 @@
+using Microsoft.Extensions.DependencyInjection;
+using Pegasus.Infrastructure.Persistence;
+
+static class WorkerCompositionFixture
+{
+    public static IServiceCollection Register(IServiceCollection services)
+    {
+        services.AddScoped<ArchitectureTestUnGrantedTableStore>();
+        return services;
+    }
+}
+
+sealed class ArchitectureTestUnGrantedTableStore
+{
+    public void Write(PegasusDbContext context)
+    {
+        context.Set<ArchitectureTestUnGrantedTableEntity>().Add(
+            new ArchitectureTestUnGrantedTableEntity());
+    }
+}
+
+sealed class ArchitectureTestUnGrantedTableEntity
+{
+    public int Id { get; set; }
+}

@@ -1,0 +1,21 @@
+using Microsoft.Extensions.DependencyInjection;
+using Pegasus.Infrastructure.Persistence;
+
+static class WorkerCompositionFixture
+{
+    public static IServiceCollection Register(IServiceCollection services)
+    {
+        services.AddScoped<EfVehicleWorkflowStore>();
+        services.AddScoped<IRequestVehicleLookupStore>(provider =>
+            provider.GetRequiredService<EfVehicleWorkflowStore>());
+        return services;
+    }
+}
+
+sealed class EfVehicleWorkflowStore
+{
+    public void Create(PegasusDbContext context)
+    {
+        context.Set<VehicleLookupRequestEntity>().Add(new VehicleLookupRequestEntity());
+    }
+}
