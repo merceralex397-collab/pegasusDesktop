@@ -4,7 +4,7 @@ type: ticket
 title: >-
   upstream:TICK-208 · Preserve final Sent evidence through post-report
   correction
-status: verifying
+status: done
 area: documents-reports
 assignee: codex-mcp-client
 profile: feature
@@ -12,9 +12,7 @@ stageEntered:
   preparing: '2026-08-24T21:23:44.571Z'
   review: '2026-08-28T01:17:17.520Z'
   verifying: '2026-08-28T01:35:36.182Z'
-taken_at: '2026-08-27T22:49:17.645Z'
-branch: task/upstream-tick-208-issued-version-ledger
-worktree: ../pegasus-worktrees/upstream-tick-208-issued-version-ledger
+  done: '2026-08-28T01:53:04.683Z'
 labels:
   - now
   - source-now
@@ -37,7 +35,7 @@ prs:
   - '33'
 archived: false
 created: '2026-08-24T11:41:20.454Z'
-updated: '2026-08-28T01:35:36.182Z'
+updated: '2026-08-28T01:53:14.991Z'
 ---
 
 ## What
