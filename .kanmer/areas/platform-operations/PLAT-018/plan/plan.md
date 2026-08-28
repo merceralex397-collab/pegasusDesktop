@@ -79,3 +79,15 @@ Validation on the final HEAD:
 - Altitude — no change; the diff remains limited to the architecture test and current-architecture snapshot.
 
 The final branch is ready for independent review. No migration, source composition root, CI, cloud, upstream, or deployment file was changed.
+
+## Independent review — 2026-08-28
+
+The independent review of exact HEAD `f171eadb2db862a3fb4ec279b08509b90ae30c21` returned **FAIL**; PR #36 is not mergeable. Findings to remediate before another review:
+
+- `RuntimeGrantCompositionTests.cs:273-307` scans only Infrastructure registrations and misses direct Web/Worker registrations such as `EfIntakeWorkStore` in `Program.cs:601-605` and `WorkerDependencyInjection.cs:88-92`.
+- `HasOptOut` is self-tested but is not applied by grant evaluation.
+- Historical and forward fixtures inject synthetic `RuntimeWrite` records instead of exercising real pre-fix migration or registration/entity inference.
+- Grant parsing duplicates and narrows `scripts/Test-MigrationGrants.ps1` rather than matching its behavior.
+- `docs/current-architecture.md:183-192` claims EF-model mapping and only INSERT/DELETE detection, while the implementation uses regex source mapping and also detects UPDATE.
+
+Next action: remediate all findings within the same two owned files, rerun the required validation, publish a new exact HEAD, and obtain a fresh independent review. Do not merge PR #36 until the fresh review passes.
