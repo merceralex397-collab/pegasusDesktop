@@ -4,12 +4,15 @@ type: ticket
 title: >-
   DSK-08-04 · Scaffold `tests/Pegasus.Desktop.ViewModelTests`
   (`net10.0-windows10.0.26100.0`, no UI thread)
-status: preparing
+status: implementing
 area: testing
-assignee: ''
+assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:34:13.457Z'
+taken_at: '2026-08-28T21:35:53.407Z'
+branch: task/desktop-viewmodel-tests
+worktree: ../pegasus-worktrees/desktop-viewmodel-tests
 labels:
   - desktop-conversion
   - plan-08
@@ -24,7 +27,7 @@ blocks:
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:12.595Z'
-updated: '2026-08-24T21:34:13.457Z'
+updated: '2026-08-28T21:35:53.407Z'
 ---
 
 ## What
