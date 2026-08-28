@@ -1,6 +1,6 @@
 # Checklist — INTK-004
 
-- [ ] Reproduce and record the current missing-staging path and first-attempt terminal behavior.
+- [x] Reproduce and record the current missing-staging path and first-attempt terminal behavior.
 - [x] Re-stage the retained, hash-verified source in `EfIntakeMutationStore.ScheduleReevaluationAsync` before changing the work item to pending.
 - [x] Add focused positive, missing/corrupt-source, lease, replay, ambiguous-source, stage-failure, and atomicity regression coverage.
 - [x] Update the FRD, carry-over record, and explicitly named in-repository documentation without touching upstream or deployment state.
@@ -18,8 +18,8 @@ The final focused reevaluation suite passed 7 tests; the affected CaseMatch suit
 - [x] PR merge verified (`gh pr view --json state,mergedAt`)
 - [x] proof.md finalised (PR URL + merge date)
 - [x] Moved to final stage
-- [ ] Outcome recorded in ticket body (PR link, follow-ups)
-- [ ] cd out of worktree; `git worktree remove`
-- [ ] `git branch -d` (squash/rebase merge requires `-D`)
-- [ ] `git fetch --prune` + `git worktree prune`
+- [x] Outcome recorded in ticket body (PR link, follow-ups)
+- [x] cd out of worktree; `git worktree remove`
+- [x] `git branch -d` (squash/rebase merge requires `-D`)
+- [x] `git fetch --prune` + `git worktree prune`
 - [ ] `take_ticket action: "release"`

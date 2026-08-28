@@ -14,9 +14,6 @@ stageEntered:
   review: '2026-08-25T20:13:23.068Z'
   verifying: '2026-08-25T20:13:47.885Z'
   done: '2026-08-28T20:53:32.295Z'
-taken_at: '2026-08-25T19:17:45.434Z'
-branch: task/upstream-intk-027-reevaluation-after-cleanup
-worktree: ../pegasus-worktrees/upstream-intk-027-reevaluation-after-cleanup
 labels:
   - defect
   - intake
@@ -41,7 +38,7 @@ prs:
   - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/11'
 archived: false
 created: '2026-08-24T11:47:12.109Z'
-updated: '2026-08-28T20:53:57.706Z'
+updated: '2026-08-28T20:55:22.762Z'
 ---
 
 ## What
