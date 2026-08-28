@@ -122,6 +122,7 @@ public sealed class TasksModel(
         string operationKey,
         string reason,
         string editLeaseToken,
+        Guid? reportVersionId,
         CancellationToken cancellationToken) =>
         ExecuteCaseCommandAsync(
             id,
@@ -148,6 +149,7 @@ public sealed class TasksModel(
         string operationKey,
         string reason,
         string editLeaseToken,
+        Guid? reportVersionId,
         CancellationToken cancellationToken) =>
         ExecuteCaseCommandAsync(
             id,
@@ -205,6 +207,7 @@ public sealed class TasksModel(
         string operationKey,
         string reason,
         string editLeaseToken,
+        Guid? reportVersionId,
         CancellationToken cancellationToken) =>
         ExecuteCaseCommandAsync(
             id,
@@ -218,7 +221,8 @@ public sealed class TasksModel(
                     operationKey,
                     reason,
                     editLeaseToken,
-                    evidenceId),
+                    evidenceId,
+                    reportVersionId),
                 cancellationToken),
             "The exact retained report-Sent evidence was linked.");
 
@@ -229,6 +233,7 @@ public sealed class TasksModel(
         string operationKey,
         string reason,
         string editLeaseToken,
+        Guid? reportVersionId,
         CancellationToken cancellationToken) =>
         ExecuteCaseCommandAsync(
             id,
@@ -242,7 +247,8 @@ public sealed class TasksModel(
                     operationKey,
                     reason,
                     editLeaseToken,
-                    evidenceId),
+                    evidenceId,
+                    reportVersionId),
                 cancellationToken),
             "The report-Sent evidence was unlinked; retained evidence and history were preserved.");
 }

@@ -67,7 +67,10 @@ public sealed record ReportApprovalEvidence(
     string ArtifactIdentity,
     string ArtifactSha256,
     ActionActor ApprovedBy,
-    DateTimeOffset ApprovedAtUtc);
+    DateTimeOffset ApprovedAtUtc,
+    Guid? ReportVersionId = null,
+    string? AssociationStatus = null,
+    string? AssociationStatusReason = null);
 
 /// <summary>
 /// Caller-supplied identity of the immutable report artifact being approved. The approving
@@ -76,7 +79,8 @@ public sealed record ReportApprovalEvidence(
 public sealed record ReportApprovalSubmission(
     Guid ApprovalId,
     string ArtifactIdentity,
-    string ArtifactSha256);
+    string ArtifactSha256,
+    Guid? ReportVersionId = null);
 
 /// <summary>
 /// Exact retained approved-mailbox Sent evidence. A caller cannot substitute a draft,
@@ -97,7 +101,40 @@ public sealed record ApprovedMailboxReportSentEvidence(
     DateTimeOffset DiscoveredAtUtc,
     ActionActor DiscoveredBy,
     DateTimeOffset LinkedAtUtc,
-    ActionActor LinkedBy);
+    ActionActor LinkedBy,
+    Guid? ReportVersionId = null,
+    string? ArtifactIdentity = null,
+    string? ArtifactSha256 = null,
+    string? AssociationStatus = null,
+    string? AssociationStatusReason = null);
+
+public sealed record ReportEvidenceAssociationHistory(
+    Guid Id,
+    Guid? EvidenceId,
+    Guid? ApprovalId,
+    Guid? BeforeReportVersionId,
+    Guid? AfterReportVersionId,
+    string Action,
+    ActionActor Actor,
+    string Reason,
+    DateTimeOffset OccurredAtUtc,
+    Guid? FormerCaseId = null,
+    DateTimeOffset? FormerLinkedAtUtc = null,
+    ActionActor? FormerLinkedBy = null);
+
+/// <summary>
+/// Version-specific report custody projected over the Core-owned report version.
+/// </summary>
+public sealed record IssuedReportVersion(
+    Guid ReportVersionId,
+    int Version,
+    string? ArtifactIdentity,
+    string? ArtifactSha256,
+    Guid? PredecessorId,
+    string? CorrectionReason,
+    ReportApprovalEvidence? Approval,
+    ApprovedMailboxReportSentEvidence? SentEvidence,
+    IReadOnlyList<ReportEvidenceAssociationHistory> AssociationHistory);
 
 public sealed record CaseWorkflowRecord(
     Guid CaseId,
@@ -113,6 +150,8 @@ public sealed record CaseWorkflowRecord(
     long Version)
 {
     public CaseArchive? Archive { get; init; }
+
+    public IReadOnlyList<IssuedReportVersion> IssuedReportVersions { get; init; } = [];
 }
 
 public sealed record CaseEditLease(
@@ -243,7 +282,8 @@ public sealed record LinkReportEvidenceRequest(
     string OperationKey,
     string Reason,
     string EditLeaseToken,
-    Guid EvidenceId)
+    Guid EvidenceId,
+    Guid? ReportVersionId = null)
     : CaseMutationRequest(CaseId, ExpectedVersion, Actor, OperationKey, Reason, EditLeaseToken);
 
 /// <summary>
@@ -255,7 +295,8 @@ public sealed record AutoLinkReportEvidenceRequest(
     Guid EvidenceId,
     ActionActor Actor,
     string OperationKey,
-    string Reason);
+    string Reason,
+    Guid? ReportVersionId = null);
 
 public enum AutoLinkReportEvidenceDisposition
 {
@@ -289,7 +330,8 @@ public sealed record UnlinkReportEvidenceRequest(
     string OperationKey,
     string Reason,
     string EditLeaseToken,
-    Guid EvidenceId)
+    Guid EvidenceId,
+    Guid? ReportVersionId = null)
     : CaseMutationRequest(CaseId, ExpectedVersion, Actor, OperationKey, Reason, EditLeaseToken);
 
 public sealed record CloseCaseRequest(

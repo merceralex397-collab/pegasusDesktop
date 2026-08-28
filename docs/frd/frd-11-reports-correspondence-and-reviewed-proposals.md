@@ -154,6 +154,16 @@ mailbox adapter may invent them or create a new case/reference. See [external
 data, submission, and report
 contracts](../open-decisions.md#external-data-submission-and-report-contracts).
 
+**Version-specific custody.** Each issued report version has its own durable
+ledger entry. Approval and final Sent evidence are associated to the selected
+version only when the exact report-version artifact identity and SHA-256 match;
+the predecessor's approval and Sent evidence remain queryable when a correction
+creates a successor. Reassociation is an explicit, reasoned unlink/relink and
+records the actor, time, former case/link values, and ordered version history.
+Legacy approval or Sent rows that predate the ledger remain preserved and are
+shown as `Unresolved` until exact version evidence establishes their owner; the
+migration does not silently attach them to a report version.
+
 Requirements:
 
 - deterministic template and payload versioning;

@@ -142,7 +142,14 @@ public sealed class EfCaseReportSentEvidenceStore(
             DiscoveredByKind = request.DiscoveredBy.Kind.ToString(),
             DiscoveredBySubjectId = request.DiscoveredBy.SubjectId,
             RetentionOperationKey = request.OperationKey,
-            RetentionRequestHash = requestHash
+            RetentionRequestHash = requestHash,
+            SourceReportVersionId = request.ReportVersionId,
+            SourceArtifactIdentity = request.ArtifactIdentity,
+            SourceArtifactSha256 = request.ArtifactSha256?.ToUpperInvariant(),
+            AssociationStatus = request.ReportVersionId is null ? "Unresolved" : "Authoritative",
+            AssociationStatusReason = request.ReportVersionId is null
+                ? "The retained Sent item did not carry an authoritative report-version identity."
+                : "The retained Sent item carried an authoritative report-version and artifact identity."
         };
         context.CaseReportSentEvidence.Add(entity);
         context.ActionHistory.Add(DocumentActionHistory.Succeeded(
@@ -222,7 +229,9 @@ public sealed class EfCaseReportSentEvidenceStore(
         SourceOccurrenceIdentity = request.SourceOccurrenceIdentity.Trim(),
         SourceSha256 = request.SourceSha256.ToUpperInvariant(),
         MimeSha256 = request.MimeSha256.ToUpperInvariant(),
-        OperationKey = request.OperationKey.Trim()
+        OperationKey = request.OperationKey.Trim(),
+        ArtifactIdentity = request.ArtifactIdentity?.Trim(),
+        ArtifactSha256 = request.ArtifactSha256?.ToUpperInvariant()
     };
 
     private static string Hash(RetainApprovedMailboxReportSentEvidenceRequest request)
@@ -241,7 +250,10 @@ public sealed class EfCaseReportSentEvidenceStore(
             request.MimeSha256,
             request.SentAtUtc.ToString("O"),
             request.DiscoveredBy.Kind.ToString(),
-            request.DiscoveredBy.SubjectId);
+            request.DiscoveredBy.SubjectId,
+            request.ReportVersionId?.ToString("D") ?? string.Empty,
+            request.ArtifactIdentity ?? string.Empty,
+            request.ArtifactSha256 ?? string.Empty);
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(material))).ToLowerInvariant();
     }
 
@@ -259,7 +271,12 @@ public sealed class EfCaseReportSentEvidenceStore(
         entity.MimeSha256,
         entity.SentAtUtc,
         entity.DiscoveredAtUtc,
-        ParseDiscoveryActor(entity.DiscoveredByKind, entity.DiscoveredBySubjectId));
+        ParseDiscoveryActor(entity.DiscoveredByKind, entity.DiscoveredBySubjectId),
+        entity.SourceReportVersionId,
+        entity.SourceArtifactIdentity,
+        entity.SourceArtifactSha256,
+        entity.AssociationStatus ?? (entity.SourceReportVersionId is null ? "Unresolved" : "Authoritative"),
+        entity.AssociationStatusReason);
 
     private static ActionActor ParseDiscoveryActor(string kind, string subjectId) => kind switch
     {

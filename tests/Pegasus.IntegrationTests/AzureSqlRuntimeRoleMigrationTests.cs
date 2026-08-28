@@ -649,6 +649,49 @@ public sealed class AzureSqlRuntimeRoleMigrationTests
     }
 
     [Fact]
+    public async Task LatestMigrationGrantsIssuedReportVersionLedgerToItsRuntimeCallers()
+    {
+        await using var database = await LocalDbTestDatabase.CreateAsync(migrate: false);
+        await using var context = await database.CreateContextAsync();
+
+        await context.Database.MigrateAsync();
+
+        var expected = new Dictionary<string, string[]>
+        {
+            [WebRole] =
+            [
+                "CaseReportAssociationHistory:INSERT",
+                "CaseReportAssociationHistory:SELECT",
+                "CaseReportVersionLedgers:INSERT",
+                "CaseReportVersionLedgers:SELECT",
+                "CaseReportVersionLedgers:UPDATE"
+            ],
+            [WorkerRole] =
+            [
+                "CaseReportAssociationHistory:INSERT",
+                "CaseReportAssociationHistory:SELECT",
+                "CaseReportVersionLedgers:SELECT",
+                "CaseReportVersionLedgers:UPDATE"
+            ]
+        };
+
+        foreach (var (role, permissions) in expected)
+        {
+            Assert.Equal(
+                permissions,
+                (await ReadGrantedPermissionsAsync(database, role))
+                    .Where(value => value.StartsWith("CaseReportAssociationHistory:", StringComparison.Ordinal)
+                        || value.StartsWith("CaseReportVersionLedgers:", StringComparison.Ordinal))
+                    .ToArray());
+        }
+
+        Assert.Contains("CaseReportAssociationHistory", await ReadDeniedDeleteTablesAsync(database, WebRole));
+        Assert.Contains("CaseReportVersionLedgers", await ReadDeniedDeleteTablesAsync(database, WebRole));
+        Assert.Contains("CaseReportAssociationHistory", await ReadDeniedDeleteTablesAsync(database, WorkerRole));
+        Assert.Contains("CaseReportVersionLedgers", await ReadDeniedDeleteTablesAsync(database, WorkerRole));
+    }
+
+    [Fact]
     public async Task TerminalDowngradeRestoresTheExactPreTerminalPermissionState()
     {
         await using var database = await LocalDbTestDatabase.CreateAsync(migrate: false);

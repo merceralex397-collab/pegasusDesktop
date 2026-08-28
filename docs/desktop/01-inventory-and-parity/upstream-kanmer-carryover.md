@@ -13,6 +13,13 @@ Source: historical read-only clone of
 Ticket DSK-01-09 executed the dispositions. DSK-01-10's historical first-sync
 step is superseded by the current operator boundary and must not be executed.
 
+The fork carries the report-custody slice as `DOCS-003` (source ticket
+`TICK-208`). It is implemented against the fork's existing report-version and
+workflow owners: predecessor Sent evidence remains retained through correction,
+and exact-version association history is explicit. This is a fork-local
+disposition; it does not authorize upstream synchronization or changes to the
+historical source board.
+
 ## Upstream board shape
 
 | Area id | Name | Prefix | Open (non-archived, not done) |
