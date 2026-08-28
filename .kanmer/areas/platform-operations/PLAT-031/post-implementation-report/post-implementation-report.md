@@ -58,3 +58,11 @@ The defect was independently exposed by PLAT-018's composition-root analysis: `E
 ## Dev-base conflict resolution — 2026-08-28
 
 PLAT-030's merge into `dev` caused PR #38 to conflict in the shared bootstrap matrix and committed-migration census. The PLAT-031 task branch merged current `origin/dev` and retained both required entries, producing exact head `c97e8e1db774b8b7d6c38ac2fcc24520d27a1150`, pushed to the configured remote. The branch diff against current `origin/dev` remains limited to the PLAT-031 migration and its two expected-state consumers. Post-resolution build passed with 0 warnings/errors, and `CommittedMigrationCreatesTheSqlServerSchema` passed 1/1. The prior green CI run for `0ab518e3` is superseded; fresh exact-head CI and independent review are required for `c97e8e1d`. No cloud, deployment, credential, corpus, or upstream operation occurred.
+
+## Final exact-head review and CI — 2026-08-28
+
+PR #38 exact head `c97e8e1db774b8b7d6c38ac2fcc24520d27a1150` has fully green CI run `33195926358`, including SQL shard 3 and coverage. Ramanujan independently reviewed that exact head and returned PASS. The PR is merge-ready. The unrelated local `VehicleWorkflowTerminalTests.cs` modification is outside this ticket and was preserved. No cloud, deployment, credential, corpus, or upstream operation occurred.
+
+## Merge delivery — 2026-08-28
+
+PR #38 merged into `dev` at `6d5ee8e4fb14b711fe8f00f2936bf1ce4fc2dc52` after independent PASS and fully green exact-head CI run `33195926358` for `c97e8e1d`. Verification and proof remain outstanding and are intentionally not claimed here. No cloud, deployment, credential, corpus, or upstream operation occurred.

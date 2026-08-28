@@ -80,3 +80,7 @@ Post-resolution validation:
 - `dotnet test tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build -nr:false -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false --filter "FullyQualifiedName~IntakePersistenceIntegrationTests.CommittedMigrationCreatesTheSqlServerSchema" --verbosity normal` — passed, 1/1.
 - `git diff --check origin/dev...HEAD` — passed; four changed files are the PLAT-031 migration, its bootstrap matrix entry, its migration expectation, and its focused runtime-role expectation.
 - Exact-head CI run `33193986163` for the prior head `0ab518e3` completed green; it is superseded by `c97e8e1d` because the PR head changed. Fresh exact-head CI and independent review are required for `c97e8e1d`.
+
+## Final exact-head review — 2026-08-28
+
+Exact-head CI run `33195926358` for `c97e8e1db774b8b7d6c38ac2fcc24520d27a1150` completed successfully, including all SQL shards, browser, unit, and coverage. Ramanujan independently reviewed this exact PR head read-only and returned PASS. PR #38 is merge-ready; an unrelated local `VehicleWorkflowTerminalTests.cs` modification is outside the task and remains untouched.

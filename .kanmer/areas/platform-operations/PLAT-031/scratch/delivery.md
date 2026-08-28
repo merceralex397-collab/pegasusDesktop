@@ -1,0 +1,1 @@
+PR #38 merged into `dev` at merge commit `6d5ee8e4fb14b711fe8f00f2936bf1ce4fc2dc52` on 2026-08-28 after Ramanujan PASS and fully green exact-head CI `33195926358` for `c97e8e1d`. No cloud, deployment, credential, corpus, or upstream operation occurred. Next: verify the merged result and write proof on merged main.
