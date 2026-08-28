@@ -204,3 +204,7 @@ Fresh independent review of exact HEAD `16d96600a041ef3ae54a71d59dfb5ccb9b86596f
 - `docs/current-architecture.md:183-193` still overclaims complete coverage.
 
 The reviewer verified local build, focused 7/7, full architecture 118/118, migration scan 71 files, exact scope, and unchanged script/CI; those checks do not cure the acceptance gaps. Next action: remediate all findings, rerun validation, push a new exact HEAD, and obtain another independent review.
+
+## Review remediation 5 — 2026-08-28
+
+The findings from the review of `16d96600a041ef3ae54a71d59dfb5ccb9b86596f` were addressed on exact HEAD `7b084329f3974acf6b4b47d92cdc6eff9a09243a` (parent `16d96600`). The bounded diff remains limited to the runtime-grant architecture test and the architecture snapshot. Reported validation on the clean pushed branch: Release build 0 warnings/errors; focused tests 7/7; full architecture tests 118/118; migration script 71/71; `git diff --check` clean. Another independent review is required before merge; PR #36 remains held.
