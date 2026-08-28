@@ -244,3 +244,17 @@ The `proof` document is produced from these:
 
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this branch's own
 diff before the PR, recorded here under a dated heading._
+
+## Implementation checkpoint — 2026-08-28
+
+Implemented the desktop infrastructure boundary on `task/desktop-infrastructure` from `origin/dev` `28ba13a4`: the Windows-targeted project and lock file, HTTP header/correlation handler with GET-only bounded jittered retry, DPAPI `CurrentUser` credential store, bounded in-memory snapshot cache, rolling redacted diagnostics writer, project/solution registrations, architecture solution-list fact, and current-architecture snapshot. The new project references only `Pegasus.Core` and `Pegasus.Contracts`; `Documents/` was not created. The two central package versions are conditioned to this desktop-infrastructure project so the existing server lock files remain byte-unchanged; the desktop project lock file records the new transitive graph.
+
+The repository's `tests/Pegasus.Desktop.ViewModelTests` project does not yet exist. FND-038 owns that scaffold and is currently dependency-blocked by FND-031, while this ticket's acceptance requires its Windows behavior tests. No duplicate test project was created. The ticket cannot truthfully claim those repository test cases until that ownership/dependency contradiction is resolved; a temporary out-of-repository probe did pass DPAPI round-trip/clear/corruption handling, header injection with caller correlation preservation, cache expiry, and diagnostics redaction, but it is not repository proof.
+
+## Simplification pass — 2026-08-28
+
+- Reuse: used the existing `Pegasus.Contracts.PegasusHeaders` constants and the repository's `IHttpClientFactory` registration shape; no duplicate header vocabulary or Core policy was added.
+- Scope: kept the implementation inside the ticket's named infrastructure boundary; omitted the empty `Documents/` folder, generated client, token flow, diagnostics bundle, Azure SDKs, durable cache, and test scaffold owned by other tickets.
+- Simplicity: one small GET-only retry handler, one injected DPAPI store root, one bounded in-memory cache, and one rolling writer with a single redaction implementation. No new runtime, table, service, or compatibility path was introduced.
+- Efficiency: cache operations are lock-protected and return defensive byte copies; diagnostics trims by retention count and total bytes before appending; no background worker or unbounded queue was introduced.
+- Findings: the first build exposed an analyzer-enforced argument-guard form and a missing `System.Net` import; both were corrected. The architecture test exposed the actual ordinal sort (`Pegasus.Desktop.Infrastructure` sorts before `Pegasus.Desktop`), and the expected list was corrected. No unapplied behavior-preserving simplification finding remains.
