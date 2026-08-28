@@ -2,13 +2,14 @@
 id: PLAT-030
 type: ticket
 title: Grant Web UPDATE on ApprovedSentPollOutcomes exposed by PLAT-018
-status: review
+status: verifying
 area: platform-operations
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
   implementing: '2026-08-28T05:25:55.425Z'
   review: '2026-08-28T17:29:45.306Z'
+  verifying: '2026-08-28T17:30:13.765Z'
 taken_at: '2026-08-28T05:23:21.646Z'
 branch: task/plat-030-runtime-permissions
 worktree: ../pegasus-worktrees/plat-030-runtime-permissions
@@ -31,7 +32,7 @@ prs:
   - '37'
 archived: false
 created: '2026-08-28T05:22:38.415Z'
-updated: '2026-08-28T17:29:45.306Z'
+updated: '2026-08-28T17:30:13.765Z'
 ---
 
 ## What

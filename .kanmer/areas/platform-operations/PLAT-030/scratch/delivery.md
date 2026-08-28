@@ -1,0 +1,1 @@
+PR #37 merged into `dev` at merge commit `acc715c2f3779b360897455aaa8397e97e0ee870` on 2026-08-28 after Boyle PASS and exact-head CI run `33146340008` green. No cloud, deployment, credential, corpus, or upstream operation occurred. Next: verify the merged dev state and write proof on merged main per Kanmer policy.

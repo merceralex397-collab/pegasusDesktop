@@ -50,3 +50,7 @@ The prior cross-ticket evidence used an intermediate PLAT-018 head. It has been 
 ## Exact-head review and CI correction — 2026-08-28
 
 The exact-head CI run `33146340008` for `c599a42b1f964c4e5a1dc13894f28f8300152984` completed successfully: all required jobs, SQL shards, coverage, migration-grant validation, and local deployment-plan validation are green. Boyle performed a fresh independent read-only review at this exact head and returned PASS. The earlier review failure was caused by the now-corrected migration census entry; it is no longer outstanding. PR #37 is merge-ready.
+
+## Merge delivery — 2026-08-28
+
+PR #37 was merged into `dev` at `acc715c2f3779b360897455aaa8397e97e0ee870` after the fresh independent PASS and green exact-head CI run `33146340008`. Verification and proof remain outstanding and are intentionally not claimed here.

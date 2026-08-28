@@ -13,5 +13,5 @@
 - [x] `git diff --check` passes.
 - [x] PLAT-018 focused coverage passes after its parser correction and this migration is present: combined temporary validation of exact PLAT-018 `aaa025f4` + exact PLAT-030 `c599a42b` passed RuntimeGrantCompositionTests 8/8 and full architecture 119/119.
 - [x] Independent review passes on the exact PR head `c599a42b`; Boyle returned PASS after fresh review.
-- [ ] PR is merged to `dev`; proof and Kanmer closeout are completed.
+- [x] PR #37 is merged to `dev` at `acc715c2`.
 - [x] No cloud, deployment execution, credential, corpus, or upstream operation occurred.
