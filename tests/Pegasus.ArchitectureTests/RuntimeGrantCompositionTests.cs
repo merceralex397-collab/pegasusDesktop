@@ -146,6 +146,10 @@ public sealed class RuntimeGrantCompositionTests
             @"\b(?:context|dbContext|verification|finalContext)\.(?<verb>Add|AddAsync|Remove|RemoveRange)\s*\(\s*(?:new\s+)?(?<entity>[A-Za-z_][A-Za-z0-9_]*)",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+        private static readonly Regex RawSqlTarget = new(
+            @"\b(?:FROM|UPDATE|INTO|DELETE\s+FROM)\s+(?:\[\w+\]\.)?\[?(?<table>[A-Za-z_][A-Za-z0-9_]*)\]?",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
         private static readonly Regex VariableContextMutation = new(
             @"\b(?:context|dbContext|verification|finalContext)\.(?<verb>Add|AddAsync|Remove|RemoveRange)\s*\(\s*(?<variable>[a-z][A-Za-z0-9_]*)\s*\)",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -154,8 +158,8 @@ public sealed class RuntimeGrantCompositionTests
             @"\b(?<entity>[A-Za-z_][A-Za-z0-9_]*Entity)\s+(?<variable>[a-z][A-Za-z0-9_]*)\s*=",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-        private static readonly Regex TrackedEntityMutation = new(
-            @"\b(?<entity>[A-Za-z_][A-Za-z0-9_]*Entity)\s+(?<variable>[a-z][A-Za-z0-9_]*)\b[\s\S]*?\b\k<variable>\.[A-Z][A-Za-z0-9_]*\s*=",
+        private static readonly Regex TrackedAssignment = new(
+            @"\b(?<variable>[a-z][A-Za-z0-9_]*)\.[A-Z][A-Za-z0-9_]*\s*=",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly Regex GrantStatement = new(
@@ -274,8 +278,10 @@ public sealed class RuntimeGrantCompositionTests
                 }
                 if (source.Contains("ExecuteSql", StringComparison.Ordinal))
                 {
-                    foreach (var table in tableNames.Values.Distinct(StringComparer.Ordinal)
-                                 .Where(table => source.Contains(table, StringComparison.Ordinal)))
+                    foreach (var table in RawSqlTarget.Matches(source).Cast<Match>()
+                                 .Select(match => match.Groups["table"].Value)
+                                 .Where(tableNames.Values.Contains)
+                                 .Distinct(StringComparer.Ordinal))
                     {
                         AddRoleWrites(
                             writes,
@@ -311,12 +317,58 @@ public sealed class RuntimeGrantCompositionTests
             var fixtureSource = File.ReadAllText(fixtureFile);
             var fixtureStart = fixtureSource.IndexOf("private sealed class ArchitectureTestUnGrantedTableStore", StringComparison.Ordinal);
             fixtureSource = fixtureStart >= 0 ? fixtureSource[fixtureStart..] : throw new InvalidOperationException("Fixture store source was not found.");
-            var fixture = new RuntimeWrite(
-                role,
-                fixtureTable,
-                InferVerbs(fixtureSource, nameof(ArchitectureTestUnGrantedTableEntity)),
+            var fixtureRoles = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal)
+            {
+                [registration.ImplementationType!.Name] = new HashSet<string>(new[] { role }, StringComparer.Ordinal)
+            };
+            var fixtureWrites = DiscoverStoreWrites(
+                fixtureSource,
+                registration.ImplementationType.Name,
+                fixtureRoles,
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    [nameof(ArchitectureTestUnGrantedTableEntity)] = fixtureTable
+                },
                 "fixture: registered store and EF IModel entity");
-            return Writes.Append(fixture).ToArray();
+            return Writes.Concat(fixtureWrites).ToArray();
+        }
+
+        private static RuntimeWrite[] DiscoverStoreWrites(
+            string source,
+            string storeName,
+            Dictionary<string, HashSet<string>> storeRoles,
+            Dictionary<string, string> tableNames,
+            string sourcePath)
+        {
+            if (!storeRoles.ContainsKey(storeName) || !IsWriteStore(source))
+            {
+                return Array.Empty<RuntimeWrite>();
+            }
+
+            var writes = new List<RuntimeWrite>();
+            foreach (var property in ContextProperty.Matches(source)
+                         .Select(match => match.Groups["property"].Value)
+                         .Where(tableNames.ContainsKey)
+                         .Distinct(StringComparer.Ordinal))
+            {
+                var verbs = InferVerbs(source, property);
+                if (verbs.Count > 0)
+                {
+                    AddRoleWrites(writes, storeRoles, storeName, tableNames[property], verbs, sourcePath);
+                }
+            }
+            foreach (var entity in ContextSet.Matches(source)
+                         .Select(match => match.Groups["entity"].Value)
+                         .Where(tableNames.ContainsKey)
+                         .Distinct(StringComparer.Ordinal))
+            {
+                var verbs = InferVerbs(source, entity);
+                if (verbs.Count > 0)
+                {
+                    AddRoleWrites(writes, storeRoles, storeName, tableNames[entity], verbs, sourcePath);
+                }
+            }
+            return writes.ToArray();
         }
 
         internal static RuntimeWrite[] InferHistoricalStoreWrites(string root, string table)
@@ -520,7 +572,10 @@ public sealed class RuntimeGrantCompositionTests
             source.Contains("SaveChanges", StringComparison.Ordinal) ||
             source.Contains("ExecuteUpdate", StringComparison.Ordinal) ||
             source.Contains("ExecuteDelete", StringComparison.Ordinal) ||
-            source.Contains("ExecuteSql", StringComparison.Ordinal);
+            source.Contains("ExecuteSql", StringComparison.Ordinal) ||
+            ContextMutation.IsMatch(source) ||
+            DirectContextMutation.IsMatch(source) ||
+            VariableContextMutation.IsMatch(source);
 
         private static HashSet<string> InferVerbs(string source, string property)
         {
@@ -559,7 +614,11 @@ public sealed class RuntimeGrantCompositionTests
             {
                 verbs.Add("INSERT");
             }
-            if (property.EndsWith("Entity", StringComparison.Ordinal) && TrackedEntityMutation.IsMatch(source))
+            if (property.EndsWith("Entity", StringComparison.Ordinal) &&
+                VariableEntity.Matches(source).Cast<Match>().Any(declaration =>
+                    declaration.Groups["entity"].Value.Equals(property, StringComparison.Ordinal) &&
+                    TrackedAssignment.Matches(source).Cast<Match>().Any(assignment =>
+                        assignment.Groups["variable"].Value.Equals(declaration.Groups["variable"].Value, StringComparison.Ordinal))))
             {
                 verbs.Add("UPDATE");
             }
