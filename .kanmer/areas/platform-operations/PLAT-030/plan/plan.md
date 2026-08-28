@@ -56,3 +56,9 @@ Validation on the final working tree:
 - `git diff --check` — passed.
 
 The PLAT-018 focused composition test is intentionally not claimed on this branch: it belongs to PLAT-018's test-only branch and currently needs its parser correction. It remains an explicit downstream acceptance condition for PLAT-018, not evidence to fabricate for PLAT-030.
+
+## CI-required matrix correction — 2026-08-28
+
+The first PR run showed that the repository's `Test-AzureDeploymentPlan.ps1 -Mode Local` treats every post-reconciliation grant-carrying migration as requiring a matching expected permission in `scripts/Invoke-AzureDatabaseBootstrap.ps1`. This is the existing bootstrap script's direct matrix consumer, not a cloud write or unrelated deployment change. The plan and files map are corrected to include exactly one `pegasus_web_runtime_role|G|UPDATE|ApprovedSentPollOutcomes` entry.
+
+After this correction, local `pwsh ./scripts/Test-AzureDeploymentPlan.ps1 -Mode Local` passed. The first PR's `sql-integration-coverage` failure was consequential: the `changes` job failed before the SQL shard matrix ran, so `listed-1.txt` was absent. It is not treated as a passing check; CI must be rerun on the corrected exact head.

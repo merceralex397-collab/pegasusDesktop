@@ -19,3 +19,9 @@ The migration is discoverable by EF as `20260828052825_GrantWebApprovedSentPollO
 Independent review of exact head and GitHub Actions `changes` and `documentation` checks are pending. `local-development-scripts` and `reference-data` checks have passed. No merge is claimed until the independent review passes and all applicable exact-head checks are green.
 
 No cloud, deployment, credential, corpus, or upstream operation occurred.
+
+## CI correction in progress — 2026-08-28
+
+The first PR head failed the repository `changes` job because the new grant-carrying migration was not represented in `scripts/Invoke-AzureDatabaseBootstrap.ps1`. The exact expected matrix entry has now been added locally; `Test-AzureDeploymentPlan.ps1 -Mode Local` passes. The first `sql-integration-coverage` failure was consequential because `changes` failed before its shard matrix ran, leaving no `listed-1.txt`; it will be re-evaluated on the corrected head.
+
+The corrected final PR head and its CI/review state will replace the provisional values above before any merge.

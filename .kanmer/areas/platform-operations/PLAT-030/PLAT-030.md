@@ -30,7 +30,7 @@ prs:
   - '37'
 archived: false
 created: '2026-08-28T05:22:38.415Z'
-updated: '2026-08-28T05:36:22.604Z'
+updated: '2026-08-28T05:39:30.659Z'
 ---
 
 ## What
@@ -45,15 +45,16 @@ PLAT-018 derives registered composition-root stores, their EF model tables, and 
 
 ## Scope and guardrails
 
-May add one additive, grant-only migration following the existing runtime-role grant migration convention. No changes to the PLAT-018 analyzer, runtime stores, unrelated migrations, CI workflows, deployment, cloud state, credentials, or upstream repositories. Do not duplicate the existing EvaHandoffDownloadOperations grant.
+May add one additive, grant-only migration following the existing runtime-role migration convention and the one corresponding entry in the existing `Invoke-AzureDatabaseBootstrap.ps1` permission matrix required by the repository's release-plan validator. No changes to the PLAT-018 analyzer, runtime stores, unrelated migrations, CI workflows, deployment execution, cloud state, credentials, or upstream repositories. Do not duplicate the existing EvaHandoffDownloadOperations grant.
 
 ## Acceptance
 
 - SQL Server Up grants Web UPDATE on dbo.ApprovedSentPollOutcomes.
 - Up checks the managed Web runtime role and is a no-op for non-SQL providers.
 - Down exactly revokes that permission and is a no-op for non-SQL providers.
+- The existing bootstrap permission matrix accounts for the new grant-carrying migration.
 - The PLAT-018 focused architecture gate passes after this migration and its parser correction are present.
-- The migration-grant script, Release validation, and diff check pass.
+- The migration-grant script, Local deployment-plan validation, Release validation, and diff check pass.
 - No cloud or upstream operation is performed.
 
 ## Verification
@@ -61,6 +62,7 @@ May add one additive, grant-only migration following the existing runtime-role g
 - dotnet build --configuration Release
 - focused RuntimeGrantCompositionTests
 - pwsh ./scripts/Test-MigrationGrants.ps1
+- pwsh ./scripts/Test-AzureDeploymentPlan.ps1 -Mode Local
 - git diff --check
 
 ## Evidence
