@@ -2,10 +2,13 @@
 id: PLAT-031
 type: ticket
 title: Grant Worker INSERT on CaseReportVersionLedgers exposed by PLAT-018
-status: preparing
+status: implementing
 area: platform-operations
-assignee: ''
+assignee: codex-mcp-client
 profile: fix
+taken_at: '2026-08-28T07:46:10.698Z'
+branch: task/plat-031-worker-case-report-ledger-grant
+worktree: ../pegasus-worktrees/plat-031-worker-case-report-ledger-grant
 labels:
   - desktop-conversion
   - plan-10
@@ -25,7 +28,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-28T07:45:21.624Z'
-updated: '2026-08-28T07:45:21.624Z'
+updated: '2026-08-28T07:46:10.698Z'
 ---
 
 ## What
