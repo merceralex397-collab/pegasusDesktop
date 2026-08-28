@@ -46,3 +46,7 @@ This supplies the previously unchecked PLAT-018 focused acceptance evidence. The
 ## Final cross-ticket validation correction — 2026-08-28
 
 The prior cross-ticket evidence used an intermediate PLAT-018 head. It has been rerun at final exact PLAT-018 HEAD `aaa025f41d9e60a6ed78c256a14832e014199c8c` plus exact PLAT-030 HEAD `c599a42b1f964c4e5a1dc13894f28f8300152984`. Locked restore, focused runtime-grant tests 8/8, full architecture tests 119/119, migration-grant scan 72/72, local deployment-plan validation, and diff check all passed in the temporary unpushed validation tree. PR #37 remains the exact three-file PLAT-030 change at c599a42b.
+
+## Exact-head review and CI correction — 2026-08-28
+
+The exact-head CI run `33146340008` for `c599a42b1f964c4e5a1dc13894f28f8300152984` completed successfully: all required jobs, SQL shards, coverage, migration-grant validation, and local deployment-plan validation are green. Boyle performed a fresh independent read-only review at this exact head and returned PASS. The earlier review failure was caused by the now-corrected migration census entry; it is no longer outstanding. PR #37 is merge-ready.
