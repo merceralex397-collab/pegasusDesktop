@@ -446,3 +446,10 @@ Fresh review of `0fe020b2` required one new runtime evidence run and two wording
 - Kanmer commit metadata now records `dc6bd81c`, `0fe020b2`, and `93ff2663` for PR `39`.
 
 Fresh exact-head CI run `33202445712` is the required merge gate for `93ff2663`.
+
+## Rebased implementation facts — 2026-08-28
+
+- Exact repository inventory: Pegasus.slnx contains 10 project entries (6 application projects under src and 4 test projects). The opening estimate of seven projects was stale; the implementation and architecture test now use the exact ten-project solution inventory.
+- Exact branch diff at task head 1c651eb4 against origin/dev: 29 paths, 649 textual insertions, 3 textual deletions, and generated/binary assets including the committed launch screenshot. The original ~20-file estimate is superseded by this measured result.
+- The Windows App SDK 2.4 lock graph still contains Microsoft.Web.WebView2 1.0.3719.77 as a transitive package because Microsoft.WindowsAppSDK.WinUI declares it. The scaffold has no WebView2 source/XAML caller. The project sets the package-supported WebView2 projection/loader exclusions and an explicit MSBuild item filter after reference resolution; the resulting build/package output contains no Microsoft.Web.WebView2.Core.dll, Microsoft.Web.WebView2.Core.Projection.dll, Microsoft.Web.WebView2.Core.winmd, or WebView2Loader.dll. This is a payload exclusion for the unused optional control, not an ADR-0108 renderer exception.
+- Durable visual evidence is retained in the ticket asset path assets/desktop-launch.md and in the reviewed branch at artifacts/fnd-030/desktop-launch-desktop.png (SHA-256 A822FC53563317FA4851096FC3CC640483A2A96A5B8838DB74660417277F79B1). The previous ignored local screenshot path is superseded.

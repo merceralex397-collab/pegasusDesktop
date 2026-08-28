@@ -52,3 +52,11 @@ At exact task head `93ff2663364b05293f25832c6aa7fd5b10c90687`, `BuildAndRun.ps1`
 ## Independent review correction 3 — 2026-08-28
 
 The exact `93ff2663` task head was relaunched with `BuildAndRun.ps1`: build passed with 0 warnings/errors, package identity `CollisionEngineers.Pegasus_e6z0b4cw4baw0` launched PID `119016`, the responsive window was captured at `artifacts/fnd-030/desktop-launch-final.png`, and the process was closed cleanly. The current-architecture diagram truthfully marks the absent project references as planned dependencies. Kanmer now records the exact commit sequence through `93ff2663`; exact-head CI run `33202445712` and fresh review remain required.
+
+## Exact-head correction 4 — 2026-08-28
+
+- Removed the explicit PublishTrimmed property from the desktop project.
+- Windows App SDK's transitive WebView2 runtime payload was verified from the package targets and excluded only for this scaffold, which has no WebView2 caller. After a clean generated-output build, the package output scan found no Microsoft.Web.WebView2.Core.dll, Microsoft.Web.WebView2.Core.Projection.dll, Microsoft.Web.WebView2.Core.winmd, or WebView2Loader.dll. The lock graph remains transparently transitive; no ADR-0108 renderer use is claimed.
+- BuildAndRun.ps1 was rerun from the corrected task worktree with 0 warnings and 0 errors; it launched package identity CollisionEngineers.Pegasus_e6z0b4cw4baw0 as PID 38852, with a responding Pegasus.Desktop window. The screenshot is now retained as the committed artifact artifacts/fnd-030/desktop-launch-desktop.png and as ticket asset documentation assets/desktop-launch.md (SHA-256 A822FC53563317FA4851096FC3CC640483A2A96A5B8838DB74660417277F79B1). The process was closed cleanly.
+- The exact branch inventory is 10 Pegasus.slnx projects; the measured current branch diff is 29 paths with 649 text insertions and 3 deletions plus generated/binary assets. The prior estimate is superseded.
+- Exact-head CI run 33202445712 was for the preceding head 93ff2663; a new run is required for 1c651eb4 before review/merge.
