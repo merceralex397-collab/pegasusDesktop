@@ -26,9 +26,11 @@ links:
 blocks:
   - PLAT-018
 docs_todo: true
+prs:
+  - '37'
 archived: false
 created: '2026-08-28T05:22:38.415Z'
-updated: '2026-08-28T05:25:55.425Z'
+updated: '2026-08-28T05:36:22.604Z'
 ---
 
 ## What
