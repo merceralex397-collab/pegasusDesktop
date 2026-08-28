@@ -27,4 +27,4 @@ Completed and recorded in the Kanmer plan on 2026-08-28. The diff reuses existin
 
 ## Branch
 
-Commits c7f6f689 and 5602d7f1 on task/desktop-viewmodel-tests, pushed to origin/pegasusDesktop. Independent pegasus-desktop-reviewer review and the PR merge remain required before verification and closeout.
+Commits c7f6f689 and 5602d7f1 on task/desktop-viewmodel-tests, pushed to origin/pegasusDesktop. Independent pegasus-desktop-reviewer review passed at exact head 5602d7f1; PR merge remains required before verification and closeout.
