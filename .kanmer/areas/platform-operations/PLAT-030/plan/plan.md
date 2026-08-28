@@ -36,3 +36,23 @@ Use one additive grant-only EF migration, matching the existing runtime-role mig
 ## Simplification pass
 
 _To be completed over the final branch diff before review._
+
+## Implementation and simplification pass — 2026-08-28
+
+Implemented on `task/plat-030-runtime-permissions` with the single owned migration `20260828052825_GrantWebApprovedSentPollOutcomeUpdate.cs`. EF initially generated a designer and a model-snapshot line reorder; the simplification pass removed both unnecessary artifacts. The final migration follows the existing concise grant-only convention used by `20260801220500_GrantWebMigrationHistoryRead.cs`: explicit `DbContext` and `Migration` attributes, provider guard, managed-role check, one UPDATE grant in `Up`, and one matching REVOKE in `Down`.
+
+- Reuse: retained the existing SQL Server provider string, runtime-role validation shape, and grant-only migration convention.
+- Simplification: removed the 7,568-line generated designer and the unchanged model-snapshot churn; no model schema changed.
+- Efficiency: one migration SQL grant and one role check; no new dependency, service, CI job, or runtime path.
+- Altitude: final branch scope is one 61-line migration; no EvaHandoff duplicate grant, runtime source, script, CI, cloud, deployment, credential, corpus, or upstream file changed.
+
+Validation on the final working tree:
+
+- `dotnet build --configuration Release --no-restore -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false --verbosity minimal` — passed, 0 warnings/errors.
+- `dotnet build src/Pegasus.Web/Pegasus.Web.csproj --configuration Release --no-restore -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false --verbosity minimal` — passed, 0 warnings/errors.
+- `dotnet ef migrations list --project src/Pegasus.Infrastructure --startup-project src/Pegasus.Web --context PegasusDbContext --configuration Release --no-build` — passed; `20260828052825_GrantWebApprovedSentPollOutcomeUpdate` is listed Pending.
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-restore -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false --verbosity minimal` — passed, 111/111.
+- `pwsh ./scripts/Test-MigrationGrants.ps1` — passed, 72 migration files.
+- `git diff --check` — passed.
+
+The PLAT-018 focused composition test is intentionally not claimed on this branch: it belongs to PLAT-018's test-only branch and currently needs its parser correction. It remains an explicit downstream acceptance condition for PLAT-018, not evidence to fabricate for PLAT-030.
