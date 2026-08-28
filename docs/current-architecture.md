@@ -39,8 +39,8 @@ flowchart LR
     Web --> Infra[Pegasus.Infrastructure]
     Worker --> Infra
     Infra --> Core
-    Desktop[Pegasus.Desktop\nWinUI 3 packaged client] --> Core
-    Desktop --> Contracts[Pegasus.Contracts]
+    Desktop[Pegasus.Desktop\nWinUI 3 packaged scaffold] -. planned dependency .-> Core
+    Desktop -. planned dependency .-> Contracts[Pegasus.Contracts]
 
     Infra --> SQL[(LocalDB local / Azure SQL deployed)]
     Infra -. target .-> Outlook[Outlook / Graph]
