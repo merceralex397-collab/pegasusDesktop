@@ -69,6 +69,10 @@ Repository evidence (read on the 2026-08-23 baseline):
   actions render only when populated and available, a "What is removed" table
   citing the authority line by line, and one recorded deliberate departure (no
   action bar).
+
+- The prototype-to-page join is preserved in the reference-only
+  [screen map](../../design/references/screen-map.md); `docs/design/README.md`
+  remains the authority.
 - `src/Pegasus.Contracts/Vocabulary/OperatorVocabulary.cs` is the single
   code→operator-vocabulary map consumed by the gateway and desktop. The
   Core-typed `src/Pegasus.Web/Presentation/OperatorLabels.cs` adapter preserves
