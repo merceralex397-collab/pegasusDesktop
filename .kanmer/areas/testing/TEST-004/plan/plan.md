@@ -58,3 +58,7 @@ Validation:
 ## Governance correction — 2026-08-28
 
 The ticket body requested a new test-project README, but the repository's governing Markdown-placement rule and live documentation regression test permit new Markdown only under the approved documentation/integration roots. The new README was removed before merge. The same fixed-clock convention is recorded in the existing canonical docs/runbook.md section, and the source comment plus plan retain the exact date. The project remains otherwise unchanged.
+
+## Independent review — 2026-08-28
+
+The first independent pegasus-desktop-reviewer review returned BLOCKED on one documentation consistency issue: docs/runbook.md described the focused command union as covering two unit projects after this ticket added the third desktop view-model unit project. Corrected that sentence to “three unit projects.” No code, scope, or validation defect was reported. The reviewer noted that independent reruns were not available to that agent; exact-head CI and the recorded local runs remain the validation evidence.
