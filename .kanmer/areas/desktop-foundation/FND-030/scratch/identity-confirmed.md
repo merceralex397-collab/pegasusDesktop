@@ -1,0 +1,1 @@
+2026-08-28 — Operator confirmed the permanent package identity: Identity.Name = `CollisionEngineers.Pegasus`; Identity.Publisher = `CN=Collision Engineers`. The manifest may now be created with these exact strings. No certificate or cloud operation performed.

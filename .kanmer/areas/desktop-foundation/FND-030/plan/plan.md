@@ -382,3 +382,12 @@ FND-030 requires the operator to confirm the permanent package identity before w
 - `Identity/@Publisher`: the exact distinguished name matching the subject of the self-managed production certificate is not present in the repository and cannot be inferred.
 
 No project files have been written until both values are confirmed verbatim.
+
+## Operator confirmation — 2026-08-28
+
+The operator explicitly confirmed the permanent package identity values before project-file creation:
+
+- `Identity/@Name`: `CollisionEngineers.Pegasus`
+- `Identity/@Publisher`: `CN=Collision Engineers`
+
+Use these exact strings in `Package.appxmanifest`. The Publisher value is the required manifest/certificate-subject match under D-002; no certificate was created, changed, or uploaded by this task.

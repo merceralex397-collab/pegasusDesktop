@@ -94,3 +94,12 @@ Recorded so the reviewer sees each was a decision, matching the ticket's Guardra
 - **The `docs/runbook.md` § Supported platform prerequisite sentence** — owned by [[FND-039]]; cited
   here, never restated a second time.
 - **Trimming, AOT and ReadyToRun** — explicitly off (proposal § 7.1 defers them until profiled).
+
+## Operator confirmation — 2026-08-28
+
+The prior handback is resolved. The operator confirmed verbatim:
+
+- `Identity/@Name`: `CollisionEngineers.Pegasus`
+- `Identity/@Publisher`: `CN=Collision Engineers`
+
+Project-file creation may proceed with these exact values.
