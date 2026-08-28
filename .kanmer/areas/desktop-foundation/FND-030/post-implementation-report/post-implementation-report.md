@@ -60,3 +60,18 @@ The exact `93ff2663` task head was relaunched with `BuildAndRun.ps1`: build pass
 - BuildAndRun.ps1 was rerun from the corrected task worktree with 0 warnings and 0 errors; it launched package identity CollisionEngineers.Pegasus_e6z0b4cw4baw0 as PID 38852, with a responding Pegasus.Desktop window. The screenshot is now retained as the committed artifact artifacts/fnd-030/desktop-launch-desktop.png and as ticket asset documentation assets/desktop-launch.md (SHA-256 A822FC53563317FA4851096FC3CC640483A2A96A5B8838DB74660417277F79B1). The process was closed cleanly.
 - The exact branch inventory is 10 Pegasus.slnx projects; the measured current branch diff is 29 paths with 649 text insertions and 3 deletions plus generated/binary assets. The prior estimate is superseded.
 - Exact-head CI run 33202445712 was for the preceding head 93ff2663; a new run is required for 1c651eb4 before review/merge.
+
+## Exact-head correction 5 — 2026-08-28
+
+Final implementation head: d2fe4bd08f8e63c3655097e4f850a0f086072176.
+
+- Removed the explicit PublishTrimmed property.
+- Replaced the earlier custom output-filter target with the smaller NuGet-supported asset exclusion: Microsoft.Web.WebView2 1.0.3719.77 is centrally pinned and referenced with ExcludeAssets=all and PrivateAssets=all. Windows App SDK remains usable, but no WebView2 compile/runtime/native/content/build asset is emitted by this scaffold.
+- dotnet restore ./Pegasus.slnx --locked-mode — passed.
+- dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false — passed, 0 warnings/errors.
+- dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build -nr:false -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false — passed 111/111.
+- BuildAndRun.ps1 -SkipRun — passed, 0 warnings/errors. BuildAndRun.ps1 packaged launch — passed; package identity CollisionEngineers.Pegasus_e6z0b4cw4baw0 launched PID 3576, with a responding Pegasus.Desktop window. The post-winapp-run output scan found no WebView2/loader payload. The process was closed cleanly.
+- Durable visual evidence: artifacts/fnd-030/desktop-launch-desktop.png, SHA-256 C7838380DE4EACF053DFB0C9F7969F529DFAB76B11A8E4D1F5E1D5970A9B6159, indexed by ticket asset documentation assets/desktop-launch.md.
+- Exact solution inventory is 10 projects. Final branch diff at d2fe4bd0 is 29 paths, 649 text insertions and 3 deletions plus generated/binary assets. Filtered Release output is 519 files / 234279635 bytes (223.45 MiB).
+- The WebView2 package remains visible in packages.lock.json because it is required transitively by Microsoft.WindowsAppSDK.WinUI; this is transparent dependency evidence, not a renderer implementation or deployment claim.
+- The new exact-head CI run and fresh independent review are required before merge.
