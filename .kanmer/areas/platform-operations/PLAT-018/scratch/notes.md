@@ -23,3 +23,5 @@
 2026-08-28: remediation 5 pushed at 7b084329f3974acf6b4b47d92cdc6eff9a09243a, clean, with Release build green, focused 7/7, full architecture 118/118, migration scan 71/71, diff check clean. PR #36 held pending fresh independent review.
 
 2026-08-28: Mencius pushed 05b066df1613eff31d8e7d0b4e107a453c3e811a clean/green but reports unresolved acceptance: transitive/Core-mediated role closure, immutable historical registration snapshots, and differential tuple fixtures. PR #36 held; no review requested for this head.
+
+2026-08-28: scope corrected within ticket authorization. Test-only package metadata, immutable RuntimeGrant fixtures, and test-only analyzer/helper files are permitted because the acceptance cannot be proven with the original two files. Production src, migrations, script, CI, cloud, upstream, deployment remain prohibited.

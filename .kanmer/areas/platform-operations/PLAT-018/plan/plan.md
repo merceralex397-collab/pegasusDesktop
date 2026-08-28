@@ -212,3 +212,15 @@ The findings from the review of `16d96600a041ef3ae54a71d59dfb5ccb9b86596f` were 
 ## Remediation 6 status — 2026-08-28
 
 Mencius pushed exact HEAD `05b066df1613eff31d8e7d0b4e107a453c3e811a` with a clean worktree and reported green validation (Release build; focused architecture 7/7; full architecture 118/118; migration scan 71/71; `git diff --check`). The implementing agent explicitly reported that acceptance is still incomplete: transitive/Core-mediated role closure, immutable historical registration snapshots, and differential tuple fixtures remain unresolved. PR #36 is held and this HEAD is not being sent for independent review. Next action is to complete those gaps within the bounded ticket scope before another review.
+
+## Scope correction — 2026-08-28
+
+The repeated independent reviews established that the acceptance criteria cannot be proven by editing only the original test file and architecture snapshot. The ticket explicitly permits tests under `tests/Pegasus.ArchitectureTests`; therefore the bounded implementation scope is corrected to permit test-only support required for truthful evidence:
+
+- `tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj` and central package metadata only if a syntax API is required;
+- immutable/equivalent test fixtures under `tests/Pegasus.ArchitectureTests/Fixtures/RuntimeGrant/`;
+- a test-only analyzer/helper file if it keeps the evaluator clear;
+- `tests/Pegasus.ArchitectureTests/RuntimeGrantCompositionTests.cs`;
+- the truthful `docs/current-architecture.md` update.
+
+This is not permission to change production `src/**`, migrations, `scripts/Test-MigrationGrants.ps1`, CI workflow, cloud state, upstream remotes, or deployment. Any new test-only dependency must have a concrete need, be centrally pinned, and be validated by the existing CI lanes. The acceptance evidence—not file-count minimization—controls completion.

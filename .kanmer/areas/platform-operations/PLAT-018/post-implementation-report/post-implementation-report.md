@@ -67,3 +67,7 @@ Exact HEAD `7b084329f3974acf6b4b47d92cdc6eff9a09243a` is clean and pushed with r
 ## Remediation 6 status — 2026-08-28
 
 HEAD `05b066df1613eff31d8e7d0b4e107a453c3e811a` is clean and locally green, but the implementer reports unresolved acceptance gaps in transitive/Core-mediated role closure, immutable historical registration fixtures, and differential tuple semantics. No independent review or merge is claimed.
+
+## Scope correction — 2026-08-28
+
+The ticket-owned test scope is expanded only as needed to make the acceptance evidence genuine: test-only syntax dependency metadata, immutable test fixtures, and test-only analyzer helpers are permitted. Production code, migrations, migration script, CI workflow, cloud, upstream, and deployment remain unchanged.
