@@ -1,0 +1,1 @@
+2026-08-29: After FND-032 merged to dev, added Fnd032HostTests.cs at exact head 69d5803713422ccac9ef52fd924af80c5a5d1507. Host/options/service resolution, missing BaseAddress startup failure, and diagnostics session/correlation/redaction tests pass. Full desktop 21/21, architecture 121/121, build 0 warnings/errors, locked restore and diff check pass. Awaiting independent review.

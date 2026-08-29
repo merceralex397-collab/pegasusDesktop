@@ -108,3 +108,23 @@ PR #47 merged into `dev` after the exact reviewed head passed all applicable CI 
 - Resulting `origin/dev`: `17f508dead86b5c739965905a274876a1aa8553b`
 
 This is a prerequisite merge only. FND-038 remains open and partial: host/options/log/fallback tests owned by FND-038 must now be implemented against merged FND-032 APIs, independently reviewed, validated, merged, and proven before Done.
+
+## FND-032 host coverage implementation — 2026-08-29
+
+FND-032 is now merged to `dev`, so the deferred host coverage was implemented in this ticket's existing TEST-004-owned test project.
+
+Added `tests/Pegasus.Desktop.ViewModelTests/Fnd032HostTests.cs` with:
+
+- unpackaged `PegasusHost` start and service-resolution coverage for channel/options, HttpClient, credential store, bounded cache, and logging provider;
+- startup validation failure when `Gateway:BaseAddress` is removed;
+- diagnostics provider coverage for session ID and correlation ID, using the existing rolling writer to prove bearer-token redaction.
+
+Validation at exact head `69d5803713422ccac9ef52fd924af80c5a5d1507`:
+
+- `dotnet restore ./Pegasus.slnx --locked-mode` — exit 0;
+- `dotnet build --configuration Release --no-restore` — exit 0, 0 warnings, 0 errors;
+- `dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-build` — 21 passed, 0 failed, 0 skipped;
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build` — 121 passed, 0 failed, 0 skipped;
+- `git diff --check` — passed.
+
+The required simplification pass is recorded in the plan. The branch is pushed and awaits independent review. FND-038 is still not Done: it requires review, PR CI, merge, merged-main proof, and Kanmer closeout.

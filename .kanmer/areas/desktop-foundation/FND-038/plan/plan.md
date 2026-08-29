@@ -413,3 +413,11 @@ Bohr the 2nd independently reviewed exact head `55e42c4c81443205be18093700a62f98
 The review confirmed the reported evidence: locked solution restore passed; Release build passed with 0 warnings and 0 errors; focused desktop tests passed 18/18 with 0 skipped; architecture tests passed 121/121 with 0 skipped; `git diff --check` passed; and the simplification record is consistent with the diff.
 
 Review note: FND-032 host/options/log/fallback tests are explicitly deferred until FND-032's production host APIs merge. This is a partial handoff, not a Done approval. FND-038 still requires those host tests and its own post-merge proof before closeout.
+
+## Host coverage extension — simplification pass — 2026-08-29
+
+- Reuse: exercised the merged FND-032 `PegasusHost`, options, service registrations, and diagnostics provider directly; retained TEST-004's existing project and support files.
+- Simplification: added one focused test file with three tests and no new production abstraction, fake, dependency, UI thread, or host-registration copy.
+- Efficiency: host tests use the existing embedded configuration; diagnostics verification uses the existing rolling writer in a temporary directory; no server, database, network endpoint, Azure call, corpus access, or external service is used.
+- Altitude: the diff remains under `tests/Pegasus.Desktop.ViewModelTests/**`; CI and production source remain outside FND-038's ownership.
+- Disposition: no unapplied behaviour-preserving simplification finding remains. The CI execution gap and FND-039 packaging/operator evidence remain explicit downstream gates, not simplification findings.
