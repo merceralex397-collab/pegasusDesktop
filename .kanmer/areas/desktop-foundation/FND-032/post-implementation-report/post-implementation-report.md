@@ -21,3 +21,7 @@
 Zeno independently reviewed the exact head and found no composition or lifecycle code defect, but full acceptance remains blocked. The pilot and production configuration values are local placeholders because authoritative endpoints were not found in the repository; no endpoint is being invented and no cloud write is permitted. The shared FND-031 redaction owner requires strengthening for generic token, Authorization, and password values; FND-032 will not duplicate that policy. The required redaction/rotation/options/composition test evidence remains owned by FND-038. The current-architecture composition note also remains to be resolved or explicitly dispositioned.
 
 This report is evidence of the current state only. It does not assert merge, deployment, runtime acceptance, or Done.
+
+## Follow-up read-only endpoint check — 2026-08-29
+
+Read-only Container App inspection returned the current production gateway ingress hostname: https://pegasus-prod-web-252ow37gij.ashymushroom-676209e5.uksouth.azurecontainerapps.io/. The pilot and production Gateway:BaseAddress entries were corrected in the ticket branch to this observed value. No Azure write or deployment was performed. The D-003 UNC feed host/share is not present in repository authority; pilot and production feed URIs remain placeholders and block release acceptance.
