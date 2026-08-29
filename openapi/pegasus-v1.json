@@ -1,6 +1,424 @@
 {
   "components": {
     "schemas": {
+      "AcceptVehicleSuggestionRequest": {
+        "properties": {
+          "correction": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleCorrectionRequest"
+              }
+            ]
+          },
+          "decision": {
+            "type": "string"
+          },
+          "editLeaseToken": {
+            "type": "string"
+          },
+          "expectedVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "operationKey": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision",
+          "operationKey",
+          "reason",
+          "editLeaseToken"
+        ],
+        "type": "object"
+      },
+      "AcceptedVehicleSuggestionResponse": {
+        "properties": {
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "confirmationId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "correlationId": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "lookupObservationId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/VehicleEvidenceProvenanceResponse"
+          },
+          "resultingCaseVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "values": {
+            "$ref": "#/components/schemas/VehicleConfirmationValuesResponse"
+          }
+        },
+        "required": [
+          "confirmationId",
+          "caseId",
+          "lookupObservationId",
+          "decision",
+          "values",
+          "provenance",
+          "resultingCaseVersion",
+          "correlationId"
+        ],
+        "type": "object"
+      },
+      "CaseVehicleResponse": {
+        "properties": {
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "confirmationHistory": {
+            "items": {
+              "$ref": "#/components/schemas/VehicleConfirmationHistoryResponse"
+            },
+            "type": "array"
+          },
+          "confirmed": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ConfirmedVehicleEvidenceResponse"
+              }
+            ]
+          },
+          "correlationId": {
+            "type": "string"
+          },
+          "latestObservation": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleLookupObservationResponse"
+              }
+            ]
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/VehicleLookupObservationResponse"
+            },
+            "type": "array"
+          },
+          "version": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "caseId",
+          "version",
+          "confirmed",
+          "latestObservation",
+          "observations",
+          "confirmationHistory",
+          "correlationId"
+        ],
+        "type": "object"
+      },
+      "ConfirmedVehicleEvidenceResponse": {
+        "properties": {
+          "make": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ConfirmedVehicleTextFieldResponse"
+              }
+            ]
+          },
+          "mileage": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ConfirmedVehicleMileageFieldResponse"
+              }
+            ]
+          },
+          "mileageUnit": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ConfirmedVehicleMileageUnitFieldResponse"
+              }
+            ]
+          },
+          "model": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ConfirmedVehicleTextFieldResponse"
+              }
+            ]
+          },
+          "registration": {
+            "$ref": "#/components/schemas/ConfirmedVehicleTextFieldResponse"
+          }
+        },
+        "required": [
+          "registration",
+          "make",
+          "model",
+          "mileage",
+          "mileageUnit"
+        ],
+        "type": "object"
+      },
+      "ConfirmedVehicleMileageFieldResponse": {
+        "properties": {
+          "confirmedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "confirmedByActor": {
+            "type": "string"
+          },
+          "externalProvenance": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleEvidenceProvenanceResponse"
+              }
+            ]
+          },
+          "policyKey": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "sourceIdentity": {
+            "type": "string"
+          },
+          "sourceKind": {
+            "type": "string"
+          },
+          "sourceLabel": {
+            "type": "string"
+          },
+          "value": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "sourceKind",
+          "sourceIdentity",
+          "sourceLabel",
+          "policyKey",
+          "policyVersion",
+          "confirmedByActor",
+          "confirmedAtUtc",
+          "externalProvenance"
+        ],
+        "type": "object"
+      },
+      "ConfirmedVehicleMileageUnitFieldResponse": {
+        "properties": {
+          "confirmedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "confirmedByActor": {
+            "type": "string"
+          },
+          "externalProvenance": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleEvidenceProvenanceResponse"
+              }
+            ]
+          },
+          "policyKey": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "sourceIdentity": {
+            "type": "string"
+          },
+          "sourceKind": {
+            "type": "string"
+          },
+          "sourceLabel": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "sourceKind",
+          "sourceIdentity",
+          "sourceLabel",
+          "policyKey",
+          "policyVersion",
+          "confirmedByActor",
+          "confirmedAtUtc",
+          "externalProvenance"
+        ],
+        "type": "object"
+      },
+      "ConfirmedVehicleTextFieldResponse": {
+        "properties": {
+          "confirmedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "confirmedByActor": {
+            "type": "string"
+          },
+          "externalProvenance": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleEvidenceProvenanceResponse"
+              }
+            ]
+          },
+          "policyKey": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "sourceIdentity": {
+            "type": "string"
+          },
+          "sourceKind": {
+            "type": "string"
+          },
+          "sourceLabel": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "sourceKind",
+          "sourceIdentity",
+          "sourceLabel",
+          "policyKey",
+          "policyVersion",
+          "confirmedByActor",
+          "confirmedAtUtc",
+          "externalProvenance"
+        ],
+        "type": "object"
+      },
+      "MotTestResponse": {
+        "properties": {
+          "expiryDate": {
+            "format": "date",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mileage": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "mileageUnit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "testDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "testStatus": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "testDate",
+          "testStatus",
+          "expiryDate",
+          "mileage",
+          "mileageUnit"
+        ],
+        "type": "object"
+      },
       "PagedResult": {
         "properties": {
           "hasNextPage": {
@@ -38,39 +456,481 @@
         ],
         "type": "object"
       },
-      "PegasusProblem": {
-        "description": "RFC 9457 problem details returned by the desktop gateway.",
+      "PegasusProblem": {},
+      "VehicleConfirmationHistoryResponse": {
         "properties": {
-          "correlationId": {
+          "actorSubjectId": {
             "type": "string"
           },
-          "detail": {
+          "afterCaseVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "beforeCaseVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "lookupObservationId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "occurredAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "policyKey": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "values": {
+            "$ref": "#/components/schemas/VehicleConfirmationValuesResponse"
+          }
+        },
+        "required": [
+          "id",
+          "caseId",
+          "lookupObservationId",
+          "decision",
+          "values",
+          "actorSubjectId",
+          "reason",
+          "occurredAtUtc",
+          "beforeCaseVersion",
+          "afterCaseVersion",
+          "policyKey",
+          "policyVersion"
+        ],
+        "type": "object"
+      },
+      "VehicleConfirmationValuesResponse": {
+        "properties": {
+          "make": {
             "type": [
               "null",
               "string"
             ]
           },
-          "instance": {
+          "mileage": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "mileageUnit": {
             "type": [
               "null",
               "string"
             ]
           },
-          "status": {
-            "type": "integer"
+          "model": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
-          "title": {
-            "type": "string"
-          },
-          "type": {
+          "registration": {
             "type": "string"
           }
         },
         "required": [
-          "type",
-          "title",
-          "status",
+          "registration",
+          "make",
+          "model",
+          "mileage",
+          "mileageUnit"
+        ],
+        "type": "object"
+      },
+      "VehicleCorrectionRequest": {
+        "properties": {
+          "make": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mileage": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "mileageUnit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "model": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "registration": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "registration"
+        ],
+        "type": "object"
+      },
+      "VehicleDetailsResponse": {
+        "properties": {
+          "engineCapacityCc": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "fuelType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "make": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "manufactureYear": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "model": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "make",
+          "model",
+          "manufactureYear",
+          "engineCapacityCc",
+          "fuelType"
+        ],
+        "type": "object"
+      },
+      "VehicleEvidenceProvenanceResponse": {
+        "properties": {
+          "effectiveAtUtc": {
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "provider": {
+            "type": "string"
+          },
+          "providerVersion": {
+            "type": "string"
+          },
+          "responseIdentity": {
+            "type": "string"
+          },
+          "retrievedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "sourceAgeSeconds": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "sourceObservedAtUtc": {
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "provider",
+          "providerVersion",
+          "responseIdentity",
+          "retrievedAtUtc",
+          "effectiveAtUtc",
+          "sourceObservedAtUtc",
+          "sourceAgeSeconds"
+        ],
+        "type": "object"
+      },
+      "VehicleLookupFailureResponse": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "retryAfterSeconds": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "retryable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "retryable",
+          "retryAfterSeconds"
+        ],
+        "type": "object"
+      },
+      "VehicleLookupObservationResponse": {
+        "properties": {
+          "attemptNumber": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "failure": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleLookupFailureResponse"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "mileage": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleMileageResponse"
+              }
+            ]
+          },
+          "motTests": {
+            "items": {
+              "$ref": "#/components/schemas/MotTestResponse"
+            },
+            "type": "array"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/VehicleEvidenceProvenanceResponse"
+          },
+          "recordedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "registration": {
+            "type": "string"
+          },
+          "vehicle": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleDetailsResponse"
+              }
+            ]
+          },
+          "workItemId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workItemId",
+          "caseId",
+          "attemptNumber",
+          "outcome",
+          "registration",
+          "provenance",
+          "vehicle",
+          "motTests",
+          "mileage",
+          "failure",
+          "recordedAtUtc"
+        ],
+        "type": "object"
+      },
+      "VehicleLookupRequest": {
+        "properties": {
+          "editLeaseToken": {
+            "type": "string"
+          },
+          "expectedVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "operationKey": {
+            "type": "string"
+          },
+          "registration": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "registration",
+          "operationKey",
+          "editLeaseToken"
+        ],
+        "type": "object"
+      },
+      "VehicleLookupResponse": {
+        "properties": {
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "correlationId": {
+            "type": "string"
+          },
+          "registration": {
+            "type": "string"
+          },
+          "resultingCaseVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "state": {
+            "type": "string"
+          },
+          "workItemId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workItemId",
+          "caseId",
+          "registration",
+          "state",
+          "resultingCaseVersion",
           "correlationId"
+        ],
+        "type": "object"
+      },
+      "VehicleMileageResponse": {
+        "properties": {
+          "methodKey": {
+            "type": "string"
+          },
+          "methodVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "observedOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "supportingObservationCount": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "unit": {
+            "type": "string"
+          },
+          "value": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "unit",
+          "observedOn",
+          "methodKey",
+          "methodVersion",
+          "supportingObservationCount"
         ],
         "type": "object"
       }
@@ -82,5 +942,272 @@
     "version": "0.1.0-alpha.1"
   },
   "openapi": "3.1.1",
-  "paths": {}
+  "paths": {
+    "/api/v1/cases/{caseId}/vehicle": {
+      "get": {
+        "description": "Returns confirmed vehicle evidence, lookup observations and provenance.",
+        "operationId": "GetVehicleEvidence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "caseId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseVehicleResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "summary": "Get vehicle evidence",
+        "tags": [
+          "VehicleEndpoints"
+        ]
+      }
+    },
+    "/api/v1/cases/{caseId}/vehicle/lookups": {
+      "post": {
+        "description": "Queues a provider lookup through the server-side vehicle workflow.",
+        "operationId": "RequestVehicleLookup",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "caseId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VehicleLookupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehicleLookupResponse"
+                }
+              }
+            },
+            "description": "Accepted"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Request a vehicle lookup",
+        "tags": [
+          "VehicleEndpoints"
+        ]
+      }
+    },
+    "/api/v1/cases/{caseId}/vehicle/suggestions/{suggestionId}/accept": {
+      "post": {
+        "description": "Accepts or corrects a provider vehicle suggestion through Core.",
+        "operationId": "AcceptVehicleSuggestion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "caseId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "suggestionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptVehicleSuggestionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptedVehicleSuggestionResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Accept a vehicle suggestion",
+        "tags": [
+          "VehicleEndpoints"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "VehicleEndpoints"
+    }
+  ]
 }

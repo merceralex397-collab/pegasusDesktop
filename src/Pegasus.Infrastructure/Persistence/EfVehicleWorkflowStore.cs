@@ -528,12 +528,18 @@ internal sealed class EfVehicleWorkflowStore(
                 && VehicleFieldNames.Contains(item.FieldName))
             .ToDictionaryAsync(item => item.FieldName, StringComparer.Ordinal, cancellationToken);
         var confirmed = MapConfirmed(confirmedFields, observationsById);
+        var version = await context.CaseWorkflows
+            .AsNoTracking()
+            .Where(item => item.CaseId == caseId)
+            .Select(item => item.Version)
+            .SingleAsync(cancellationToken);
         return new(
             caseId,
             confirmed,
             observations.LastOrDefault(),
             observations,
-            confirmationHistory);
+            confirmationHistory,
+            version);
     }
 
     private DateTimeOffset UtcNow()

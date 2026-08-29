@@ -373,7 +373,7 @@ public sealed class OpenApiSnapshotTests
             {
                 services.RemoveAll<IAuthenticationService>();
                 services.AddSingleton<IAuthenticationService,
-                    ContractTestWebApplicationFactory.NoOpAuthenticationService>();
+                    ContractTestWebApplicationFactory.ContractAuthenticationService>();
                 services.RemoveAll<IPolicyEvaluator>();
                 services.AddSingleton<IPolicyEvaluator, AllowAllPolicyEvaluator>();
             });

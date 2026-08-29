@@ -415,7 +415,8 @@ public sealed class OperatorJourneyTests
             VehicleField(fixture.MileageUnit)),
         null,
         [],
-        []);
+        [],
+        Version: 7);
 
     private static ConfirmedVehicleField<T> VehicleField<T>(T value)
         where T : notnull => new(

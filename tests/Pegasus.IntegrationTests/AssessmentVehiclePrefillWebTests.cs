@@ -106,7 +106,7 @@ public sealed class AssessmentVehiclePrefillWebTests
                 summary, workflow, null, [], null, CaseCustodyState.Pending, [], [], [])
             {
                 Data = includeExtractedFacts ? Data(identity, workflow) : null,
-                VehicleEvidence = new(caseId, null, observation, [observation], []),
+                VehicleEvidence = new(caseId, null, observation, [observation], [], Version: 7),
             };
             return Task.FromResult<CaseDetails?>(details);
         }

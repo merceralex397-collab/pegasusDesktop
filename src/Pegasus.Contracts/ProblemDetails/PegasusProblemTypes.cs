@@ -14,6 +14,10 @@ public static class PegasusProblemTypes
     public const string AccountDisabled = Prefix + "account-disabled";
     public const string ProviderUnavailable = Prefix + "provider-unavailable";
     public const string NotFound = Prefix + "not-found";
+    public const string VehicleSuggestionUnavailable = Prefix + "vehicle-suggestion-unavailable";
+    public const string VehicleRegistrationRequired = Prefix + "vehicle-registration-required";
+    public const string VehicleRegistrationConflict = Prefix + "vehicle-registration-conflict";
+    public const string VehicleFieldConflict = Prefix + "vehicle-field-conflict";
     public const string RateLimited = Prefix + "rate-limited";
     public const string Maintenance = Prefix + "maintenance";
 }

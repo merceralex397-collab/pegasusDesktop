@@ -51,6 +51,12 @@ public sealed class VehicleWorkflowTests
         Assert.Equal("vehicle-request", recorded.OperationKey);
     }
 
+    [Theory]
+    [InlineData("ab12 cde", "AB12CDE")]
+    [InlineData(" AB12CDE ", "AB12CDE")]
+    public void LookupRequestOwnsRegistrationNormalization(string input, string expected) =>
+        Assert.Equal(expected, new VehicleLookupRequest(input).Registration);
+
     [Fact]
     public async Task AcceptanceRequiresAnExplicitReasonAndCorrectionShape()
     {

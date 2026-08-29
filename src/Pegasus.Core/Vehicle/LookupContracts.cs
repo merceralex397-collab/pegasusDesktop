@@ -22,7 +22,10 @@ public sealed record VehicleLookupRequest
     public VehicleLookupRequest(string registration)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(registration);
-        if (registration.Length > 20 || registration.Any(character =>
+        var normalizedRegistration = string.Concat(
+            registration.Where(character => !char.IsWhiteSpace(character)))
+            .ToUpperInvariant();
+        if (normalizedRegistration.Length > 20 || normalizedRegistration.Any(character =>
                 !char.IsAsciiLetterUpper(character) && !char.IsAsciiDigit(character)))
         {
             throw new ArgumentException(
@@ -30,7 +33,7 @@ public sealed record VehicleLookupRequest
                 nameof(registration));
         }
 
-        Registration = registration;
+        Registration = normalizedRegistration;
     }
 
     public string Registration { get; }

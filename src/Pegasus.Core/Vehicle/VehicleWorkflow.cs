@@ -76,7 +76,8 @@ public sealed record CaseVehicleEvidence(
     ConfirmedVehicleEvidence? Confirmed,
     VehicleLookupObservation? LatestObservation,
     IReadOnlyList<VehicleLookupObservation> Observations,
-    IReadOnlyList<VehicleConfirmationHistory> ConfirmationHistory);
+    IReadOnlyList<VehicleConfirmationHistory> ConfirmationHistory,
+    long Version);
 
 public sealed record RequestVehicleLookupCommand(
     Guid CaseId,
