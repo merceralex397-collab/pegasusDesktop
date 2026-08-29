@@ -61,12 +61,13 @@ Conventions (from [README.md](README.md) § 3):
 | Tasks | `POST /cases/{id}/chases/manual` | `Cases/Tasks` `OnPostRecordManualChaseAsync` | `Tasks/` manual chase command | PerformCasework | yes (key) | `CaseMutationRequest` fields | version | 5 |
 | Tasks | `POST /cases/{id}/report-evidence/link`, `/unlink` | `Cases/Tasks` `OnPostLinkReportEvidenceAsync`, `OnPostUnlinkReportEvidenceAsync` | `Workflow/` report-evidence link commands | PerformCasework | yes (key) | `CaseMutationRequest` fields | version | 5 |
 | Custody | `POST /cases/{id}/custody/retry` | `Cases/Custody` `OnPostRetryCustodyAsync` | human-only custody retry use case (`Custody/`) | PerformCasework | yes (key) | `CaseMutationRequest` fields | version, work item id | 6 |
-| Custody | `POST /cases/{id}/documents/upload-session` → `PUT /upload-sessions/{sid}` → `POST /upload-sessions/{sid}/complete` | `Cases/Custody` `OnPostUploadDocumentAsync` (`IFormFile`) | `ICaseCustody` / document add use case; limits from `IntakeEnvelopeLimits` | PerformCasework | complete: yes (key) | `CaseMutationRequest` fields on complete | document id, version | 6 |
-| Custody | `DELETE /cases/{id}/documents/{docId}` (soft, reasoned) | `Cases/Custody` `OnPostRemoveDocumentAsync` | document remove command | PerformCasework | yes (key) | `CaseMutationRequest` fields + `reason` | version | 6 |
-| Custody | `POST /cases/{id}/third-party-vehicle-evidence/confirm` | `Cases/Custody` `OnPostConfirmThirdPartyVehicleEvidenceAsync` | evidence confirmation command | PerformCasework | yes (key) | `CaseMutationRequest` fields | version | 6 |
+| Custody | `GET /cases/{id}/documents`, `GET /cases/{id}/documents/{occurrenceId}` | — (new desktop broker) | canonical document list and metadata projection through `IGetCase` | PerformCasework | GET | ETag | document metadata / version | 6 |
+| Custody | `POST /cases/{id}/documents/upload-session` → `PUT /upload-sessions/{sid}` → `POST /upload-sessions/{sid}/complete` | — (new desktop broker) | `IAddCaseDocument` with `IntakeEnvelopeLimits`; bounded gateway staging | PerformCasework | complete: yes (key) | `CaseMutationRequest` fields on complete | document metadata, version | 6 |
+| Custody | `DELETE /cases/{id}/documents/{occurrenceId}` (soft, reasoned) | — (new desktop broker) | `ILogicallyRemoveDocument` | PerformCasework | yes (key) | `CaseMutationRequest` fields + `reason` | version | 6 |
+| Custody | `POST /cases/{id}/third-party-vehicle-evidence/confirm` | — (new desktop broker) | `IConfirmThirdPartyVehicleEvidence` | PerformCasework | yes (key) | `CaseMutationRequest` fields | version | 6 |
 | Custody | `POST /cases/{id}/request-upload-links`, `DELETE /cases/{id}/request-upload-links/{linkId}` | `Cases/Custody` `OnPostCreateRequestUploadLinkAsync`, `OnPostRevokeRequestUploadLinkAsync` | `RequestUploadPolicy` (`Documents/RequestUploadPolicy.cs`) create/revoke | PerformCasework | yes (key) | `operationKey` | link id, expiry | 6 |
-| Documents | `GET /cases/{id}/documents/{docId}/content` | `Cases/Documents/Download` `OnGetAsync` (112 lines) | `IDocumentContentStore` | PerformCasework | GET | ETag, range | bytes, no-sniff, safe filename | 6 |
-| Documents | `POST /cases/{id}/documents/export` | `Cases/Documents/Export` `OnPostAsync` (160 lines) | export use case (CASE-019 proof) | PerformCasework | yes (key) | `operationKey` | archive bytes (async job id if long) | 6 |
+| Documents | `GET /cases/{id}/documents/{occurrenceId}/content` | — (new desktop broker) | `IDocumentContentStore` | PerformCasework | GET | ETag, range | bytes, no-sniff, safe filename | 6 |
+| Documents | `POST /cases/{id}/documents/export` | `Cases/Documents/Export` `OnPostAsync` (160 lines); desktop route not exposed in current fork | export use case (CASE-019 proof), gated on PLAT-041 | PerformCasework | yes (key) | `operationKey` | not exposed until the O(1)+N call budget is proven | 6 |
 | Vehicle | `POST /cases/{id}/vehicle/lookups` | `Cases/Vehicle` `OnPostRequestVehicleLookupAsync` | `src/Pegasus.Core/Vehicle/` lookup request (durable request row; Worker executes) | PerformCasework | yes (key) | `CaseMutationRequest` fields | request id, status | 6 |
 | Vehicle | `POST /cases/{id}/vehicle/suggestions/{sid}/accept` | `Cases/Vehicle` `OnPostAcceptVehicleSuggestionAsync` | vehicle suggestion acceptance | PerformCasework | yes (key) | `CaseMutationRequest` fields | version | 6 |
 | EVA | `POST /cases/{id}/eva-handoff`, `GET /cases/{id}/eva-handoff/{revision}/bundle` | `Cases/Vehicle` `OnPostGenerateEvaHandoffAsync`; `Cases/Eva/Download` `OnPostAsync` | `src/Pegasus.Core/Eva/` handoff generation, `IEvaHandoffQueries`, reasoned download | PerformCasework | generate: yes (key); download: GET | `CaseMutationRequest` fields | revision id; bundle bytes | 6 |
@@ -77,6 +78,12 @@ Conventions (from [README.md](README.md) § 3):
 | Assessment | `POST /cases/{id}/reports/draft` | `OnPostGenerateReportDraftAsync` | `GenerateCaseAssessmentReportDraft` → `IAssessmentReportRenderer` (gateway-side until L-03 parity; then the desktop renders and `POST /cases/{id}/reports` registers the final PDF) | PerformCasework | yes (key) | `CaseMutationRequest` fields | report bytes or report id + ETag | 7 |
 | Assessment | `POST /cases/{id}/reports` (register final), `GET /cases/{id}/reports/{rid}/content` | — (new for L-03; today the web keeps the rendered draft server-side) | report registration + `IDocumentContentStore` | PerformCasework | yes (key) | `CaseMutationRequest` fields | report id, version; bytes | 7 |
 | Assessment | `POST /cases/{id}/assessment/send`, `/reconcile` | `OnPostSendAsync`, `OnPostReconcileAsync` | send/reconcile commands (`Assessment/`, `Workflow/`) | PerformCasework | yes (key) | `CaseMutationRequest` fields | version, send status | 7 |
+
+> DSK-07-05 current-fork disposition (2026-08-27): the desktop broker implements
+> document list, metadata, content streaming, bounded upload, logical removal,
+> and third-party evidence confirmation through the gateway. Export and an
+> evidence-gallery route remain unexposed until PLAT-041's O(1)+N implementation
+> and measurement are proven. PLAT-039 token-age proof is also still open.
 
 ## Intake (received items), uploads, image intake
 

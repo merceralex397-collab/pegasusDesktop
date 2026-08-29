@@ -40,6 +40,21 @@ internal sealed class EfDocumentCustodyStore(
             var replayVersion = await context.Set<DocumentVersionEntity>()
                 .SingleAsync(version => version.Id == replayOccurrence.VersionId, cancellationToken);
             EnsureReplayMatches(command, replayOccurrence, replayVersion, contentHash);
+            var replayHistory = await FindDocumentHistoryAsync(
+                context,
+                command.OperationKey,
+                cancellationToken)
+                ?? throw new InvalidDataException(
+                    "The replayed document is missing its audited action history.");
+            DocumentActionHistory.RequireExactReplay(
+                replayHistory,
+                "case_document",
+                replayOccurrence.Id.ToString("D"),
+                "document_added",
+                command.Actor,
+                reason: null,
+                afterJson: DocumentActionHistory.Serialize(
+                    ToDocumentAuditState(command.CaseId, replayOccurrence, replayVersion)));
             return new(ToOccurrence(replayOccurrence), ToVersion(replayVersion), true);
         }
         var workflow = await RequireWorkflowAsync(context, command.CaseId, cancellationToken);
@@ -75,6 +90,17 @@ internal sealed class EfDocumentCustodyStore(
         var existingVersions = await context.Set<DocumentVersionEntity>()
             .Where(version => version.DocumentId == document.Id)
             .ToListAsync(cancellationToken);
+        var previousVersion = existingVersions
+            .OrderByDescending(value => value.Version)
+            .FirstOrDefault();
+        var previousOccurrence = previousVersion is null
+            ? null
+            : await context.Set<DocumentOccurrenceEntity>()
+                .SingleOrDefaultAsync(
+                    value => value.VersionId == previousVersion.Id,
+                    cancellationToken);
+        var beforeJson = DocumentActionHistory.Serialize(
+            ToDocumentAuditState(command.CaseId, document, previousOccurrence, previousVersion));
         foreach (var existingVersion in existingVersions)
         {
             existingVersion.IsCurrent = false;
@@ -123,6 +149,16 @@ internal sealed class EfDocumentCustodyStore(
         {
             context.Add(version);
             context.Add(occurrence);
+            context.ActionHistory.Add(DocumentActionHistory.Succeeded(
+                "case_document",
+                occurrence.Id.ToString("D"),
+                "document_added",
+                command.Actor,
+                now,
+                command.OperationKey,
+                beforeJson: beforeJson,
+                afterJson: DocumentActionHistory.Serialize(
+                    ToDocumentAuditState(command.CaseId, occurrence, version))));
             CaseMutationGuard.Complete(workflow);
             await context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
@@ -420,9 +456,18 @@ internal sealed class EfDocumentCustodyStore(
         LogicallyRemoveDocumentCommand command,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(command);
         ValidateActor(command.Actor);
         ArgumentException.ThrowIfNullOrWhiteSpace(command.Reason);
-        ArgumentException.ThrowIfNullOrWhiteSpace(command.OperationKey);
+        var reason = command.Reason.Trim();
+        if (reason.Length > 500)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(command),
+                "The document removal reason cannot exceed 500 characters.");
+        }
+
+        var operationKey = ValidateOperationKey(command.OperationKey);
 
         await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
@@ -433,15 +478,60 @@ internal sealed class EfDocumentCustodyStore(
             ?? throw new InvalidOperationException("The document occurrence is unavailable.");
         var version = await context.Set<DocumentVersionEntity>()
             .SingleAsync(value => value.Id == occurrence.VersionId, cancellationToken);
-        if (version.IsLogicallyRemoved)
+
+        var beforeJson = DocumentActionHistory.Serialize(new DocumentRemovalHistoryValue(
+            command.CaseId,
+            occurrence.Id,
+            version.Id,
+            version.FileName,
+            version.MediaType,
+            version.ContentLength,
+            version.Sha256,
+            occurrence.SemanticRole,
+            occurrence.Source,
+            version.IsCurrent,
+            version.IsLogicallyRemoved,
+            version.RemovalReason,
+            version.RemovalOperationKey));
+        var afterJson = DocumentActionHistory.Serialize(new DocumentRemovalHistoryValue(
+            command.CaseId,
+            occurrence.Id,
+            version.Id,
+            version.FileName,
+            version.MediaType,
+            version.ContentLength,
+            version.Sha256,
+            occurrence.SemanticRole,
+            occurrence.Source,
+            false,
+            true,
+            reason,
+            operationKey));
+        var history = await FindDocumentHistoryAsync(context, operationKey, cancellationToken);
+        if (history is not null)
         {
-            if (!string.Equals(version.RemovalReason, command.Reason.Trim(), StringComparison.Ordinal)
-                || !string.Equals(version.RemovalOperationKey, command.OperationKey, StringComparison.Ordinal))
+            DocumentActionHistory.RequireExactReplay(
+                history,
+                "case_document",
+                occurrence.Id.ToString("D"),
+                "document_logically_removed",
+                command.Actor,
+                reason,
+                afterJson);
+            if (!version.IsLogicallyRemoved
+                || !string.Equals(version.RemovalReason, reason, StringComparison.Ordinal)
+                || !string.Equals(version.RemovalOperationKey, operationKey, StringComparison.Ordinal))
             {
-                throw new InvalidOperationException("The document has already been removed for a different reason.");
+                throw new InvalidDataException(
+                    "The audited logical document removal does not match the document state.");
             }
 
             return;
+        }
+        if (version.IsLogicallyRemoved)
+        {
+            throw new InvalidDataException(
+                "The logical document removal is missing its audited action history.");
         }
         var workflow = await RequireWorkflowAsync(context, command.CaseId, cancellationToken);
         CaseMutationGuard.Require(
@@ -454,7 +544,18 @@ internal sealed class EfDocumentCustodyStore(
         version.IsLogicallyRemoved = true;
         version.IsCurrent = false;
         version.RemovalReason = command.Reason.Trim();
-        version.RemovalOperationKey = command.OperationKey;
+        version.RemovalOperationKey = operationKey;
+        var now = timeProvider.GetUtcNow();
+        context.ActionHistory.Add(DocumentActionHistory.Succeeded(
+            "case_document",
+            occurrence.Id.ToString("D"),
+            "document_logically_removed",
+            command.Actor,
+            now,
+            operationKey,
+            reason,
+            beforeJson,
+            afterJson));
         CaseMutationGuard.Complete(workflow);
         await context.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
@@ -737,6 +838,63 @@ internal sealed class EfDocumentCustodyStore(
         value.ThirdPartyVehicleConfirmationReason,
         value.Ordinal);
 
+    private static DocumentAuditState ToDocumentAuditState(
+        Guid caseId,
+        DocumentOccurrenceEntity occurrence,
+        DocumentVersionEntity version) => new(
+        caseId,
+        occurrence.DocumentId,
+        occurrence.Id,
+        version.Id,
+        version.Version,
+        version.FileName,
+        version.MediaType,
+        version.ContentLength,
+        version.Sha256,
+        version.CustodyStatus,
+        version.CreatedAtUtc,
+        version.CreatedBy,
+        version.IsCurrent,
+        version.IsLogicallyRemoved,
+        version.RemovalReason,
+        version.RemovalOperationKey,
+        occurrence.SemanticRole,
+        occurrence.Source,
+        occurrence.SourceOccurrenceIdentity,
+        occurrence.RecordedAtUtc,
+        occurrence.ThirdPartyVehicleConfirmedAtUtc,
+        occurrence.ThirdPartyVehicleConfirmationReason,
+        occurrence.Ordinal);
+
+    private static DocumentAuditState ToDocumentAuditState(
+        Guid caseId,
+        CaseDocumentEntity document,
+        DocumentOccurrenceEntity? occurrence,
+        DocumentVersionEntity? version) => new(
+        caseId,
+        document.Id,
+        occurrence?.Id,
+        version?.Id,
+        version?.Version,
+        version?.FileName,
+        version?.MediaType,
+        version?.ContentLength,
+        version?.Sha256,
+        version?.CustodyStatus,
+        version?.CreatedAtUtc,
+        version?.CreatedBy,
+        version?.IsCurrent,
+        version?.IsLogicallyRemoved,
+        version?.RemovalReason,
+        version?.RemovalOperationKey,
+        occurrence?.SemanticRole,
+        occurrence?.Source,
+        occurrence?.SourceOccurrenceIdentity,
+        occurrence?.RecordedAtUtc,
+        occurrence?.ThirdPartyVehicleConfirmedAtUtc,
+        occurrence?.ThirdPartyVehicleConfirmationReason,
+        occurrence?.Ordinal);
+
     private static ManagedDocumentContentAddress Address(
         Guid caseId,
         string caseReference,
@@ -891,6 +1049,46 @@ internal sealed class EfDocumentCustodyStore(
         Guid OccurrenceId,
         DateTimeOffset? ConfirmedAtUtc,
         string? Reason);
+
+    private sealed record DocumentRemovalHistoryValue(
+        Guid CaseId,
+        Guid OccurrenceId,
+        Guid VersionId,
+        string FileName,
+        string MediaType,
+        long ContentLength,
+        string Sha256,
+        DocumentSemanticRole SemanticRole,
+        DocumentSource Source,
+        bool IsCurrent,
+        bool IsLogicallyRemoved,
+        string? RemovalReason,
+        string? RemovalOperationKey);
+
+    private sealed record DocumentAuditState(
+        Guid CaseId,
+        Guid DocumentId,
+        Guid? OccurrenceId,
+        Guid? VersionId,
+        int? Version,
+        string? FileName,
+        string? MediaType,
+        long? ContentLength,
+        string? Sha256,
+        DocumentCustodyStatus? CustodyStatus,
+        DateTimeOffset? CreatedAtUtc,
+        string? CreatedBy,
+        bool? IsCurrent,
+        bool? IsLogicallyRemoved,
+        string? RemovalReason,
+        string? RemovalOperationKey,
+        DocumentSemanticRole? SemanticRole,
+        DocumentSource? Source,
+        string? SourceOccurrenceIdentity,
+        DateTimeOffset? RecordedAtUtc,
+        DateTimeOffset? ThirdPartyVehicleConfirmedAtUtc,
+        string? ThirdPartyVehicleConfirmationReason,
+        int? Ordinal);
 
     private sealed record ExportItem(
         DocumentOccurrenceEntity Occurrence,

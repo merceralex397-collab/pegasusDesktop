@@ -110,4 +110,5 @@ internal sealed class ClientVersionEndpointFilter : IEndpointFilter
 internal static class DesktopGatewayRequestContext
 {
     internal static readonly object CorrelationIdKey = new();
+    internal static readonly object ActorKey = new();
 }

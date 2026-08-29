@@ -107,6 +107,67 @@ internal sealed class DesktopGatewayExceptionHandler : IExceptionHandler
 
 internal static class DesktopGatewayProblems
 {
+    public static Task WriteUnauthorizedAsync(
+        HttpContext httpContext,
+        CancellationToken cancellationToken = default) =>
+        WriteAsync(
+            httpContext,
+            new PegasusProblem(
+                PegasusProblemTypes.NotAuthorized,
+                "Authentication required",
+                StatusCodes.Status401Unauthorized,
+                "A valid staff session is required.",
+                null,
+                DesktopGatewayCorrelation.Apply(httpContext)),
+            cancellationToken);
+
+    public static Task WriteForbiddenAsync(
+        HttpContext httpContext,
+        CancellationToken cancellationToken = default) =>
+        WriteAsync(
+            httpContext,
+            new PegasusProblem(
+                PegasusProblemTypes.NotAuthorized,
+                "Not authorized",
+                StatusCodes.Status403Forbidden,
+                "The current staff actor is not authorized for this action.",
+                null,
+                DesktopGatewayCorrelation.Apply(httpContext)),
+            cancellationToken);
+
+    public static Task WriteValidationAsync(
+        HttpContext httpContext,
+        string detail,
+        CancellationToken cancellationToken = default) =>
+        WriteAsync(
+            httpContext,
+            new PegasusProblem(
+                PegasusProblemTypes.Validation,
+                "Validation failed",
+                StatusCodes.Status400BadRequest,
+                detail,
+                null,
+                DesktopGatewayCorrelation.Apply(httpContext)),
+            cancellationToken);
+
+    public static Task WriteRateLimitedAsync(
+        HttpContext httpContext,
+        string detail,
+        CancellationToken cancellationToken = default)
+    {
+        httpContext.Response.Headers.RetryAfter = "1800";
+        return WriteAsync(
+            httpContext,
+            new PegasusProblem(
+                PegasusProblemTypes.RateLimited,
+                "Too many requests",
+                StatusCodes.Status429TooManyRequests,
+                detail,
+                null,
+                DesktopGatewayCorrelation.Apply(httpContext)),
+            cancellationToken);
+    }
+
     public static async Task WriteNotFoundAsync(
         HttpContext httpContext,
         CancellationToken cancellationToken = default)

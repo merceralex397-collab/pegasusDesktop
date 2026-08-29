@@ -247,7 +247,8 @@ previews, and caches locally.
 
 **Current entry points.** `Pages/Cases/Custody.cshtml.cs` (upload, retry,
 remove, request links), `Pages/Cases/Documents/Download.cshtml.cs`,
-`Pages/Cases/Documents/Export.cshtml.cs`, Worker
+`Pages/Cases/Documents/Export.cshtml.cs`, the desktop broker in
+`src/Pegasus.Web/Api/BoxDocumentBrokerEndpoints.cs`, Worker
 `ExternalWorkFunction` (`Functions/ExternalWorkFunctions.cs:9`, custody
 work), MCP `pegasus_document_*` tools.
 
@@ -270,10 +271,9 @@ work), MCP `pegasus_document_*` tools.
   (Worker) / Container App secrets (Web) (`platform.bicep:382-398`,
   `:555-563`); unresolved `@Microsoft.KeyVault(` placeholder fails with a
   named error (`BoxCaseCustody.cs:82-84`, PLAT-013).
-- Token lifetime: minted once per process today; upstream PLAT-039 (in
-  upstream `main`: "Renew the Box access token before it expires", "Publish
-  the Box token and its expiry as one value") — comes across with the first
-  sync.
+- Token lifetime: the current Box adapter mints once per process today. Token
+  renewal and token-age proof remain the PLAT-039 work item; that inherited ID
+  is not present on this fork and is not satisfied by an upstream sync.
 - Custody retry is a human-only Core use case; no automatic business retry.
 
 **Data owned.** Box folders/files (canonical), database document records
@@ -281,15 +281,16 @@ work), MCP `pegasus_document_*` tools.
 (`CustodyOutboxIntegrationTests.cs` evidence), `box-links` blob container.
 
 **Failure modes.** Custody failure is terminal and visible for staff retry;
-Box token expiry (fixed upstream); folder resolve once per image on export
-(PLAT-041, performance); PLAT-013 config shape.
+Box token expiry (PLAT-039, unproved on this fork); folder resolve once per
+image on export (PLAT-041, performance); PLAT-013 config shape.
 
 **What the desktop needs.** Gateway endpoints for document list/metadata,
-upload session (multipart or direct-to-Box URL only if `Box.Sdk.Gen` can
-issue a constrained short-lived URL — to verify), content download (bytes,
-range/resume), export; local bounded working cache; transfer queue with
-retry; conflict detection via document version. No Box secret in the package
-(ADR-0107).
+bounded upload sessions, content download (bytes, range/resume), logical
+removal, and third-party evidence confirmation; local bounded working cache;
+transfer queue with retry; conflict detection via document version. The
+current fork streams through the gateway and does not expose Box URLs, tokens,
+or object IDs to the desktop. Export remains gated on PLAT-041 and no
+evidence-gallery route is exposed. No Box secret is in the package (ADR-0107).
 
 **Open questions.**
 
@@ -301,11 +302,20 @@ retry; conflict detection via document version. No Box secret in the package
 - Q4.3 PLAT-041 (resolve folder once per export) must land before the export
   endpoint is exposed to avoid per-image Box calls from a desktop batch.
 
+**DSK-07-05 current-fork outcome (2026-08-27).** The gateway now provides
+authenticated list, metadata, content-stream, bounded-upload, logical-remove,
+and third-party-evidence-confirmation routes, reusing the existing Core ports
+and recording custody action history for upload, removal, and confirmation.
+Abandoned uploads leave no canonical document, receipt, or temporary file.
+Export and evidence-gallery routes are intentionally not exposed pending
+PLAT-041's O(1)+N implementation and measurement; PLAT-039 token-age proof is
+not available in this fork. Live Key Vault names-only evidence is deferred
+under the current no-cloud-operation boundary.
+
 **Read-only verification.**
 `git grep -n "class BoxCaseCustody" src/Pegasus.Infrastructure/Custody/BoxCaseCustody.cs`,
 `git grep -n "Microsoft.KeyVault(" src/Pegasus.Infrastructure`,
-`git log --oneline upstream/main -- src/Pegasus.Infrastructure/Custody | head`
-(after the `upstream` remote exists).
+`rg -n "Box\.Sdk\.Gen" src tests --glob '*.csproj' --glob '!**/packages.lock.json' --glob '!**/obj/**' --glob '!**/bin/**'`.
 
 ## Record 5 — DVLA/DVSA vehicle lookup
 

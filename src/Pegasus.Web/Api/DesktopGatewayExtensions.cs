@@ -20,6 +20,7 @@ public static class DesktopGatewayExtensions
         services.AddSingleton(options);
         services.AddProblemDetails();
         services.AddExceptionHandler<DesktopGatewayExceptionHandler>();
+        services.AddSingleton<DesktopDocumentUploadSessions>();
         services.AddOpenApi(OpenApiDocumentName, openApiOptions =>
         {
             openApiOptions.ShouldInclude = description => description.GroupName == OpenApiDocumentName;
@@ -29,10 +30,8 @@ public static class DesktopGatewayExtensions
     }
 
     /// <summary>
-    /// Maps the versioned desktop API group. Authentication and endpoint
-    /// authorization are added by the endpoint tickets that attach routes to
-    /// this group; this ticket only composes the shared filters and returns the
-    /// group for those callers.
+    /// Maps the versioned desktop API group, including its shared filters and
+    /// the endpoint routes registered by the desktop feature tickets.
     /// </summary>
     public static RouteGroupBuilder MapPegasusDesktopGateway(this WebApplication app)
     {
@@ -40,8 +39,11 @@ public static class DesktopGatewayExtensions
 
         var group = app.MapGroup(DesktopGateway.BasePath)
             .WithGroupName(OpenApiDocumentName);
+        group.AllowAnonymous();
         group.AddEndpointFilter<CorrelationIdEndpointFilter>();
         group.AddEndpointFilter<ClientVersionEndpointFilter>();
+        group.AddEndpointFilter<DesktopGatewayAuthorizationEndpointFilter>();
+        group.MapBoxDocumentBroker();
         app.MapOpenApi("/openapi/{documentName}.json")
             .AllowAnonymous();
         return group;
