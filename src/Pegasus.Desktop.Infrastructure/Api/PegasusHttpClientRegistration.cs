@@ -14,16 +14,16 @@ public static class PegasusHttpClientRegistration
 
         var options = new GatewayOptions();
         configure(options);
-        if (options.BaseAddress is null)
-        {
-            throw new InvalidOperationException("The Pegasus gateway base address is required.");
-        }
 
         services.TryAddSingleton<IClientVersionProvider, Windows.PackageClientVersionProvider>();
         services.AddTransient<PegasusRequestHandler>();
         services.AddTransient<GetRetryHandler>();
         services
-            .AddHttpClient("pegasus", client => client.BaseAddress = options.BaseAddress)
+            .AddHttpClient("pegasus", client =>
+            {
+                client.BaseAddress = options.BaseAddress ??
+                    throw new InvalidOperationException("The Pegasus gateway base address is required.");
+            })
             .AddHttpMessageHandler<PegasusRequestHandler>()
             .AddHttpMessageHandler<GetRetryHandler>();
 
