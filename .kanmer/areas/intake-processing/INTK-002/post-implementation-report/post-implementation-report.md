@@ -62,3 +62,11 @@ The independent review findings on concurrency coverage and carry-over annotatio
 - A direct run in the exact INTK-002 worktree started Azurite and Web. The normal Functions Core Tools build discovered the Worker functions, but the language worker failed during composition with `Unable to resolve service for type Microsoft.AspNetCore.Identity.UserManager<Pegasus.Infrastructure.Persistence.PegasusIdentityUser> while attempting to activate EfStaffAccountAdministration`.
 - Therefore no claim is made for the required queue-message loss, timer redispatch, or exactly-once processing journey. This defect is outside INTK-002's explicit scope because the ticket must not touch `src/Pegasus.Worker`; the next action is to resolve it under the stack/runtime owner ticket or a narrowly scoped follow-up, then rerun L-02.
 - Delivery state: exact PR #23 head `56fb9b05c9609e08bf14a2e26f71e6d9b8ed5e1f`; CI run `33006548735` completed successfully. Independent review passed static implementation/scope/simplification lenses but does not waive the missing L-02 proof. The ticket remains in `review` and is not merge-ready.
+
+## L-02 retry — 2026-08-29
+
+Retried `pwsh -NoProfile -File ./scripts/Invoke-LocalDevelopment.ps1 -Action Start -StartupTimeoutSeconds 90` in the recorded INTK-002 worktree `C:/Users/PC/Documents/GitHub/pegasusDesktop/.worktrees/intk-002`. It failed before Web, Functions, or Azurite readiness with:
+
+`Invoke-LocalDevelopment.ps1:1482 — Local run '11e3ec0f27fe481d96bfd266949300c4' failed. Diagnostics remain at .../artifacts/local-development/11e3ec0f27fe481d96bfd266949300c4. Exception calling "GetFullPath" with "1" argument(s): "The path is empty. (Parameter 'path')"`
+
+No queue-message-loss, timer-redispatch, or exactly-once caller proof is claimed. This remains the existing local-launcher/stack blocker recorded in the report; INTK-002's allowed source scope does not include the launcher.
