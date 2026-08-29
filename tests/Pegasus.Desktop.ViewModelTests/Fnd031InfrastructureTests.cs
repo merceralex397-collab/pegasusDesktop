@@ -155,8 +155,12 @@ public sealed class Fnd031InfrastructureTests
     {
         var services = new ServiceCollection();
 
+        services.AddPegasusApiClient(_ => { });
+
         Assert.Throws<InvalidOperationException>(
-            () => services.AddPegasusApiClient(_ => { }));
+            () => services.BuildServiceProvider()
+                .GetRequiredService<IHttpClientFactory>()
+                .CreateClient("pegasus"));
     }
 
     [Fact]
