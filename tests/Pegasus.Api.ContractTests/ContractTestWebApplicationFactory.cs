@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Pegasus.Api.ContractTests.CommandCoverage;
 using Pegasus.Core.Vehicle;
+using Pegasus.Infrastructure.Persistence;
 
 namespace Pegasus.Api.ContractTests;
 
@@ -20,8 +22,12 @@ public sealed class ContractTestWebApplicationFactory : WebApplicationFactory<Pr
         builder.ConfigureTestServices(services =>
         {
             // Use deterministic staff claims and in-memory vehicle command stores.
-            // This keeps the contract suite independent of SQL Server while still
-            // exercising the real authentication, endpoint-filter and Core seams.
+            // The in-memory identity store is also required because the shared
+            // password-change middleware resolves UserManager for authenticated
+            // requests before the endpoint filter runs. This keeps the contract
+            // suite independent of SQL Server while still exercising the real
+            // authentication, endpoint-filter and Core seams.
+            ContractTestIdentity.Configure(services);
             services.RemoveAll<IAuthenticationService>();
             services.AddSingleton<IAuthenticationService, ContractAuthenticationService>();
             services.RemoveAll<IRequestVehicleLookupStore>();
@@ -92,4 +98,91 @@ public sealed class ContractTestWebApplicationFactory : WebApplicationFactory<Pr
             AuthenticationProperties? properties) =>
             Task.CompletedTask;
     }
+}
+
+internal static class ContractTestIdentity
+{
+    public static void Configure(IServiceCollection services)
+    {
+        services.RemoveAll<IUserStore<PegasusIdentityUser>>();
+        services.AddScoped<IUserStore<PegasusIdentityUser>, ContractTestUserStore>();
+    }
+}
+
+internal sealed class ContractTestUserStore : IUserStore<PegasusIdentityUser>
+{
+    public Task<IdentityResult> CreateAsync(
+        PegasusIdentityUser user,
+        CancellationToken cancellationToken) =>
+        throw new NotSupportedException("The contract test identity store is read-only.");
+
+    public Task<IdentityResult> DeleteAsync(
+        PegasusIdentityUser user,
+        CancellationToken cancellationToken) =>
+        throw new NotSupportedException("The contract test identity store is read-only.");
+
+    public void Dispose()
+    {
+    }
+
+    public Task<PegasusIdentityUser?> FindByIdAsync(
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        return Guid.TryParse(userId, out var id)
+            ? Task.FromResult<PegasusIdentityUser?>(CreateUser(id))
+            : Task.FromResult<PegasusIdentityUser?>(null);
+    }
+
+    public Task<PegasusIdentityUser?> FindByNameAsync(
+        string normalizedUserName,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<PegasusIdentityUser?>(null);
+
+    public Task<string?> GetNormalizedUserNameAsync(
+        PegasusIdentityUser user,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(user.NormalizedUserName);
+
+    public Task<string> GetUserIdAsync(
+        PegasusIdentityUser user,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(user.Id.ToString("D"));
+
+    public Task<string?> GetUserNameAsync(
+        PegasusIdentityUser user,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(user.UserName);
+
+    public Task SetNormalizedUserNameAsync(
+        PegasusIdentityUser user,
+        string? normalizedName,
+        CancellationToken cancellationToken)
+    {
+        user.NormalizedUserName = normalizedName;
+        return Task.CompletedTask;
+    }
+
+    public Task SetUserNameAsync(
+        PegasusIdentityUser user,
+        string? userName,
+        CancellationToken cancellationToken)
+    {
+        user.UserName = userName;
+        return Task.CompletedTask;
+    }
+
+    public Task<IdentityResult> UpdateAsync(
+        PegasusIdentityUser user,
+        CancellationToken cancellationToken) =>
+        throw new NotSupportedException("The contract test identity store is read-only.");
+
+    private static PegasusIdentityUser CreateUser(Guid id) => new()
+    {
+        Id = id,
+        UserName = "contract-test-user",
+        NormalizedUserName = "CONTRACT-TEST-USER",
+        IsEnabled = true,
+        MustChangePassword = false
+    };
 }

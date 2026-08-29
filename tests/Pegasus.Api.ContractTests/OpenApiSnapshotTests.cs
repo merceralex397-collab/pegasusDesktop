@@ -410,6 +410,7 @@ public sealed class OpenApiSnapshotTests
             builder.UseSetting("Features:DesktopGateway", "false");
             builder.ConfigureTestServices(services =>
             {
+                ContractTestIdentity.Configure(services);
                 services.RemoveAll<IAuthenticationService>();
                 services.AddSingleton<IAuthenticationService,
                     ContractTestWebApplicationFactory.ContractAuthenticationService>();
