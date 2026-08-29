@@ -250,3 +250,11 @@ Faraday (`pegasus-desktop-reviewer`) independently reviewed PR #24 at exact head
 - PR #24 merged into `dev` at `f26b5b01d509ad21d9db58bca9fb00afe77c384a` on 2026-08-26.
 - Exact-head repository-check run `33009752135`: applicable `changes`, `documentation`, `local-development-scripts`, and `reference-data` jobs passed; code/infrastructure lanes were path-skipped.
 - `gateway/r21` and the corresponding `docs/operations.md` entry are not claimed. FND-009 must remain open until the next authorized production release applies the tag and records the release evidence.
+
+## Retrospective review and live disposition — 2026-08-29
+
+Independent reviewer Peirce reviewed the exact merged ticket head `322e18bda664f3b800c9614a64513a4be6b11e34` and merge commit `f26b5b01d509ad21d9db58bca9fb00afe77c384a`. PR #24's repository-check run `33009752135` matched the exact head and passed the documentation, changes, local-development-scripts and reference-data lanes; the .NET, SQL and browser lanes were correctly skipped for this documentation-only diff.
+
+The review is retrospective: there is no evidence of an independent review before PR #24 merged. The two release skill copies are byte-identical and carry the tag route. The canonical engineering paragraph records tags after exact-SHA promotion but does not explicitly say after the promotion read-back or preserve the plan's C-01/2x Windows-runner cost rationale; this needs an in-repo remediation PR.
+
+The first `gateway/r<N>` tag is not present locally or on `origin`, and `docs/operations.md` still ends at Release 20. That tag must be applied by the release actor to the next authorized promoted `main` SHA and recorded beside the release. The current no-release/no-cloud constraint means this acceptance criterion is intentionally pending; no tag or production proof is fabricated.
