@@ -24,6 +24,14 @@ public sealed class StylesAreTheOnlySourceOfColourAndTypeTests
         @"^\{ThemeResource\s+[^}]+\}$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+    private static readonly Regex _colourSetter = new(
+        @"<Setter\b(?=[^>]*\bProperty\s*=\s*[""'](?:Color|Background|Foreground|BorderBrush|Fill|Stroke)[""'])(?=[^>]*\bValue\s*=\s*[""'](?<value>[^""']+)[""'])[^>]*/?>",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex _colourPropertyElement = new(
+        @"<[\w.:-]+\.(?:Color|Background|Foreground|BorderBrush|Fill|Stroke)\s*>\s*(?<value>[^<]+?)\s*</[\w.:-]+\.(?:Color|Background|Foreground|BorderBrush|Fill|Stroke)\s*>",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     [Fact]
     [Trait("Category", "ThemeResources")]
     public void StylesAreTheOnlySourceOfColourAndType()
@@ -44,6 +52,8 @@ public sealed class StylesAreTheOnlySourceOfColourAndTypeTests
     [InlineData("<TextBlock Foreground=\"Blue\" />", "named colour literal Blue")]
     [InlineData("<Border CornerRadius=\"1,1,1,1\" />", "numeric CornerRadius attribute")]
     [InlineData("<TextBlock Foreground=\"{StaticResource BlueBrush}\" />", "non-theme colour resource")]
+    [InlineData("<Setter Property=\"Foreground\" Value=\"Blue\" />", "named colour literal Blue")]
+    [InlineData("<TextBlock><TextBlock.Foreground>Blue</TextBlock.Foreground></TextBlock>", "named colour literal Blue")]
     public void GuardRejectsAdditionalAuthoredLiterals(string xaml, string expectedViolation)
     {
         var violations = FindViolations("probe.xaml", xaml).ToArray();
@@ -77,16 +87,40 @@ public sealed class StylesAreTheOnlySourceOfColourAndTypeTests
 
         foreach (Match match in _colourAttribute.Matches(content))
         {
-            var value = match.Groups[1].Value.Trim();
-            if (!value.StartsWith('{'))
+            var violation = FormatColourViolation(relativePath, match.Groups[1].Value);
+            if (violation is not null)
             {
-                yield return $"{relativePath}: named colour literal {value}";
-            }
-            else if (!_themeColourReference.IsMatch(value))
-            {
-                yield return $"{relativePath}: non-theme colour resource {value}";
+                yield return violation;
             }
         }
+
+        foreach (Match match in _colourSetter.Matches(content))
+        {
+            var violation = FormatColourViolation(relativePath, match.Groups["value"].Value);
+            if (violation is not null)
+            {
+                yield return violation;
+            }
+        }
+
+        foreach (Match match in _colourPropertyElement.Matches(content))
+        {
+            var violation = FormatColourViolation(relativePath, match.Groups["value"].Value);
+            if (violation is not null)
+            {
+                yield return violation;
+            }
+        }
+    }
+
+    private static string? FormatColourViolation(string relativePath, string rawValue)
+    {
+        var value = rawValue.Trim();
+        return value.StartsWith('{') && _themeColourReference.IsMatch(value)
+            ? null
+            : value.StartsWith('{')
+                ? $"{relativePath}: non-theme colour resource {value}"
+                : $"{relativePath}: named colour literal {value}";
     }
 
     private static bool IsStylesFile(string repositoryRoot, string file)
