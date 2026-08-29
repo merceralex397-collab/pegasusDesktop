@@ -39,3 +39,7 @@ The reviewed follow-up PR #43 merged to `dev` as `52a1741cfa6544dfdad2632b5192a1
 ## Follow-up correction — 2026-08-29
 
 A narrow registration correction was added at `bec8d1bcd4465078e2ea3fab9a9188081118d00c`: missing gateway-address failure is now deferred from registration to named HttpClient creation so the host's `ValidateOnStart()` path can report invalid configuration at start. The infrastructure Release build passed with zero warnings/errors. Independent review and PR are still pending; no completion claim is made.
+
+## Follow-up PR — 2026-08-29
+
+The independently reviewed correction is open as PR #45 at exact head `bec8d1bcd4465078e2ea3fab9a9188081118d00c`. Exact-head CI is active. This is still prerequisite-only; FND-031 remains incomplete pending downstream tests, proof, and Kanmer closeout.

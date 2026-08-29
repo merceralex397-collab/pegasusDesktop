@@ -299,3 +299,7 @@ This lands the narrow shared redaction correction only. FND-031 is still not Don
 ## Follow-up correction — 2026-08-29
 
 The FND-032 independent review identified that `AddPegasusApiClient` threw for a missing gateway address during service registration, before `PegasusHost` could exercise its existing `ValidateOnStart()` path. The owned infrastructure registration now defers that throw into the named HttpClient factory at commit `bec8d1bcd4465078e2ea3fab9a9188081118d00c`. Targeted Release build passed with zero warnings/errors and `git diff --check` passed. This is pending a fresh independent review and PR; FND-031 remains review/incomplete.
+
+## Follow-up PR — 2026-08-29
+
+The independently reviewed correction is tracked in PR #45 (https://github.com/merceralex397-collab/pegasusDesktop/pull/45), exact head `bec8d1bcd4465078e2ea3fab9a9188081118d00c`. Its exact-head GitHub CI is active; no merge or Done claim is made until the required checks complete.
