@@ -321,3 +321,27 @@ On branch `task/desktop-dev-msix`:
 - `dotnet publish ... --runtime win-x64 --self-contained true -p:WindowsAppSDKSelfContained=true` — exit 0 and produced the publish output, but did not populate the WinApp CLI deployment directory; no tracked files changed.
 
 The exact package command still fails on the local toolchain. Existing identity/certificate matching is therefore not the remaining cause. FND-039 stays in Review and no package/install proof is claimed.
+
+## Configuration-isolated packaging diagnostic — 2026-08-29
+
+The existing manifest and certificate values were used unchanged. To isolate the separate WinApp CLI runtime-package issue, a temporary configuration was generated outside the repository at `C:/Users/PC/AppData/Local/Temp/pegasus-fnd039-winapp-config/winapp.yaml`; it was not added to the branch. The config identifies the restored `Microsoft.WindowsAppSDK` package version `2.4.0` and its runtime package graph.
+
+With that temporary config as the working directory, the same `winapp package ... --cert ... --self-contained` operation succeeded and produced:
+
+- `Pegasus.Desktop-test.msix`: 94,156,443 bytes;
+- archive manifest identity: `Name=CollisionEngineers.Pegasus`, `Publisher=CN=Collision Engineers`, `Version=0.1.0.0`, `ProcessorArchitecture=x64`;
+- signer subject and issuer: `CN=Collision Engineers`;
+- signer thumbprint: `AC3468D9C8D1FF64FAE3980F93A0E92CC0BA3AED`.
+
+Windows reports the package signature as locally untrusted because this is the development self-signed certificate, which is expected until the operator performs the documented trust step. This diagnostic proves the identity/certificate match is correct and that the remaining local failure is the standalone CLI's missing Windows App SDK package configuration/runtime staging, not identity selection. The required repo-root command still fails without that configuration, so no exact-command acceptance claim is made. No repository file, certificate, corpus, cloud resource, or upstream remote was changed.
+
+## Prerequisite merge — 2026-08-29
+
+PR #48 merged into `dev` after the exact reviewed head passed every applicable CI lane.
+
+- PR: https://github.com/merceralex397-collab/pegasusDesktop/pull/48
+- Reviewed head: `c586bb71fb9457db4c0f7661cfe5e89763f4ada3`
+- CI: run `33269737264` — completed successfully; browser, unit, all three SQL shards, changes, documentation, local-development-scripts, reference-data, and SQL integration coverage succeeded; infrastructure was skipped by its documented path filter.
+- Resulting `origin/dev`: `e071d3ca43e70fd695c1f9907856d61d5b189685`
+
+This is a prerequisite merge only. FND-039 remains in Review and is not Done: the exact repo-root self-contained packaging command still lacks the CLI runtime package configuration, and the operator certificate-trust plus clean-machine install/launch/uninstall, result-log, screenshot, cleanup, and no-elevation evidence remain outstanding.

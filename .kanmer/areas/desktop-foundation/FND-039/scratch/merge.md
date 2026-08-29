@@ -1,0 +1,1 @@
+2026-08-29: PR #48 merged to dev after CI run 33269737264 passed at exact head c586bb71fb9457db4c0f7661cfe5e89763f4ada3. origin/dev is e071d3ca43e70fd695c1f9907856d61d5b189685. Packaging/operator acceptance remains open.
