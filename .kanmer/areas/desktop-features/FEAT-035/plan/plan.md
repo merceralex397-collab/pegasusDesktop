@@ -96,3 +96,9 @@ The earlier statement that provider-bound correlation required no persistence fi
 - `git diff --check` — passed; only normal line-ending conversion warnings.
 - Secret scan — no provider credential values or keys introduced or exposed; only the existing bearer/token redaction regex matched.
 - No live provider call, cloud write, deployment, upstream sync, or corpus mutation was performed.
+
+## Hosted CI correction (2026-08-30)
+
+PR #51's first exact-head run `33280183638` exposed that the contract suite was not actually SQL-independent on a clean runner: authenticated requests traversed the shared password-change middleware, which queried the absent `PegasusDevelopment` database. The hosted log showed Core 941/941 and architecture 121/121 passing; the filtered API contract run failed 7/18, with vehicle authorization/version cases becoming 400s and the disabled-gateway check seeing a database-login failure.
+
+The test-only correction adds a scoped in-memory `IUserStore<PegasusIdentityUser>` to both contract web factories. It removes the hidden SQL dependency without changing product authentication or vehicle behavior. Exact local `Category=Contract` validation after the correction is 18 passed, 0 failed. The correction is commit `3663cd779194e7f24fc59a99d724e12ba54261d6`, pushed to PR #51; hosted rerun is required before merge.

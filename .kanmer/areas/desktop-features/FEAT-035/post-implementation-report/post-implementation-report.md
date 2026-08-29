@@ -46,3 +46,7 @@ Final validation on the corrected compiled tree:
 - No live provider, cloud write, deployment, upstream sync, or corpus mutation was performed.
 
 The corrected branch is ready for a fresh independent `pegasus-desktop-reviewer` review. No merge, proof, or Kanmer finalization is claimed.
+
+## Hosted CI correction (2026-08-30)
+
+The first exact-head hosted run `33280183638` failed only in the unit job's filtered API contract portion: Core 941/941 and architecture 121/121 passed, while 7/18 contract tests encountered SQL-dependent authentication middleware on the clean runner. This was diagnosed from the hosted job log, not waived. A scoped in-memory `IUserStore<PegasusIdentityUser>` was added to both contract web factories in commit `3663cd779194e7f24fc59a99d724e12ba54261d6`; the exact `Category=Contract` suite then passed locally 18/18. PR #51 has been updated and hosted CI rerun is pending. No merge or finalization is claimed.

@@ -20,3 +20,10 @@
 - [x] Migration schema guard — 1 passed.
 - [x] Review-fix simplification correction recorded; no unapplied findings remain.
 - [ ] Fresh independent reviewer PASS — pending; no merge or final Kanmer closeout is claimed.
+
+## Hosted CI correction (2026-08-30)
+
+- [x] Diagnose exact-head CI run `33280183638`: Core 941/941 and architecture 121/121 passed; the API contract filter failed because authenticated contract hosts still resolved SQL-backed `UserManager` on a clean runner.
+- [x] Add scoped in-memory identity-store isolation to both contract fixtures — commit `3663cd779194e7f24fc59a99d724e12ba54261d6`.
+- [x] Re-run exact filtered contract suite locally — 18 passed, 0 failed.
+- [ ] Hosted CI rerun green at the new head — pending.
