@@ -2,7 +2,7 @@
 
 ## Exact implementation
 
-- Reviewed implementation head: 704996c7d41c9c59de8a75ef7f2b5a84a9ccff9c.
+- Current implementation head: f62407a30955d6ee2e1e1ee192c6e76d867a998c. The earlier `704996c7d41c9c59de8a75ef7f2b5a84a9ccff9c` value is retained only in the dated historical review below.
 - The desktop host, embedded channel configuration, lifecycle disposal, options registration, API client registration, credential-store registration, bounded cache registration, and diagnostics provider are implemented in the ticket-owned production source.
 - The FND-038-owned test source was intentionally not added or duplicated in this ticket.
 
