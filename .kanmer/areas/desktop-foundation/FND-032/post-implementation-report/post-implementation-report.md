@@ -41,3 +41,7 @@ Boole's exact-head review of `925e98724554c1ba7528492e6a3136f44c8b0416` is BLOCK
 ## Fallback reconciliation — 2026-08-29
 
 The plan now explicitly records the supported local/unpackaged behavior: when `ApplicationData.Current.LocalFolder` is unavailable, the host uses a per-process OS-temp directory for its diagnostics writer and DPAPI store; packaged launches use the app-local folder. This is not release storage. The behavior still requires an explicit FND-038 test; until that test passes, FND-032 remains incomplete.
+
+## Post-PR-45 revalidation — 2026-08-29
+
+PR #45 merged the gateway registration timing correction to `dev`; the owned host branch now contains it at head `f62407a30955d6ee2e1e1ee192c6e76d867a998c`. Locked solution restore, full Release solution build, and targeted Desktop/Infrastructure Release builds passed with 0 warnings/errors. The pilot-channel assembly inspection showed base plus the selected pilot resource, with no production resource included. FND-038 behavior tests and exact release UNC feed authority remain outstanding; no release or deployment claim is made.

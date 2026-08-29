@@ -345,3 +345,9 @@ The ticket remains implementing: exact feed host/share values are still not esta
 Reviewer Boole inspected exact head `925e98724554c1ba7528492e6a3136f44c8b0416` and returned BLOCKED. The required missing-`Gateway:BaseAddress` failure was thrown while registering the client, before host start; the narrow correction is being made in FND-031's owned infrastructure file at follow-up commit `bec8d1bc` (pending independent review and merge). The report wording was also stale and must be corrected.
 
 FND-032 remains incomplete and must not be merged as delivered or marked Done until the corrected registration is present, FND-038's extension tests cover host resolution/start validation/redaction/rotation, the fallback store-root behavior is reconciled with its plan, and exact release feed host/share authority is supplied.
+
+## Post-PR-45 revalidation — 2026-08-29
+
+After PR #45 merged to `dev` as `ac8f4432d4ea1885dc9829a1fc8981159e9ba4c6`, that merge was incorporated into `task/desktop-host`, producing head `f62407a30955d6ee2e1e1ee192c6e76d867a998c`. Locked solution restore passed. Full Release solution build passed with 0 warnings/errors. The Desktop and Infrastructure targeted Release builds passed with 0 warnings/errors. A pilot-channel build passed, and reflection of the resulting assembly showed only base plus selected-channel resources; the selected resource contained `Channel: pilot` and the pilot feed placeholder, not production configuration. The branch was pushed to `origin/task/desktop-host`.
+
+The gateway-address registration timing defect is fixed in the merged infrastructure. FND-038 still owns the required host-start/options, redaction, rotation, and fallback behavior tests. The exact pilot/production UNC feed host/share remains a release blocker and is not guessed.
