@@ -258,3 +258,11 @@ The repository's `tests/Pegasus.Desktop.ViewModelTests` project does not yet exi
 - Simplicity: one small GET-only retry handler, one injected DPAPI store root, one bounded in-memory cache, and one rolling writer with a single redaction implementation. No new runtime, table, service, or compatibility path was introduced.
 - Efficiency: cache operations are lock-protected and return defensive byte copies; diagnostics trims by retention count and total bytes before appending; no background worker or unbounded queue was introduced.
 - Findings: the first build exposed an analyzer-enforced argument-guard form and a missing `System.Net` import; both were corrected. The architecture test exposed the actual ordinal sort (`Pegasus.Desktop.Infrastructure` sorts before `Pegasus.Desktop`), and the expected list was corrected. No unapplied behavior-preserving simplification finding remains.
+
+## 2026-08-29 validation and sequencing checkpoint
+
+- dotnet restore .\src\Pegasus.Desktop.Infrastructure\Pegasus.Desktop.Infrastructure.csproj -r win-x64 --force-evaluate passed.
+- dotnet build .\Pegasus.slnx --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false -p:BuildInParallel=false -p:NodeReuse=false --verbosity minimal passed with 0 warnings and 0 errors.
+- dotnet test .\tests\Pegasus.ArchitectureTests\Pegasus.ArchitectureTests.csproj --configuration Release --no-build --no-restore --verbosity minimal passed 121/121.
+- The forbidden-reference scan over src/Pegasus.Desktop.Infrastructure returned no matches; git diff --check passed.
+- The required tests/Pegasus.Desktop.ViewModelTests project is absent on this branch and origin/dev; FND-038 owns creating that Windows test scaffold. Creating a second scaffold here would violate the ticket scope and EPIC-003 context. The credential-store and handler tests therefore remain open FND-031 acceptance items and this ticket must not be marked done until those tests and merged-main proof exist. An independent reviewer is deciding whether this implementation may merge as the prerequisite that unblocks FND-038 while FND-031 remains incomplete.
