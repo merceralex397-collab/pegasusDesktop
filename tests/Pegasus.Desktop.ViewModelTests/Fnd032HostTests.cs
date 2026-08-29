@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Reflection;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -7,7 +10,6 @@ using Pegasus.Desktop.Infrastructure.Api;
 using Pegasus.Desktop.Infrastructure.Authentication;
 using Pegasus.Desktop.Infrastructure.Caching;
 using Pegasus.Desktop.Infrastructure.Diagnostics;
-using Pegasus.Desktop.Logging;
 using Pegasus.Desktop.Options;
 
 namespace Pegasus.Desktop.ViewModelTests;
@@ -34,7 +36,61 @@ public sealed class Fnd032HostTests
         Assert.IsAssignableFrom<IDesktopCredentialStore>(
             services.GetRequiredService<IDesktopCredentialStore>());
         Assert.IsType<BoundedSnapshotCache>(services.GetRequiredService<BoundedSnapshotCache>());
-        Assert.NotEmpty(services.GetServices<ILoggerProvider>());
+        var writer = Assert.IsType<RollingFileDiagnosticsWriter>(
+            services.GetRequiredService<IDiagnosticsWriter>());
+        Assert.Equal(
+            10 * 1024 * 1024,
+            Assert.IsType<long>(typeof(RollingFileDiagnosticsWriter)
+                .GetField("_maxTotalBytes", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.GetValue(writer)));
+        Assert.Equal(
+            5,
+            Assert.IsType<int>(typeof(RollingFileDiagnosticsWriter)
+                .GetField("_retentionCount", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.GetValue(writer)));
+
+        const string marker = "fnd032-host-logger-marker";
+        var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Pegasus.Desktop.ViewModelTests");
+        using (logger.BeginScope(new Dictionary<string, object?>
+        {
+            [PegasusHeaders.CorrelationId] = "correlation-123"
+        }))
+        {
+            var state = new[]
+            {
+                new KeyValuePair<string, object?>(
+                    "AccessToken",
+                    "Bearer fake-access-token")
+            };
+            logger.Log(
+                LogLevel.Information,
+                new EventId(1, "HostTest"),
+                state,
+                exception: null,
+                static (_, _) => marker);
+        }
+
+        var logPath = Assert.Single(
+            writer.GetFiles(),
+            path => File.ReadAllText(path).Contains(marker));
+        var logLine = Assert.Single(File.ReadLines(logPath), line => line.Contains(marker));
+        using var logEntry = JsonDocument.Parse(logLine);
+        var logRoot = logEntry.RootElement;
+        Assert.False(string.IsNullOrWhiteSpace(logRoot.GetProperty("sessionId").GetString()));
+        Assert.Equal("correlation-123", logRoot.GetProperty("correlationId").GetString());
+        Assert.Equal(marker, logRoot.GetProperty("message").GetString());
+        Assert.Contains("[REDACTED]", logLine);
+        Assert.DoesNotContain("fake-access-token", logLine);
+
+        var fallbackRoot = Path.GetFullPath(Path.Combine(
+            Path.GetTempPath(),
+            "Pegasus.Desktop",
+            Environment.ProcessId.ToString(CultureInfo.InvariantCulture)));
+        Assert.StartsWith(
+            fallbackRoot + Path.DirectorySeparatorChar,
+            Path.GetFullPath(logPath),
+            StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -50,50 +106,4 @@ public sealed class Fnd032HostTests
         Assert.Contains("Gateway:BaseAddress", exception.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    [Trait("Category", "ViewModel")]
-    public void DiagnosticsProviderWritesSessionAndCorrelationAndRedactsSensitiveProperties()
-    {
-        var root = Directory.CreateTempSubdirectory("pegasus-desktop-host-tests-").FullName;
-
-        try
-        {
-            var writer = new RollingFileDiagnosticsWriter(root, 4096, 2);
-            using var provider = new DiagnosticsLoggerProvider(writer, "session-123");
-            var logger = provider.CreateLogger("Pegasus.Desktop.ViewModelTests");
-
-            using (logger.BeginScope(new Dictionary<string, object?>
-            {
-                [PegasusHeaders.CorrelationId] = "correlation-123"
-            }))
-            {
-                var state = new[]
-                {
-                    new KeyValuePair<string, object?>(
-                        "AccessToken",
-                        "Bearer fake-access-token")
-                };
-                logger.Log(
-                    LogLevel.Information,
-                    new EventId(1, "HostTest"),
-                    state,
-                    exception: null,
-                    static (_, _) => "operation complete");
-            }
-
-            var content = File.ReadAllText(Assert.Single(writer.GetFiles()));
-            Assert.Contains("session-123", content);
-            Assert.Contains("correlation-123", content);
-            Assert.Contains("operation complete", content);
-            Assert.Contains("[REDACTED]", content);
-            Assert.DoesNotContain("fake-access-token", content);
-        }
-        finally
-        {
-            if (Directory.Exists(root))
-            {
-                Directory.Delete(root, recursive: true);
-            }
-        }
-    }
 }
