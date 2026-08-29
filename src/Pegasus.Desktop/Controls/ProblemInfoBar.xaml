@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Pegasus.Desktop.Controls.ProblemInfoBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Pegasus.Desktop.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <InfoBar
+        x:Name="ProblemBar"
+        AutomationProperties.AutomationId="{x:Bind ProblemAutomationId, Mode=OneWay}"
+        AutomationProperties.LiveSetting="Polite"
+        IsClosable="False"
+        IsOpen="{x:Bind HasProblem, Mode=OneWay}"
+        Message="{x:Bind Message, Mode=OneWay}"
+        Severity="{x:Bind Severity, Mode=OneWay}">
+        <InfoBar.Content>
+            <Expander
+                AutomationProperties.AutomationId="{x:Bind ReferenceAutomationId, Mode=OneWay}"
+                AutomationProperties.Name="Reference"
+                Header="{x:Bind local:ProblemInfoBar.ReferenceLabel, Mode=OneWay}"
+                Visibility="{x:Bind ReferenceVisibility, Mode=OneWay}">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox
+                        AutomationProperties.AutomationId="{x:Bind ReferenceValueAutomationId, Mode=OneWay}"
+                        AutomationProperties.Name="Reference"
+                        IsReadOnly="True"
+                        Text="{x:Bind Reference, Mode=OneWay}"
+                        TextWrapping="Wrap" />
+                    <Button
+                        Grid.Column="1"
+                        AutomationProperties.AutomationId="{x:Bind CopyReferenceAutomationId, Mode=OneWay}"
+                        AutomationProperties.Name="{x:Bind local:ProblemInfoBar.CopyReferenceLabel, Mode=OneWay}"
+                        Click="CopyReference_Click"
+                        Content="{x:Bind local:ProblemInfoBar.CopyButtonLabel, Mode=OneWay}" />
+                </Grid>
+            </Expander>
+        </InfoBar.Content>
+    </InfoBar>
+</UserControl>

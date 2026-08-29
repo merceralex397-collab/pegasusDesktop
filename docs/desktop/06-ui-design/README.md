@@ -259,10 +259,10 @@ read here as desktop UI/accessibility). Kanmer area: `desktop-ui` (DUI).
   web layout; the authority forbids marketing patterns. Mitigation: slice
   tickets reference the screen spec, not the Razor page; the reviewer checks
   for web idioms (breadcrumb overload, card grids, full-page spinners).
-- **Design-authority review rules block merges.** Banned words, the four hard
-  rules and "one primary button per region" are review rules without CI
-  enforcement. Mitigation: DSK-06-10 adds a banned-words unit test over
-  operator strings; the reviewer checklist is mandatory.
+- **Design-authority review rules block merges.** DSK-06-10 now automates the
+  banned-word check for desktop operator strings; the four hard rules and "one
+  primary button per region" remain review checks. Mitigation: the unit test
+  stays mandatory alongside the design-authority reviewer checklist.
 - **WinUI landmines** (vendored `winui-design`): `x:Bind` `OneTime` default;
   `TextBox` two-way needs `UpdateSourceTrigger=PropertyChanged`;
   `Converter={x:Null}` crashes; no `SizeToContent`; `AppWindow.Resize` takes

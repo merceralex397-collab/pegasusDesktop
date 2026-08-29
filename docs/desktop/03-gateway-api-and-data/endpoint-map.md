@@ -23,6 +23,17 @@ Conventions (from [README.md](README.md) § 3):
   the same result; `GET` endpoints are naturally idempotent.
 - **Phase** is the proposal §24 phase in which the desktop slice needs it.
 
+## Problem details consumed by the desktop
+
+Desktop problem presentation consumes the existing `Pegasus.Contracts`
+`PegasusProblem` shape and the closed type catalogue in
+`src/Pegasus.Contracts/ProblemDetails/PegasusProblemTypes.cs`: `validation`,
+`not-authorized`, `version-conflict`, `lease-conflict`, `lease-expired`,
+`operation-conflict`, `client-unsupported`, `password-change-required`,
+`account-disabled`, `provider-unavailable`, `not-found`, `rate-limited`, and
+`maintenance`. The native `ProblemInfoBar` maps those values to operator copy;
+it does not add or reinterpret gateway problem types.
+
 ## Session, compatibility, diagnostics
 
 | Area | Method + route | Replaces (page/handler) | Core use case/port | Auth right | Idempotent? | Concurrency token | Returns | Phase |

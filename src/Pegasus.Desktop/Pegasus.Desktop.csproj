@@ -50,6 +50,7 @@
     <PropertyGroup> above to opt out.
   -->
   <ItemGroup>
+    <ProjectReference Include="..\Pegasus.Contracts\Pegasus.Contracts.csproj" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
