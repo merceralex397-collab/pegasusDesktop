@@ -300,3 +300,13 @@ The payload check is necessary but does not prove that the required `winapp pack
 ## Independent review — 2026-08-29
 
 Galileo (pegasus-desktop-reviewer) reviewed exact head 8a2dd5f0a1594aab5474277dc9166569bdbb3d66. The script hardening passes code review: it is bounded to the intended package/result-log inputs, validates the WinApp CLI and package shape, uses the installed package location, exercises a real DPAPI entry, and performs exact cleanup checks. Full acceptance remains **blocked** by the required winapp package ... --self-contained toolchain failure in this environment, plus certificate trust, clean Windows 11 install/launch/uninstall, result-log, launch-screenshot, cleanup read-back, and no-elevation operator evidence. A partial PR may be opened for review, but this ticket must not merge or reach Done on this evidence.
+
+## Operator identity confirmation — 2026-08-29
+
+The existing manifest identity values were re-read on the FND-039 branch and are used unchanged:
+
+- `Identity.Name`: `CollisionEngineers.Pegasus`
+- `Identity.Publisher`: `CN=Collision Engineers`
+- `PublisherDisplayName`: `Collision Engineers`
+
+These are the operator-confirmed permanent values. The development certificate must have the exact subject `CN=Collision Engineers` when generated from this manifest. This resolves only the identity-selection question; it does not resolve the separate self-contained WinApp CLI prerequisite failure or the required certificate-trust, clean-machine install/launch/uninstall, result-log, screenshot, cleanup, and no-elevation evidence. FND-039 remains in Review and is not mergeable or Done.
