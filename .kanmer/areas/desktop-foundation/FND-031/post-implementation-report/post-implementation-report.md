@@ -35,3 +35,7 @@ Commit 627d3f613234a75203f1c7115ea590a2a176b199 corrected two findings from the 
 ## Merge checkpoint — 2026-08-29
 
 The reviewed follow-up PR #43 merged to `dev` as `52a1741cfa6544dfdad2632b5192a162c2430a2f` from exact head `627d3f613234a75203f1c7115ea590a2a176b199`. Exact-head CI run `33265617566` completed successfully across all required active lanes, including SQL integration shards 1–3 and aggregate SQL coverage; the infrastructure lane was intentionally skipped. The follow-up remains a prerequisite correction, not full ticket delivery.
+
+## Follow-up correction — 2026-08-29
+
+A narrow registration correction was added at `bec8d1bcd4465078e2ea3fab9a9188081118d00c`: missing gateway-address failure is now deferred from registration to named HttpClient creation so the host's `ValidateOnStart()` path can report invalid configuration at start. The infrastructure Release build passed with zero warnings/errors. Independent review and PR are still pending; no completion claim is made.

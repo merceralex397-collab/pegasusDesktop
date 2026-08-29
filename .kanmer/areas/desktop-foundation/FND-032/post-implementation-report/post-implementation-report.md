@@ -16,9 +16,13 @@
 - Local BuildAndRun launch: responsive launch and structured diagnostics log with a session identifier were observed.
 - Diff check: passed.
 
-## Independent review and unresolved acceptance
+## Independent review and unresolved acceptance (historical — 2026-08-29)
 
-Zeno independently reviewed the exact head and found no composition or lifecycle code defect, but full acceptance remains blocked. The pilot and production configuration values are local placeholders because authoritative endpoints were not found in the repository; no endpoint is being invented and no cloud write is permitted. The shared FND-031 redaction owner requires strengthening for generic token, Authorization, and password values; FND-032 will not duplicate that policy. The required redaction/rotation/options/composition test evidence remains owned by FND-038. The current-architecture composition note also remains to be resolved or explicitly dispositioned.
+Zeno independently reviewed the earlier implementation head `704996c7d41c9c59de8a75ef7f2b5a84a9ccff9c`. That review recorded the then-current local gateway/feed placeholders, the pre-PR-43 redaction weakness, and the missing FND-038 evidence. Those findings are retained as dated history; they are not the current state.
+
+## Current status
+
+The pilot and production `Gateway:BaseAddress` entries now use the observed read-only production ingress recorded below, and the shared FND-031 redaction correction is merged to `dev` through PR #43. A separate FND-031 follow-up at `bec8d1bcd4465078e2ea3fab9a9188081118d00c` defers invalid gateway-address failure until named-client creation so `ValidateOnStart()` can report it at host start; that follow-up remains under review. FND-038 still owns the missing host/options/log/rotation evidence. The exact pilot/production UNC feed host/share is still not established by repository authority, so release configuration remains blocked.
 
 This report is evidence of the current state only. It does not assert merge, deployment, runtime acceptance, or Done.
 
