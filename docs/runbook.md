@@ -33,6 +33,14 @@ release-route decision recorded in ADR-0007, not a development-platform
 requirement. Web and Worker packages are `linux-x64` and build identically on
 either platform.
 
+Windows desktop packaging and local packaged-app tests additionally require
+the WinApp CLI 0.3 or later (`winget install Microsoft.WinAppCLI`) and
+Developer Mode. On development and Test/UAT machines, trust the development
+certificate once from an elevated terminal with `winapp cert install
+./devcert.pfx`; this development-only command uses the machine Trusted Root
+store, while production trust remains D-002's `LocalMachine\\TrustedPeople`
+store and must arrive before a signed package.
+
 Hosted workflow runner choices and their evidence limits are owned by
 [the executable CI workflow](../.github/workflows/ci.yml). Linux development
 is supported by these procedures; record the platform actually exercised.
