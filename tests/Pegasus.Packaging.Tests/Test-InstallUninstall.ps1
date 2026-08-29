@@ -14,12 +14,6 @@ param(
     })]
     [string] $Package,
 
-    [string] $DpapiStorePath,
-
-    [string] $PackageFamilyRoot = (Join-Path $env:LOCALAPPDATA 'Packages'),
-
-    [string] $LaunchInputFolder,
-
     [string] $ResultLogPath = (Join-Path $env:TEMP ("Pegasus-Packaging-{0:yyyyMMdd-HHmmss}.log" -f (Get-Date)))
 )
 
@@ -29,11 +23,13 @@ $ErrorActionPreference = 'Stop'
 $expectedPackageName = 'CollisionEngineers.Pegasus'
 $expectedPublisher = 'CN=Collision Engineers'
 $packagePath = (Resolve-Path -LiteralPath $Package).Path
-$packageFamilyRootPath = [IO.Path]::GetFullPath($PackageFamilyRoot)
+$packageFamilyRootPath = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) 'Packages'
 $resultLog = [IO.Path]::GetFullPath($ResultLogPath)
 $installedPackageFullName = $null
 $installedPackageFamilyName = $null
 $launchProcessId = $null
+$installAttempted = $false
+$identity = $null
 $scriptFailed = $false
 
 $resultDirectory = Split-Path -Parent $resultLog
@@ -145,6 +141,16 @@ function Get-PackageManifestIdentity {
     }
 }
 
+function Get-MsixEntryNames {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [IO.Compression.ZipFile]::OpenRead($packagePath)
+    try {
+        @($archive.Entries | Select-Object -ExpandProperty FullName)
+    } finally {
+        $archive.Dispose()
+    }
+}
+
 function Get-InstalledPackage {
     param([Parameter(Mandatory)] [string] $PackageFamilyName)
 
@@ -175,11 +181,24 @@ try {
     Write-Result -Command 'MSIX Identity/Version' -Expected 'valid four-part version' -Actual $identity.Version
     Assert-Equal -Command 'MSIX package identity name' -Expected $expectedPackageName -Actual $identity.Name
     Assert-Equal -Command 'MSIX package publisher' -Expected $expectedPublisher -Actual $identity.Publisher
-    $parsedVersion = $null
-    Assert-True -Command 'MSIX package version format' -Condition ([Version]::TryParse($identity.Version, [ref] $parsedVersion)) -Actual $identity.Version
+    Assert-True -Command 'MSIX package version format' -Condition ($identity.Version -match '^\d+\.\d+\.\d+\.\d+$') -Actual $identity.Version
+
+    $packageEntries = Get-MsixEntryNames
+    foreach ($requiredEntry in @(
+            'Microsoft.WindowsAppRuntime.dll',
+            'Microsoft.WindowsAppRuntime.Bootstrap.dll',
+            'Microsoft.WindowsAppRuntime.pri')) {
+        Assert-True -Command "MSIX self-contained payload entry $requiredEntry" `
+            -Condition ($packageEntries -contains $requiredEntry) `
+            -Actual (($packageEntries -contains $requiredEntry).ToString())
+    }
 
     $winapp = Get-Command winapp -ErrorAction Stop
-    Write-Result -Command 'winapp --version' -Expected 'available' -Actual $winapp.Source
+    $winappVersionText = (& $winapp.Source --version 2>&1 | Out-String).Trim()
+    $winappVersion = $null
+    Assert-True -Command 'winapp --version is at least 0.3.0' `
+        -Condition ([Version]::TryParse($winappVersionText, [ref] $winappVersion) -and $winappVersion -ge [Version]'0.3.0') `
+        -Actual $winappVersionText
 
     $stalePackages = @(Get-AppxPackage -Name $expectedPackageName |
             Where-Object Publisher -eq $expectedPublisher)
@@ -192,6 +211,7 @@ try {
     }
 
     Write-Result -Command "Add-AppxPackage -Path $packagePath" -Expected 'installed for current user' -Actual $packagePath
+    $installAttempted = $true
     Add-AppxPackage -Path $packagePath -ErrorAction Stop
 
     $installedCandidates = @(Get-AppxPackage -Name $expectedPackageName |
@@ -199,10 +219,12 @@ try {
                 $_.Publisher -eq $expectedPublisher -and
                 $_.Version.ToString() -eq $identity.Version
             })
+    $installed = $installedCandidates | Select-Object -First 1
+    if ($null -ne $installed) {
+        $installedPackageFullName = [string] $installed.PackageFullName
+        $installedPackageFamilyName = [string] $installed.PackageFamilyName
+    }
     Assert-True -Command "Get-AppxPackage -Name $expectedPackageName after install" -Condition ($installedCandidates.Count -eq 1) -Actual $installedCandidates.Count
-    $installed = $installedCandidates[0]
-    $installedPackageFullName = [string] $installed.PackageFullName
-    $installedPackageFamilyName = [string] $installed.PackageFamilyName
     Assert-Equal -Command 'installed package Name' -Expected $expectedPackageName -Actual $installed.Name
     Assert-Equal -Command 'installed package Publisher' -Expected $expectedPublisher -Actual $installed.Publisher
     Assert-Equal -Command 'installed package Version' -Expected $identity.Version -Actual $installed.Version
@@ -211,18 +233,22 @@ try {
 
     $packageFamilyPath = Join-Path $packageFamilyRootPath $installedPackageFamilyName
     Assert-True -Command "package family path after install: $packageFamilyPath" -Condition (Test-Path -LiteralPath $packageFamilyPath -PathType Container) -Actual (Test-Path -LiteralPath $packageFamilyPath -PathType Container)
-    $storePath = if ([string]::IsNullOrWhiteSpace($DpapiStorePath)) {
-        Join-Path $packageFamilyPath 'LocalState'
-    } else {
-        [IO.Path]::GetFullPath($DpapiStorePath)
-    }
-    Write-Result -Command 'DPAPI store path under test' -Expected 'package LocalState unless -DpapiStorePath is supplied' -Actual $storePath
+    $storePath = Join-Path $packageFamilyPath 'LocalState'
+    Write-Result -Command 'DPAPI store path under test' -Expected 'package LocalState' -Actual $storePath
 
-    $launchFolder = if ([string]::IsNullOrWhiteSpace($LaunchInputFolder)) {
-        [string] $installed.InstallLocation
-    } else {
-        [IO.Path]::GetFullPath($LaunchInputFolder)
-    }
+    $infrastructureAssembly = Join-Path $installed.InstallLocation 'Pegasus.Desktop.Infrastructure.dll'
+    Assert-True -Command 'packaged infrastructure assembly exists' -Condition (Test-Path -LiteralPath $infrastructureAssembly -PathType Leaf) -Actual $infrastructureAssembly
+    Add-Type -Path $infrastructureAssembly
+    $credentialStore = [Pegasus.Desktop.Infrastructure.Authentication.DpapiCredentialStore]::new($storePath)
+    $credentialStore.Save('packaging-test', 'packaging-test-value')
+    $readValue = $null
+    $readSucceeded = $credentialStore.TryRead('packaging-test', [ref] $readValue)
+    Assert-True -Command 'DPAPI credential round trip' -Condition $readSucceeded -Actual $readSucceeded
+    Assert-Equal -Command 'DPAPI credential value' -Expected 'packaging-test-value' -Actual $readValue
+    $dpapiFilesBeforeUninstall = @(Get-DpapiFiles -Path $storePath)
+    Assert-True -Command 'DPAPI credential file exists before uninstall' -Condition ($dpapiFilesBeforeUninstall.Count -gt 0) -Actual $dpapiFilesBeforeUninstall.Count
+
+    $launchFolder = [string] $installed.InstallLocation
     Assert-True -Command 'launch input folder exists' -Condition (Test-Path -LiteralPath $launchFolder -PathType Container) -Actual $launchFolder
     $launchOutput = (& $winapp.Source run $launchFolder --detach --json 2>&1 | Out-String).Trim()
     $launchExitCode = $LASTEXITCODE
@@ -275,18 +301,18 @@ try {
         Stop-Process -Id $launchProcessId -Force -ErrorAction SilentlyContinue
     }
 
-    if ($installedPackageFullName) {
-        $cleanupPackage = Get-AppxPackage -PackageTypeFilter Main -Name $expectedPackageName |
-            Where-Object {
-                $_.PackageFullName -eq $installedPackageFullName -and
-                $_.Publisher -eq $expectedPublisher
-            }
-        if ($cleanupPackage) {
+    if ($installAttempted) {
+        $cleanupPackages = @(Get-AppxPackage -PackageTypeFilter Main -Name $expectedPackageName |
+                Where-Object {
+                    $_.Publisher -eq $expectedPublisher -and
+                    ($null -eq $identity -or $_.Version.ToString() -eq $identity.Version)
+                })
+        foreach ($cleanupPackage in $cleanupPackages) {
             try {
-                Remove-AppxPackage -Package $installedPackageFullName -ErrorAction Stop
-                Write-Result -Command "failure cleanup Remove-AppxPackage -Package $installedPackageFullName" -Expected 'removed' -Actual $installedPackageFullName
+                Remove-AppxPackage -Package $cleanupPackage.PackageFullName -ErrorAction Stop
+                Write-Result -Command "failure cleanup Remove-AppxPackage -Package $($cleanupPackage.PackageFullName)" -Expected 'removed' -Actual $cleanupPackage.PackageFullName
             } catch {
-                Write-Result -Command "failure cleanup Remove-AppxPackage -Package $installedPackageFullName" -Expected 'removed' -Actual $_.Exception.Message -Result FAIL
+                Write-Result -Command "failure cleanup Remove-AppxPackage -Package $($cleanupPackage.PackageFullName)" -Expected 'removed' -Actual $_.Exception.Message -Result FAIL
                 if (-not $scriptFailed) {
                     throw
                 }
