@@ -168,3 +168,12 @@ After the independent PASS, PR #49 was opened against `dev` at exact head `f34d8
 https://github.com/merceralex397-collab/pegasusDesktop/pull/49
 
 The PR contains only `tests/Pegasus.Desktop.ViewModelTests/Fnd032HostTests.cs` relative to `dev`. Exact-head CI is running. No merge or Done claim is made until all applicable checks pass and merged-main proof is written.
+
+## CI infrastructure blocker — 2026-08-29
+
+PR #49 remains open at exact head `f34d872aeac79460536a6a48f507f1dcbe739874`. Exact-head CI run `33271318606` was attempted twice:
+
+1. The initial attempt started the five heavy jobs at approximately 19:37. Browser, unit, and all three SQL jobs remained inside the shared `./.github/actions/dotnet-build` composite action for over an hour; their test steps never started, and GitHub provided no logs while the composite step was in progress.
+2. The run was canceled and fully rerun. Fresh heavy jobs started at approximately 19:41 and reproduced the same condition: all five remained in `dotnet-build`, then were canceled. The coverage aggregator ended with failure because its required shard artifacts were canceled.
+
+The lightweight checks (changes, documentation, local-development-scripts, and reference-data) passed; infrastructure was skipped by the documented path filter. This is a CI runner/action hang, not a source assertion failure. Local validation remains green, but exact-head CI is not green, so PR #49 must not merge. Smallest unblock action: restore a functioning `dotnet-build` runner/action execution, then rerun the failed heavy jobs at the unchanged exact head.

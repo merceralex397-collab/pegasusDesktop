@@ -438,3 +438,7 @@ Post-correction validation: focused FND-032 tests 2/2 passed; full ViewModelTest
 ## Independent review after remediation — 2026-08-29
 
 Sagan the 2nd independently reviewed exact head `f34d872aeac79460536a6a48f507f1dcbe739874` and returned PASS. The review confirmed the host-resolved logger/writer path, session/correlation/redaction assertions, 10 MiB/five-file configuration, unpackaged temp fallback, scope discipline, and the 20/20 ViewModel plus 121/121 Architecture validation. No merge-blocking finding remains. This is a review PASS only; PR CI, merge, proof, and Kanmer closeout remain required.
+
+## CI blocker disposition — 2026-08-29
+
+The exact-head PR #49 CI run `33271318606` was canceled after two reproducible hangs in the shared `dotnet-build` composite action; tests never started in the heavy jobs. Lightweight checks passed and the coverage failure was a cancellation consequence. This is recorded as an infrastructure blocker. The PR must not merge until the exact head receives green applicable CI; the next action is to restore runner/action execution and rerun the heavy jobs.
