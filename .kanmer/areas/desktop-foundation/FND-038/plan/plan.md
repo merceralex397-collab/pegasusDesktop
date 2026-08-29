@@ -314,3 +314,38 @@ The mandated FND-038 restore, build, targeted-test, architecture-test, TRX, shar
 Disposition: do not add a second project or extend the existing TEST-004-owned project under FND-038 without an explicit Kanmer ownership amendment. The remaining FND-038-specific tests should be assigned by that amendment to the existing project owner or to the FND-031 follow-up that consumes the shared test home. No PR or independent review was initiated because this ticket has no owned diff.
 
 Skills consulted: pegasus-desktop from .agents/skills/project/pegasus-desktop/SKILL.md; run-tests, code-testing-agent, scaffold-dotnet-test-project, test-gap-analysis, and assertion-quality from the pinned dotnet/skills route 98f84851 (loaded from the local dotnet-test plugin cache 0.2.18). No test-generation, gap execution, assertion grading, or simplification action was performed after the ownership stop.
+
+## Extension implementation — 2026-08-29
+
+The ownership amendment supersedes the earlier duplicate-scaffold stop. FND-038 extends the existing TEST-004 project; it does not recreate the project, shared `FixedTimeProvider`, baseline gateway/credential/navigation fakes, no-UI-thread guard, lock file, solution registration, or architecture expected-list entry.
+
+Implemented in the existing project:
+
+- Added the narrowly required `Pegasus.Desktop.Infrastructure` project reference.
+- Added `Fnd031InfrastructureTests.cs): DPAPI credential round-trip/clear and plaintext protection, missing-key and corrupt-blob fail-closed behaviour, store-root isolation, generated/preserved correlation and client-version headers, gateway base-address option validation, transient GET retry with header preservation, POST no-retry, redaction with context preservation, size-triggered rotation, and retention eviction.
+- Added `Support/InfrastructureTestSupport.cs): a fixed client-version provider, recording HTTP handler, and recording logger for the current merged infrastructure API. These are test-only supports, not replacements for TEST-004's baseline fakes or shared clock.
+- No shell/status-bar or generic host fixture was added because the required FND-032 production API is not on `origin/dev`. Current `origin/dev` has no `PegasusHost`, FND-032 host/options registrations, or `DiagnosticsLoggerProvider`; the current target can only be exercised through the merged `AddPegasusApiClient`, `GatewayOptions`, request handler, retry handler, and rolling diagnostics writer. Pulling `task/desktop-host` or changing production is outside this ticket. Host fixture tests remain a dependency for the FND-032 follow-up after its API merges.
+
+## Verification — 2026-08-29
+
+All commands ran in `C:/Users/PC/Documents/GitHub/pegasus-worktrees/desktop-viewmodel-tests` on branch `task/desktop-viewmodel-tests`.
+
+| Command | Outcome |
+| --- | --- |
+| `dotnet restore ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj -r win-x64 --force-evaluate` | Exit 0; Windows RID restore completed. Any generated prerequisite lock-file churn was restored to the branch baseline; final scope audit has no production-file changes. |
+| `dotnet restore ./Pegasus.slnx --locked-mode` | Exit 0. |
+| `dotnet build --configuration Release --no-restore` | Exit 0; 0 warnings, 0 errors; 27.15 seconds. |
+| `dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-build --filter "Category!=Corpus" --logger trx --results-directory ./artifacts/test-results/FND-038-viewmodel` | Exit 0; Passed 17, Failed 0, Skipped 0; 386 ms. TRX: `artifacts/test-results/FND-038-viewmodel/PC_DESKTOP-S1M5C7P_2026-08-29_19_06_38_net10.0.trx`. An earlier pre-correction run exposed an incorrect rotation-file assertion (15 passed, 1 failed); the test was corrected to match the writer's bounded eviction semantics and rerun successfully. |
+| `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build --filter "Category!=Corpus" --logger trx --results-directory ./artifacts/test-results/FND-038-architecture` | Exit 0; Passed 121, Failed 0, Skipped 0; 1 minute 2 seconds. TRX: `artifacts/test-results/FND-038-architecture/PC_DESKTOP-S1M5C7P_2026-08-29_19_07_50_net10.0.trx`. |
+| `git diff --check`, project-reference and forbidden-support scans | Passed. The staged/committed diff is three files under `tests/Pegasus.Desktop.ViewModelTests`; the only `TimeProvider` definition is TEST-004's existing shared support, no mocking package or forbidden server/infrastructure dependency was added. |
+| SQL shard partition verification | Not applicable to this test-only desktop extension; no SQL/shard files or runtime were touched. |
+| CI workflow | Not changed; this suite remains outside the current CI project list pending [[FND-040]]. |
+
+## Simplification pass — 2026-08-29
+
+- Reuse: kept TEST-004's project, lock file, shared clock, baseline fakes, no-UI guard, and registrations; added only the infrastructure project reference needed by the new tests.
+- Simplification: used one test file for the FND-031 boundary coverage and one support file for the three distinct current-pipeline helpers; removed an unused import; did not add a host abstraction, UI thread, mock framework, new dependency, or duplicate fake.
+- Efficiency: tests use in-memory handlers and temporary directories, dispose HTTP/provider resources, and do not start a UI thread, server, database, or external service.
+- Altitude: no production, CI, solution, architecture-list, corpus, or unrelated-ticket changes. No unapplied behaviour-preserving simplification finding remains.
+
+The implementation commit is `984b9f7278f1ac151ba8fa0f923d4c3bce6fa86e2`. Independent review is still required before any PR; no PR has been opened.

@@ -29,3 +29,14 @@ worktree.
 ## Progress notes
 
 - 2026-08-29 — Stopped at the duplicate-scaffold guard. TEST-004 already owns and delivered tests/Pegasus.Desktop.ViewModelTests on origin/dev; no FND-038 checklist item was ticked and no repository source was changed. Exact audit, skipped-command disposition, and remaining ownership blocker are recorded in the plan, post-implementation report, and scratch.
+
+## Amended-scope progress — 2026-08-29
+
+The ownership amendment makes TEST-004 the owner of the existing scaffold and FND-038 the owner of this extension. The original project-creation, baseline-fake, shared-clock, no-UI-guard, solution-registration, and architecture-list boxes are superseded and remain unticked rather than being falsely re-marked as FND-038 work.
+
+- [x] Reused the existing TEST-004 ViewModel test project and all of its baseline support.
+- [x] Added the FND-031 credential, header, retry, redaction, rotation, retention, and current options-validation coverage.
+- [x] Added only the test-only current-infrastructure support required by those tests.
+- [x] Confirmed the current target has no FND-032 host/options/log-provider API; documented host-fixture dependency without pulling another task branch or changing production.
+- [x] Ran the Windows RID restore, locked solution restore, Release build, focused ViewModel tests, architecture tests, scope guards, and simplification pass.
+- [ ] Independent `pegasus-desktop-reviewer` review and PR remain pending; no PR has been opened.
