@@ -277,3 +277,7 @@ The repository's `tests/Pegasus.Desktop.ViewModelTests` project does not yet exi
 - The reviewer recorded that FND-031's own Tier-2 acceptance tests are still outstanding: DPAPI round-trip/missing/corrupt/isolation, header/correlation, GET-only retry asymmetry, and boundary coverage. FND-038 owns the single shared Windows ViewModelTests scaffold and must add those tests; no duplicate scaffold is permitted here.
 - Exact-head GitHub Actions run `33261673009` for `26aae2fa5a072e3518d93db0afdd8c241dd3a4bd` completed successfully: documentation, local-development-scripts, changes, reference-data, unit, SQL integration shards 1–3, aggregate SQL coverage, and browser all passed; the infrastructure lane was intentionally skipped.
 - PR #42 targets `dev`, is open, non-draft, and reports `mergeStateStatus=CLEAN`. Based on the independent review's sequencing decision and the green exact-head CI, this is eligible for a prerequisite-only merge into `dev`. It is not eligible for FND-031 Done until FND-038 supplies the ticket-specific tests and merged-main proof.
+
+## 2026-08-29 prerequisite merge evidence
+
+The independently reviewed exact head `26aae2fa5a072e3518d93db0afdd8c241dd3a4bd` passed required exact-head CI run `33261673009`. PR #42 was merged into `dev` at merge commit `89fcfa20cb570845dbb1ad9b2f3c45fdd83723e4` on 2026-08-29. This is a prerequisite merge only: FND-031 remains incomplete because its own Tier-2 credential/header/retry/boundary tests and merged-main proof are still outstanding; [[FND-038]] owns the shared test scaffold and those tests.

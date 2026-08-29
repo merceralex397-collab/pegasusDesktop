@@ -18,3 +18,5 @@ Acceptance is not complete: the required desktop behavior tests cannot be added 
 2026-08-29: PR #42 run 33261304295 failed NU1004 because ViewModelTests/packages.lock.json lacked the new Desktop.Infrastructure project dependency; all shard test failures were downstream. Merged origin/dev into the own branch (adc7b9d2e2c0adfcb6b07a56ccad41f779e25f35), regenerated only that test lock, committed 26aae2fae0c69e99d6dc4bf4bf6fcebfe2748055, and pushed. Fresh exact-head CI and review are pending.
 
 2026-08-29: exact-head CI run 33261673009 completed green for 26aae2fa (all required lanes; infrastructure intentionally skipped). Independent Erdos review confirms retry fix and permits prerequisite-only merge to dev, while FND-031 remains incomplete until FND-038 adds its required DPAPI/header/correlation/retry/boundary tests and merged-main proof.
+
+2026-08-29 — PR #42 exact head 26aae2fa passed CI run 33261673009 and merged to dev as 89fcfa20cb570845dbb1ad9b2f3c45fdd83723e4. Prerequisite merge only; FND-031 stays incomplete pending FND-038-owned Tier-2 tests and merged-main proof.
