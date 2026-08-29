@@ -4,7 +4,7 @@ type: ticket
 title: >-
   DSK-08-04 · Scaffold `tests/Pegasus.Desktop.ViewModelTests`
   (`net10.0-windows10.0.26100.0`, no UI thread)
-status: verifying
+status: done
 area: testing
 assignee: codex-mcp-client
 profile: feature
@@ -12,6 +12,7 @@ stageEntered:
   preparing: '2026-08-24T21:34:13.457Z'
   review: '2026-08-28T21:53:25.700Z'
   verifying: '2026-08-28T22:52:11.306Z'
+  done: '2026-08-29T14:15:03.522Z'
 taken_at: '2026-08-28T21:35:53.407Z'
 branch: task/desktop-viewmodel-tests
 worktree: ../pegasus-worktrees/desktop-viewmodel-tests
@@ -34,7 +35,7 @@ prs:
   - '40'
 archived: false
 created: '2026-08-24T07:46:12.595Z'
-updated: '2026-08-28T22:52:11.306Z'
+updated: '2026-08-29T14:15:03.522Z'
 ---
 
 ## What
