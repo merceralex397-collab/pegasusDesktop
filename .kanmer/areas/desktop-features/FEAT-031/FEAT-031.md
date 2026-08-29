@@ -11,9 +11,6 @@ profile: feature
 stageEntered:
   preparing: '2026-08-24T21:31:41.111Z'
   review: '2026-08-29T20:05:50.753Z'
-taken_at: '2026-08-29T19:47:20.956Z'
-branch: task/dsk-07-05-box-broker-endpoints
-worktree: 'C:\Users\PC\Documents\GitHub\pegasus-worktrees\dsk-07-05-box-broker-endpoints'
 labels:
   - desktop-conversion
   - plan-07
@@ -32,9 +29,21 @@ blocks:
 refs:
   - docs/frd/frd-05-documents-extraction-and-custody.md
 docs_todo: true
+commits:
+  - 3e53f5e9a70eb24e1a7ee5329984f3f69b75b88b
+  - 29e13dd1bc70fe0514b62d81279e0f3256ce7ce4
+  - 894a520c67237268523b88bf43bee3610b5074d1
+  - c3d06081a09a47798ac7e333dcf9e0afeac026a
+  - 3860d43f8e42986b1e696aeecc0565b2f971671a
+  - fcf5145c5bf14354aeaee87429f45e9c7826c591
+  - 8ff40b2720fef1e6a36b46a4124fe1578f6c7082
+  - 42250fd20fcf917081bb919c140a4797ce557150
+  - f31d5aefdb48575c9ee990a0515c0e68374f8d63
+prs:
+  - '50'
 archived: false
 created: '2026-08-24T08:18:48.673Z'
-updated: '2026-08-29T20:05:50.753Z'
+updated: '2026-08-29T20:06:37.238Z'
 ---
 
 ## What
