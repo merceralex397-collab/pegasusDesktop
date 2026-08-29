@@ -32,3 +32,11 @@
 - [ ] `git branch -d task/desktop-viewmodel-tests`
 - [ ] `git fetch --prune origin` + `git worktree prune`
 - [ ] `take_ticket action: "release"`
+
+## Closeout completion
+
+- [x] Outcome recorded in ticket body with PR, merge SHA, and follow-up disposition.
+- [x] Ticket worktree removed after clean-status verification.
+- [x] Own local branch deleted.
+- [x] Own remote branch deleted.
+- [x] `git fetch --prune origin` and `git worktree prune` completed.

@@ -13,9 +13,6 @@ stageEntered:
   review: '2026-08-28T21:53:25.700Z'
   verifying: '2026-08-28T22:52:11.306Z'
   done: '2026-08-29T14:15:03.522Z'
-taken_at: '2026-08-28T21:35:53.407Z'
-branch: task/desktop-viewmodel-tests
-worktree: ../pegasus-worktrees/desktop-viewmodel-tests
 labels:
   - desktop-conversion
   - plan-08
@@ -36,7 +33,7 @@ prs:
   - '40'
 archived: false
 created: '2026-08-24T07:46:12.595Z'
-updated: '2026-08-29T14:15:56.275Z'
+updated: '2026-08-29T14:17:05.523Z'
 ---
 
 ## What
