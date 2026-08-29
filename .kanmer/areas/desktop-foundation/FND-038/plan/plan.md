@@ -281,3 +281,36 @@ The current board block from FND-031 is inconsistent with the ticket plans: FND-
 ## Dependency-cycle resolution — 2026-08-29
 
 The prerequisite implementation is now merged: PR #43's exact-head redaction correction (`627d3f613234a75203f1c7115ea590a2a176b199`) passed run `33265617566` and merged to `dev` as `52a1741cfa6544dfdad2632b5192a162c2430a2f`. The board's FND-031 → FND-038 implementation-prerequisite edge was then removed. No acceptance criteria were waived: FND-038 still owns the test project and tests, and FND-031 remains incomplete until those tests and its own proof land.
+
+## Ownership stop — 2026-08-29
+
+Implementation stopped before any repository source edit because the requested scaffold is already owned and delivered by [[TEST-004]].
+
+Read-only ownership evidence:
+
+- The requested worktree was created from origin/dev at 52a1741cfa6544dfdad2632b5192a162c2430a2f, on branch task/desktop-viewmodel-tests. The worktree is clean.
+- tests/Pegasus.Desktop.ViewModelTests/ already exists on origin/dev with Pegasus.Desktop.ViewModelTests.csproj, packages.lock.json, Support/FixedTimeProvider.cs, Support/FakeGatewayClient.cs, Support/FakeCredentialStore.cs, Support/FakeNavigationService.cs, SupportTests.cs, and NoUiThreadDependencyTests.cs.
+- dotnet sln ./Pegasus.slnx list already includes tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj; tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs:310 already includes the expected solution entry.
+- TEST-004 is done, records PR #40, and its proof records merge SHA 66aa3eba08f7717b590812053695cc26f3170e7a. Its existing project is therefore the single owner of the overlapping scaffold.
+- The existing scaffold does not contain the additional FND-038 acceptance work requested here: no host fixture, shell/status-bar view-model tests, DPAPI round-trip test, or FND-031 credential/header/redaction/rotation coverage. Those gaps are recorded, not duplicated in this ticket.
+
+Exact audit commands and outcomes:
+
+| Command | Outcome |
+| --- | --- |
+| git worktree add -b task/desktop-viewmodel-tests C:/Users/PC/Documents/GitHub/pegasus-worktrees/desktop-viewmodel-tests origin/dev | Passed; worktree created at the requested path from origin/dev. |
+| git status --short | Passed; no output, clean worktree. |
+| git rev-parse HEAD | 52a1741cfa6544dfdad2632b5192a162c2430a2f. |
+| git branch --show-current | task/desktop-viewmodel-tests. |
+| Get-ChildItem tests/Pegasus.Desktop.ViewModelTests -Recurse -File | Passed; existing project and support/test files listed above. |
+| dotnet sln ./Pegasus.slnx list | Passed; existing project is registered. |
+| rg -n FixedTimeProvider|FakeGatewayClient|FakeCredentialStore|FakeNavigationService|NoUiThreadDependency tests/Pegasus.Desktop.ViewModelTests | Passed; existing definitions and support tests found. |
+| rg -n Pegasus.Desktop.ViewModelTests Pegasus.slnx tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs | Passed; solution and architecture entries found. |
+| git diff --name-only origin/dev...HEAD | Passed; no diff. |
+| git log --oneline --decorate -5 -- tests/Pegasus.Desktop.ViewModelTests Pegasus.slnx | Existing history includes TEST-004 commits c7f6f689, 12f7e298, 26aae2fa. |
+
+The mandated FND-038 restore, build, targeted-test, architecture-test, TRX, shard, and simplification commands were not run after the overlap was found. Running them would validate TEST-004's already-delivered scaffold, not produce FND-038-owned evidence. TEST-004's own proof records its separate clean validation: focused ViewModelTests Passed: 6, Failed: 0, Skipped: 0 and ArchitectureTests Passed: 121, Failed: 0, Skipped: 0.
+
+Disposition: do not add a second project or extend the existing TEST-004-owned project under FND-038 without an explicit Kanmer ownership amendment. The remaining FND-038-specific tests should be assigned by that amendment to the existing project owner or to the FND-031 follow-up that consumes the shared test home. No PR or independent review was initiated because this ticket has no owned diff.
+
+Skills consulted: pegasus-desktop from .agents/skills/project/pegasus-desktop/SKILL.md; run-tests, code-testing-agent, scaffold-dotnet-test-project, test-gap-analysis, and assertion-quality from the pinned dotnet/skills route 98f84851 (loaded from the local dotnet-test plugin cache 0.2.18). No test-generation, gap execution, assertion grading, or simplification action was performed after the ownership stop.

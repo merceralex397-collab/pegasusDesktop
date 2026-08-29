@@ -25,3 +25,7 @@ worktree.
 - [ ] **Verification / proof.** Run `dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release` (all pass, zero skipped, wall-clock time recorded for [[FND-040]] to budget against), `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release`, `dotnet restore ./Pegasus.slnx --locked-mode`, and the two `grep` guards from the plan's Verification table; capture every output as `test-output` and `command-log` proof, and state in it that `Directory.Packages.props` was present or absent, that the project did or did not already exist, and that CI does not yet run this suite. Open the PR into `dev`.
 
 ## Progress notes
+
+## Progress notes
+
+- 2026-08-29 — Stopped at the duplicate-scaffold guard. TEST-004 already owns and delivered tests/Pegasus.Desktop.ViewModelTests on origin/dev; no FND-038 checklist item was ticked and no repository source was changed. Exact audit, skipped-command disposition, and remaining ownership blocker are recorded in the plan, post-implementation report, and scratch.
