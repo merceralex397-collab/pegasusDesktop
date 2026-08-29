@@ -187,6 +187,26 @@ public sealed class Fnd031InfrastructureTests
 
     [Fact]
     [Trait("Category", "ViewModel")]
+    public async Task ApiClientStopsAfterThreeTransientGetAttempts()
+    {
+        var primary = new RecordingHttpMessageHandler(
+            (_, _) => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+        using var provider = BuildApiServices(primary);
+        using var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("pegasus");
+
+        using var response = await client.GetAsync("status");
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(3, primary.Requests.Count);
+        Assert.All(
+            primary.Requests,
+            request => Assert.Equal(
+                "1.0.0.1",
+                Assert.Single(request.Headers.GetValues(PegasusHeaders.ClientVersion))));
+    }
+
+    [Fact]
+    [Trait("Category", "ViewModel")]
     public async Task ApiClientDoesNotRetryCommandPosts()
     {
         var primary = new RecordingHttpMessageHandler(
