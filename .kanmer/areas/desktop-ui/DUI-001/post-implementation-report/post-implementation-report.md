@@ -30,3 +30,13 @@ The independent review findings on the initial head were corrected in 5729b454. 
 ## Reviewer remediation checkpoint — 2026-08-29
 
 Reviewer findings on 5729b454 were addressed in 2aa753d3. HighContrast now uses dynamic SystemColor...Color resources, focus thickness is the required Thickness type, and the source guard requires ThemeResource for authored color references. Post-fix ViewModel tests are 10/10, ArchitectureTests are 121/121, and the Release build is 0 warnings/0 errors. The new exact head awaits CI and independent re-review. The contrast-value conflict, missing dated design-owner decisions, and absent Dark/HighContrast gallery evidence remain honestly recorded blockers.
+
+## Independent exact-head review — 2026-08-29
+
+Archimedes reviewed exact SHA `2aa753d33ff73ba957e1ac1d3a808a312d8f0258` and returned **BLOCKED**. The local locked restore, Release build (0 warnings/0 errors), ViewModel tests (10/10), ArchitectureTests (121/121), packaged launch/UI inspection, and static token audit passed. Exact-head CI run `33259607789` subsequently completed green, including all three SQL shards and coverage.
+
+Two code findings remain and are being remediated: the HighContrast muted-text brush uses the disabled-content `SystemColorGrayTextColor`, and the authored-XAML source guard does not inspect colour-bearing Setter/property-element values. Three product/authority decisions also remain open: Dark palette confirmation, dated 2px-radius supersession confirmation, and resolution of the documented contrast conflict. Dark/HighContrast gallery screenshots are explicitly parked for DSK-06-02 and are not claimed as evidence for this ticket.
+
+## Code remediation — 2026-08-29
+
+Commit `79f25d7c` remediates both code blockers from the independent review: HighContrast muted text now uses `SystemColorWindowTextColor`, and the authored-XAML guard covers colour-bearing Setter and property-element values with negative probes. Local ViewModel tests passed 12/12, the Release solution build passed with 0 warnings/0 errors, ArchitectureTests passed 121/121, and `git diff --check` passed. The branch is pushed; exact-head CI and a fresh independent review are pending. Product/authority decisions remain open and block merge/closeout.

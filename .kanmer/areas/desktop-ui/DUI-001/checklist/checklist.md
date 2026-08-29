@@ -37,3 +37,21 @@
 - [x] Revalidate: ViewModel tests 10/10, ArchitectureTests 121/121, Release build 0 warnings/0 errors, packaged launch/UI inspection.
 - [ ] Resolve the three open design/contrast questions and obtain a fresh exact-head independent review; PR head is now 2aa753d3.
 - [ ] Capture the later shell/gallery Dark and HighContrast evidence under DSK-06-02; this is explicitly parked and not claimed for DUI-001.
+
+## Exact-head review — 2026-08-29
+
+- [x] Exact-head CI run `33259607789` completed green, including SQL shards 2/3 and coverage.
+- [x] Record the independent Archimedes review of `2aa753d33ff73ba957e1ac1d3a808a312d8f0258` and its two code blockers plus three product decisions.
+- [ ] Map HighContrast muted text away from `SystemColorGrayTextColor`.
+- [ ] Extend the source guard to colour-bearing Setter values and property-element values, with negative probes.
+- [ ] Push the code remediation and obtain a fresh exact-head independent review.
+- [ ] Resolve the three unchecked design-owner questions in `open-questions`; do not merge or close before they are resolved.
+- [ ] Capture later shell/gallery Dark and HighContrast evidence under DSK-06-02; this remains explicitly parked for this ticket.
+
+## Code remediation — 2026-08-29
+
+- [x] Map HighContrast muted text away from `SystemColorGrayTextColor`; it now uses `SystemColorWindowTextColor`.
+- [x] Extend the source guard to colour-bearing Setter values and property-element values, with negative probes.
+- [x] Local validation after remediation: ViewModel 12/12, Release build 0 warnings/0 errors, ArchitectureTests 121/121, `git diff --check` passed.
+- [ ] Push remediation, wait for exact-head CI, and obtain a fresh independent review.
+- [ ] Resolve the three unchecked design-owner questions in `open-questions`; do not merge or close before they are resolved.

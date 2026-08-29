@@ -71,3 +71,20 @@ The Dark palette remains the documented starting assumption and the authority's 
 - The guard now permits only ThemeResource color references in authored non-Styles XAML and has a negative StaticResource probe. Focused ViewModel tests pass 10/10; ArchitectureTests pass 121/121; Release solution build passes with 0 warnings/0 errors; the packaged app launches and is UI-inspectable after these changes.
 - New PR head: 2aa753d33ff73ba957e1ac1d3a808a312d8f0258, pushed to origin/task/desktop-theme-resources. The earlier CI run was green for 5729b454 and must be rerun at this new head.
 - Remaining blockers are not code guesses: the authoritative Light/Dark token values conflict with the stated contrast thresholds, the required dated design-owner confirmations are not attached, and the current scaffold cannot produce the required Dark/HighContrast gallery screenshots. These are recorded in open-questions; the screenshot work is parked for DSK-06-02, while the decisions remain unchecked and block closeout.
+
+## Review remediation checkpoint — 2026-08-29 (Archimedes exact-head review)
+
+- Independent `pegasus-desktop-reviewer` review of exact SHA `2aa753d33ff73ba957e1ac1d3a808a312d8f0258` returned **BLOCKED**.
+- Exact-head CI run `33259607789` is now green: documentation, changes, local-development-scripts, reference-data, unit, browser, SQL shards 1/2/3, and SQL coverage passed; infrastructure was correctly skipped.
+- Code findings to remediate before merge: map HighContrast `PegasusMutedTextBrush` away from `SystemColorGrayTextColor` (reserved for disabled content), and extend the authored-XAML guard to inspect colour-bearing `Setter` values and property-element values.
+- Product/authority blockers remain: obtain dated design-owner confirmation of the Dark palette; obtain dated confirmation that the authority's 2px radius supersedes historical 5px/6px values; resolve the documented Light/Dark contrast conflict by corrected tokens or a named approved exception.
+- The reviewer accepts the Dark/HighContrast gallery screenshot limitation as explicitly parked for DSK-06-02; it is not a merge blocker, but Tier-7 evidence is not claimed for this ticket.
+- Next: apply the two code fixes, run focused/full validation, push a new exact head, and obtain a fresh independent review. Do not merge or close while the three open questions remain unchecked.
+
+## Code remediation checkpoint — 2026-08-29
+
+- Applied Archimedes' two code fixes at commit `79f25d7c` on `origin/task/desktop-theme-resources`.
+- HighContrast `PegasusMutedTextBrush` now maps to dynamic `SystemColorWindowTextColor`; it no longer uses the disabled-content `SystemColorGrayTextColor`.
+- `StylesAreTheOnlySourceOfColourAndTypeTests` now scans colour-bearing `Setter` attributes and direct colour property elements; negative probes cover both named literals. ThemeResource-only handling remains centralized in `FormatColourViolation`.
+- Local validation after the fix: ViewModel tests 12/12, Release solution build 0 warnings/0 errors, ArchitectureTests 121/121, and `git diff --check` passed.
+- New exact-head CI and fresh independent review are pending. The three design-owner questions remain unchecked and block merge/closeout.
