@@ -26,7 +26,7 @@ Registration, tests, migration presence, generated infrastructure, predecessor b
 
 ## System shape
 
-Pegasus is a six-project modular monolith, including the native desktop client:
+Pegasus is a seven-project modular monolith, including the native desktop client:
 
 ```mermaid
 flowchart LR
@@ -39,8 +39,11 @@ flowchart LR
     Web --> Infra[Pegasus.Infrastructure]
     Worker --> Infra
     Infra --> Core
-    Desktop[Pegasus.Desktop\nWinUI 3 packaged scaffold] -. planned dependency .-> Core
-    Desktop -. planned dependency .-> Contracts[Pegasus.Contracts]
+    Desktop[Pegasus.Desktop\nWinUI 3 packaged client] --> DesktopInfra[Pegasus.Desktop.Infrastructure]
+    Desktop --> Core
+    Desktop --> Contracts[Pegasus.Contracts]
+    DesktopInfra --> Core
+    DesktopInfra --> Contracts
 
     Infra --> SQL[(LocalDB local / Azure SQL deployed)]
     Infra -. target .-> Outlook[Outlook / Graph]
@@ -50,7 +53,7 @@ flowchart LR
     Infra -. target .-> EVA[EVA]
 ```
 
-The current repository exposes an ASP.NET Core Razor Pages host, a .NET 10 isolated Azure Functions Worker, and a packaged .NET 10 WinUI 3 desktop scaffold. The Worker has timer and queue-trigger callers that translate bounded work into Core use cases. The desktop scaffold currently proves package identity, presentation composition, and local launch; its future gateway caller is owned by the desktop feature tickets. It has no database or provider credentials. Any provider API caller remains separately gated. The Automation MCP ingress is implemented inside `Pegasus.Web` behind a composition gate that is off by default; when the gate is off no automation route exists, and live activation remains separately approved.
+The current repository exposes an ASP.NET Core Razor Pages host, a .NET 10 isolated Azure Functions Worker, and a packaged .NET 10 WinUI 3 desktop client with a separate infrastructure boundary. The Worker has timer and queue-trigger callers that translate bounded work into Core use cases. The desktop infrastructure owns the gateway HTTP pipeline, per-user credential protection, bounded in-memory snapshots, and bounded redacted diagnostics; it has no database or provider credentials. Any provider API caller remains separately gated. The Automation MCP ingress is implemented inside `Pegasus.Web` behind a composition gate that is off by default; when the gate is off no automation route exists, and live activation remains separately approved.
 
 The repository identifies its package and release target as `0.1.0-alpha.1`. Pegasus is deployed to its sole production environment by exact-SHA fast-forward releases of `main`; the current production state (release, revision, migration head, gate settings) is owned exclusively by [operations § Production environment](operations.md#production-environment) and is not restated here. Operator acceptance remains outstanding.
 
@@ -60,7 +63,8 @@ The repository identifies its package and release target as `0.1.0-alpha.1`. Peg
 | --- | --- |
 | `src/Pegasus.Core/` | Business use cases, invariants, models, decisions, and ports. It must not depend on Web, Worker, Infrastructure, EF Core, Azure, Graph, Box, or other adapter implementations. |
 | `src/Pegasus.Contracts/` | Dependency-free shared request, response, problem-details, paging, concurrency, operation-key, compatibility DTOs, and operator vocabulary for the gateway and desktop. It depends only on the .NET base class library. |
-| `src/Pegasus.Desktop/` | Packaged WinUI 3 presentation client (`net10.0-windows10.0.26100.0`, x64, self-contained). It may depend on Core and Contracts; it must not depend on Infrastructure, EF Core, Azure, Graph, Box, or Web. |
+| `src/Pegasus.Desktop/` | Packaged WinUI 3 presentation client (`net10.0-windows10.0.26100.0`, x64, self-contained). It may depend on Core, Contracts, and `Pegasus.Desktop.Infrastructure`; it must not depend on server Infrastructure, EF Core, Azure, Graph, Box, or Web. |
+| `src/Pegasus.Desktop.Infrastructure/` | Desktop-only gateway HTTP pipeline, DPAPI credential store, bounded in-memory snapshot cache, and bounded redacted diagnostics writer (`net10.0-windows10.0.26100.0`). It references only Core and Contracts; it must not depend on server Infrastructure, EF Core, Azure, Graph, Box, or Web. |
 | `src/Pegasus.Core/ReferenceData/` | Exact provider/domain-suffix package validation, deterministic candidate semantics, and the catalog port. It contains no workbook, package-file, or EF implementation. |
 | `src/Pegasus.Infrastructure/` | EF persistence and source, artifact, package, and future external-system adapters implementing Core ports. It depends on Core. |
 | `src/Pegasus.Web/` | Razor Pages and HTTP composition root, request translation, configuration, route gates, and health endpoints. It invokes Core through configured ports and Infrastructure adapters. |

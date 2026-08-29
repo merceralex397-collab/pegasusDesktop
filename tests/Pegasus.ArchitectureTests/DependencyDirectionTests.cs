@@ -299,6 +299,7 @@ public sealed class DependencyDirectionTests
             [
                 "src/Pegasus.Contracts/Pegasus.Contracts.csproj",
                 "src/Pegasus.Core/Pegasus.Core.csproj",
+                "src/Pegasus.Desktop.Infrastructure/Pegasus.Desktop.Infrastructure.csproj",
                 "src/Pegasus.Desktop/Pegasus.Desktop.csproj",
                 "src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj",
                 "src/Pegasus.Web/Pegasus.Web.csproj",
