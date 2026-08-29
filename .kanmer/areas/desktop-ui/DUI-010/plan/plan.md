@@ -41,3 +41,17 @@ The implementation must record its simplification pass and independent pegasus-d
 - Disposition: no behaviour-preserving simplification findings remain. The Desktop and ViewModelTests lock entries are required by the new `Pegasus.Contracts` project reference so `--locked-mode` remains valid.
 
 Independent `pegasus-desktop-reviewer` assessment remains a pre-merge gate and was not represented as complete by the implementer.
+
+## Independent review findings and remediation — 2026-08-29
+
+Locke reviewed exact commit `16d40759eb0a2fda1d12e45fbc184cc9267f778a` and correctly identified merge blockers:
+
+- synthetic validation/unavailable/not-found states were rendered on ordinary startup;
+- replacing one open problem did not force a fresh Polite announcement;
+- the test asserted only that severity was an enum value, not the required value per gateway type;
+- the banned-word guard covered only the presentation table, not static desktop XAML operator attributes;
+- the checklist overstated the four sample states and independent review.
+
+Disposition: remove all synthetic ProblemInfoBar instances and sample problems from `MainPage`/its view model until [[DUI-002]] owns a non-production gallery; keep the reusable control and centralized mapping. Add dispatcher-mediated close/reopen behavior for every replacement ProblemPresentation. Add an explicit expected severity matrix for all 13 gateway types and scan static desktop XAML `Text`, `Header`, `Content`, `AutomationProperties.Name`, and `ToolTip` values in the guard test. Correct the checklist so the unavailable gallery evidence and independent review are not marked complete. No UI harness or theme evidence is fabricated; [[TEST-006]]/[[DUI-002]] remain prerequisites for that evidence.
+
+The remediation build passed with zero warnings/errors; focused ProblemPresentationTests passed 16/16. A fresh independent review is required before merge.
