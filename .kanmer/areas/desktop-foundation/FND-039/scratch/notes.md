@@ -9,3 +9,5 @@
 - Clean-machine install/launch/uninstall was not run: it requires the operator’s elevated development-certificate trust step and a clean Windows 11 machine. No package/key was staged or published; generated artifacts remain untracked and must not be committed.
 - Validation: `pwsh ./scripts/Test-DocumentationLinks.ps1` PASS (238 files); strict PowerShell parser PASS; `dotnet restore ./Pegasus.slnx --locked-mode` PASS; `dotnet build ./Pegasus.slnx --configuration Release --no-restore` PASS (0 warnings/errors); focused `dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-build` PASS (6/6).
 - Commits pushed: `a46570e7`, `673a7f91`; final branch head `673a7f91`.
+
+2026-08-29: Galileo independently reviewed exact head 8a2dd5f0a1594aab5474277dc9166569bdbb3d66. Script implementation passed review. Full acceptance is blocked by the exact --self-contained packaging/toolchain failure, certificate trust, clean Windows 11 install/launch/uninstall, result log, screenshot, cleanup read-back, and no-elevation evidence. No merge or Done claim.
