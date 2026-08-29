@@ -24,3 +24,5 @@ Acceptance is not complete: the required desktop behavior tests cannot be added 
 Independent reviewer Erdos rechecked after merge: PASS for prerequisite merge into dev; FND-031 remains blocked for Done until FND-038 adds the ticket-specific DPAPI/header/correlation/retry/isolation tests and merged-main proof. Reviewer also flagged that post-implementation report/plan references should be refreshed to actual head/merge SHAs before final proof.
 
 2026-08-29: Commit 627d3f613234a75203f1c7115ea590a2a176b199 fixes complete bearer redaction under sensitive keys and preserves pipe-delimited context. Lagrange independently reviewed the exact commit and passed it. Infrastructure build 0 warnings/errors, existing ViewModelTests 6/6, direct redaction/retention smoke and diff check passed. Prerequisite merge only; FND-038 tests and merged-main proof remain open.
+
+2026-08-29: PR #43 exact head 627d3f6 passed run 33265617566 (all required lanes, including SQL shards and aggregate coverage) and merged to dev as 52a1741. Removed only the documented FND-031 -> FND-038 implementation-prerequisite edge; FND-031 remains review/incomplete pending FND-038 tests and proof.

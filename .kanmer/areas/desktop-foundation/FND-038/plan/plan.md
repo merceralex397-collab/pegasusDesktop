@@ -277,3 +277,7 @@ and a project file, so `n/a — docs-only` does not apply._
 ## Dependency-cycle disposition — 2026-08-29
 
 The current board block from FND-031 is inconsistent with the ticket plans: FND-038 requires the FND-031 implementation to exist, while FND-031's remaining acceptance tests are explicitly assigned to FND-038. The implementation prerequisite is already merged through PR #42; PR #43 is the follow-up shared-redaction correction and must merge first. Once that correction is green and merged, the coordinator should remove only the implementation-prerequisite block from the board, then take FND-038. FND-031 remains incomplete until these tests and its proof are satisfied. This is a documented dependency correction, not a bypass or a Done claim.
+
+## Dependency-cycle resolution — 2026-08-29
+
+The prerequisite implementation is now merged: PR #43's exact-head redaction correction (`627d3f613234a75203f1c7115ea590a2a176b199`) passed run `33265617566` and merged to `dev` as `52a1741cfa6544dfdad2632b5192a162c2430a2f`. The board's FND-031 → FND-038 implementation-prerequisite edge was then removed. No acceptance criteria were waived: FND-038 still owns the test project and tests, and FND-031 remains incomplete until those tests and its own proof land.

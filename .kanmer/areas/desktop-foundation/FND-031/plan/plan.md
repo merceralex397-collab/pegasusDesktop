@@ -289,3 +289,9 @@ The first broadened redaction attempt was independently blocked because a bearer
 ## Dependency-cycle disposition — 2026-08-29
 
 The board currently lists FND-031 as blocking FND-038, while FND-031's own required tests are assigned to FND-038. This is a documented sequencing contradiction, not permission to claim either ticket complete. PR #42 already merged the FND-031 implementation prerequisite into dev, and PR #43 carries the shared redaction correction. After PR #43 is green and merged, remove only the FND-038 entry from FND-031's blocks list so FND-038 can implement against the merged infrastructure while FND-031 remains review/incomplete pending those tests and proof. No dependency is changed by this note.
+
+## Merge checkpoint — 2026-08-29
+
+PR #43 (https://github.com/merceralex397-collab/pegasusDesktop/pull/43) was independently reviewed and merged to `dev` after exact-head CI completed green. The reviewed head was `627d3f613234a75203f1c7115ea590a2a176b199`; run `33265617566` passed changes, documentation, local-development-scripts, reference-data, unit, browser, SQL integration shards 1–3, and aggregate SQL coverage (infrastructure was intentionally skipped by the workflow). The merge commit is `52a1741cfa6544dfdad2632b5192a162c2430a2f`, confirmed at `origin/dev`.
+
+This lands the narrow shared redaction correction only. FND-031 is still not Done: its downstream tests and merged-main proof remain required. The implementation-prerequisite board edge to [[FND-038]] was removed after this merge because FND-038 owns the remaining tests that complete FND-031; the other blocking edges remain unchanged.

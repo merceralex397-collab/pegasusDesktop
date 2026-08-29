@@ -31,3 +31,7 @@ This remains a prerequisite-only merge. The FND-031-specific credential-store, h
 ## Redaction remediation — 2026-08-29
 
 Commit 627d3f613234a75203f1c7115ea590a2a176b199 corrected two findings from the prior redaction review: sensitive fields now redact a complete bearer value, and pipe-delimited context is preserved. Fresh independent review passed the exact commit. Infrastructure build passed with 0 warnings/errors; existing ViewModelTests passed 6/6; direct redaction and retention smoke passed; git diff --check passed. The shared test fixtures remain owned by FND-038 and are not duplicated here. FND-031 remains incomplete pending those tests and merged-main proof.
+
+## Merge checkpoint — 2026-08-29
+
+The reviewed follow-up PR #43 merged to `dev` as `52a1741cfa6544dfdad2632b5192a162c2430a2f` from exact head `627d3f613234a75203f1c7115ea590a2a176b199`. Exact-head CI run `33265617566` completed successfully across all required active lanes, including SQL integration shards 1–3 and aggregate SQL coverage; the infrastructure lane was intentionally skipped. The follow-up remains a prerequisite correction, not full ticket delivery.
