@@ -13,7 +13,7 @@ public sealed class RollingFileDiagnosticsWriter : IDiagnosticsWriter
         """(?<prefix>(?<![\w-])"?Authorization"?\s*[:=]\s*)(?<value>"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^,;|\r\n}\]]+?)(?=\s*(?:[,;|}\]]|$))""",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     private static readonly Regex SensitiveField = new(
-        """(?<prefix>(?<![\w-])"?[\w.-]*(?:token|secret|password|passwd)[\w.-]*"?\s*[:=]\s*)(?<value>"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^,;\s}\]]+)""",
+        """(?<prefix>(?<![\w-])"?[\w.-]*(?:token|secret|password|passwd)[\w.-]*"?\s*[:=]\s*)(?<value>"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|Bearer\s+[A-Za-z0-9._~+/=-]+|[^,;|\s}\]]+)""",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     private readonly object _gate = new();
     private readonly string _rootDirectory;
