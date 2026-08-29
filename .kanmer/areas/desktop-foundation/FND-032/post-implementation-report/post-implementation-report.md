@@ -45,3 +45,7 @@ The plan now explicitly records the supported local/unpackaged behavior: when `A
 ## Post-PR-45 revalidation — 2026-08-29
 
 PR #45 merged the gateway registration timing correction to `dev`; the owned host branch now contains it at head `f62407a30955d6ee2e1e1ee192c6e76d867a998c`. Locked solution restore, full Release solution build, and targeted Desktop/Infrastructure Release builds passed with 0 warnings/errors. The pilot-channel assembly inspection showed base plus the selected pilot resource, with no production resource included. FND-038 behavior tests and exact release UNC feed authority remain outstanding; no release or deployment claim is made.
+
+## Prerequisite PR — 2026-08-29
+
+PR #46 is open to `dev` at exact head `f62407a30955d6ee2e1e1ee192c6e76d867a998c`. It is explicitly prerequisite-only for FND-038 and not a delivery, release, proof, or Done claim. Exact-head CI is active.
