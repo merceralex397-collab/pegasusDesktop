@@ -70,36 +70,36 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="PegasusAccentBrush" ResourceKey="SystemColorHighlightBrush" />
-            <StaticResource x:Key="PegasusAccentPressedBrush" ResourceKey="SystemColorHighlightBrush" />
-            <StaticResource x:Key="PegasusAccentTintBrush" ResourceKey="SystemColorHighlightBrush" />
-            <StaticResource x:Key="PegasusNavigationBrush" ResourceKey="SystemColorButtonFaceBrush" />
-            <StaticResource x:Key="PegasusNavigationTextBrush" ResourceKey="SystemColorButtonTextBrush" />
-            <StaticResource x:Key="PegasusInkBrush" ResourceKey="SystemColorWindowTextBrush" />
-            <StaticResource x:Key="PegasusMutedTextBrush" ResourceKey="SystemColorGrayTextBrush" />
-            <StaticResource x:Key="PegasusGroundBrush" ResourceKey="SystemColorWindowBrush" />
-            <StaticResource x:Key="PegasusSurfaceBrush" ResourceKey="SystemColorWindowBrush" />
-            <StaticResource x:Key="PegasusPanelBrush" ResourceKey="SystemColorWindowBrush" />
-            <StaticResource x:Key="PegasusBorderBrush" ResourceKey="SystemColorWindowTextBrush" />
-            <StaticResource x:Key="PegasusBorderStrongBrush" ResourceKey="SystemColorWindowTextBrush" />
-            <StaticResource x:Key="PegasusRecordBandBrush" ResourceKey="SystemColorButtonFaceBrush" />
-            <StaticResource x:Key="PegasusRecordBandTextBrush" ResourceKey="SystemColorButtonTextBrush" />
-            <StaticResource x:Key="PegasusRecordBandMutedBrush" ResourceKey="SystemColorButtonTextBrush" />
-            <StaticResource x:Key="PegasusSuccessBrush" ResourceKey="SystemColorWindowTextBrush" />
-            <StaticResource x:Key="PegasusSuccessContainerBrush" ResourceKey="SystemColorWindowBrush" />
-            <StaticResource x:Key="PegasusPendingForegroundBrush" ResourceKey="SystemColorWindowTextBrush" />
-            <StaticResource x:Key="PegasusPendingBackgroundBrush" ResourceKey="SystemColorWindowBrush" />
-            <StaticResource x:Key="PegasusPendingBorderBrush" ResourceKey="SystemColorWindowTextBrush" />
-            <StaticResource x:Key="PegasusReviewForegroundBrush" ResourceKey="SystemColorWindowTextBrush" />
-            <StaticResource x:Key="PegasusReviewBackgroundBrush" ResourceKey="SystemColorWindowBrush" />
-            <StaticResource x:Key="PegasusReviewBorderBrush" ResourceKey="SystemColorWindowTextBrush" />
-            <StaticResource x:Key="PegasusPrimaryContainerBrush" ResourceKey="SystemColorWindowBrush" />
-            <StaticResource x:Key="PegasusPlateBackgroundBrush" ResourceKey="SystemColorWindowBrush" />
-            <StaticResource x:Key="PegasusPlateForegroundBrush" ResourceKey="SystemColorWindowTextBrush" />
-            <StaticResource x:Key="PegasusPlateBorderBrush" ResourceKey="SystemColorWindowTextBrush" />
-            <StaticResource x:Key="PegasusReferencePlateBackgroundBrush" ResourceKey="SystemColorWindowBrush" />
-            <StaticResource x:Key="PegasusFocusBrush" ResourceKey="SystemColorHighlightBrush" />
-            <StaticResource x:Key="PegasusDangerBrush" ResourceKey="SystemColorWindowTextBrush" />
+            <SolidColorBrush x:Key="PegasusAccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="PegasusAccentPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="PegasusAccentTintBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="PegasusNavigationBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="PegasusNavigationTextBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="PegasusInkBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="PegasusMutedTextBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+            <SolidColorBrush x:Key="PegasusGroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="PegasusSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="PegasusPanelBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="PegasusBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="PegasusBorderStrongBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="PegasusRecordBandBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="PegasusRecordBandTextBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="PegasusRecordBandMutedBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="PegasusSuccessBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="PegasusSuccessContainerBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="PegasusPendingForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="PegasusPendingBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="PegasusPendingBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="PegasusReviewForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="PegasusReviewBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="PegasusReviewBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="PegasusPrimaryContainerBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="PegasusPlateBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="PegasusPlateForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="PegasusPlateBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="PegasusReferencePlateBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="PegasusFocusBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="PegasusDangerBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

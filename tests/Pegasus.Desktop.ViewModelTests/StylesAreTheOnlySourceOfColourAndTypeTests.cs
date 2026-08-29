@@ -20,6 +20,10 @@ public sealed class StylesAreTheOnlySourceOfColourAndTypeTests
         @"\b(?:Color|Background|Foreground|BorderBrush|Fill|Stroke)\s*=\s*[""']\s*([^""']+?)\s*[""']",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+    private static readonly Regex _themeColourReference = new(
+        @"^\{ThemeResource\s+[^}]+\}$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     [Fact]
     [Trait("Category", "ThemeResources")]
     public void StylesAreTheOnlySourceOfColourAndType()
@@ -39,6 +43,7 @@ public sealed class StylesAreTheOnlySourceOfColourAndTypeTests
     [Theory]
     [InlineData("<TextBlock Foreground=\"Blue\" />", "named colour literal Blue")]
     [InlineData("<Border CornerRadius=\"1,1,1,1\" />", "numeric CornerRadius attribute")]
+    [InlineData("<TextBlock Foreground=\"{StaticResource BlueBrush}\" />", "non-theme colour resource")]
     public void GuardRejectsAdditionalAuthoredLiterals(string xaml, string expectedViolation)
     {
         var violations = FindViolations("probe.xaml", xaml).ToArray();
@@ -73,9 +78,13 @@ public sealed class StylesAreTheOnlySourceOfColourAndTypeTests
         foreach (Match match in _colourAttribute.Matches(content))
         {
             var value = match.Groups[1].Value.Trim();
-            if (!value.StartsWith('{') && !value.StartsWith("x:", StringComparison.OrdinalIgnoreCase))
+            if (!value.StartsWith('{'))
             {
                 yield return $"{relativePath}: named colour literal {value}";
+            }
+            else if (!_themeColourReference.IsMatch(value))
+            {
+                yield return $"{relativePath}: non-theme colour resource {value}";
             }
         }
     }
