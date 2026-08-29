@@ -26,3 +26,18 @@ How can gateway ProblemDetails become a concise, copy-safe operator sentence plu
 DSK-03-02 owns the gateway mapping and correlation value; this ticket consumes it.
 
 The implementation must record its simplification pass and independent pegasus-desktop-reviewer assessment before merge.
+
+## Implementation evidence — 2026-08-29
+
+- Consumed the existing `Pegasus.Contracts.ProblemDetails.PegasusProblem` and `PegasusProblemTypes` contract; all 13 current public problem-type constants are mapped. No gateway source or contract was changed.
+- Added one `ProblemPresentation` table and one native `ProblemInfoBar` control. The page supplies the problem and AutomationId prefix; the control exposes only the mapped sentence and optional Reference value. Copy uses `DataPackage.SetText` with that value only.
+- Reused the existing `tests/Pegasus.Desktop.ViewModelTests` project and reflected over the contract constants for the mapping theory. Added unmapped, banned-word, and raw-code guards; no second test project or UI test file was created because the UI test scaffold is not present.
+
+## Simplification pass — 2026-08-29
+
+- Reuse: retained the existing `PegasusProblem`/`PegasusProblemTypes` contract, CommunityToolkit ViewModel, native `InfoBar`, and current ViewModelTests scaffold.
+- Simplification: used one private mapping dictionary and one transport-neutral presentation record; no service, interface, converter, notification centre, toast, modal, or fallback sentence was added.
+- Scope: the gallery is the existing `MainPage`; UIA verification used direct `winapp ui` commands because `tests/Pegasus.Desktop.UITests/problem-tests.ps1` does not exist. No unrelated files, gateway code, corpus, cloud state, or upstream state were touched.
+- Disposition: no behaviour-preserving simplification findings remain. The Desktop and ViewModelTests lock entries are required by the new `Pegasus.Contracts` project reference so `--locked-mode` remains valid.
+
+Independent `pegasus-desktop-reviewer` assessment remains a pre-merge gate and was not represented as complete by the implementer.
