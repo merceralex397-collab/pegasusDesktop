@@ -303,3 +303,7 @@ The FND-032 independent review identified that `AddPegasusApiClient` threw for a
 ## Follow-up PR — 2026-08-29
 
 The independently reviewed correction is tracked in PR #45 (https://github.com/merceralex397-collab/pegasusDesktop/pull/45), exact head `bec8d1bcd4465078e2ea3fab9a9188081118d00c`. Its exact-head GitHub CI is active; no merge or Done claim is made until the required checks complete.
+
+## Follow-up merge — 2026-08-29
+
+PR #45 exact head `bec8d1bcd4465078e2ea3fab9a9188081118d00c` passed all required CI lanes, including SQL integration shards 1–3 and aggregate SQL coverage (run `33267349978`), and merged to `dev` as `ac8f4432d4ea1885dc9829a1fc8981159e9ba4c6`. This corrected registration timing only; FND-031 remains review/incomplete pending FND-038-owned tests, merged-main proof, and Kanmer closeout.

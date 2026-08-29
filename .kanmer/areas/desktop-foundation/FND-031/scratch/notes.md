@@ -28,3 +28,5 @@ Independent reviewer Erdos rechecked after merge: PASS for prerequisite merge in
 2026-08-29: PR #43 exact head 627d3f6 passed run 33265617566 (all required lanes, including SQL shards and aggregate coverage) and merged to dev as 52a1741. Removed only the documented FND-031 -> FND-038 implementation-prerequisite edge; FND-031 remains review/incomplete pending FND-038 tests and proof.
 
 2026-08-29: James independently passed exact follow-up head bec8d1b (targeted infrastructure Release build 0 warnings/errors). PR #45 is open to dev; exact-head CI active. This remains prerequisite-only and not Done.
+
+2026-08-29: PR #45 exact head bec8d1b passed all required CI lanes including SQL coverage (run 33267349978) and merged to dev as ac8f443. Registration timing correction is landed; FND-031 remains review/incomplete pending FND-038 tests, proof, and closeout.

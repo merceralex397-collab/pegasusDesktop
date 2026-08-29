@@ -43,3 +43,7 @@ A narrow registration correction was added at `bec8d1bcd4465078e2ea3fab9a9188081
 ## Follow-up PR — 2026-08-29
 
 The independently reviewed correction is open as PR #45 at exact head `bec8d1bcd4465078e2ea3fab9a9188081118d00c`. Exact-head CI is active. This is still prerequisite-only; FND-031 remains incomplete pending downstream tests, proof, and Kanmer closeout.
+
+## Follow-up merge — 2026-08-29
+
+PR #45 exact head `bec8d1bcd4465078e2ea3fab9a9188081118d00c` passed run `33267349978` with all required checks green and merged to `dev` as `ac8f4432d4ea1885dc9829a1fc8981159e9ba4c6`. The correction is prerequisite-only; downstream tests, proof, and closeout remain outstanding.
