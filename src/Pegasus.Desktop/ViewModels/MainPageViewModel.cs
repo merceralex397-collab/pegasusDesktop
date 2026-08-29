@@ -1,7 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Pegasus.Contracts.ProblemDetails;
-using Pegasus.Desktop.Presentation;
 
 namespace Pegasus.Desktop.ViewModels;
 
@@ -12,18 +10,6 @@ namespace Pegasus.Desktop.ViewModels;
 /// </summary>
 public partial class MainPageViewModel : ObservableObject
 {
-    public ProblemPresentation ValidationProblem { get; } = CreateProblem(
-        PegasusProblemTypes.Validation,
-        "reference-validation");
-
-    public ProblemPresentation UnavailableProblem { get; } = CreateProblem(
-        PegasusProblemTypes.ProviderUnavailable,
-        "reference-unavailable");
-
-    public ProblemPresentation InformationalProblem { get; } = CreateProblem(
-        PegasusProblemTypes.NotFound,
-        "reference-information");
-
     [ObservableProperty]
     public partial string Greeting { get; set; } = "Hello, WinUI!";
 
@@ -42,7 +28,4 @@ public partial class MainPageViewModel : ObservableObject
         Counter--;
     }
 
-    private static ProblemPresentation CreateProblem(string type, string reference) =>
-        ProblemPresentation.FromProblem(
-            new PegasusProblem(type, string.Empty, 400, null, null, reference));
 }

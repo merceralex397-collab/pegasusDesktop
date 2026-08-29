@@ -44,6 +44,8 @@ public sealed partial class ProblemInfoBar : UserControl, INotifyPropertyChanged
 
     public bool HasProblem => Problem is not null;
 
+    public bool IsOpen => HasProblem;
+
     public InfoBarSeverity Severity => Problem?.Severity switch
     {
         ProblemSeverity.Warning => InfoBarSeverity.Warning,
@@ -80,6 +82,7 @@ public sealed partial class ProblemInfoBar : UserControl, INotifyPropertyChanged
     {
         var control = (ProblemInfoBar)dependencyObject;
         control.OnPropertyChanged(nameof(HasProblem));
+        control.OnPropertyChanged(nameof(IsOpen));
         control.OnPropertyChanged(nameof(Severity));
         control.OnPropertyChanged(nameof(Message));
         control.OnPropertyChanged(nameof(Reference));
@@ -88,6 +91,28 @@ public sealed partial class ProblemInfoBar : UserControl, INotifyPropertyChanged
         control.OnPropertyChanged(nameof(ReferenceAutomationId));
         control.OnPropertyChanged(nameof(ReferenceValueAutomationId));
         control.OnPropertyChanged(nameof(CopyReferenceAutomationId));
+
+        if (control.ProblemBar is null)
+        {
+            return;
+        }
+
+        if (args.NewValue is null)
+        {
+            control.ProblemBar.IsOpen = false;
+            return;
+        }
+
+        // Reopen on the dispatcher so each replacement problem is announced once
+        // by the Polite live region, even when the previous bar was already open.
+        control.ProblemBar.IsOpen = false;
+        control.DispatcherQueue.TryEnqueue(() =>
+        {
+            if (ReferenceEquals(control.Problem, args.NewValue))
+            {
+                control.ProblemBar.IsOpen = true;
+            }
+        });
     }
 
     private void CopyReference_Click(object sender, RoutedEventArgs args)

@@ -24,6 +24,28 @@ public sealed class ProblemPresentationTests
         "bytes"
     ];
 
+    private static readonly Dictionary<string, ProblemSeverity> ExpectedSeverities =
+        new Dictionary<string, ProblemSeverity>(StringComparer.Ordinal)
+        {
+            [PegasusProblemTypes.Validation] = ProblemSeverity.Warning,
+            [PegasusProblemTypes.NotAuthorized] = ProblemSeverity.Error,
+            [PegasusProblemTypes.VersionConflict] = ProblemSeverity.Warning,
+            [PegasusProblemTypes.LeaseConflict] = ProblemSeverity.Warning,
+            [PegasusProblemTypes.LeaseExpired] = ProblemSeverity.Warning,
+            [PegasusProblemTypes.OperationConflict] = ProblemSeverity.Warning,
+            [PegasusProblemTypes.ClientUnsupported] = ProblemSeverity.Error,
+            [PegasusProblemTypes.PasswordChangeRequired] = ProblemSeverity.Warning,
+            [PegasusProblemTypes.AccountDisabled] = ProblemSeverity.Error,
+            [PegasusProblemTypes.ProviderUnavailable] = ProblemSeverity.Error,
+            [PegasusProblemTypes.NotFound] = ProblemSeverity.Informational,
+            [PegasusProblemTypes.RateLimited] = ProblemSeverity.Warning,
+            [PegasusProblemTypes.Maintenance] = ProblemSeverity.Error
+        };
+
+    private static readonly Regex XamlOperatorAttribute = new(
+        "(?:Text|Header|Content|AutomationProperties\\.Name|ToolTip)\\s*=\\s*\\\"([^\\\"]+)\\\"",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
     public static IEnumerable<object[]> GatewayProblemTypes =>
         typeof(PegasusProblemTypes)
             .GetFields(BindingFlags.Public | BindingFlags.Static)
@@ -38,7 +60,7 @@ public sealed class ProblemPresentationTests
     {
         var presentation = ProblemPresentation.FromProblem(CreateProblem(problemType));
 
-        Assert.True(Enum.IsDefined(presentation.Severity));
+        Assert.Equal(ExpectedSeverities[problemType], presentation.Severity);
         Assert.False(string.IsNullOrWhiteSpace(presentation.Sentence));
     }
 
@@ -55,7 +77,7 @@ public sealed class ProblemPresentationTests
     [Trait("Category", "ViewModel")]
     public void NoBannedWordAppearsInAnyProblemSentence()
     {
-        foreach (var operatorString in ProblemPresentation.OperatorStrings)
+        foreach (var operatorString in DesktopOperatorStrings())
         {
             foreach (var bannedWord in BannedWords)
             {
@@ -80,7 +102,7 @@ public sealed class ProblemPresentationTests
             new Regex(@"\b[1-5][0-9]{2}\b", RegexOptions.CultureInvariant)
         };
 
-        foreach (var operatorString in ProblemPresentation.OperatorStrings)
+        foreach (var operatorString in DesktopOperatorStrings())
         {
             foreach (var rawCodePattern in rawCodePatterns)
             {
@@ -93,4 +115,29 @@ public sealed class ProblemPresentationTests
 
     private static PegasusProblem CreateProblem(string type) =>
         new(type, "Test problem", 400, null, null, "test-reference");
+
+    private static IEnumerable<string> DesktopOperatorStrings()
+    {
+        var strings = ProblemPresentation.OperatorStrings.ToList();
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (current is not null && !Directory.Exists(Path.Combine(current.FullName, "src", "Pegasus.Desktop")))
+        {
+            current = current.Parent;
+        }
+
+        Assert.NotNull(current);
+
+        var desktopRoot = Path.Combine(current!.FullName, "src", "Pegasus.Desktop");
+        foreach (var path in Directory.EnumerateFiles(desktopRoot, "*.xaml", SearchOption.AllDirectories))
+        {
+            var markup = File.ReadAllText(path);
+            strings.AddRange(
+                XamlOperatorAttribute.Matches(markup)
+                    .Select(match => match.Groups[1].Value)
+                    .Where(value => !value.StartsWith('{')));
+        }
+
+        return strings.Distinct(StringComparer.Ordinal);
+    }
 }

@@ -12,18 +12,6 @@
     <ScrollViewer>
         <StackPanel Margin="24" Spacing="16">
             <TextBlock
-                Text="Problem presentation"
-                Style="{StaticResource SubtitleTextBlockStyle}" />
-            <controls:ProblemInfoBar
-                AutomationIdPrefix="MainPage.ValidationProblem"
-                Problem="{x:Bind ViewModel.ValidationProblem, Mode=OneWay}" />
-            <controls:ProblemInfoBar
-                AutomationIdPrefix="MainPage.UnavailableProblem"
-                Problem="{x:Bind ViewModel.UnavailableProblem, Mode=OneWay}" />
-            <controls:ProblemInfoBar
-                AutomationIdPrefix="MainPage.InformationalProblem"
-                Problem="{x:Bind ViewModel.InformationalProblem, Mode=OneWay}" />
-            <TextBlock
                 Text="{x:Bind ViewModel.Greeting, Mode=OneWay}"
                 Style="{StaticResource TitleTextBlockStyle}" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">

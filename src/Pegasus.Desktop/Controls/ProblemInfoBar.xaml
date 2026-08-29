@@ -12,7 +12,7 @@
         AutomationProperties.AutomationId="{x:Bind ProblemAutomationId, Mode=OneWay}"
         AutomationProperties.LiveSetting="Polite"
         IsClosable="False"
-        IsOpen="{x:Bind HasProblem, Mode=OneWay}"
+        IsOpen="{x:Bind IsOpen, Mode=OneWay}"
         Message="{x:Bind Message, Mode=OneWay}"
         Severity="{x:Bind Severity, Mode=OneWay}">
         <InfoBar.Content>
