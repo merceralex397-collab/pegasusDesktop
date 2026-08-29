@@ -43,7 +43,7 @@ public sealed class ProblemPresentationTests
         };
 
     private static readonly Regex XamlOperatorAttribute = new(
-        "(?:Text|Header|Content|AutomationProperties\\.Name|ToolTip)\\s*=\\s*\\\"([^\\\"]+)\\\"",
+        @"(?:Text|Header|Content|AutomationProperties\.Name|ToolTip)\s*=\s*(?<quote>[""'])(?<value>.*?)\k<quote>",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     public static IEnumerable<object[]> GatewayProblemTypes =>
@@ -104,6 +104,14 @@ public sealed class ProblemPresentationTests
 
         foreach (var operatorString in DesktopOperatorStrings())
         {
+            foreach (var problemType in GatewayProblemTypes.Select(data => (string)data[0]))
+            {
+                Assert.DoesNotContain(
+                    problemType,
+                    operatorString,
+                    StringComparison.OrdinalIgnoreCase);
+            }
+
             foreach (var rawCodePattern in rawCodePatterns)
             {
                 Assert.False(
@@ -134,7 +142,7 @@ public sealed class ProblemPresentationTests
             var markup = File.ReadAllText(path);
             strings.AddRange(
                 XamlOperatorAttribute.Matches(markup)
-                    .Select(match => match.Groups[1].Value)
+                    .Select(match => match.Groups["value"].Value)
                     .Where(value => !value.StartsWith('{')));
         }
 

@@ -18,7 +18,7 @@
         <InfoBar.Content>
             <Expander
                 AutomationProperties.AutomationId="{x:Bind ReferenceAutomationId, Mode=OneWay}"
-                AutomationProperties.Name="Reference"
+                AutomationProperties.Name="{x:Bind local:ProblemInfoBar.ReferenceLabel, Mode=OneWay}"
                 Header="{x:Bind local:ProblemInfoBar.ReferenceLabel, Mode=OneWay}"
                 Visibility="{x:Bind ReferenceVisibility, Mode=OneWay}">
                 <Grid ColumnSpacing="8">
@@ -28,7 +28,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBox
                         AutomationProperties.AutomationId="{x:Bind ReferenceValueAutomationId, Mode=OneWay}"
-                        AutomationProperties.Name="Reference"
+                        AutomationProperties.Name="{x:Bind local:ProblemInfoBar.ReferenceLabel, Mode=OneWay}"
                         IsReadOnly="True"
                         Text="{x:Bind Reference, Mode=OneWay}"
                         TextWrapping="Wrap" />

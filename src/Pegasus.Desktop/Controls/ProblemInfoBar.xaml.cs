@@ -14,14 +14,14 @@ public sealed partial class ProblemInfoBar : UserControl, INotifyPropertyChanged
             nameof(Problem),
             typeof(ProblemPresentation),
             typeof(ProblemInfoBar),
-            new PropertyMetadata(null, OnPresentationChanged));
+            new PropertyMetadata(null, OnProblemChanged));
 
     public static readonly DependencyProperty AutomationIdPrefixProperty =
         DependencyProperty.Register(
             nameof(AutomationIdPrefix),
             typeof(string),
             typeof(ProblemInfoBar),
-            new PropertyMetadata("ProblemInfoBar", OnPresentationChanged));
+            new PropertyMetadata("ProblemInfoBar", OnAutomationIdPrefixChanged));
 
     public ProblemInfoBar()
     {
@@ -76,7 +76,18 @@ public sealed partial class ProblemInfoBar : UserControl, INotifyPropertyChanged
 
     public string CopyReferenceAutomationId => $"{AutomationIdPrefix}.CopyReference";
 
-    private static void OnPresentationChanged(
+    private static void OnAutomationIdPrefixChanged(
+        DependencyObject dependencyObject,
+        DependencyPropertyChangedEventArgs args)
+    {
+        var control = (ProblemInfoBar)dependencyObject;
+        control.OnPropertyChanged(nameof(ProblemAutomationId));
+        control.OnPropertyChanged(nameof(ReferenceAutomationId));
+        control.OnPropertyChanged(nameof(ReferenceValueAutomationId));
+        control.OnPropertyChanged(nameof(CopyReferenceAutomationId));
+    }
+
+    private static void OnProblemChanged(
         DependencyObject dependencyObject,
         DependencyPropertyChangedEventArgs args)
     {
@@ -87,10 +98,6 @@ public sealed partial class ProblemInfoBar : UserControl, INotifyPropertyChanged
         control.OnPropertyChanged(nameof(Message));
         control.OnPropertyChanged(nameof(Reference));
         control.OnPropertyChanged(nameof(ReferenceVisibility));
-        control.OnPropertyChanged(nameof(ProblemAutomationId));
-        control.OnPropertyChanged(nameof(ReferenceAutomationId));
-        control.OnPropertyChanged(nameof(ReferenceValueAutomationId));
-        control.OnPropertyChanged(nameof(CopyReferenceAutomationId));
 
         if (control.ProblemBar is null)
         {
