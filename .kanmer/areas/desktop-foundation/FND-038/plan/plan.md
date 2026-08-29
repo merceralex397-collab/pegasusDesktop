@@ -421,3 +421,16 @@ Review note: FND-032 host/options/log/fallback tests are explicitly deferred unt
 - Efficiency: host tests use the existing embedded configuration; diagnostics verification uses the existing rolling writer in a temporary directory; no server, database, network endpoint, Azure call, corpus access, or external service is used.
 - Altitude: the diff remains under `tests/Pegasus.Desktop.ViewModelTests/**`; CI and production source remain outside FND-038's ownership.
 - Disposition: no unapplied behaviour-preserving simplification finding remains. The CI execution gap and FND-039 packaging/operator evidence remain explicit downstream gates, not simplification findings.
+
+## Review remediation — 2026-08-29
+
+The first independent review of head `69d5803713422ccac9ef52fd924af80c5a5d1507` was BLOCKED with three concrete findings: fallback and host-configured bounded-writer coverage were absent; logging was tested by constructing the provider directly instead of through host DI; and the checklist still described the host coverage as outstanding.
+
+Those findings were corrected in commit `f34d872aeac79460536a6a48f507f1dcbe739874`:
+
+- the host test now resolves `IDiagnosticsWriter` and `ILoggerFactory` from the built host, writes through the host logger, and verifies session ID, correlation ID, redaction, and the actual serialized output;
+- it asserts the resolved writer is the configured `RollingFileDiagnosticsWriter` with a 10 MiB total limit and five-file retention;
+- it verifies the unpackaged process-specific fallback path under `%TEMP%/Pegasus.Desktop/<process id>`;
+- the direct-provider duplicate test was removed.
+
+Post-correction validation: focused FND-032 tests 2/2 passed; full ViewModelTests 20/20 passed with 0 skipped; ArchitectureTests 121/121 passed with 0 skipped; Release build passed with 0 warnings/errors; locked solution restore and `git diff --check` passed. The updated checklist explicitly supersedes the earlier deferred-host-coverage note. A fresh independent review is still required at the new exact head.

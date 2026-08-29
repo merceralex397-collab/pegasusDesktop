@@ -67,3 +67,17 @@ The original scaffold boxes remain superseded and unticked because TEST-004 owns
 - [ ] FND-032 host/options/log/fallback tests remain outstanding until their production APIs merge to `origin/dev`.
 - [ ] Named `pegasus-desktop-reviewer` approval is blocked by the exact Windows subprocess error `os error 206` before inspection; no PR was opened and no review approval is claimed.
 - [ ] Done/proof remains intentionally unavailable; FND-038 is partial and stays in implementing.
+
+## Coverage reconciliation — 2026-08-29
+
+The earlier partial-handoff line saying FND-032 host/options/log/fallback coverage was outstanding is superseded by the corrected implementation at `f34d872aeac79460536a6a48f507f1dcbe739874`. The original scaffold boxes remain superseded by the TEST-004 ownership amendment.
+
+- [x] Host starts in the unpackaged test process and resolves configured gateway/update/channel options, API client, credential store, bounded cache, and diagnostics writer.
+- [x] Missing `Gateway:BaseAddress` fails host startup validation.
+- [x] The host-resolved logger factory writes the session ID and correlation ID, and the host-resolved writer redacts a bearer token.
+- [x] The host-resolved writer is asserted as the 10 MiB / five-file bounded configuration.
+- [x] The diagnostics output path is verified as the process-specific temp fallback used by an unpackaged process.
+- [ ] Fresh independent review of the corrected exact head.
+- [ ] PR CI, merge to `dev`, merged-main proof, and Kanmer closeout.
+
+No acceptance or Done claim is made until the remaining boxes are satisfied.

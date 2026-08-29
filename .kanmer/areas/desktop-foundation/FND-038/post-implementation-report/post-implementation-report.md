@@ -128,3 +128,19 @@ Validation at exact head `69d5803713422ccac9ef52fd924af80c5a5d1507`:
 - `git diff --check` — passed.
 
 The required simplification pass is recorded in the plan. The branch is pushed and awaits independent review. FND-038 is still not Done: it requires review, PR CI, merge, merged-main proof, and Kanmer closeout.
+
+## Review remediation and revalidation — 2026-08-29
+
+The first independent review of head `69d5803713422ccac9ef52fd924af80c5a5d1507` was BLOCKED with concrete findings: fallback and host-configured bounded-writer coverage were absent, the logging test bypassed host DI, and the checklist remained inconsistent with the partial implementation.
+
+Commit `f34d872aeac79460536a6a48f507f1dcbe739874` corrects those findings. The host test now exercises the host-resolved `ILoggerFactory` and `IDiagnosticsWriter`, verifies session/correlation/redaction in the actual serialized log, asserts the configured 10 MiB/five-file writer limits, and verifies the unpackaged process-specific temp fallback. The direct-provider duplicate test was removed.
+
+Validation at the corrected exact head:
+
+- focused FND-032 host tests — 2 passed, 0 failed, 0 skipped;
+- full `Pegasus.Desktop.ViewModelTests` — 20 passed, 0 failed, 0 skipped;
+- `Pegasus.ArchitectureTests` — 121 passed, 0 failed, 0 skipped;
+- Release build — 0 warnings, 0 errors;
+- locked solution restore and `git diff --check` — passed.
+
+The earlier checklist note saying host coverage was outstanding is superseded by the appended coverage-reconciliation section. This is still awaiting a fresh independent review; no merge or Done claim is made.
