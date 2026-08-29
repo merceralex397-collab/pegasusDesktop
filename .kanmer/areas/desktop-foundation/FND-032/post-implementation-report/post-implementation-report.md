@@ -37,3 +37,7 @@ After PR #43 merged to `dev`, `origin/dev` was merged into `task/desktop-host` a
 ## Independent review disposition — 2026-08-29
 
 Boole's exact-head review of `925e98724554c1ba7528492e6a3136f44c8b0416` is BLOCKED. The review found the missing gateway-address failure occurred during registration rather than host start, stale report wording, absent FND-038 behavior evidence, an unresolved unpackaged store-root fallback discrepancy, and unreleased UNC feed placeholders. The registration timing correction is isolated to FND-031's owned follow-up commit `bec8d1bc`, which is pending independent review. No FND-032 delivery or Done claim is made.
+
+## Fallback reconciliation — 2026-08-29
+
+The plan now explicitly records the supported local/unpackaged behavior: when `ApplicationData.Current.LocalFolder` is unavailable, the host uses a per-process OS-temp directory for its diagnostics writer and DPAPI store; packaged launches use the app-local folder. This is not release storage. The behavior still requires an explicit FND-038 test; until that test passes, FND-032 remains incomplete.

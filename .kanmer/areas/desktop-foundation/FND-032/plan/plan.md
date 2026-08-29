@@ -276,20 +276,23 @@ The `proof` document is produced from these five outputs.
   also remove the surrounding text, producing logs that are safe and useless. *Mitigation*: V2's
   redaction test asserts the surrounding message **survives**, not merely that the token is absent.
 - **Risk — A-FND032-4: `ApplicationData.Current.LocalFolder` requires package identity.** An
-  unpackaged launch, or a launch before identity is available, would throw at host build.
-  *Mitigation*: the sink degrades to no-op rather than crashing the launch, and that degradation is
-  itself a tested case. Never run the packaged `.exe` directly — "App silently exits → use
-  `winapp run`" (`.codex/skills/winui-dev-workflow/SKILL.md:76`).
+  unpackaged local-development launch has no app-local folder.
+  *Mitigation*: the implementation uses a per-process directory under the OS temp path for the
+  diagnostics writer and DPAPI store only when package identity is unavailable; packaged launches
+  use `ApplicationData.Current.LocalFolder.Path`. FND-038 must test this fallback explicitly, and
+  the fallback must not be described as release or deployment storage. Never run the packaged
+  `.exe` directly — "App silently exits → use `winapp run`" 
+  (`.codex/skills/winui-dev-workflow/SKILL.md:76`).
 - **Risk — `BuildAndRun.ps1` shadows the root `Directory.Build.props`.** Measured at
   `.codex/skills/winui-dev-workflow/BuildAndRun.ps1:142-172`: the existence test at `:152` is against
   the **project directory only**, so the script injects and MSBuild stops at that file, dropping
   `TreatWarningsAsErrors`, `Nullable`, `ImplicitUsings`, `LangVersion` and `Version` for that build.
   *Mitigation*: V1, not V4, is the gate.
-- **Sequencing, recorded not resolved — [[FND-038]] must land before step 9.**
-  `tests/Pegasus.Desktop.ViewModelTests` does not exist yet (`ls tests` returns only the three
-  existing projects) and `tests/Pegasus.ArchitectureTests` targets `net10.0`, so it cannot host these
-  tests. *Mitigation*: sequence [[FND-038]] first and record it; do not duplicate the scaffold. This
-  is a scope boundary with a named owner, not an open question.
+- **Sequencing — [[FND-038]] extends the existing [[TEST-004]] scaffold.**
+  The shared project already exists and its baseline proof remains authoritative; FND-038 owns the
+  additional infrastructure/host behavior coverage without recreating the project. Tests that
+  require FND-032 production APIs are added after that implementation is merged or are recorded as
+  an exact dependency.
 - **Sequencing, recorded not resolved — [[FND-031]] must land before steps 5–7.** It supplies
   `AddPegasusApiClient`, `IDiagnosticsWriter` and the credential store. The plan's dependency arrow
   names only [[FND-030]]; this plan records the second dependency rather than discovering it at
