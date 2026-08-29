@@ -273,3 +273,7 @@ that does not resolve, a state transition, and a failure response driven through
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this
 branch's own diff before the PR, recorded here under a dated heading. This branch adds C#
 and a project file, so `n/a — docs-only` does not apply._
+
+## Dependency-cycle disposition — 2026-08-29
+
+The current board block from FND-031 is inconsistent with the ticket plans: FND-038 requires the FND-031 implementation to exist, while FND-031's remaining acceptance tests are explicitly assigned to FND-038. The implementation prerequisite is already merged through PR #42; PR #43 is the follow-up shared-redaction correction and must merge first. Once that correction is green and merged, the coordinator should remove only the implementation-prerequisite block from the board, then take FND-038. FND-031 remains incomplete until these tests and its proof are satisfied. This is a documented dependency correction, not a bypass or a Done claim.

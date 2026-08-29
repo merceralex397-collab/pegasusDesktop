@@ -1,0 +1,1 @@
+2026-08-29: Documented the FND-031/FND-038 sequencing contradiction. FND-031 implementation is merged via PR #42; follow-up PR #43 must merge before removing only the implementation-prerequisite board block. FND-031 remains incomplete pending FND-038-owned tests and proof; no dependency changed yet.
