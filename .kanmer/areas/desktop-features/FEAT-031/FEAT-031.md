@@ -10,6 +10,9 @@ assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:31:41.111Z'
+taken_at: '2026-08-29T19:47:20.956Z'
+branch: task/dsk-07-05-box-broker-endpoints
+worktree: 'C:\Users\PC\Documents\GitHub\pegasus-worktrees\dsk-07-05-box-broker-endpoints'
 labels:
   - desktop-conversion
   - plan-07
@@ -30,7 +33,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.673Z'
-updated: '2026-08-27T22:46:44.332Z'
+updated: '2026-08-29T19:47:20.956Z'
 ---
 
 ## What
