@@ -18,10 +18,11 @@ internal sealed class GetRetryHandler : DelegatingHandler
 
         for (var attempt = 1; ; attempt++)
         {
+            using var retryRequest = attempt == 1 ? null : CloneGetRequest(request);
             HttpResponseMessage response;
             try
             {
-                response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                response = await base.SendAsync(retryRequest ?? request, cancellationToken).ConfigureAwait(false);
             }
             catch (HttpRequestException) when (attempt < MaxAttempts)
             {
@@ -37,6 +38,22 @@ internal sealed class GetRetryHandler : DelegatingHandler
             response.Dispose();
             await DelayBeforeRetryAsync(attempt, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    private static HttpRequestMessage CloneGetRequest(HttpRequestMessage request)
+    {
+        var clone = new HttpRequestMessage(HttpMethod.Get, request.RequestUri)
+        {
+            Version = request.Version,
+            VersionPolicy = request.VersionPolicy
+        };
+
+        foreach (var header in request.Headers)
+        {
+            clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        }
+
+        return clone;
     }
 
     private static bool IsTransient(HttpStatusCode statusCode) =>
