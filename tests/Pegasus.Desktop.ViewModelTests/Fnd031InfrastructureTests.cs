@@ -29,7 +29,7 @@ public sealed class Fnd031InfrastructureTests
             Assert.Equal(secret, value);
 
             var protectedBytes = File.ReadAllBytes(Directory.GetFiles(root).Single());
-            Assert.False(protectedBytes.AsSpan().SequenceEqual(Encoding.UTF8.GetBytes(secret)));
+            Assert.Equal(-1, protectedBytes.AsSpan().IndexOf(Encoding.UTF8.GetBytes(secret)));
 
             store.Clear(key);
 
