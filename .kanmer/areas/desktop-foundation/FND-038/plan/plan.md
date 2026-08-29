@@ -434,3 +434,7 @@ Those findings were corrected in commit `f34d872aeac79460536a6a48f507f1dcbe73987
 - the direct-provider duplicate test was removed.
 
 Post-correction validation: focused FND-032 tests 2/2 passed; full ViewModelTests 20/20 passed with 0 skipped; ArchitectureTests 121/121 passed with 0 skipped; Release build passed with 0 warnings/errors; locked solution restore and `git diff --check` passed. The updated checklist explicitly supersedes the earlier deferred-host-coverage note. A fresh independent review is still required at the new exact head.
+
+## Independent review after remediation — 2026-08-29
+
+Sagan the 2nd independently reviewed exact head `f34d872aeac79460536a6a48f507f1dcbe739874` and returned PASS. The review confirmed the host-resolved logger/writer path, session/correlation/redaction assertions, 10 MiB/five-file configuration, unpackaged temp fallback, scope discipline, and the 20/20 ViewModel plus 121/121 Architecture validation. No merge-blocking finding remains. This is a review PASS only; PR CI, merge, proof, and Kanmer closeout remain required.

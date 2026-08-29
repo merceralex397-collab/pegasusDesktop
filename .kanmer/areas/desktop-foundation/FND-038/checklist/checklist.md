@@ -81,3 +81,11 @@ The earlier partial-handoff line saying FND-032 host/options/log/fallback covera
 - [ ] PR CI, merge to `dev`, merged-main proof, and Kanmer closeout.
 
 No acceptance or Done claim is made until the remaining boxes are satisfied.
+
+## Review reconciliation — 2026-08-29
+
+- [x] Fresh independent `pegasus-desktop-reviewer` review of corrected exact head `f34d872aeac79460536a6a48f507f1dcbe739874` returned PASS.
+- [ ] PR CI at the exact corrected head.
+- [ ] Merge to `dev`, merged-main proof, and Kanmer closeout.
+
+The earlier BLOCKED review and deferred-coverage entries remain as historical evidence and are superseded by the remediation and review sections above. No Done claim is made.

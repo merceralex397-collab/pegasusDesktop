@@ -144,3 +144,27 @@ Validation at the corrected exact head:
 - locked solution restore and `git diff --check` — passed.
 
 The earlier checklist note saying host coverage was outstanding is superseded by the appended coverage-reconciliation section. This is still awaiting a fresh independent review; no merge or Done claim is made.
+
+## Independent review after remediation — 2026-08-29
+
+Sagan the 2nd independently reviewed exact head `f34d872aeac79460536a6a48f507f1dcbe739874` after the prior BLOCKED review. The reviewer returned PASS.
+
+The review confirmed that the prior findings are resolved:
+
+- `ILoggerFactory` and `IDiagnosticsWriter` are resolved from the built host and exercised through host DI;
+- the serialized host log carries a non-empty session ID, the scoped correlation ID, and redacts the bearer token;
+- the resolved writer is asserted as the configured 10 MiB / five-file bounded writer;
+- the unpackaged process-specific `%TEMP%/Pegasus.Desktop/<PID>` fallback is asserted;
+- the checklist and plan now reconcile the corrected coverage.
+
+The reviewer found no scope defect or unaddressed implementation omission. Evidence rechecked: locked restore passed; Release build passed with 0 warnings/errors; ViewModelTests 20/20 passed with 0 skipped; ArchitectureTests 121/121 passed with 0 skipped; `git diff --check` passed; exact diff is one test file and contains no production, CI, corpus, cloud, upstream, or unrelated changes.
+
+This PASS authorizes the PR review boundary only. FND-038 remains not Done pending PR CI, merge to `dev`, merged-main proof, and Kanmer closeout.
+
+## Corrected PR — 2026-08-29
+
+After the independent PASS, PR #49 was opened against `dev` at exact head `f34d872aeac79460536a6a48f507f1dcbe739874`:
+
+https://github.com/merceralex397-collab/pegasusDesktop/pull/49
+
+The PR contains only `tests/Pegasus.Desktop.ViewModelTests/Fnd032HostTests.cs` relative to `dev`. Exact-head CI is running. No merge or Done claim is made until all applicable checks pass and merged-main proof is written.
