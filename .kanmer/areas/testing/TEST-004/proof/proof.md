@@ -20,3 +20,6 @@
 Repository-check run [33218441215](https://github.com/merceralex397-collab/pegasusDesktop/actions/runs/33218441215) completed with conclusion `success` at the exact SHA `66aa3eba08f7717b590812053695cc26f3170e7a`. Required jobs passed: changes, reference-data, documentation, local-development-scripts, unit, sql-integration (1), sql-integration (2), sql-integration (3), browser, and sql-integration-coverage. The infrastructure job was skipped by its path condition.
 
 The test project is now present on merged main and is available for FND-031's planned infrastructure behavior tests. No deployment or cloud write was performed.
+
+PR URL: https://github.com/merceralex397-collab/pegasusDesktop/pull/40
+Merge date: 2026-08-28T22:51:56Z.

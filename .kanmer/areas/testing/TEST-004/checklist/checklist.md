@@ -17,3 +17,18 @@
 - [x] Verify: Tests do not require an installed MSIX or UI thread.
 - [x] Verify: Locked restore and Release build pass.
 - [x] Record exact test command/output, simplification pass and independent review. Implementation and simplification are recorded above; independent review passed at exact head 5602d7f1 after the one documentation correction.
+
+# Closeout checklist
+
+---
+
+## Closeout — TEST-004
+
+- [x] PR merge verified (`gh pr view 40 --json state,mergedAt,url` → MERGED, 2026-08-28T22:51:56Z)
+- [x] proof.md finalised (PR URL + merge date appended)
+- [x] Moved to final stage
+- [ ] Outcome recorded in ticket body (PR link, follow-ups)
+- [ ] cd out of worktree; `git worktree remove ../pegasus-worktrees/desktop-viewmodel-tests`
+- [ ] `git branch -d task/desktop-viewmodel-tests`
+- [ ] `git fetch --prune origin` + `git worktree prune`
+- [ ] `take_ticket action: "release"`

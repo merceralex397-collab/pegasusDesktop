@@ -31,11 +31,12 @@ docs_todo: true
 commits:
   - c7f6f689
   - 5602d7f1
+  - 66aa3eba08f7717b590812053695cc26f3170e7a
 prs:
   - '40'
 archived: false
 created: '2026-08-24T07:46:12.595Z'
-updated: '2026-08-29T14:15:03.522Z'
+updated: '2026-08-29T14:15:56.275Z'
 ---
 
 ## What
@@ -117,4 +118,7 @@ Tier 2 — Core/domain, in its desktop-side reading (view model). It obliges pos
 
 ## Outcome
 
-_Filled at closeout._
+- Implemented and merged as PR [#40](https://github.com/merceralex397-collab/pegasusDesktop/pull/40); merge commit `66aa3eba08f7717b590812053695cc26f3170e7a` is on `main`.
+- Added the shared `Pegasus.Desktop.ViewModelTests` project, headless fakes, the no-UI-thread guard, solution registration, and focused runbook/operations evidence.
+- The source ticket requested a new `tests/Pegasus.Desktop.ViewModelTests/README.md`, but the repository markdown-placement rule forbids that location; the clock convention is recorded in the canonical `docs/runbook.md` instead.
+- FND-031 may now add its infrastructure behavior tests to this shared project; no duplicate test project was created.
