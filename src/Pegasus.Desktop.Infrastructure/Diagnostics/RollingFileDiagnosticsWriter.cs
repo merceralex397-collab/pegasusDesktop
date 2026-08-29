@@ -9,8 +9,11 @@ public sealed class RollingFileDiagnosticsWriter : IDiagnosticsWriter
     private static readonly Regex BearerToken = new(
         @"\bBearer\s+[A-Za-z0-9._~+/=-]+",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-    private static readonly Regex SecretField = new(
-        """(?<prefix>"?(?:access[_-]?token|refresh[_-]?token|password|passwd|secret)"?\s*[:=]\s*)(?<value>"[^"]*"|'[^']*'|[^,;\s]+)""",
+    private static readonly Regex AuthorizationField = new(
+        """(?<prefix>(?<![\w-])"?Authorization"?\s*[:=]\s*)(?<value>"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^,;|\r\n}\]]+?)(?=\s*(?:[,;|}\]]|$))""",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    private static readonly Regex SensitiveField = new(
+        """(?<prefix>(?<![\w-])"?[\w.-]*(?:token|secret|password|passwd)[\w.-]*"?\s*[:=]\s*)(?<value>"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|Bearer\s+[A-Za-z0-9._~+/=-]+|[^,;|\s}\]]+)""",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     private readonly object _gate = new();
     private readonly string _rootDirectory;
@@ -83,8 +86,23 @@ public sealed class RollingFileDiagnosticsWriter : IDiagnosticsWriter
     public static string Redact(string line)
     {
         ArgumentNullException.ThrowIfNull(line);
-        var redactedBearer = BearerToken.Replace(line, "Bearer [REDACTED]");
-        return SecretField.Replace(redactedBearer, "${prefix}[REDACTED]");
+        var redacted = AuthorizationField.Replace(line, RedactFieldValue);
+        redacted = SensitiveField.Replace(redacted, RedactFieldValue);
+        return BearerToken.Replace(redacted, "Bearer [REDACTED]");
+    }
+
+    private static string RedactFieldValue(Match match)
+    {
+        var value = match.Groups["value"].Value;
+        var quote = value.Length >= 2 && value[0] == value[^1] && value[0] is '"' or '\''
+            ? value[0].ToString()
+            : string.Empty;
+        var unquotedValue = quote.Length == 0 ? value : value[1..^1];
+        var replacement = unquotedValue.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+            ? "Bearer [REDACTED]"
+            : "[REDACTED]";
+
+        return match.Groups["prefix"].Value + quote + replacement + quote;
     }
 
     private List<FileInfo> GetLogFiles() =>
