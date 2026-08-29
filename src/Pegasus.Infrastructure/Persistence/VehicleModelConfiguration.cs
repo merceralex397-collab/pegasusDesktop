@@ -15,6 +15,7 @@ internal static class VehicleModelConfiguration
             entity.HasKey(item => item.WorkItemId);
             entity.Property(item => item.Registration).HasMaxLength(20).IsRequired();
             entity.Property(item => item.OperationKey).HasMaxLength(100).IsRequired();
+            entity.Property(item => item.CorrelationId).HasMaxLength(200).IsRequired();
             entity.Property(item => item.RequestFingerprint).HasMaxLength(64).IsFixedLength().IsRequired();
             entity.Property(item => item.RequestedByKind).HasMaxLength(40).IsRequired();
             entity.Property(item => item.RequestedBySubjectId).HasMaxLength(200).IsRequired();

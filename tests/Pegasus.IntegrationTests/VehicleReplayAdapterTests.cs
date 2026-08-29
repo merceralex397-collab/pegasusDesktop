@@ -87,6 +87,7 @@ public sealed class VehicleReplayAdapterTests
             var adapter = new DvlaDvsaReplayAdapter(root, new FixedTimeProvider(RetrievedAtUtc));
             return await adapter.LookupAsync(
                 new VehicleLookupRequest(registration),
+                "replay-test-correlation",
                 CancellationToken.None);
         }
         finally

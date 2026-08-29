@@ -33,7 +33,7 @@ public sealed class VehicleWorkflowTerminalTests
 
         var requestException = await Assert.ThrowsAnyAsync<InvalidOperationException>(() =>
             scope.ServiceProvider.GetRequiredService<IRequestVehicleLookup>().ExecuteAsync(
-                new(caseId, 0, "AB12CDE", Staff, "terminal-vehicle-request", "lease-token"),
+                new(caseId, 0, "AB12CDE", Staff, "terminal-vehicle-request", "lease-token", "terminal-vehicle-correlation"),
                 CancellationToken.None));
         Assert.Contains("read-only", requestException.Message, StringComparison.Ordinal);
 
@@ -66,6 +66,31 @@ public sealed class VehicleWorkflowTerminalTests
 
         Assert.Equal(0, exception.ConfirmedRegistrationCount);
         Assert.Equal(0, await ExternalWorkCountAsync(database, caseId));
+    }
+
+    [Fact]
+    public async Task MissingObservationIsReportedAsTypedSuggestionUnavailable()
+    {
+        await using var database = await CreateDatabaseAsync();
+        var caseId = await SeedCaseAsync(database, CaseLifecycleState.Review);
+        var editLeaseToken = await PrepareCanonicalRegistrationAsync(database, caseId, "AB12CDE");
+        await using var scope = database.CreateAsyncScope();
+
+        var exception = await Assert.ThrowsAsync<VehicleSuggestionUnavailableException>(() =>
+            scope.ServiceProvider.GetRequiredService<IAcceptVehicleSuggestion>().ExecuteAsync(
+                new(
+                    caseId,
+                    0,
+                    Guid.NewGuid(),
+                    VehicleSuggestionDecision.Accept,
+                    null,
+                    Staff,
+                    "missing-observation",
+                    "The observation is no longer available.",
+                    editLeaseToken),
+                CancellationToken.None));
+
+        Assert.Equal(VehicleLookupOutcome.NotFound, exception.Outcome);
     }
 
     [Fact]
@@ -251,7 +276,8 @@ public sealed class VehicleWorkflowTerminalTests
                     "AB12CDE",
                     Staff,
                     "stale-editor-vehicle-request",
-                    editLeaseToken),
+                    editLeaseToken,
+                    "stale-editor-vehicle-correlation"),
                 CancellationToken.None));
     }
 
@@ -267,7 +293,7 @@ public sealed class VehicleWorkflowTerminalTests
         string operationKey,
         string editLeaseToken) =>
         services.GetRequiredService<IRequestVehicleLookup>().ExecuteAsync(
-            new(caseId, 0, registration, Staff, operationKey, editLeaseToken),
+            new(caseId, 0, registration, Staff, operationKey, editLeaseToken, $"vehicle-test:{operationKey}"),
             CancellationToken.None);
 
     private static Task<int> ExternalWorkCountAsync(

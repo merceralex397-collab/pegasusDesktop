@@ -24,6 +24,7 @@ public static class DesktopGatewayExtensions
         {
             openApiOptions.ShouldInclude = description => description.GroupName == OpenApiDocumentName;
             openApiOptions.AddDocumentTransformer<OpenApiDocumentTransformer>();
+            openApiOptions.AddOperationTransformer<VehicleOpenApiOperationTransformer>();
         });
         return services;
     }

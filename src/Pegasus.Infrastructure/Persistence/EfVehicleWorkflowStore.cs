@@ -143,6 +143,7 @@ internal sealed class EfVehicleWorkflowStore(
             CaseId = command.CaseId,
             Registration = command.Registration,
             OperationKey = command.OperationKey,
+            CorrelationId = command.CorrelationId,
             RequestFingerprint = fingerprint,
             RequestedByKind = command.Actor.Kind.ToString(),
             RequestedBySubjectId = command.Actor.SubjectId,
@@ -248,8 +249,9 @@ internal sealed class EfVehicleWorkflowStore(
         var observationEntity = await context.Set<VehicleLookupObservationEntity>()
             .Include(item => item.Request)
             .SingleOrDefaultAsync(item => item.Id == command.LookupObservationId, cancellationToken)
-            ?? throw new KeyNotFoundException(
-                $"Vehicle lookup observation '{command.LookupObservationId}' was not found.");
+            ?? throw new VehicleSuggestionUnavailableException(
+                command.LookupObservationId,
+                VehicleLookupOutcome.NotFound);
         if (observationEntity.Request.CaseId != command.CaseId)
         {
             throw new VehicleSuggestionUnavailableException(
@@ -901,7 +903,8 @@ internal sealed class EfVehicleWorkflowStore(
                 request.Registration,
                 actor,
                 $"vehicle-lookup:auto:{request.Registration}",
-                EditLeaseToken: "automation");
+                EditLeaseToken: "automation",
+                CorrelationId: $"vehicle-lookup:auto:{Guid.NewGuid():N}");
             try
             {
                 await EnqueueAutomaticAsync(command, cancellationToken);
@@ -943,6 +946,7 @@ internal sealed class EfVehicleWorkflowStore(
             CaseId = command.CaseId,
             Registration = command.Registration,
             OperationKey = command.OperationKey,
+            CorrelationId = command.CorrelationId,
             RequestFingerprint = RequestFingerprint(command),
             RequestedByKind = command.Actor.Kind.ToString(),
             RequestedBySubjectId = command.Actor.SubjectId,

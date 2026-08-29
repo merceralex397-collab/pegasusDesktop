@@ -7,7 +7,7 @@ public sealed record VehicleLookupRequest
     public required string Registration { get; init; }
 
     /// <summary>The case version the caller read before requesting the lookup.</summary>
-    public long ExpectedVersion { get; init; }
+    public required long? ExpectedVersion { get; init; }
 
     /// <summary>The caller-supplied idempotency key.</summary>
     public required string OperationKey { get; init; }
@@ -39,7 +39,7 @@ public sealed record VehicleCorrectionRequest
 public sealed record AcceptVehicleSuggestionRequest
 {
     /// <summary>The case version the caller read before accepting the suggestion.</summary>
-    public long ExpectedVersion { get; init; }
+    public required long? ExpectedVersion { get; init; }
 
     /// <summary>The lookup decision, either <c>accept</c> or <c>correct</c>.</summary>
     public required string Decision { get; init; }

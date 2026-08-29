@@ -85,7 +85,8 @@ public sealed record RequestVehicleLookupCommand(
     string Registration,
     ActionActor Actor,
     string OperationKey,
-    string EditLeaseToken);
+    string EditLeaseToken,
+    string CorrelationId);
 
 public sealed record RequestedVehicleLookup(
     Guid WorkItemId,
@@ -180,7 +181,8 @@ public sealed class RequestVehicleLookup(
             command.ExpectedCaseVersion,
             command.Actor,
             command.OperationKey,
-            command.EditLeaseToken);
+            command.EditLeaseToken,
+            command.CorrelationId);
         if (!availability.RequestsEnabled)
         {
             throw new VehicleLookupUnavailableException(availability.Mode);
@@ -202,7 +204,8 @@ public sealed class RequestVehicleLookup(
         long expectedCaseVersion,
         ActionActor actor,
         string operationKey,
-        string editLeaseToken)
+        string editLeaseToken,
+        string? correlationId = null)
     {
         if (caseId == Guid.Empty)
         {
@@ -223,6 +226,14 @@ public sealed class RequestVehicleLookup(
             128,
             "An active edit lease token is required.",
             nameof(editLeaseToken));
+        if (correlationId is not null)
+        {
+            RequireText(
+                correlationId,
+                200,
+                "A correlation identifier is required.",
+                nameof(correlationId));
+        }
     }
 
     internal static void RequireText(

@@ -8,6 +8,7 @@ internal sealed class VehicleLookupRequestEntity
     public CaseEntity Case { get; set; } = null!;
     public required string Registration { get; set; }
     public required string OperationKey { get; set; }
+    public required string CorrelationId { get; set; }
     public required string RequestFingerprint { get; set; }
     public required string RequestedByKind { get; set; }
     public required string RequestedBySubjectId { get; set; }

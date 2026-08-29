@@ -99,7 +99,8 @@ public sealed class IntakePersistenceIntegrationTests
                 "20260827214843_AllowMultipleAcceptedRepairSpecifications",
                 "20260827231948_IssuedReportVersionEvidenceLedger",
                 "20260828052825_GrantWebApprovedSentPollOutcomeUpdate",
-                "20260828074800_GrantWorkerCaseReportVersionLedgerInsert"
+                "20260828074800_GrantWorkerCaseReportVersionLedgerInsert",
+                "20260829220251_VehicleLookupCorrelation"
             ],
             (await context.Database.GetAppliedMigrationsAsync()).ToArray());
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());

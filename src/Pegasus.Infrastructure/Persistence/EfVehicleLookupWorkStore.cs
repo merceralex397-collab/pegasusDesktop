@@ -88,6 +88,7 @@ internal sealed class EfVehicleLookupWorkStore(
                     work.CaseId!.Value,
                     request.Registration,
                     request.OperationKey,
+                    request.CorrelationId,
                     VehicleLookupWorkState.Processing,
                     checked(work.AttemptCount + 1),
                     work.DueAtUtc,
@@ -259,7 +260,7 @@ internal sealed class EfVehicleLookupWorkStore(
                 VehicleLookupWorkState.Failed => "Failed",
                 _ => throw new ArgumentOutOfRangeException(nameof(state))
             },
-            CorrelationId = request.OperationKey,
+            CorrelationId = request.CorrelationId,
             Reason = result.Failure?.Code,
             BeforeJson = null,
             AfterJson = resultJson,

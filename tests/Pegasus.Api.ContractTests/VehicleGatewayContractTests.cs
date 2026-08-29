@@ -120,6 +120,26 @@ public sealed class VehicleGatewayContractTests
     }
 
     [Fact]
+    public async Task RequestLookupRequiresExpectedVersion()
+    {
+        using var factory = new VehicleGatewayContractTestFactory();
+        using var client = factory.CreateClient();
+
+        using var request = CreateRequest(
+            HttpMethod.Post,
+            $"/api/v1/cases/{CaseId:D}/vehicle/lookups",
+            correlationId: "vehicle-missing-version-correlation",
+            json: "{\"registration\":\"AB12CDE\",\"operationKey\":\"missing-version\",\"editLeaseToken\":\"lease-token\"}");
+        using var response = await client.SendAsync(request);
+
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.True(response.StatusCode == HttpStatusCode.BadRequest, body);
+        using var document = JsonDocument.Parse(body);
+        Assert.Equal(PegasusProblemTypes.Validation, document.RootElement.GetProperty("type").GetString());
+        Assert.Equal("vehicle-missing-version-correlation", document.RootElement.GetProperty("correlationId").GetString());
+    }
+
+    [Fact]
     public async Task AcceptSuggestionNormalizesCorrectionAndReturnsSafeProvenance()
     {
         using var factory = new VehicleGatewayContractTestFactory();

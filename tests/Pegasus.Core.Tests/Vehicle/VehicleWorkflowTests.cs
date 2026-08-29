@@ -239,14 +239,16 @@ public sealed class VehicleWorkflowTests
             Guid.NewGuid(),
             "AB12CDE",
             "vehicle-request",
+            "vehicle-correlation",
             VehicleLookupWorkState.Processing,
             attemptNumber,
             FixedUtcNow,
             "lease-token",
             FixedUtcNow.AddMinutes(5)));
+        var adapter = new StubLookupAdapter(result);
         var processor = new ProcessQueuedVehicleLookup(
             store,
-            new StubLookupAdapter(result),
+            adapter,
             new FixedTimeProvider(FixedUtcNow));
 
         await processor.ExecuteAsync(workId, CancellationToken.None);
@@ -254,6 +256,7 @@ public sealed class VehicleWorkflowTests
         var recorded = Assert.Single(store.Recorded);
         Assert.Equal(expectedState, recorded.State);
         Assert.Equal(result.Outcome, recorded.Outcome.Result.Outcome);
+        Assert.Equal("vehicle-correlation", adapter.CorrelationId);
         if (expectedState == VehicleLookupWorkState.RetryScheduled)
         {
             Assert.True(recorded.DueAtUtc > FixedUtcNow);
@@ -371,7 +374,8 @@ public sealed class VehicleWorkflowTests
             "AB12CDE",
             Staff,
             " vehicle-request ",
-            "lease-token");
+            "lease-token",
+            "vehicle-correlation");
 
     private static AcceptVehicleSuggestionCommand AcceptCommand() =>
         new(
@@ -435,9 +439,16 @@ public sealed class VehicleWorkflowTests
 
     private sealed class StubLookupAdapter(VehicleLookupResult result) : IVehicleLookupAdapter
     {
+        public string? CorrelationId { get; private set; }
+
         public Task<VehicleLookupResult> LookupAsync(
             VehicleLookupRequest request,
-            CancellationToken cancellationToken) => Task.FromResult(result);
+            string correlationId,
+            CancellationToken cancellationToken)
+        {
+            CorrelationId = correlationId;
+            return Task.FromResult(result);
+        }
     }
 
     private sealed class RecordingWorkStore(VehicleLookupWorkItem work) : IVehicleLookupWorkStore

@@ -59,6 +59,45 @@ public sealed class OpenApiSnapshotTests
     }
 
     [Fact]
+    public async Task OpenApiVehicleContractDeclaresRequiredVersionConditionalReadAndClosedVocabularies()
+    {
+        using var factory = new ContractTestWebApplicationFactory();
+        using var client = factory.CreateClient();
+        using var document = JsonDocument.Parse(await GetOpenApiDocumentAsync(client));
+        var root = document.RootElement;
+        var schemas = root.GetProperty("components").GetProperty("schemas");
+
+        Assert.Contains(
+            "expectedVersion",
+            schemas.GetProperty("VehicleLookupRequest").GetProperty("required").EnumerateArray()
+                .Select(value => value.GetString()));
+        Assert.Contains(
+            "expectedVersion",
+            schemas.GetProperty("AcceptVehicleSuggestionRequest").GetProperty("required").EnumerateArray()
+                .Select(value => value.GetString()));
+        Assert.Equal(
+            ["accept", "correct"],
+            schemas.GetProperty("AcceptVehicleSuggestionRequest")
+                .GetProperty("properties").GetProperty("decision").GetProperty("enum")
+                .EnumerateArray().Select(value => value.GetString()!).ToArray());
+        Assert.Equal(
+            ["current", "stale", "partial", "notFound", "throttled", "unavailable", "failed"],
+            schemas.GetProperty("VehicleLookupObservationResponse")
+                .GetProperty("properties").GetProperty("outcome").GetProperty("enum")
+                .EnumerateArray().Select(value => value.GetString()!).ToArray());
+
+        var getEvidence = root.GetProperty("paths")
+            .GetProperty("/api/v1/cases/{caseId}/vehicle")
+            .GetProperty("get");
+        Assert.Contains(
+            getEvidence.GetProperty("parameters").EnumerateArray(),
+            parameter => parameter.GetProperty("name").GetString() == "If-None-Match"
+                && parameter.GetProperty("in").GetString() == "header");
+        Assert.True(getEvidence.GetProperty("responses").GetProperty("200").GetProperty("headers").TryGetProperty("ETag", out _));
+        Assert.True(getEvidence.GetProperty("responses").GetProperty("304").GetProperty("headers").TryGetProperty("ETag", out _));
+    }
+
+    [Fact]
     public async Task DisabledGatewayDoesNotExposeOpenApiDocument()
     {
         using var factory = new DisabledGatewayWebApplicationFactory();

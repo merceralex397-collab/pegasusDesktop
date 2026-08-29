@@ -71,11 +71,12 @@ public static class VehicleEndpoints
             var result = await workflow.ExecuteAsync(
                 new(
                     caseId,
-                    request.ExpectedVersion,
+                    RequireExpectedVersion(request.ExpectedVersion),
                     new Pegasus.Core.Vehicle.VehicleLookupRequest(request.Registration).Registration,
                     VehicleAuthorizationEndpointFilter.GetActor(httpContext),
                     request.OperationKey,
-                    request.EditLeaseToken),
+                    request.EditLeaseToken,
+                    VehicleGatewayCorrelation(httpContext)),
                 cancellationToken);
             var response = new VehicleLookupResponse(
                 result.WorkItemId,
@@ -114,7 +115,7 @@ public static class VehicleEndpoints
             var result = await workflow.ExecuteAsync(
                 new(
                     caseId,
-                    request.ExpectedVersion,
+                    RequireExpectedVersion(request.ExpectedVersion),
                     suggestionId,
                     decision,
                     correction,
@@ -178,6 +179,11 @@ public static class VehicleEndpoints
             && Enum.IsDefined(decision)
             ? decision
             : throw new ArgumentException("The vehicle decision is invalid.", nameof(value));
+
+    private static long RequireExpectedVersion(long? value) => value
+        ?? throw new ArgumentException(
+            "The expected case version is required.",
+            nameof(value));
 
     private static VehicleMileageUnit? ParseMileageUnit(string? value)
     {
@@ -408,6 +414,7 @@ internal sealed class VehicleAuthorizationEndpointFilter : IEndpointFilter
 internal static class VehicleGatewayProblems
 {
     public static bool IsKnownVehicleException(Exception exception) => exception is
+        ArgumentException or
         VehicleLookupUnavailableException or
         VehicleOperationConflictException or
         VehicleSuggestionUnavailableException or
@@ -460,6 +467,12 @@ internal static class VehicleGatewayProblems
                 StatusCodes.Status409Conflict,
                 "The case has a different confirmed vehicle value.",
                 new Dictionary<string, object?> { ["field"] = field.FieldName }),
+            ArgumentException => (
+                PegasusProblemTypes.Validation,
+                "Validation failed",
+                StatusCodes.Status400BadRequest,
+                "The vehicle request was rejected by a validation rule.",
+                null),
             _ => throw new ArgumentOutOfRangeException(nameof(exception))
         };
 

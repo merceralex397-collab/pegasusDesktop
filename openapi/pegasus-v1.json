@@ -14,6 +14,10 @@
             ]
           },
           "decision": {
+            "enum": [
+              "accept",
+              "correct"
+            ],
             "type": "string"
           },
           "editLeaseToken": {
@@ -35,6 +39,7 @@
           }
         },
         "required": [
+          "expectedVersion",
           "decision",
           "operationKey",
           "reason",
@@ -56,6 +61,10 @@
             "type": "string"
           },
           "decision": {
+            "enum": [
+              "accept",
+              "correct"
+            ],
             "type": "string"
           },
           "lookupObservationId": {
@@ -779,6 +788,15 @@
             "type": "array"
           },
           "outcome": {
+            "enum": [
+              "current",
+              "stale",
+              "partial",
+              "notFound",
+              "throttled",
+              "unavailable",
+              "failed"
+            ],
             "type": "string"
           },
           "provenance": {
@@ -844,6 +862,7 @@
         },
         "required": [
           "registration",
+          "expectedVersion",
           "operationKey",
           "editLeaseToken"
         ],
@@ -870,6 +889,14 @@
             ]
           },
           "state": {
+            "enum": [
+              "pending",
+              "processing",
+              "retryScheduled",
+              "completed",
+              "failed",
+              "poisoned"
+            ],
             "type": "string"
           },
           "workItemId": {
@@ -956,6 +983,14 @@
               "format": "uuid",
               "type": "string"
             }
+          },
+          {
+            "description": "The weak evidence version previously returned by this endpoint.",
+            "in": "header",
+            "name": "If-None-Match",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -967,10 +1002,26 @@
                 }
               }
             },
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "ETag": {
+                "description": "Weak version of the vehicle evidence projection.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "304": {
-            "description": "Not Modified"
+            "description": "Not Modified",
+            "headers": {
+              "ETag": {
+                "description": "Weak version of the vehicle evidence projection.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "content": {

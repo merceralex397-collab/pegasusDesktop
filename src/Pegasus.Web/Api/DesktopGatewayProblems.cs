@@ -86,7 +86,7 @@ internal sealed class DesktopGatewayExceptionHandler : IExceptionHandler
                 "The operation key was already used with different inputs.",
                 null,
                 correlationId),
-            ArgumentException or InvalidOperationException or InvalidDataException =>
+            ArgumentException or InvalidOperationException or InvalidDataException or JsonException or BadHttpRequestException =>
                 new PegasusProblem(
                     PegasusProblemTypes.Validation,
                     "Validation failed",

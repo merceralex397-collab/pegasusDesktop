@@ -177,5 +177,6 @@ public interface IVehicleLookupAdapter
 {
     Task<VehicleLookupResult> LookupAsync(
         VehicleLookupRequest request,
+        string correlationId,
         CancellationToken cancellationToken);
 }
