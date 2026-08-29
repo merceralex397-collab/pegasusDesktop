@@ -16,8 +16,13 @@ namespace Pegasus.IntegrationTests;
 [Trait("Category", "SqlServer")]
 public sealed class CaseWorkflowPersistenceTests
 {
+    private sealed record ReportFixture(
+        Guid ReportVersionId,
+        string ArtifactIdentity,
+        string ArtifactSha256);
+
     [Fact]
-    public async Task StartMovesDirectlyToReportPreparationAndRetainedSentEvidenceNeedsNoApproval()
+    public async Task StartMovesDirectlyToReportPreparationAndVersionlessSentEvidenceCannotLink()
     {
         await using var harness = await WorkflowHarness.CreateAsync();
         var actor = ActionActor.Staff(Guid.NewGuid(), [StaffRole.Engineer]);
@@ -65,50 +70,23 @@ public sealed class CaseWorkflowPersistenceTests
         var sentLease = await harness.Store.ClaimAsync(
             new(harness.CaseId, started.Version, actor, "claim-sent"),
             default);
-        var sent = await new LinkReportEvidence(harness.Store).ExecuteAsync(
+        await Assert.ThrowsAsync<ArgumentException>(() => new LinkReportEvidence(harness.Store).ExecuteAsync(
             new(
                 harness.CaseId,
                 started.Version,
                 actor,
                 "sent-1",
-                "Exact approved-mailbox Sent item linked",
+                "An immutable report version is required",
                 sentLease.Token,
                 retained.EvidenceId),
-            default);
+            default));
 
-        Assert.Equal(CaseLifecycleState.PostReport, sent.State);
-        Assert.Null(sent.ReportApproval);
-        Assert.Equal(evidenceId, sent.ReportSentEvidence?.EvidenceId);
-
-        var closeLease = await harness.Store.ClaimAsync(
-            new(harness.CaseId, sent.Version, actor, "claim-post-report-close"),
-            default);
-        var closed = await new CloseCase(harness.Store).ExecuteAsync(
-            new(
-                harness.CaseId,
-                sent.Version,
-                actor,
-                "close-post-report",
-                "Provider cancelled after report delivery",
-                closeLease.Token,
-                CaseClosureOutcome.ProviderCancelled),
-            default);
-        var reopenLease = await harness.Store.ClaimAsync(
-            new(harness.CaseId, closed.Version, actor, "claim-post-report-reopen"),
-            default);
-        var reopened = await new ReopenCase(harness.Store).ExecuteAsync(
-            new(
-                harness.CaseId,
-                closed.Version,
-                actor,
-                "reopen-post-report",
-                "Provider requested resumed post-report work",
-                reopenLease.Token,
-                CaseReopenDestination.PostReport),
-            default);
-
-        Assert.Equal(CaseLifecycleState.PostReport, reopened.State);
-        Assert.Equal(evidenceId, reopened.ReportSentEvidence?.EvidenceId);
+        var unchanged = await harness.Store.GetAsync(harness.CaseId, default);
+        Assert.Equal(CaseLifecycleState.ReportPreparation, unchanged?.State);
+        Assert.Equal(started.Version, unchanged?.Version);
+        Assert.Null(unchanged?.ReportSentEvidence);
+        Assert.Null(await harness.ReadReportEvidenceCaseIdAsync(evidenceId));
+        Assert.Equal(0L, await harness.WorkflowEventCountAsync("sent-1"));
     }
 
     [Fact]
@@ -159,6 +137,19 @@ public sealed class CaseWorkflowPersistenceTests
                     default)).Token),
             default);
         Assert.Equal(CaseLifecycleState.ReportPreparation, started.State);
+        var report = await harness.SeedGeneratedReportVersionAsync(1, null);
+        var approved = await new RecordCaseReportApproval(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                started.Version,
+                staff,
+                "approve-for-sent-poll-auto-link",
+                "Approve the issued report version before polling Sent evidence",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, started.Version, staff, "claim-approve-for-sent-poll-auto-link"),
+                    default)).Token,
+                new(Guid.NewGuid(), report.ArtifactIdentity, report.ArtifactSha256, report.ReportVersionId)),
+            default);
         harness.TimeProvider.Advance(TimeSpan.FromMinutes(3));
 
         const string mailboxId = "report-auto-link-mailbox";
@@ -181,7 +172,10 @@ public sealed class CaseWorkflowPersistenceTests
                 [],
                 [harness.CaseId],
                 harness.TimeProvider.GetUtcNow().AddMinutes(-1),
-                new string('b', 64)),
+                new string('b', 64),
+                report.ReportVersionId,
+                report.ArtifactIdentity,
+                report.ArtifactSha256),
             MalformedReasonCode: null,
             "report-auto-link-cursor");
         var options = new LocalApprovedSentOptions(
@@ -254,6 +248,7 @@ public sealed class CaseWorkflowPersistenceTests
                     new(harness.CaseId, 0, actor, "claim-report-chronology"),
                     default)).Token),
             default);
+        var report = await harness.SeedGeneratedReportVersionAsync(1, null);
         var linkEvidence = new LinkReportEvidence(harness.Store);
         var editLease = await harness.Store.ClaimAsync(
             new(harness.CaseId, started.Version, actor, "claim-stale-report-evidence"),
@@ -275,7 +270,10 @@ public sealed class CaseWorkflowPersistenceTests
                 preparationTime.AddMinutes(-2),
                 preparationTime.AddMinutes(-1),
                 ActionActor.SystemWorker("approved-mailbox-evidence-ingestion"),
-                "retain-before-preparation"),
+                "retain-before-preparation",
+                report.ReportVersionId,
+                report.ArtifactIdentity,
+                report.ArtifactSha256),
             default);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => linkEvidence.ExecuteAsync(
@@ -286,7 +284,8 @@ public sealed class CaseWorkflowPersistenceTests
                 "link-before-preparation",
                 "Attempt to link an older Sent item",
                 editLease.Token,
-                staleEvidence.EvidenceId),
+                staleEvidence.EvidenceId,
+                report.ReportVersionId),
             default));
         Assert.Equal(0L, await harness.WorkflowEventCountAsync("link-before-preparation"));
 
@@ -301,8 +300,9 @@ public sealed class CaseWorkflowPersistenceTests
             editLease.Token,
             new(
                 Guid.NewGuid(),
-                "case-report-v1.pdf",
-                new string('A', 64)));
+                report.ArtifactIdentity,
+                report.ArtifactSha256,
+                report.ReportVersionId));
         var approve = new RecordCaseReportApproval(harness.Store);
         var approved = await approve.ExecuteAsync(approvalRequest, default);
         harness.TimeProvider.Advance(TimeSpan.FromMinutes(1));
@@ -334,7 +334,10 @@ public sealed class CaseWorkflowPersistenceTests
                 approvalTime.AddMinutes(-1),
                 harness.TimeProvider.GetUtcNow(),
                 ActionActor.SystemWorker("approved-mailbox-evidence-ingestion"),
-                "retain-before-approval"),
+                "retain-before-approval",
+                report.ReportVersionId,
+                report.ArtifactIdentity,
+                report.ArtifactSha256),
             default);
         await Assert.ThrowsAsync<InvalidOperationException>(() => linkEvidence.ExecuteAsync(
             new(
@@ -344,7 +347,8 @@ public sealed class CaseWorkflowPersistenceTests
                 "link-before-approval",
                 "Attempt to link evidence predating approval",
                 sentLease.Token,
-                beforeApproval.EvidenceId),
+                beforeApproval.EvidenceId,
+                report.ReportVersionId),
             default));
         Assert.Equal(0L, await harness.WorkflowEventCountAsync("link-before-approval"));
 
@@ -364,7 +368,10 @@ public sealed class CaseWorkflowPersistenceTests
                 approvalTime,
                 harness.TimeProvider.GetUtcNow(),
                 ActionActor.SystemWorker("approved-mailbox-evidence-ingestion"),
-                "retain-after-approval"),
+                "retain-after-approval",
+                report.ReportVersionId,
+                report.ArtifactIdentity,
+                report.ArtifactSha256),
             default);
         var linked = await linkEvidence.ExecuteAsync(
             new(
@@ -374,12 +381,192 @@ public sealed class CaseWorkflowPersistenceTests
                 "link-after-approval",
                 "Link exact approved-mailbox evidence",
                 sentLease.Token,
-                qualifyingEvidence.EvidenceId),
+                qualifyingEvidence.EvidenceId,
+                report.ReportVersionId),
             default);
 
         Assert.Equal(CaseLifecycleState.PostReport, linked.State);
         Assert.Equal(qualifyingEvidence.EvidenceId, linked.ReportSentEvidence?.EvidenceId);
         Assert.Equal(1L, await harness.WorkflowEventCountAsync("link-after-approval"));
+    }
+
+    [Fact]
+    public async Task IssuedReportVersionLedgerKeepsPredecessorSentAndRecordsReasonedRelink()
+    {
+        await using var harness = await WorkflowHarness.CreateAsync(useTemplate: false);
+        var actor = ActionActor.Staff(Guid.NewGuid(), [StaffRole.Engineer]);
+        var started = await new StartCaseWork(harness.Store, harness.EngineerEligibility).ExecuteAsync(
+            new ChangeCaseStateRequest(
+                harness.CaseId,
+                0,
+                actor,
+                "start-issued-version-ledger",
+                "Inspection work started",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, 0, actor, "claim-issued-version-ledger-start"),
+                    default)).Token),
+            default);
+
+        var first = await harness.SeedGeneratedReportVersionAsync(1, null);
+        var approvedFirst = await new RecordCaseReportApproval(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                started.Version,
+                actor,
+                "approve-issued-version-1",
+                "Approve issued report version 1",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, started.Version, actor, "claim-approve-issued-version-1"),
+                    default)).Token,
+                new(Guid.NewGuid(), first.ArtifactIdentity, first.ArtifactSha256, first.ReportVersionId)),
+            default);
+        harness.TimeProvider.Advance(TimeSpan.FromMinutes(1));
+        var firstEvidence = await harness.RetainVersionedEvidenceAsync(first, "issued-version-1");
+        var firstLinked = await new LinkReportEvidence(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                approvedFirst.Version,
+                actor,
+                "link-issued-version-1",
+                "Link version 1 Sent evidence",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, approvedFirst.Version, actor, "claim-link-issued-version-1"),
+                    default)).Token,
+                firstEvidence.EvidenceId,
+                first.ReportVersionId),
+            default);
+
+        var second = await harness.SeedGeneratedReportVersionAsync(2, first.ReportVersionId);
+        var closed = await new CloseCase(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                firstLinked.Version,
+                actor,
+                "close-issued-version-correction",
+                "Corrected report requires a new issued version",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, firstLinked.Version, actor, "claim-close-issued-version"),
+                    default)).Token,
+                CaseClosureOutcome.ProviderCancelled),
+            default);
+        var reopened = await new ReopenCase(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                closed.Version,
+                actor,
+                "reopen-issued-version-correction",
+                "Open report preparation for the corrected version",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, closed.Version, actor, "claim-reopen-issued-version"),
+                    default)).Token,
+                CaseReopenDestination.ReportPreparation),
+            default);
+        var approvedSecond = await new RecordCaseReportApproval(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                reopened.Version,
+                actor,
+                "approve-issued-version-2",
+                "Approve corrected issued report version 2",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, reopened.Version, actor, "claim-approve-issued-version-2"),
+                    default)).Token,
+                new(Guid.NewGuid(), second.ArtifactIdentity, second.ArtifactSha256, second.ReportVersionId)),
+            default);
+        harness.TimeProvider.Advance(TimeSpan.FromMinutes(1));
+        var secondEvidence = await harness.RetainVersionedEvidenceAsync(second, "issued-version-2");
+        var secondLinked = await new LinkReportEvidence(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                approvedSecond.Version,
+                actor,
+                "link-issued-version-2",
+                "Link version 2 Sent evidence",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, approvedSecond.Version, actor, "claim-link-issued-version-2"),
+                    default)).Token,
+                secondEvidence.EvidenceId,
+                second.ReportVersionId),
+            default);
+
+        var correctedClosed = await new CloseCase(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                secondLinked.Version,
+                actor,
+                "close-before-issued-version-relink",
+                "Reopen report preparation to correct the association",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, secondLinked.Version, actor, "claim-close-before-issued-version-relink"),
+                    default)).Token,
+                CaseClosureOutcome.ProviderCancelled),
+            default);
+        var beforeUnlink = await new ReopenCase(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                correctedClosed.Version,
+                actor,
+                "reopen-before-issued-version-relink",
+                "Correct the version 2 evidence association",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, correctedClosed.Version, actor, "claim-reopen-before-issued-version-relink"),
+                    default)).Token,
+                CaseReopenDestination.ReportPreparation),
+            default);
+        var unlinkedSecond = await new UnlinkReportEvidence(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                beforeUnlink.Version,
+                actor,
+                "unlink-issued-version-2",
+                "Correct the version 2 evidence association",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, beforeUnlink.Version, actor, "claim-unlink-issued-version-2"),
+                    default)).Token,
+                secondEvidence.EvidenceId,
+                second.ReportVersionId),
+            default);
+        var relinkedSecond = await new LinkReportEvidence(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                unlinkedSecond.Version,
+                actor,
+                "relink-issued-version-2",
+                "Relink the corrected version 2 evidence",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, unlinkedSecond.Version, actor, "claim-relink-issued-version-2"),
+                    default)).Token,
+                secondEvidence.EvidenceId,
+                second.ReportVersionId),
+            default);
+
+        var projected = await harness.Store.GetAsync(harness.CaseId, default);
+        var versions = Assert.IsType<CaseWorkflowRecord>(projected).IssuedReportVersions;
+        var projectedFirst = Assert.Single(versions, item => item.ReportVersionId == first.ReportVersionId);
+        var projectedSecond = Assert.Single(versions, item => item.ReportVersionId == second.ReportVersionId);
+
+        Assert.Equal(CaseLifecycleState.PostReport, relinkedSecond.State);
+        Assert.Equal(firstEvidence.EvidenceId, projectedFirst.SentEvidence?.EvidenceId);
+        Assert.Equal(secondEvidence.EvidenceId, projectedSecond.SentEvidence?.EvidenceId);
+        Assert.Equal(harness.CaseId, await harness.ReadReportEvidenceCaseIdAsync(firstEvidence.EvidenceId));
+        Assert.Equal(
+            first.ArtifactSha256,
+            projectedFirst.Approval?.ArtifactSha256);
+        Assert.Null(projectedFirst.CorrectionReason);
+        Assert.Equal(first.ReportVersionId, projectedSecond.PredecessorId);
+        Assert.Equal(
+            ["approved", "linked"],
+            projectedFirst.AssociationHistory.Select(item => item.Action).ToArray());
+        Assert.Equal(
+            ["approved", "linked", "unlinked", "linked"],
+            projectedSecond.AssociationHistory.Select(item => item.Action).ToArray());
+        var unlinkHistory = Assert.Single(
+            projectedSecond.AssociationHistory,
+            item => item.Action == "unlinked");
+        Assert.Equal(harness.CaseId, unlinkHistory.FormerCaseId);
+        Assert.NotNull(unlinkHistory.FormerLinkedAtUtc);
+        Assert.Equal(actor.SubjectId, unlinkHistory.FormerLinkedBy?.SubjectId);
+        Assert.Equal(2, versions.Count);
     }
 
     [Fact]
@@ -398,22 +585,32 @@ public sealed class CaseWorkflowPersistenceTests
                     new(harness.CaseId, 0, staff, "claim-start-auto-link"),
                     default)).Token),
             default);
+        var report = await harness.SeedGeneratedReportVersionAsync(1, null);
+        var approved = await new RecordCaseReportApproval(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                started.Version,
+                staff,
+                "approve-auto-link-report",
+                "Approve the report version for automatic Sent association",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, started.Version, staff, "claim-approve-auto-link-report"),
+                    default)).Token,
+                new(Guid.NewGuid(), report.ArtifactIdentity, report.ArtifactSha256, report.ReportVersionId)),
+            default);
         _ = await harness.Store.ClaimAsync(
-            new(harness.CaseId, started.Version, staff, "claim-before-auto-link"),
+            new(harness.CaseId, approved.Version, staff, "claim-before-auto-link"),
             default);
         harness.TimeProvider.Advance(TimeSpan.FromMinutes(3));
-        var retained = await RetainReportEvidenceAsync(
-            harness,
-            "auto-link-success",
-            harness.TimeProvider.GetUtcNow().AddMinutes(-2),
-            harness.TimeProvider.GetUtcNow().AddMinutes(-1));
+        var retained = await harness.RetainVersionedEvidenceAsync(report, "auto-link-success");
         var worker = ActionActor.SystemWorker("approved-mailbox-sent-poll");
         var request = new AutoLinkReportEvidenceRequest(
             harness.CaseId,
             retained.EvidenceId,
             worker,
             "auto-link-report-evidence",
-            "Exact-one approved-mailbox Case match");
+            "Exact-one approved-mailbox Case match",
+            report.ReportVersionId);
         var sut = new AutoLinkReportEvidence(harness.Store);
 
         var first = await sut.ExecuteAsync(request, default);
@@ -427,7 +624,7 @@ public sealed class CaseWorkflowPersistenceTests
         Assert.Equal(harness.CaseId, linked.CaseId);
         Assert.Equal(retained.EvidenceId, linked.EvidenceId);
         Assert.Equal(CaseLifecycleState.PostReport, linked.State);
-        Assert.Equal(started.Version + 1, linked.Version);
+        Assert.Equal(approved.Version + 1, linked.Version);
         Assert.Equal(linked, replayed);
         var details = Assert.IsType<CaseDetails>(
             await harness.QueryStore.GetAsync(new(harness.CaseId, staff), default));
@@ -469,7 +666,7 @@ public sealed class CaseWorkflowPersistenceTests
         var unready = await sut.ExecuteAsync(unreadyRequest, default);
 
         Assert.Equal(AutoLinkReportEvidenceDisposition.NotLinked, unready.Disposition);
-        Assert.Equal("case_not_report_preparation", unready.NotLinkedReasonCode);
+        Assert.Equal("report_version_required", unready.NotLinkedReasonCode);
         Assert.Null(unready.Link);
         Assert.Null(await harness.ReadReportEvidenceCaseIdAsync(unreadyEvidence.EvidenceId));
         var unreadyWorkflow = Assert.IsType<CaseWorkflowRecord>(
@@ -506,7 +703,7 @@ public sealed class CaseWorkflowPersistenceTests
 
         Assert.Equal(AutoLinkReportEvidenceDisposition.NotLinked, chronology.Disposition);
         Assert.Equal(
-            "evidence_predates_report_preparation",
+            "report_version_required",
             chronology.NotLinkedReasonCode);
         Assert.Null(chronology.Link);
         Assert.Null(await harness.ReadReportEvidenceCaseIdAsync(staleEvidence.EvidenceId));
@@ -518,7 +715,7 @@ public sealed class CaseWorkflowPersistenceTests
     }
 
     [Fact]
-    public async Task AutoLinkReplayAfterStaffRelinkDoesNotOverwriteCurrentAssociation()
+    public async Task AutoLinkReplayAfterUnlinkCannotCrossCaseRelink()
     {
         await using var harness = await WorkflowHarness.CreateAsync();
         var staff = ActionActor.Staff(Guid.NewGuid(), [StaffRole.Engineer]);
@@ -544,22 +741,32 @@ public sealed class CaseWorkflowPersistenceTests
                     new(harness.SecondCaseId, 0, staff, "claim-auto-link-target"),
                     default)).Token),
             default);
+        var report = await harness.SeedGeneratedReportVersionAsync(1, null);
+        var approved = await new RecordCaseReportApproval(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                firstStarted.Version,
+                staff,
+                "approve-auto-link-origin",
+                "Approve the issued report version",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, firstStarted.Version, staff, "claim-approve-auto-link-origin"),
+                    default)).Token,
+                new(Guid.NewGuid(), report.ArtifactIdentity, report.ArtifactSha256, report.ReportVersionId)),
+            default);
         harness.TimeProvider.Advance(TimeSpan.FromMinutes(3));
-        var retained = await RetainReportEvidenceAsync(
-            harness,
-            "auto-link-staff-relink",
-            harness.TimeProvider.GetUtcNow().AddMinutes(-2),
-            harness.TimeProvider.GetUtcNow().AddMinutes(-1));
+        var retained = await harness.RetainVersionedEvidenceAsync(report, "auto-link-staff-relink");
         var autoRequest = new AutoLinkReportEvidenceRequest(
             harness.CaseId,
             retained.EvidenceId,
             ActionActor.SystemWorker("approved-mailbox-sent-poll"),
             "auto-link-before-staff-relink",
-            "Exact-one approved-mailbox Case match");
+            "Exact-one approved-mailbox Case match",
+            report.ReportVersionId);
         var autoLink = new AutoLinkReportEvidence(harness.Store);
         var autoLinked = await autoLink.ExecuteAsync(autoRequest, default);
         var linkedAssociation = Assert.IsType<AutoLinkedReportEvidence>(autoLinked.Link);
-        Assert.Equal(firstStarted.Version + 1, linkedAssociation.Version);
+        Assert.Equal(approved.Version + 1, linkedAssociation.Version);
 
         var closed = await new CloseCase(harness.Store).ExecuteAsync(
             new(
@@ -607,36 +814,40 @@ public sealed class CaseWorkflowPersistenceTests
                         staff,
                         "claim-unlink-auto-evidence"),
                     default)).Token,
-                retained.EvidenceId),
+                retained.EvidenceId,
+                report.ReportVersionId),
             default);
         Assert.Null(unlinked.ReportSentEvidence);
 
-        var staffLinked = await new LinkReportEvidence(harness.Store).ExecuteAsync(
+        var secondRelinkLease = await harness.Store.ClaimAsync(
+            new(
+                harness.SecondCaseId,
+                secondStarted.Version,
+                staff,
+                "claim-staff-link-after-auto"),
+            default);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new LinkReportEvidence(harness.Store).ExecuteAsync(
             new(
                 harness.SecondCaseId,
                 secondStarted.Version,
                 staff,
                 "staff-link-after-auto-unlink",
-                "Associate the retained Sent item with its accepted Case",
-                (await harness.Store.ClaimAsync(
-                    new(
-                        harness.SecondCaseId,
-                        secondStarted.Version,
-                        staff,
-                        "claim-staff-link-after-auto"),
-                    default)).Token,
-                retained.EvidenceId),
-            default);
+                "A report Sent item cannot be reassociated across report versions",
+                secondRelinkLease.Token,
+                retained.EvidenceId,
+                report.ReportVersionId),
+            default));
 
         var staleReplay = await autoLink.ExecuteAsync(autoRequest, default);
 
         Assert.Equal(AutoLinkReportEvidenceDisposition.NotLinked, staleReplay.Disposition);
         Assert.Equal("concurrency_conflict", staleReplay.NotLinkedReasonCode);
         Assert.Null(staleReplay.Link);
-        Assert.Equal(
-            harness.SecondCaseId,
-            await harness.ReadReportEvidenceCaseIdAsync(retained.EvidenceId));
-        Assert.Equal(retained.EvidenceId, staffLinked.ReportSentEvidence?.EvidenceId);
+        Assert.Null(await harness.ReadReportEvidenceCaseIdAsync(retained.EvidenceId));
+        var second = Assert.IsType<CaseWorkflowRecord>(
+            await harness.Store.GetAsync(harness.SecondCaseId, default));
+        Assert.Equal(CaseLifecycleState.ReportPreparation, second.State);
+        Assert.Equal(secondStarted.Version, second.Version);
         var original = Assert.IsType<CaseWorkflowRecord>(
             await harness.Store.GetAsync(harness.CaseId, default));
         Assert.Equal(CaseLifecycleState.ReportPreparation, original.State);
@@ -660,15 +871,26 @@ public sealed class CaseWorkflowPersistenceTests
                     new(harness.CaseId, 0, staff, "claim-start-concurrent-link"),
                     default)).Token),
             default);
+        var report = await harness.SeedGeneratedReportVersionAsync(1, null);
+        _ = await new RecordCaseReportApproval(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                started.Version,
+                staff,
+                "approve-concurrent-link",
+                "Approve the issued report version",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, started.Version, staff, "claim-approve-concurrent-link"),
+                    default)).Token,
+                new(Guid.NewGuid(), report.ArtifactIdentity, report.ArtifactSha256, report.ReportVersionId)),
+            default);
+        started = Assert.IsType<CaseWorkflowRecord>(
+            await harness.Store.GetAsync(harness.CaseId, default));
         var staffLease = await harness.Store.ClaimAsync(
             new(harness.CaseId, started.Version, staff, "claim-concurrent-staff-link"),
             default);
         harness.TimeProvider.Advance(TimeSpan.FromMinutes(3));
-        var retained = await RetainReportEvidenceAsync(
-            harness,
-            "concurrent-staff-worker-link",
-            harness.TimeProvider.GetUtcNow().AddMinutes(-2),
-            harness.TimeProvider.GetUtcNow().AddMinutes(-1));
+        var retained = await harness.RetainVersionedEvidenceAsync(report, "concurrent-staff-worker-link");
         const string staffOperationKey = "concurrent-staff-evidence-link";
         const string autoOperationKey = "concurrent-worker-evidence-link";
 
@@ -680,7 +902,8 @@ public sealed class CaseWorkflowPersistenceTests
                 staffOperationKey,
                 "Staff selected the exact retained Sent item",
                 staffLease.Token,
-                retained.EvidenceId),
+                retained.EvidenceId,
+                report.ReportVersionId),
             default);
         var autoTask = new AutoLinkReportEvidence(harness.Store).ExecuteAsync(
             new(
@@ -688,7 +911,8 @@ public sealed class CaseWorkflowPersistenceTests
                 retained.EvidenceId,
                 ActionActor.SystemWorker("approved-mailbox-sent-poll"),
                 autoOperationKey,
-                "Exact-one approved-mailbox Case match"),
+                "Exact-one approved-mailbox Case match",
+                report.ReportVersionId),
             default);
         var combined = Task.WhenAll(staffTask, autoTask);
         var completed = await Task.WhenAny(
@@ -818,25 +1042,41 @@ public sealed class CaseWorkflowPersistenceTests
                     new(harness.CaseId, 0, actor, "claim-evidence-case"),
                     default)).Token),
             default);
+        var report = await harness.SeedGeneratedReportVersionAsync(1, null);
+        _ = await new RecordCaseReportApproval(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                started.Version,
+                actor,
+                "approve-evidence-case",
+                "Approve the issued report version",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, started.Version, actor, "claim-approve-evidence-case"),
+                    default)).Token,
+                new(Guid.NewGuid(), report.ArtifactIdentity, report.ArtifactSha256, report.ReportVersionId)),
+            default);
+        var approved = Assert.IsType<CaseWorkflowRecord>(
+            await harness.Store.GetAsync(harness.CaseId, default));
         var sentLease = await harness.Store.ClaimAsync(
-            new(harness.CaseId, started.Version, actor, "claim-evidence-link"),
+            new(harness.CaseId, approved.Version, actor, "claim-evidence-link"),
             default);
         var linkEvidence = new LinkReportEvidence(harness.Store);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => linkEvidence.ExecuteAsync(
             new(
                 harness.CaseId,
-                started.Version,
+                approved.Version,
                 actor,
                 "fabricated-evidence",
                 "Caller supplied an unknown identifier",
                 sentLease.Token,
-                Guid.NewGuid()),
+                Guid.NewGuid(),
+                report.ReportVersionId),
             default));
 
         var afterFabricated = await harness.Store.GetAsync(harness.CaseId, default);
         Assert.Equal(CaseLifecycleState.ReportPreparation, afterFabricated?.State);
-        Assert.Equal(started.Version, afterFabricated?.Version);
+        Assert.Equal(approved.Version, afterFabricated?.Version);
         Assert.Null(afterFabricated?.ReportSentEvidence);
         Assert.Equal(0L, await harness.WorkflowEventCountAsync("fabricated-evidence"));
 
@@ -845,12 +1085,13 @@ public sealed class CaseWorkflowPersistenceTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => linkEvidence.ExecuteAsync(
             new(
                 harness.CaseId,
-                started.Version,
+                approved.Version,
                 actor,
                 "unverified-evidence",
                 "Caller selected an unverified legacy row",
                 sentLease.Token,
-                unverifiedEvidenceId),
+                unverifiedEvidenceId,
+                report.ReportVersionId),
             default));
         Assert.Equal(0L, await harness.WorkflowEventCountAsync("unverified-evidence"));
 
@@ -871,16 +1112,20 @@ public sealed class CaseWorkflowPersistenceTests
                 discoveredAtUtc.AddMinutes(-1),
                 discoveredAtUtc,
                 ActionActor.SystemWorker("approved-mailbox-evidence-ingestion"),
-                "retain-exclusive-evidence"),
+                "retain-exclusive-evidence",
+                report.ReportVersionId,
+                report.ArtifactIdentity,
+                report.ArtifactSha256),
             default);
         var linkRequest = new LinkReportEvidenceRequest(
             harness.CaseId,
-            started.Version,
+            approved.Version,
             actor,
             "link-exclusive-evidence",
             "Exact retained Sent evidence linked",
             sentLease.Token,
-            retained.EvidenceId);
+            retained.EvidenceId,
+            report.ReportVersionId);
         var linked = await linkEvidence.ExecuteAsync(linkRequest, default);
         var replay = await linkEvidence.ExecuteAsync(linkRequest, default);
 
@@ -916,7 +1161,8 @@ public sealed class CaseWorkflowPersistenceTests
                 "reuse-exclusive-evidence",
                 "Attempt to reuse another case's evidence",
                 secondLease.Token,
-                retained.EvidenceId),
+                retained.EvidenceId,
+                report.ReportVersionId),
             default));
 
         var secondPersisted = await harness.Store.GetAsync(harness.SecondCaseId, default);
@@ -946,37 +1192,35 @@ public sealed class CaseWorkflowPersistenceTests
                     new(harness.CaseId, 0, actor, "claim-start-unlink"),
                     default)).Token),
             default);
-        harness.TimeProvider.Advance(TimeSpan.FromMinutes(3));
-        var discoveredAtUtc = harness.TimeProvider.GetUtcNow().AddMinutes(-1);
-        var retained = await new RetainApprovedMailboxReportSentEvidence(
-            harness.ReportSentEvidenceStore).ExecuteAsync(
-            new(
-                Guid.NewGuid(),
-                "instructions@collisionengineers.co.uk",
-                "sent-folder-unlink",
-                "immutable-item-unlink",
-                "internet-message-unlink",
-                "conversation-unlink",
-                "reply-chain-unlink",
-                "source-occurrence-unlink",
-                new string('e', 64),
-                new string('f', 64),
-                discoveredAtUtc.AddMinutes(-1),
-                discoveredAtUtc,
-                ActionActor.SystemWorker("approved-mailbox-evidence-ingestion"),
-                "retain-unlink-evidence"),
-            default);
-        var linked = await new LinkReportEvidence(harness.Store).ExecuteAsync(
+        var report = await harness.SeedGeneratedReportVersionAsync(1, null);
+        _ = await new RecordCaseReportApproval(harness.Store).ExecuteAsync(
             new(
                 harness.CaseId,
                 started.Version,
                 actor,
+                "approve-unlink-evidence",
+                "Approve the issued report version before linking Sent evidence",
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, started.Version, actor, "claim-approve-unlink-evidence"),
+                    default)).Token,
+                new(Guid.NewGuid(), report.ArtifactIdentity, report.ArtifactSha256, report.ReportVersionId)),
+            default);
+        var approved = Assert.IsType<CaseWorkflowRecord>(
+            await harness.Store.GetAsync(harness.CaseId, default));
+        harness.TimeProvider.Advance(TimeSpan.FromMinutes(3));
+        var retained = await harness.RetainVersionedEvidenceAsync(report, "unlink-evidence");
+        var linked = await new LinkReportEvidence(harness.Store).ExecuteAsync(
+            new(
+                harness.CaseId,
+                approved.Version,
+                actor,
                 "link-unlink-evidence",
                 "Link exact Sent item",
                 (await harness.Store.ClaimAsync(
-                    new(harness.CaseId, started.Version, actor, "claim-link-unlink"),
+                    new(harness.CaseId, approved.Version, actor, "claim-link-unlink"),
                     default)).Token,
-                retained.EvidenceId),
+                retained.EvidenceId,
+                report.ReportVersionId),
             default);
         var unlinkEvidence = new UnlinkReportEvidence(harness.Store);
         var postReportLease = await harness.Store.ClaimAsync(
@@ -991,7 +1235,8 @@ public sealed class CaseWorkflowPersistenceTests
                 "unlink-while-post-report",
                 "Attempt unlink before reasoned reopen",
                 postReportLease.Token,
-                retained.EvidenceId),
+                retained.EvidenceId,
+                report.ReportVersionId),
             default));
 
         var closed = await new CloseCase(harness.Store).ExecuteAsync(
@@ -1022,10 +1267,11 @@ public sealed class CaseWorkflowPersistenceTests
             actor,
             "unlink-report-evidence",
             "Incorrect retained Sent item was associated",
-            (await harness.Store.ClaimAsync(
-                new(harness.CaseId, reopened.Version, actor, "claim-unlink-evidence"),
-                default)).Token,
-            retained.EvidenceId);
+                (await harness.Store.ClaimAsync(
+                    new(harness.CaseId, reopened.Version, actor, "claim-unlink-evidence"),
+                    default)).Token,
+            retained.EvidenceId,
+            report.ReportVersionId);
 
         var unlinked = await unlinkEvidence.ExecuteAsync(unlinkRequest, default);
         var replay = await unlinkEvidence.ExecuteAsync(unlinkRequest, default);
@@ -1033,7 +1279,13 @@ public sealed class CaseWorkflowPersistenceTests
 
         Assert.Equal(CaseLifecycleState.ReportPreparation, unlinked.State);
         Assert.Null(unlinked.ReportSentEvidence);
-        Assert.Equal(unlinked, replay);
+        Assert.Equal(unlinked.CaseId, replay.CaseId);
+        Assert.Equal(unlinked.State, replay.State);
+        Assert.Equal(unlinked.Version, replay.Version);
+        Assert.Equal(unlinked.IssuedReportVersions.Count, replay.IssuedReportVersions.Count);
+        Assert.Equal(
+            unlinked.IssuedReportVersions.Single().AssociationHistory.Count,
+            replay.IssuedReportVersions.Single().AssociationHistory.Count);
         Assert.Contains(available, item => item.EvidenceId == retained.EvidenceId);
         Assert.Equal(1L, await harness.WorkflowEventCountAsync("unlink-report-evidence"));
         Assert.Equal(0L, await harness.WorkflowEventCountAsync("unlink-while-post-report"));
@@ -1952,9 +2204,65 @@ public sealed class CaseWorkflowPersistenceTests
             database.ScalarAsync<long>(
                 "SELECT COUNT_BIG(*) FROM Cases WHERE Reference LIKE 'QDOS26%'");
 
-        public static async Task<WorkflowHarness> CreateAsync()
+        public async Task<RetainedApprovedMailboxReportSentEvidence> RetainVersionedEvidenceAsync(
+            ReportFixture report,
+            string suffix)
         {
-            var database = await LocalDbTestDatabase.CreateAsync();
+            var sentAtUtc = TimeProvider.GetUtcNow();
+            return await new RetainApprovedMailboxReportSentEvidence(
+                ReportSentEvidenceStore).ExecuteAsync(
+                new(
+                    Guid.NewGuid(),
+                    "instructions@collisionengineers.co.uk",
+                    $"sent-folder-{suffix}",
+                    $"immutable-item-{suffix}",
+                    $"internet-message-{suffix}",
+                    $"conversation-{suffix}",
+                    $"reply-chain-{suffix}",
+                    $"source-occurrence-{suffix}",
+                    new string('a', 64),
+                    new string('b', 64),
+                    sentAtUtc,
+                    sentAtUtc,
+                    ActionActor.SystemWorker("approved-mailbox-evidence-ingestion"),
+                    $"retain-{suffix}",
+                    report.ReportVersionId,
+                    report.ArtifactIdentity,
+                    report.ArtifactSha256),
+                default);
+        }
+
+        public async Task<ReportFixture> SeedGeneratedReportVersionAsync(
+            int version,
+            Guid? predecessorId)
+        {
+            var reportVersionId = Guid.NewGuid();
+            var documentId = Guid.NewGuid();
+            var documentVersionId = Guid.NewGuid();
+            var occurrenceId = Guid.NewGuid();
+            var artifactId = Guid.NewGuid();
+            var artifactIdentity = $"issued-report-v{version}.pdf";
+            var artifactSha256 = version == 1 ? new string('c', 64) : new string('d', 64);
+            var now = TimeProvider.GetUtcNow();
+            await using var context = await factory.CreateDbContextAsync();
+            await context.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO CaseDocuments (Id, CaseId, Ordinal, SourceOccurrenceIdentity) VALUES ({documentId}, {CaseId}, {100 + version}, {$"fixture:issued-report-v{version}"})");
+            await context.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO DocumentVersions (Id, DocumentId, Version, FileName, MediaType, ContentLength, Sha256, CustodyStatus, CreatedAtUtc, CreatedBy, IsCurrent, IsLogicallyRemoved) VALUES ({documentVersionId}, {documentId}, {1}, {artifactIdentity}, {"application/pdf"}, {1L}, {artifactSha256}, {"Confirmed"}, {now}, {"fixture"}, {true}, {false})");
+            await context.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO DocumentOccurrences (Id, CaseId, DocumentId, VersionId, Ordinal, SemanticRole, Source, SourceOccurrenceIdentity, RecordedAtUtc, OperationKey) VALUES ({occurrenceId}, {CaseId}, {documentId}, {documentVersionId}, {100 + version}, {"EngineerReport"}, {"Generated"}, {$"fixture:issued-report-v{version}"}, {now}, {$"fixture:issued-report-v{version}"})");
+            await context.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO AssessmentReportVersions (Id, CaseId, Version, AssessmentFamily, AcceptedPayloadSha256, TemplateVersion, LogicalKey, State, AcceptedPayloadJson, PredecessorId, CreatedAtUtc, CompletedAtUtc, AttemptCount) VALUES ({reportVersionId}, {CaseId}, {version}, {$"fixture-family-{version}"}, {new string('e', 64 - 1) + version.ToString("X", System.Globalization.CultureInfo.InvariantCulture)}, {"fixture"}, {$"fixture-report:{CaseId:D}:{version}"}, {"Generated"}, {$"{{\"version\":{version}}}"}, {predecessorId}, {now}, {now}, {1})");
+            await context.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO AssessmentReportArtifacts (Id, ReportVersionId, Kind, OccurrenceId, DocumentId, DocumentVersionId, DocumentVersion, DocumentOrdinal, FileName, MediaType, ContentLength, Sha256, PageCount, TemplateVersion, EngineVersion) VALUES ({artifactId}, {reportVersionId}, {"Assessment"}, {occurrenceId}, {documentId}, {documentVersionId}, {1}, {100 + version}, {artifactIdentity}, {"application/pdf"}, {1L}, {artifactSha256}, {1}, {"fixture"}, {"fixture"})");
+            await context.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO CaseReportVersionLedgers (ReportVersionId, CaseId, Version, ConcurrencyToken) VALUES ({reportVersionId}, {CaseId}, {0L}, {Guid.NewGuid()})");
+            return new(reportVersionId, artifactIdentity, artifactSha256);
+        }
+
+        public static async Task<WorkflowHarness> CreateAsync(bool useTemplate = true)
+        {
+            var database = await LocalDbTestDatabase.CreateAsync(useTemplate: useTemplate);
             try
             {
                 var options = new DbContextOptionsBuilder<PegasusDbContext>()

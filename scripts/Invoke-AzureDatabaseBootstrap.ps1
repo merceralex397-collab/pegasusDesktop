@@ -322,6 +322,36 @@ function Get-MigrationPermissionMatrix {
     foreach ($permission in @('SELECT', 'INSERT', 'UPDATE')) {
         $expected.Add("pegasus_worker_runtime_role|G|$permission|DocumentVersions")
     }
+    # 20260826075756_AssessmentReportGeneration: report drafts and their
+    # generated artifact metadata are owned by the Web report-generation path.
+    foreach ($permission in @('SELECT', 'INSERT', 'UPDATE')) {
+        $expected.Add("pegasus_web_runtime_role|G|$permission|AssessmentReportVersions")
+    }
+    foreach ($permission in @('SELECT', 'INSERT')) {
+        $expected.Add("pegasus_web_runtime_role|G|$permission|AssessmentReportArtifacts")
+    }
+    # 20260827231948_IssuedReportVersionEvidenceLedger: the Web records the
+    # immutable version approval and staff association history; the Worker
+    # reads and inserts the ledger and appends automatic association history.
+    foreach ($permission in @('SELECT', 'INSERT', 'UPDATE')) {
+        $expected.Add("pegasus_web_runtime_role|G|$permission|CaseReportVersionLedgers")
+    }
+    foreach ($permission in @('SELECT', 'INSERT')) {
+        $expected.Add("pegasus_web_runtime_role|G|$permission|CaseReportAssociationHistory")
+    }
+    foreach ($permission in @('SELECT', 'UPDATE')) {
+        $expected.Add("pegasus_worker_runtime_role|G|$permission|CaseReportVersionLedgers")
+    }
+    foreach ($permission in @('SELECT', 'INSERT')) {
+        $expected.Add("pegasus_worker_runtime_role|G|$permission|CaseReportAssociationHistory")
+    }
+    # 20260828074800_GrantWorkerCaseReportVersionLedgerInsert: the Worker
+    # creates the issued-version ledger row; retain the existing read grant
+    # and add only the missing INSERT permission.
+    $expected.Add('pegasus_worker_runtime_role|G|INSERT|CaseReportVersionLedgers')
+    # 20260828052825_GrantWebApprovedSentPollOutcomeUpdate: the Web triage
+    # response-link transaction updates the related Approved Sent outcome.
+    $expected.Add('pegasus_web_runtime_role|G|UPDATE|ApprovedSentPollOutcomes')
     return @($expected | Sort-Object -Unique)
 }
 

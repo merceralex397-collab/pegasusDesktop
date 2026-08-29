@@ -93,13 +93,17 @@ internal static class CaseWorkflowModelConfiguration
             entity.Property(item => item.ApprovedByKind).HasMaxLength(40).IsRequired();
             entity.Property(item => item.ApprovedBySubjectId).HasMaxLength(200).IsRequired();
             entity.Property(item => item.ApprovedByRolesJson).HasMaxLength(500).IsRequired();
+            entity.Property(item => item.AssociationStatus).HasMaxLength(40);
+            entity.Property(item => item.AssociationStatusReason).HasMaxLength(500);
             entity.HasIndex(item => new { item.CaseId, item.ArtifactIdentity, item.ArtifactSha256 }).IsUnique();
             entity.HasOne<CaseEntity>().WithMany().HasForeignKey(item => item.CaseId).OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<CaseReportSentEvidenceEntity>(entity =>
         {
-            entity.ToTable("CaseReportSentEvidence");
+            entity.ToTable("CaseReportSentEvidence", table => table.HasCheckConstraint(
+                "CK_CaseReportSentEvidence_SourceReportVersion",
+                "([SourceReportVersionId] IS NULL AND [SourceArtifactIdentity] IS NULL AND [SourceArtifactSha256] IS NULL) OR ([SourceReportVersionId] IS NOT NULL AND [SourceArtifactIdentity] IS NOT NULL AND [SourceArtifactSha256] IS NOT NULL)"));
             entity.HasKey(item => item.Id);
             entity.Property(item => item.MailboxIdentity).HasMaxLength(320).IsRequired();
             entity.Property(item => item.SentFolderIdentity).HasMaxLength(200).IsRequired();
@@ -117,10 +121,74 @@ internal static class CaseWorkflowModelConfiguration
             entity.Property(item => item.LinkedByKind).HasMaxLength(40);
             entity.Property(item => item.LinkedBySubjectId).HasMaxLength(200);
             entity.Property(item => item.LinkedByRolesJson).HasMaxLength(500);
+            entity.Property(item => item.SourceArtifactIdentity).HasMaxLength(200);
+            entity.Property(item => item.SourceArtifactSha256).HasMaxLength(64).IsFixedLength();
+            entity.Property(item => item.AssociationStatus).HasMaxLength(40);
+            entity.Property(item => item.AssociationStatusReason).HasMaxLength(500);
             entity.HasIndex(item => item.RetentionOperationKey).IsUnique();
             entity.HasIndex(item => new { item.MailboxIdentity, item.ImmutableItemIdentity }).IsUnique();
             entity.HasIndex(item => new { item.DiscoveredAtUtc, item.Id }).IsDescending(true, false);
             entity.HasOne<CaseEntity>().WithMany().HasForeignKey(item => item.CaseId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<AssessmentReportVersionEntity>()
+                .WithMany()
+                .HasForeignKey(item => item.SourceReportVersionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<CaseReportVersionLedgerEntity>(entity =>
+        {
+            entity.ToTable("CaseReportVersionLedgers", table =>
+            {
+                table.HasCheckConstraint("CK_CaseReportVersionLedgers_Version", "[Version] >= 0");
+                table.HasCheckConstraint(
+                    "CK_CaseReportVersionLedgers_Case",
+                    "[CaseId] IS NOT NULL");
+            });
+            entity.HasKey(item => item.ReportVersionId);
+            entity.Property(item => item.CorrectionReason).HasMaxLength(500);
+            entity.Property(item => item.Version).IsConcurrencyToken();
+            entity.Property(item => item.ConcurrencyToken).IsConcurrencyToken().ValueGeneratedNever();
+            entity.HasIndex(item => item.CaseId);
+            entity.HasIndex(item => item.ApprovalId).IsUnique().HasFilter("[ApprovalId] IS NOT NULL");
+            entity.HasIndex(item => item.CurrentEvidenceId).IsUnique().HasFilter("[CurrentEvidenceId] IS NOT NULL");
+            entity.HasOne(item => item.ReportVersion)
+                .WithMany()
+                .HasForeignKey(item => item.ReportVersionId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(item => item.Workflow)
+                .WithMany(item => item.ReportVersionLedgers)
+                .HasForeignKey(item => item.CaseId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(item => item.Approval)
+                .WithMany()
+                .HasForeignKey(item => item.ApprovalId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(item => item.CurrentEvidence)
+                .WithMany()
+                .HasForeignKey(item => item.CurrentEvidenceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<CaseReportAssociationHistoryEntity>(entity =>
+        {
+            entity.ToTable("CaseReportAssociationHistory");
+            entity.HasKey(item => item.Id);
+            entity.Property(item => item.Action).HasMaxLength(40).IsRequired();
+            entity.Property(item => item.ActorKind).HasMaxLength(40).IsRequired();
+            entity.Property(item => item.ActorSubjectId).HasMaxLength(200).IsRequired();
+            entity.Property(item => item.ActorRolesJson).HasMaxLength(500).IsRequired();
+            entity.Property(item => item.Reason).HasMaxLength(500).IsRequired();
+            entity.Property(item => item.OperationKey).HasMaxLength(100).IsRequired();
+            entity.Property(item => item.LedgerVersion).IsRequired();
+            entity.Property(item => item.FormerLinkedByKind).HasMaxLength(40);
+            entity.Property(item => item.FormerLinkedBySubjectId).HasMaxLength(200);
+            entity.Property(item => item.FormerLinkedByRolesJson).HasMaxLength(500);
+            entity.HasIndex(item => new { item.LedgerReportVersionId, item.OccurredAtUtc, item.Id });
+            entity.HasIndex(item => new { item.LedgerReportVersionId, item.OperationKey }).IsUnique();
+            entity.HasOne(item => item.Ledger)
+                .WithMany(item => item.AssociationHistory)
+                .HasForeignKey(item => item.LedgerReportVersionId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<CaseDueWorkEntity>(entity =>

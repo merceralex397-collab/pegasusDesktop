@@ -168,7 +168,7 @@ this decision authorises none of those and no mailbox mutation.
 - Use system UI text and Lucide line icons only.
 - Controls communicate purpose without narrating obvious actions. Screens carry no lede or subtitle: one H1 and the content. Guidance appears only beside a control whose action has a consequence the operator must understand, and is one sentence.
 - Do not expose Azure, OCR, AI, queue mechanics, extraction engines, deployment, adapter, lease/version, projection, ingress, or artifact terminology in operator copy. The word “intake” never appears in operator-facing text (operator decision 2026-08-04).
-- Every state value shown to an operator passes through an explicit operator-label map — `Pegasus.Web.Presentation.OperatorLabels`. Raw `ToString()` of enums, snake_case event codes, GUIDs, hashes, storage paths, version integers and byte counts never reach markup. File sizes, where relevant, are megabytes to one decimal.
+- Every state value shown to an operator passes through the explicit shared operator vocabulary in `Pegasus.Contracts.Vocabulary.OperatorVocabulary`, with `Pegasus.Web.Presentation.OperatorLabels` as the Core-typed adapter. Raw `ToString()` of enums, snake_case event codes, GUIDs, hashes, storage paths, version integers and byte counts never reach markup. File sizes, where relevant, are megabytes to one decimal.
 - Every date and time an operator reads renders Europe/London through that same map. `ToLocalTime()` is never correct: it resolves against the server clock, which is the office zone on a developer workstation and UTC on the deployed container, so it looks right exactly where it is tested and is wrong through British Summer Time where it runs.
 - A composed query that returns zero renders `0`. A capability that is not composed in a deployment is absent from the interface — never a disabled item, inert card, or “Unavailable” placeholder. Genuine runtime failure renders the designed failure state with the last-good time.
   - This applies to capabilities, not to conditions. An action the record in front of the operator will genuinely offer once a condition is met stays visible and disabled with the condition named on the control (“Available in Review”); removing it would assert the action is impossible, which is false.
@@ -590,7 +590,7 @@ Only the first table describes exercised components. Planned contracts do not cr
 | Development shell/navigation | Identify the current proof and reach Development routes; normal, hover and focus; the current route carries `aria-current="page"` with a weight change **and a 2px Collision-red left border** so it is not signalled by colour alone; the Inbox item is conditional and is **absent**, never a disabled span, where the capability is not composed | `src/Pegasus.Web/Pages/Shared/_Layout.cshtml` |
 | Navless shells | The screens that are not a place in the application. `_LayoutAuth` carries sign in, the signed-out confirmation, access denied and the error/not-found family; `_LayoutExternal` carries the one screen a third party sees and states the company, never the product | `src/Pegasus.Web/Pages/Shared/_LayoutAuth.cshtml`, `_LayoutExternal.cshtml` |
 | Status-code page | The designed answer to a status code with no exception behind it: unknown record, dead external upload link, oversized upload, rate-limited sign-in. Scoped away from the health, version and automation surfaces, whose callers want a parsable body | `src/Pegasus.Web/Pages/StatusCode.cshtml(.cs)` |
-| Operator label map | The single place a persisted code becomes words: stage, case type, document role and origin, custody, upload-link state, history event, file size. Raw `enum.ToString()`, snake_case event codes and PascalCase compounds never reach markup | `src/Pegasus.Web/Presentation/OperatorLabels.cs` |
+| Operator label map | The single shared place a persisted code becomes words: stage, case type, document role and origin, custody, upload-link state, history event, intake decision and recognition outcome. Core-typed Web calls pass through the thin adapter; raw `enum.ToString()`, snake_case event codes and PascalCase compounds never reach markup | `src/Pegasus.Contracts/Vocabulary/OperatorVocabulary.cs`, `src/Pegasus.Web/Presentation/OperatorLabels.cs` |
 | Queue/metric card | Show persisted Development intake counts and open the exact list; value and unavailable states are both exercised, an unavailable tile stating its absence rather than substituting a zero; stale and partial remain planned | `src/Pegasus.Web/Pages/Index.cshtml`, `src/Pegasus.Web/wwwroot/css/site.css` |
 | Status chip | The single place a business or query state selects its tone and Lucide glyph; always paired with its text label | `src/Pegasus.Web/Pages/Shared/_StatusChip.cshtml` |
 | Freshness and manual refresh | Last-good Europe/London time, current refresh state, and a manual refresh that reruns the same filter with start feedback and double-submit protection | `src/Pegasus.Web/Pages/Shared/_FreshnessBanner.cshtml` |
@@ -1155,8 +1155,9 @@ these are what remained true.
 
 1. **Words, never codes.** No persisted enum, snake_case code, hash, storage
    key, path, byte count or version integer appears as operator text. One
-   place — `Pegasus.Web.Presentation.OperatorLabels` — turns a persisted code
-   into words, and every surface goes through it. Where a code carries a
+   place — `Pegasus.Contracts.Vocabulary.OperatorVocabulary`, reached from
+   Core-typed Web calls through `Pegasus.Web.Presentation.OperatorLabels` —
+   turns a persisted code into words, and every surface goes through it. Where a code carries a
    distinction the operator must act on, the distinction is kept and only the
    spelling changes.
 2. **No raw identifiers.** GUIDs, correlation ids, sequence-lineage ids and

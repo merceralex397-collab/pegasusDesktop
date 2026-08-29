@@ -33,6 +33,14 @@ release-route decision recorded in ADR-0007, not a development-platform
 requirement. Web and Worker packages are `linux-x64` and build identically on
 either platform.
 
+Windows desktop packaging and local packaged-app tests additionally require
+the WinApp CLI 0.3 or later (`winget install Microsoft.WinAppCLI`) and
+Developer Mode. On development and Test/UAT machines, trust the development
+certificate once from an elevated terminal with `winapp cert install
+./devcert.pfx`; this development-only command uses the machine Trusted Root
+store, while production trust remains D-002's `LocalMachine\\TrustedPeople`
+store and must arrive before a signed package.
+
 Hosted workflow runner choices and their evidence limits are owned by
 [the executable CI workflow](../.github/workflows/ci.yml). Linux development
 is supported by these procedures; record the platform actually exercised.
@@ -323,14 +331,21 @@ lock files with the matching entry point and `--force-evaluate` before running t
 locked restore.
 
 The focused forms are below; the two integration filters are a complement pair, so
-their union with the two unit projects is exactly the canonical selection:
+their union with the three unit projects is exactly the canonical selection:
 
 ```powershell
 dotnet test ./tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release --no-build
 dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build
+dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-build
+dotnet test ./tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj --configuration Release --no-build --filter "Category=Contract"
 dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter "Category!=Corpus&Category!=Browser"
 dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter "Category=Browser&Category!=Corpus" -- xUnit.MaxParallelThreads=2
 ```
+
+The Windows-only `Pegasus.Desktop.ViewModelTests` project uses one shared
+`Support/FixedTimeProvider` with the default instant `2026-01-01T00:00:00Z`.
+Desktop tests advance or set that clock explicitly and do not define private
+copies.
 
 Test classes run in parallel. The integration project caps concurrency at four
 in `tests/Pegasus.IntegrationTests/xunit.runner.json`: several agents may run

@@ -43,7 +43,10 @@ public sealed record ApprovedSentItemProvenance(
     IReadOnlyList<string> InReplyToIdentities,
     IReadOnlyList<Guid> AuthoritativeCaseIdentities,
     DateTimeOffset SentAtUtc,
-    string MimeSha256);
+    string MimeSha256,
+    Guid? ReportVersionId = null,
+    string? ArtifactIdentity = null,
+    string? ArtifactSha256 = null);
 
 public sealed record ApprovedSentItem(
     string SourceOccurrenceIdentity,
@@ -493,7 +496,10 @@ public sealed class PollSentEvidence(
                     provenance.SentAtUtc,
                     nowUtc,
                     actor,
-                    CreateReportOperationKey(provenance)),
+                    CreateReportOperationKey(provenance),
+                    provenance.ReportVersionId,
+                    provenance.ArtifactIdentity,
+                    provenance.ArtifactSha256),
                 cancellationToken);
             reportEvidenceRetained = true;
             relatedEvidenceId = retained.EvidenceId;
@@ -505,7 +511,8 @@ public sealed class PollSentEvidence(
                         retained.EvidenceId,
                         actor,
                         CreateAutoLinkOperationKey(caseIdentities[0], retained.EvidenceId, provenance),
-                        "Exact approved-mailbox Sent evidence and one authoritative Case identity"),
+                        "Exact approved-mailbox Sent evidence and one authoritative Case identity",
+                        provenance.ReportVersionId),
                     cancellationToken);
                 if (autoLink.Disposition == AutoLinkReportEvidenceDisposition.Linked)
                 {
@@ -727,6 +734,27 @@ public sealed class PollSentEvidence(
                 != provenance.AuthoritativeCaseIdentities.Count)
         {
             throw new ArgumentException("The authoritative Case identities are invalid.", nameof(provenance));
+        }
+
+        if ((provenance.ReportVersionId is null) != string.IsNullOrWhiteSpace(provenance.ArtifactIdentity)
+            || (provenance.ReportVersionId is null) != string.IsNullOrWhiteSpace(provenance.ArtifactSha256))
+        {
+            throw new ArgumentException(
+                "A report version and its exact artifact identity and hash must be supplied together.",
+                nameof(provenance));
+        }
+
+        if (provenance.ReportVersionId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "A report version identifier must be non-empty.",
+                nameof(provenance));
+        }
+
+        if (provenance.ReportVersionId is not null)
+        {
+            RequireText(provenance.ArtifactIdentity!, 200, nameof(provenance));
+            ValidateSha256(provenance.ArtifactSha256!, nameof(provenance));
         }
     }
 

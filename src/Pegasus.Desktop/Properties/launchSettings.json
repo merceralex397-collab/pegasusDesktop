@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Pegasus.Desktop (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Pegasus.Desktop (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

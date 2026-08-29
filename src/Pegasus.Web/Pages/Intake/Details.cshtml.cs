@@ -347,29 +347,14 @@ public sealed partial class DetailsModel(
         Receipt.AssetRecords.Count(candidate => candidate.ContentHash == asset.ContentHash);
 
 
-    public static string DecisionLabel(IntakeDecision decision) => decision switch
-    {
-        IntakeDecision.CaseCreated => "Ready for case allocation",
-        IntakeDecision.NeedsSorting => "Unidentified",
-        // Kept identical to the list label: one decision, one name.
-        IntakeDecision.BlockedIntake => "Blocked",
-        IntakeDecision.Unsupported => "Unsupported",
-        IntakeDecision.OcrRequired => "Document text required",
-        IntakeDecision.TechnicalFailure => "Technical failure",
-        IntakeDecision.ImageIntakeRegistered => "Vehicle images registered",
-        _ => throw new InvalidOperationException($"Unknown intake decision value '{(int)decision}'.")
-    };
+    public static string DecisionLabel(IntakeDecision decision) =>
+        OperatorLabels.IntakeDecisionLabel(decision);
 
     public static string SourceChannelLabel(IntakeSourceChannel channel) =>
         OperatorLabels.SourceChannel(channel);
 
-    public static string CaseTypeLabel(CaseType? caseType) => caseType switch
-    {
-        CaseType.Inspection => "Inspection",
-        CaseType.Audit => "Audit",
-        CaseType.InspectionAndAudit => "Inspection and Audit",
-        _ => "Not available"
-    };
+    public static string CaseTypeLabel(CaseType? caseType) =>
+        OperatorLabels.AttemptedCaseTypeName(caseType);
 
     private async Task<IActionResult> ExecuteCommandAsync(
         Guid id,
@@ -590,16 +575,8 @@ public sealed partial class DetailsModel(
         }
     }
 
-    public static string SuggestionOutcomeLabel(ImageVrmSuggestion suggestion) => suggestion.Outcome switch
-    {
-        VrmRecognitionOutcomeKind.Suggested =>
-            $"Suggested {suggestion.SuggestedRegistration} ({suggestion.Confidence:P0} confidence)",
-        VrmRecognitionOutcomeKind.NoReadableResult => "No readable registration",
-        VrmRecognitionOutcomeKind.TechnicalFailure => "Technical failure",
-        VrmRecognitionOutcomeKind.Unavailable => "Recognition unavailable",
-        _ => throw new InvalidOperationException(
-            $"Unknown recognition outcome value '{(int)suggestion.Outcome}'.")
-    };
+    public static string SuggestionOutcomeLabel(ImageVrmSuggestion suggestion) =>
+        OperatorLabels.SuggestionOutcomeLabel(suggestion);
 
     [LoggerMessage(
         EventId = 1203,

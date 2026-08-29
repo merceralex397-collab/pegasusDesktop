@@ -1,0 +1,22 @@
+using Microsoft.Extensions.DependencyInjection;
+using Pegasus.Infrastructure.Persistence;
+
+static class WorkerCompositionFixture
+{
+    public static IServiceCollection Register(IServiceCollection services)
+    {
+        services.AddScoped<EfDocumentCustodyStore>();
+        services.AddScoped<IAddCaseDocument>(provider =>
+            provider.GetRequiredService<EfDocumentCustodyStore>());
+        return services;
+    }
+}
+
+sealed class EfDocumentCustodyStore
+{
+    public void Create(PegasusDbContext context)
+    {
+        CaseDocumentEntity document = new();
+        context.Add(document);
+    }
+}

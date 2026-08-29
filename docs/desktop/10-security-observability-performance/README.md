@@ -223,3 +223,5 @@ Phase 8, `entra-*` skills.
 - `docs/capabilities.md`: `DSK` rows for diagnostics bundle and admin
   health; PLAT-035/PLAT-036 remain upstream-carried platform items
   ([01 · carry-over](../01-inventory-and-parity/upstream-kanmer-carryover.md)).
+- [Threat register](threat-register.md): the §17.3 threat-to-control-to-test register, §17.2
+  non-goals, shared secret/PII scan patterns, and D-002/D-003 key custody.

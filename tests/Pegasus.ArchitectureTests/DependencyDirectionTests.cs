@@ -15,7 +15,9 @@ using Pegasus.Core.ReferenceData;
 using Pegasus.Infrastructure;
 using Pegasus.Infrastructure.Custody;
 using Pegasus.Infrastructure.Persistence;
+using Pegasus.Contracts.Vocabulary;
 using Pegasus.Web.Pages;
+using Pegasus.Web.Presentation;
 
 namespace Pegasus.ArchitectureTests;
 
@@ -119,6 +121,128 @@ public sealed class DependencyDirectionTests
     }
 
     [Fact]
+    public void OperatorVocabularyHasOneContractOwnerAndWebOnlyAdapter()
+    {
+        var root = FindRepositoryRoot();
+        var sourceFiles = Directory
+            .EnumerateFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")
+                && !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"))
+            .Select(path => new
+            {
+                Path = Path.GetRelativePath(root, path).Replace('\\', '/'),
+                Content = File.ReadAllText(path)
+            })
+            .ToArray();
+
+        Assert.Equal(
+            ["src/Pegasus.Contracts/Vocabulary/OperatorVocabulary.cs"],
+            sourceFiles
+                .Where(source => Regex.IsMatch(
+                    source.Content,
+                    @"\bclass\s+OperatorVocabulary\b",
+                    RegexOptions.CultureInvariant))
+                .Select(source => source.Path)
+                .Order(StringComparer.Ordinal));
+        Assert.Equal(
+            ["src/Pegasus.Web/Presentation/OperatorLabels.cs"],
+            sourceFiles
+                .Where(source => Regex.IsMatch(
+                    source.Content,
+                    @"\bclass\s+OperatorLabels\b",
+                    RegexOptions.CultureInvariant))
+                .Select(source => source.Path)
+                .Order(StringComparer.Ordinal));
+
+        var vocabularyText = sourceFiles.Single(source => source.Path ==
+            "src/Pegasus.Contracts/Vocabulary/OperatorVocabulary.cs").Content;
+        var sharedLabels = new[]
+        {
+            "Ready for case allocation",
+            "Inspection and audit",
+            "Inspection and Audit",
+            "Needs text extraction",
+            "Vehicle images registered",
+            "No readable registration",
+            "Recognition unavailable",
+            "New instructions and Triage mail (Inbox)",
+            "Exact report and Triage evidence (Sent Items)"
+        };
+        foreach (var label in sharedLabels)
+        {
+            Assert.Contains(label, vocabularyText, StringComparison.Ordinal);
+        }
+
+        var duplicateSources = sourceFiles
+            .Where(source => source.Path != "src/Pegasus.Contracts/Vocabulary/OperatorVocabulary.cs")
+            .Where(source => sharedLabels.Any(label =>
+                source.Content.Contains($"\"{label}\"", StringComparison.Ordinal)))
+            .Select(source => source.Path)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        Assert.Empty(duplicateSources);
+
+        var movedEnumMapPattern = new Regex(
+            @"\b(?:UnidentifiedReasonCode|UnidentifiedState|UnidentifiedMediaKind|CaseLifecycleState|CaseType|CaseDueWorkState|MailOperationalDestination|RepairSpecificationSourceRoute|DocumentSemanticRole|DocumentSource|ImageInitiatedCaseState|DocumentCustodyStatus|CaseCustodyState|RequestUploadStatus|IntakeDecision|ApprovedMailboxRouteScope|CaseInspectionMode|VehicleMileageEvidenceClass|VehicleMileageUnit|IntakeSourceChannel|VrmRecognitionOutcomeKind)\.[A-Za-z0-9_]+\s*=>\s*""[A-Z]",
+            RegexOptions.CultureInvariant);
+        var duplicateEnumMaps = sourceFiles
+            .Where(source => source.Path.StartsWith("src/Pegasus.Web/", StringComparison.Ordinal))
+            .Where(source => source.Path != "src/Pegasus.Web/Presentation/OperatorLabels.cs")
+            .Where(source => movedEnumMapPattern.IsMatch(source.Content))
+            .Select(source => source.Path)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        Assert.Empty(duplicateEnumMaps);
+
+        var movedMapNames = new[]
+        {
+            "AttachmentSearchability", "UnidentifiedReason", "UnidentifiedState",
+            "UnidentifiedMediaKind", "EmailHandle", "AssociatedWithCase", "CaseStage",
+            "CaseTypeName", "AttemptedCaseTypeName", "ChaseState", "ImageChaseState",
+            "MailOperationalDestinationLabel", "RepairSpecificationRoute", "EstimateLineType",
+            "DocumentRole", "DocumentOrigin", "ImageIntakeLifecycleState", "CustodyState",
+            "CustodyFolderState", "UploadRequestState", "IntakeFailure", "IntakeDecisionLabel",
+            "IntakeCannotBecomeCaseReason", "HistoryEvent", "RouteScope", "ChaseReason",
+            "InspectionMode", "MileageEvidence", "MileageUnit", "SourceChannel",
+            "VrmRecognitionOutcomeLabel", "MailClassification", "Humanise"
+        };
+        var duplicateNamedMaps = sourceFiles
+            .Where(source => source.Path.StartsWith("src/Pegasus.Web/", StringComparison.Ordinal))
+            .Where(source => source.Path != "src/Pegasus.Web/Presentation/OperatorLabels.cs")
+            .Where(source => movedMapNames.Any(name => Regex.IsMatch(
+                source.Content,
+                $@"\b(?:public|private|protected|internal)\s+(?:static\s+)?[^;{{\r\n]+\b{name}\s*\([^)]*\)[\s\S]{{0,120}}\bswitch\b",
+                RegexOptions.CultureInvariant)))
+            .Select(source => source.Path)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        Assert.Empty(duplicateNamedMaps);
+
+        var details = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "Pegasus.Web",
+            "Pages",
+            "Intake",
+            "Details.cshtml.cs"));
+        var message = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "Pegasus.Web",
+            "Pages",
+            "Mail",
+            "Message.cshtml.cs"));
+
+        Assert.DoesNotContain("=> decision switch", details, StringComparison.Ordinal);
+        Assert.DoesNotContain("=> suggestion.Outcome switch", details, StringComparison.Ordinal);
+        Assert.DoesNotContain("=> decision switch", message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Document text required", details, StringComparison.Ordinal);
+        Assert.DoesNotContain("Technical failure", details, StringComparison.Ordinal);
+        Assert.DoesNotContain("Document text required", message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Technical failure", message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void CoreDirectDependencyGuardDetectsForbiddenAndAllowedFixtures()
     {
         var document = XDocument.Parse(
@@ -170,16 +294,20 @@ public sealed class DependencyDirectionTests
             .ToArray();
 
         Assert.Equal(
-            // FND-029, FND-030, FND-031, and FND-038 extend this exact list as
-            // their projects are added to Pegasus.slnx.
+            // FND-029, FND-030, FND-031, FND-038, and TEST-004 extend this
+            // exact list as their projects are added to Pegasus.slnx.
             [
                 "src/Pegasus.Contracts/Pegasus.Contracts.csproj",
                 "src/Pegasus.Core/Pegasus.Core.csproj",
+                "src/Pegasus.Desktop.Infrastructure/Pegasus.Desktop.Infrastructure.csproj",
+                "src/Pegasus.Desktop/Pegasus.Desktop.csproj",
                 "src/Pegasus.Infrastructure/Pegasus.Infrastructure.csproj",
                 "src/Pegasus.Web/Pegasus.Web.csproj",
                 "src/Pegasus.Worker/Pegasus.Worker.csproj",
+                "tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj",
                 "tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj",
                 "tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj",
+                "tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj",
                 "tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj"
             ],
             projectPaths);

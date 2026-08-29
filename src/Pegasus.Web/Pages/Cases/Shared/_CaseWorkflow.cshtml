@@ -9,6 +9,9 @@
 @{
     var details = Model.Case!;
     var workflow = details.Workflow;
+    var latestIssuedReportVersion = workflow.IssuedReportVersions
+        .OrderByDescending(item => item.Version)
+        .FirstOrDefault();
     // A typed value as text, keeping its provenance so the row can show where
     // it came from as an icon rather than as a source label, a policy key and
     // a version integer.
@@ -281,9 +284,41 @@ else if (Model.ProposedValues.Count > 0)
 {
 <section class="panel form-panel" aria-labelledby="case-report-approval-title">
     <h2 id="case-report-approval-title" class="section-label">Report approval</h2>
+    @if (workflow.IssuedReportVersions.Count > 0)
+    {
+        <table aria-label="Issued report versions">
+            <thead>
+                <tr><th>Version</th><th>Association</th><th>Approved artifact</th><th>Final Sent evidence</th></tr>
+            </thead>
+            <tbody>
+            @foreach (var issuedVersion in workflow.IssuedReportVersions)
+            {
+                <tr>
+                    <td>v@issuedVersion.Version</td>
+                    <td>@(issuedVersion.Approval?.AssociationStatus ?? "Unresolved")</td>
+                    <td>@(issuedVersion.ArtifactIdentity ?? "Unresolved")</td>
+                    <td>
+                        @if (issuedVersion.SentEvidence is { } versionEvidence)
+                        {
+                            @($"{versionEvidence.ImmutableItemIdentity} — {OperatorLabels.OfficeTime(versionEvidence.SentAtUtc)}")
+                        }
+                        else
+                        {
+                            @("Unsent")
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
     @if (workflow.ReportApproval is { } approval)
     {
-        <p>Report <strong>@approval.ArtifactIdentity</strong> was approved at @OperatorLabels.OfficeTime(approval.ApprovedAtUtc); this does not confirm the report was sent.</p>
+        <p>Report <strong>@approval.ArtifactIdentity</strong> was approved at @OperatorLabels.OfficeTime(approval.ApprovedAtUtc); association <strong>@(approval.AssociationStatus ?? "Unresolved")</strong>. This does not confirm the report was sent.</p>
+        @if (string.Equals(approval.AssociationStatus, "Unresolved", StringComparison.Ordinal))
+        {
+            <p>Exact report-version proof is unavailable; this approval does not establish which issued version was sent.</p>
+        }
     }
     else if (mayEdit && workflow.State == CaseLifecycleState.ReportPreparation)
     {
@@ -293,6 +328,7 @@ else if (Model.ProposedValues.Count > 0)
             <input type="hidden" name="operationKey" value="@CaseMutationPageModel.NewOperationKey()" />
             <input type="hidden" name="editLeaseToken" value="@leaseToken" />
             <input type="hidden" name="approvalId" value="@Model.ReportApprovalId" />
+            <input type="hidden" name="reportVersionId" value="@latestIssuedReportVersion?.ReportVersionId" />
             <label>Report identity<input name="artifactIdentity" required maxlength="200" /></label>
             <label>Report SHA-256<input name="artifactSha256" required minlength="64" maxlength="64" pattern="[0-9A-Fa-f]{64}" /></label>
             <label class="field-wide">Reason<input name="reason" required maxlength="500" /></label>
@@ -318,6 +354,7 @@ else if (Model.ProposedValues.Count > 0)
                 {
                     <form method="post" asp-page="/Cases/Tasks" asp-route-id="@workflow.CaseId" asp-page-handler="LinkReportEvidence">
                         <input type="hidden" name="id" value="@workflow.CaseId" /><input type="hidden" name="evidenceId" value="@evidence.EvidenceId" /><input type="hidden" name="expectedVersion" value="@workflow.Version" /><input type="hidden" name="operationKey" value="@CaseMutationPageModel.NewOperationKey()" /><input type="hidden" name="editLeaseToken" value="@leaseToken" />
+                        <input type="hidden" name="reportVersionId" value="@evidence.ReportVersionId" />
                         <label>Reason<input name="reason" required maxlength="500" /></label><button type="submit" class="secondary-action">Link exact evidence</button>
                     </form>
                 }
@@ -329,6 +366,7 @@ else if (Model.ProposedValues.Count > 0)
     {
         <form method="post" asp-page="/Cases/Tasks" asp-route-id="@workflow.CaseId" asp-page-handler="UnlinkReportEvidence">
             <input type="hidden" name="id" value="@workflow.CaseId" /><input type="hidden" name="evidenceId" value="@linkedEvidence.EvidenceId" /><input type="hidden" name="expectedVersion" value="@workflow.Version" /><input type="hidden" name="operationKey" value="@CaseMutationPageModel.NewOperationKey()" /><input type="hidden" name="editLeaseToken" value="@leaseToken" />
+            <input type="hidden" name="reportVersionId" value="@linkedEvidence.ReportVersionId" />
             <label>Reason<input name="reason" required maxlength="500" /></label><button type="submit" class="secondary-action">Unlink current evidence</button>
         </form>
     }

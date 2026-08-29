@@ -27,6 +27,7 @@ public sealed class ClosureModel(
         string reason,
         string editLeaseToken,
         Guid approvalId,
+        Guid? reportVersionId,
         string artifactIdentity,
         string artifactSha256,
         CancellationToken cancellationToken) =>
@@ -45,7 +46,8 @@ public sealed class ClosureModel(
                     new(
                         approvalId,
                         artifactIdentity,
-                        artifactSha256)),
+                        artifactSha256,
+                        reportVersionId)),
                 cancellationToken),
             "The immutable report artifact was approved; this does not claim it was sent.");
 
