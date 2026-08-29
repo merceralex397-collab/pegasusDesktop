@@ -4,12 +4,13 @@ type: ticket
 title: >-
   DSK-07-09 · DVLA/DVSA gateway endpoints: request lookup, accept suggestion,
   status, cache lifetime and provenance
-status: implementing
+status: review
 area: desktop-features
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:31:42.711Z'
+  review: '2026-08-29T21:34:53.593Z'
 taken_at: '2026-08-29T20:09:18.169Z'
 branch: task/dsk-07-09-vehicle-endpoints
 worktree: 'C:\Users\PC\Documents\GitHub\pegasus-worktrees\dsk-07-09-vehicle-endpoints'
@@ -31,7 +32,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:24:13.912Z'
-updated: '2026-08-29T20:09:18.169Z'
+updated: '2026-08-29T21:34:53.593Z'
 ---
 
 ## What
