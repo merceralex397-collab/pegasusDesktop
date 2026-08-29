@@ -13,7 +13,11 @@ public sealed class StylesAreTheOnlySourceOfColourAndTypeTests
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex _numericCornerRadiusAttribute = new(
-        @"\bCornerRadius\s*=\s*[""']\s*-?\d+(?:\.\d+)?\s*[""']",
+        @"\bCornerRadius\s*=\s*[""']\s*-?\d+(?:\.\d+)?(?:\s*,\s*-?\d+(?:\.\d+)?){0,3}\s*[""']",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex _colourAttribute = new(
+        @"\b(?:Color|Background|Foreground|BorderBrush|Fill|Stroke)\s*=\s*[""']\s*([^""']+?)\s*[""']",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     [Fact]
@@ -32,10 +36,24 @@ public sealed class StylesAreTheOnlySourceOfColourAndTypeTests
         Assert.Empty(violations);
     }
 
+    [Theory]
+    [InlineData("<TextBlock Foreground=\"Blue\" />", "named colour literal Blue")]
+    [InlineData("<Border CornerRadius=\"1,1,1,1\" />", "numeric CornerRadius attribute")]
+    public void GuardRejectsAdditionalAuthoredLiterals(string xaml, string expectedViolation)
+    {
+        var violations = FindViolations("probe.xaml", xaml).ToArray();
+
+        Assert.Contains(violations, violation => violation.Contains(expectedViolation, StringComparison.Ordinal));
+    }
+
     private static IEnumerable<string> FindViolations(string file)
     {
         var relativePath = Path.GetRelativePath(FindRepositoryRoot(), file).Replace('\\', '/');
-        var content = File.ReadAllText(file);
+        return FindViolations(relativePath, File.ReadAllText(file));
+    }
+
+    private static IEnumerable<string> FindViolations(string relativePath, string content)
+    {
 
         foreach (Match match in _hexColourLiteral.Matches(content))
         {
@@ -50,6 +68,15 @@ public sealed class StylesAreTheOnlySourceOfColourAndTypeTests
         if (_numericCornerRadiusAttribute.IsMatch(content))
         {
             yield return $"{relativePath}: numeric CornerRadius attribute";
+        }
+
+        foreach (Match match in _colourAttribute.Matches(content))
+        {
+            var value = match.Groups[1].Value.Trim();
+            if (!value.StartsWith('{') && !value.StartsWith("x:", StringComparison.OrdinalIgnoreCase))
+            {
+                yield return $"{relativePath}: named colour literal {value}";
+            }
         }
     }
 
