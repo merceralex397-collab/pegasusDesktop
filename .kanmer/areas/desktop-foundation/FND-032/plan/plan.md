@@ -307,3 +307,9 @@ The `proof` document is produced from these five outputs.
 
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this branch's own
 diff before the PR, recorded here under a dated heading._
+
+## Lifecycle disposition — 2026-08-29
+
+The WinUI 3 API was verified against the Microsoft Learn Windows App SDK lifecycle documentation and the compiled Microsoft.UI.Xaml.Application reference: Application.Exit() is an imperative method, not an exit event, so Application.Current.Exit += ... is not a supported subscription shape. FND-032's documented boundary is implemented in App.ExitApplication(), which calls DisposeServices() before Application.Current.Exit(). The host is also disposed through AppDomain.CurrentDomain.ProcessExit as the process-level safety boundary, and the main Window.Closed handler remains necessary because WinUI 3 terminates when the last window closes and Microsoft documents that event as the managed-resource cleanup hook. Disposal is idempotent across those paths. No Application.Exit event exists to wire directly.
+
+The FND-038-owned test classes remain deferred: this ticket adds no files under tests/Pegasus.Desktop.ViewModelTests/** and does not duplicate its scaffold. Composition, validation, logging, redaction, and rotation test evidence belongs to FND-038.
