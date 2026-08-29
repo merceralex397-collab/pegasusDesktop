@@ -57,3 +57,13 @@ The original scaffold boxes remain superseded and unticked because TEST-004 owns
 - [x] Ran and recorded the simplification pass.
 - [ ] FND-032 host/options/log/fallback tests: outstanding until the required APIs are present on `origin/dev`; the ticket is intentionally partial and not Done.
 - [ ] Independent named `pegasus-desktop-reviewer` approval and PR: pending final review.
+
+## Delivery checkpoint — 2026-08-29
+
+- [x] Committed the expected test-only gateway-validation adaptation as `55e42c4c81443205be18093700a62f98e38e6286`.
+- [x] Pushed `task/desktop-viewmodel-tests` to `origin/task/desktop-viewmodel-tests`.
+- [x] Confirmed the pushed PR diff is exactly three files under `tests/Pegasus.Desktop.ViewModelTests/**`.
+- [x] Reconfirmed locked restore, Release build, 18/18 focused tests, 121/121 architecture tests, and `git diff --check`.
+- [ ] FND-032 host/options/log/fallback tests remain outstanding until their production APIs merge to `origin/dev`.
+- [ ] Named `pegasus-desktop-reviewer` approval is blocked by the exact Windows subprocess error `os error 206` before inspection; no PR was opened and no review approval is claimed.
+- [ ] Done/proof remains intentionally unavailable; FND-038 is partial and stays in implementing.

@@ -72,3 +72,20 @@ Review/simplification:
 - The pending test adaptation was committed as `55e42c4c` and only changes the assertion boundary to the merged gateway-validation API.
 - Simplification pass completed: reused TEST-004 support, kept one test/support file, and added no production code, CI change, duplicate fake/clock/host, UI thread, mock framework, or external service.
 - Independent review is required before PR. The ticket must remain partial and must not move to Done because FND-032 host coverage is unavailable.
+
+## Delivery and review outcome — 2026-08-29
+
+Final pushed head: `55e42c4c81443205be18093700a62f98e38e6286` on `task/desktop-viewmodel-tests`; remote branch `origin/task/desktop-viewmodel-tests` was created by the exact push command `git push --set-upstream origin task/desktop-viewmodel-tests`. The branch includes FND-038 commits `984b9f72`, `3ddfbf05`, `ad520f9d`, and `55e42c4c), plus merge `a0ab9bed` of current `origin/dev` `ac8f4432`.
+
+The extension is necessarily partial. FND-031/current-infrastructure coverage is complete; FND-032 host/options/log/fallback coverage was not added because `origin/dev` has no matching `PegasusHost`, `DiagnosticsLoggerProvider`, `Host.CreateApplicationBuilder`, or `ValidateOnStart` APIs in the desktop paths. The ticket is not Done.
+
+Final evidence in the pushed worktree:
+- `dotnet restore ./Pegasus.slnx --locked-mode`: exit 0.
+- `dotnet build --configuration Release --no-restore`: exit 0; 0 warnings, 0 errors; 36.43 seconds.
+- `dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-build --filter "Category!=Corpus" --logger trx --results-directory ./artifacts/test-results/FND-038-handoff-viewmodel`: exit 0; 18 passed, 0 failed, 0 skipped; TRX `artifacts/test-results/FND-038-handoff-viewmodel/PC_DESKTOP-S1M5C7P_2026-08-29_19_39_27_net10.0.trx`.
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build --filter "Category!=Corpus" --logger trx --results-directory ./artifacts/test-results/FND-038-handoff-architecture`: exit 0; 121 passed, 0 failed, 0 skipped; TRX `artifacts/test-results/FND-038-handoff-architecture/PC_DESKTOP-S1M5C7P_2026-08-29_19_39_30_net10.0.trx`.
+- `git diff --check`: passed; pushed PR diff is exactly three test-project files.
+- RID lock diagnosis: prescribed project restore exited 0 but only removed `net10.0/linux-x64` from unrelated `src/Pegasus.Contracts/packages.lock.json` and `src/Pegasus.Core/packages.lock.json` and normalized newlines. Those changes were restored and not committed; no desktop test lock change existed.
+- CI/corpus/production/AGENTS.md were not changed; SQL shard verification is not applicable.
+
+Independent review was not completed. The named reviewer invocation failed before inspection with exact Windows error `orchestrator_helper_launch_failed ... error=The filename or extension is too long. (os error 206)`. Therefore no PR was opened and no approval is claimed.

@@ -392,3 +392,16 @@ FND-032 dependency check:
 - Disposition: no unapplied behaviour-preserving simplification finding remains. The CI execution gap and missing FND-032 host APIs are explicit scope/dependency items, not simplification findings.
 
 The extension is ready for independent review as a partial FND-038 handoff. It must not be marked Done while FND-032 host coverage is outstanding.
+
+## Delivery and review checkpoint — 2026-08-29
+
+The exact FND-038 head `55e42c4c81443205be18093700a62f98e38e6286` was pushed successfully with:
+
+`git push --set-upstream origin task/desktop-viewmodel-tests`
+
+Result: branch `origin/task/desktop-viewmodel-tests` created and tracking established. The PR diff against `origin/dev` remains exactly three files under `tests/Pegasus.Desktop.ViewModelTests/**`. No PR was opened because the required named independent reviewer could not complete.
+
+Named reviewer blocker:
+`codex exec -C "C:\Users\PC\Documents\GitHub\pegasus-worktrees\desktop-viewmodel-tests" -s read-only --ephemeral "Act as the independent pegasus-desktop-reviewer ..."` failed before its read-only inspection command launched. Exact error: `orchestrator_helper_launch_failed ... setup refresh failed to launch helper ... error=The filename or extension is too long. (os error 206)`. This is an environment/tooling blocker, not a review approval. The ticket remains in `implementing`, partial, and not Done.
+
+The partial extension itself is validated: `dotnet restore ./Pegasus.slnx --locked-mode` exit 0; Release build exit 0 with 0 warnings/errors; focused ViewModel tests 18/18 passed; architecture tests 121/121 passed; `git diff --check` passed. FND-032 remains outstanding because the origin/dev grep for `PegasusHost`, `DiagnosticsLoggerProvider`, `Host.CreateApplicationBuilder`, and `ValidateOnStart` returned no matches in the desktop production paths.

@@ -25,3 +25,11 @@ The prescribed `dotnet restore ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.De
 `dotnet build --configuration Release --no-restore` exited 0 with 0 warnings/errors in 36.43 seconds. Final-head focused ViewModel test command exited 0: 18 passed, 0 failed, 0 skipped; TRX `artifacts/test-results/FND-038-handoff-viewmodel/PC_DESKTOP-S1M5C7P_2026-08-29_19_39_27_net10.0.trx`. Final-head architecture command exited 0: 121 passed, 0 failed, 0 skipped; TRX `artifacts/test-results/FND-038-handoff-architecture/PC_DESKTOP-S1M5C7P_2026-08-29_19_39_30_net10.0.trx`. `git diff --check` passed and the PR diff is exactly three test-project files.
 
 `git grep -n -E "PegasusHost|DiagnosticsLoggerProvider|Host\\.CreateApplicationBuilder|ValidateOnStart" origin/dev -- src/Pegasus.Desktop src/Pegasus.Desktop.Infrastructure` returned no matches. FND-032 host/options/log/fallback tests remain outstanding; ticket is partial and not Done. Simplification pass found no unapplied behaviour-preserving issue. Named independent reviewer and PR are pending.
+
+## Push and review checkpoint — 2026-08-29
+
+Pushed `55e42c4c81443205be18093700a62f98e38e6286` with `git push --set-upstream origin task/desktop-viewmodel-tests`; remote branch created successfully. Worktree was clean before push; PR diff against `origin/dev` is exactly three test-project files.
+
+Final evidence: locked solution restore exit 0; Release build exit 0 with 0 warnings/errors; focused ViewModel 18/18 passed with TRX `artifacts/test-results/FND-038-handoff-viewmodel/PC_DESKTOP-S1M5C7P_2026-08-29_19_39_27_net10.0.trx`; architecture 121/121 passed with TRX `artifacts/test-results/FND-038-handoff-architecture/PC_DESKTOP-S1M5C7P_2026-08-29_19_39_30_net10.0.trx`; `git diff --check` passed.
+
+The named `pegasus-desktop-reviewer` could not complete. Its read-only invocation failed before inspection with `orchestrator_helper_launch_failed ... setup refresh failed to launch helper ... error=The filename or extension is too long. (os error 206)`. No approval is claimed and no PR was opened. FND-032 remains outstanding because its host APIs are absent on `origin/dev`; ticket remains partial, implementing, and not Done.
