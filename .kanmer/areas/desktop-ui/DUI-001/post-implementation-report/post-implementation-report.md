@@ -40,3 +40,9 @@ Two code findings remain and are being remediated: the HighContrast muted-text b
 ## Code remediation — 2026-08-29
 
 Commit `79f25d7c` remediates both code blockers from the independent review: HighContrast muted text now uses `SystemColorWindowTextColor`, and the authored-XAML guard covers colour-bearing Setter and property-element values with negative probes. Local ViewModel tests passed 12/12, the Release solution build passed with 0 warnings/0 errors, ArchitectureTests passed 121/121, and `git diff --check` passed. The branch is pushed; exact-head CI and a fresh independent review are pending. Product/authority decisions remain open and block merge/closeout.
+
+## Exact-head review and CI
+
+Archimedes independently reviewed exact commit 79f25d7ce4d490520747657db1895ce8df75aec0 and found no remaining code blockers. GitHub Actions run 33260338165 is tied to that exact SHA and completed successfully across documentation, local-development-scripts, changes, reference-data, unit, SQL shards 1-3, browser, and aggregate SQL coverage; infrastructure was skipped as designed.
+
+DUI-001 remains blocked by the three open product questions recorded in open-questions.md: Dark-palette approval, the dated 2px-radius supersession, and the Light/Dark contrast-threshold conflict. The gallery screenshots/manual visual pass are explicitly deferred to DSK-06-02 and are not merge blockers.

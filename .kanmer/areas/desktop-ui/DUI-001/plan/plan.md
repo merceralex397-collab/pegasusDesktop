@@ -88,3 +88,10 @@ The Dark palette remains the documented starting assumption and the authority's 
 - `StylesAreTheOnlySourceOfColourAndTypeTests` now scans colour-bearing `Setter` attributes and direct colour property elements; negative probes cover both named literals. ThemeResource-only handling remains centralized in `FormatColourViolation`.
 - Local validation after the fix: ViewModel tests 12/12, Release solution build 0 warnings/0 errors, ArchitectureTests 121/121, and `git diff --check` passed.
 - New exact-head CI and fresh independent review are pending. The three design-owner questions remain unchecked and block merge/closeout.
+
+## 2026-08-29 exact-head review and CI checkpoint
+
+- Independent desktop review by Archimedes inspected exact commit 79f25d7ce4d490520747657db1895ce8df75aec0 and found no remaining code blockers. The prior HighContrast and guard findings were confirmed fixed: Tokens.Colors.xaml uses dynamic SystemColorWindowTextColor for muted text, and StylesAreTheOnlySourceOfColourAndTypeTests.cs covers Setter/property-element colours with negative probes.
+- The review confirmed scope, XAML/resource accessibility, simplification, and packaging/cloud boundaries. Dark and HighContrast gallery screenshots remain an explicit non-blocking deferral to DSK-06-02 because the current scaffold has no runtime theme switch or delivered gallery.
+- GitHub Actions run 33260338165 is tied to exact SHA 79f25d7ce4d490520747657db1895ce8df75aec0. Documentation, local-development-scripts, changes, reference-data, unit, SQL shards 1-3, browser, and the aggregate SQL coverage check succeeded; infrastructure was skipped as designed.
+- Merge remains blocked by the three open product questions: dated Dark-palette approval, dated confirmation that 2px supersedes historical 5px/6px radii, and resolution of the Light/Dark contrast-threshold conflict. No product choice is being guessed.
