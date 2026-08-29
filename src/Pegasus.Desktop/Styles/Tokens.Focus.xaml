@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StaticResource x:Key="FocusVisualPrimaryBrush" ResourceKey="PegasusFocusBrush" />
+    <StaticResource x:Key="FocusVisualSecondaryBrush" ResourceKey="PegasusPanelBrush" />
+    <x:Double x:Key="FocusVisualPrimaryThickness">3</x:Double>
+</ResourceDictionary>

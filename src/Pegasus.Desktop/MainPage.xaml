@@ -17,7 +17,7 @@
                 AutomationProperties.AutomationId="IncrementButton"
                 AutomationProperties.Name="Increment counter"
                 Command="{x:Bind ViewModel.IncrementCommand}">
-                <FontIcon Glyph="&#xE710;" FontSize="14" />
+                <FontIcon Glyph="&#xE710;" />
             </Button>
             <TextBlock
                 Text="{x:Bind ViewModel.Counter, Mode=OneWay}"
@@ -29,7 +29,7 @@
                 AutomationProperties.AutomationId="DecrementButton"
                 AutomationProperties.Name="Decrement counter"
                 Command="{x:Bind ViewModel.DecrementCommand}">
-                <FontIcon Glyph="&#xE738;" FontSize="14" />
+                <FontIcon Glyph="&#xE738;" />
             </Button>
         </StackPanel>
     </StackPanel>
