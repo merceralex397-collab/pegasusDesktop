@@ -21,3 +21,9 @@ The implementation satisfies the project-boundary, request-header, GET-only retr
 An independent desktop reviewer is reviewing the exact commit to determine whether this implementation can merge as the prerequisite for FND-038 without representing FND-031 as complete.
 
 No cloud, deployment, credential, mailbox, Box, upstream, or other external write was performed.
+
+## Exact-head and merge update — 2026-08-29
+
+The implementation branch's exact reviewed head was `26aae2fa5a072e3518d93db0afdd8c241dd3a4bd` (the earlier `c39ea6f` remains the initial implementation commit). Exact-head CI run `33261673009` passed all required repository lanes. PR #42 merged that exact head into `dev` as `89fcfa20cb570845dbb1ad9b2f3c45fdd83723e4`.
+
+This remains a prerequisite-only merge. The FND-031-specific credential-store, header/correlation, retry asymmetry, and isolation tests are not yet present; [[FND-038]] owns adding them to the shared test project. Merged-main proof is also not yet available, so this ticket is not eligible for Done.
