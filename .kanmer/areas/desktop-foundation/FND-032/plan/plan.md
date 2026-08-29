@@ -336,3 +336,9 @@ A read-only Azure resource lookup of Container App pegasus-prod-web-252ow37gij i
 Merged `origin/dev` into the owned `task/desktop-host` branch after PR #43 landed. The resulting branch head is `925e98724554c1ba7528492e6a3136f44c8b0416`, containing merge commit `52a1741cfa6544dfdad2632b5192a162c2430a2f` and the shared redaction correction. `dotnet restore ./Pegasus.slnx --locked-mode` passed. Targeted Release builds passed with zero warnings and zero errors for both `Pegasus.Desktop.Infrastructure` and `Pegasus.Desktop`. The branch was pushed to `origin/task/desktop-host`.
 
 The ticket remains implementing: exact feed host/share values are still not established by repository authority, and FND-038's required host/log/validation tests and later independent review remain outstanding.
+
+## Independent review — 2026-08-29
+
+Reviewer Boole inspected exact head `925e98724554c1ba7528492e6a3136f44c8b0416` and returned BLOCKED. The required missing-`Gateway:BaseAddress` failure was thrown while registering the client, before host start; the narrow correction is being made in FND-031's owned infrastructure file at follow-up commit `bec8d1bc` (pending independent review and merge). The report wording was also stale and must be corrected.
+
+FND-032 remains incomplete and must not be merged as delivered or marked Done until the corrected registration is present, FND-038's extension tests cover host resolution/start validation/redaction/rotation, the fallback store-root behavior is reconciled with its plan, and exact release feed host/share authority is supplied.

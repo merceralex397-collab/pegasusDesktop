@@ -29,3 +29,7 @@ Read-only Container App inspection returned the current production gateway ingre
 ## Dependency revalidation — 2026-08-29
 
 After PR #43 merged to `dev`, `origin/dev` was merged into `task/desktop-host` as `925e98724554c1ba7528492e6a3136f44c8b0416`. Locked solution restore and targeted Release builds for Infrastructure and Desktop passed with zero warnings/errors. The branch was pushed to `origin/task/desktop-host`. Remaining acceptance blockers are the exact pilot/production feed host/share and FND-038-owned host/log/validation test evidence; no cloud or deployment operation was performed.
+
+## Independent review disposition — 2026-08-29
+
+Boole's exact-head review of `925e98724554c1ba7528492e6a3136f44c8b0416` is BLOCKED. The review found the missing gateway-address failure occurred during registration rather than host start, stale report wording, absent FND-038 behavior evidence, an unresolved unpackaged store-root fallback discrepancy, and unreleased UNC feed placeholders. The registration timing correction is isolated to FND-031's owned follow-up commit `bec8d1bc`, which is pending independent review. No FND-032 delivery or Done claim is made.
