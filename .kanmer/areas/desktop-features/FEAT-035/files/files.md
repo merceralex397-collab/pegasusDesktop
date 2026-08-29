@@ -14,3 +14,12 @@ Read docs/desktop/07-integrations/README.md, docs/desktop/03-gateway-api-and-dat
 ## Out of scope
 
 Azure changes, provider account/credential changes, direct desktop provider clients, a new deployment unit, and a second business-policy implementation.
+
+## Verified Core owners and refusal boundaries (2026-08-29)
+
+- `RequestVehicleLookupCommand` is owned by `RequestVehicleLookup`, which validates case/version/actor/operation/lease, rejects disabled `VehicleLookupAvailability`, and normalizes the registration through the single `VehicleLookupRequest` constructor before calling `IRequestVehicleLookupStore.RequestAsync`.
+- `AcceptVehicleSuggestionCommand` is owned by `AcceptVehicleSuggestion`, which validates the decision, observation id, reason, correction values, and calls `IAcceptVehicleSuggestionStore.AcceptAsync` after Core normalization.
+- Core refusal types observed in `VehicleWorkflow.cs` are `VehicleLookupUnavailableException`, `VehicleOperationConflictException`, `VehicleSuggestionUnavailableException`, `ConfirmedVehicleRegistrationRequiredException`, `ConfirmedVehicleRegistrationConflictException`, and `ConfirmedVehicleFieldConflictException`; route translation must preserve their distinctions.
+- `IVehicleEvidenceQueries.GetAsync` is the read owner for confirmed evidence, observations, and confirmation history; infrastructure already registers `EfVehicleWorkflowStore` for all three gateway-facing ports.
+- `Program.cs` composes `VehicleLookupAvailability.DevelopmentOfflineReplay` for the offline profile and `ProductionLive` for the production profile; no live provider call belongs in this gateway ticket.
+- No vehicle gateway route group exists on `origin/dev`; this ticket must establish the shared group in `Pegasus.Web/Api` without a duplicate Core policy owner.

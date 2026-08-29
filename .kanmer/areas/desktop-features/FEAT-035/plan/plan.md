@@ -26,3 +26,9 @@ Expose request lookup, accept suggestion, status, cache lifetime and provenance 
 FEAT-036 consumes these contracts; direct desktop provider calls are forbidden.
 
 Implementation uses the named gateway/WinUI/test agents, records simplification, and receives independent review.
+
+## Current-head coordination decision (2026-08-29)
+
+origin/dev contains the shared desktop gateway composition and Core vehicle workflow but no vehicle route group. FEAT-035 therefore owns the first /api/v1 vehicle route group in Pegasus.Web/Api; it will invoke the existing Core ports and be structured so the later assessment routes in [[GWY-014]] extend the same group rather than registering a second vehicle group. The desktop workflow remains downstream in [[FEAT-036]].
+
+The current operator boundary prohibits cloud writes/deployment and upstream synchronization. Tests will use the existing DevelopmentOffline profile and replay adapter; a live Key Vault names-only check is not required to implement this ticket and will not be represented as completed evidence unless actually run.
