@@ -26,3 +26,7 @@ The current scaffold has no runtime theme switch and is not yet the delivered sh
 ## Review remediation — 2026-08-29
 
 The independent review findings on the initial head were corrected in 5729b454. The canonical PegasusFocusVisualThickness token is present, focus aliases are theme-dictionary scoped, and the guard now rejects named colour attributes and composite numeric corner radii. Post-fix ViewModel tests passed 9/9, the Release solution build passed with 0 warnings/0 errors, and ArchitectureTests passed 121/121. A fresh packaged launch (PID 115896) was UI-inspected successfully and produced artifacts/ui/06-01-light-after-review.png; the process was stopped after capture. PR #41 now awaits exact-head CI and re-review. Dark/HighContrast screenshot and manual contrast evidence remains unclaimed because the current scaffold has no runtime theme switch or delivered shell/gallery.
+
+## Reviewer remediation checkpoint — 2026-08-29
+
+Reviewer findings on 5729b454 were addressed in 2aa753d3. HighContrast now uses dynamic SystemColor...Color resources, focus thickness is the required Thickness type, and the source guard requires ThemeResource for authored color references. Post-fix ViewModel tests are 10/10, ArchitectureTests are 121/121, and the Release build is 0 warnings/0 errors. The new exact head awaits CI and independent re-review. The contrast-value conflict, missing dated design-owner decisions, and absent Dark/HighContrast gallery evidence remain honestly recorded blockers.

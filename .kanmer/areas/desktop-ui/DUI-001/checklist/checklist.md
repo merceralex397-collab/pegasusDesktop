@@ -28,3 +28,12 @@
 - [x] Rebuild and rerun validation after remediation: ViewModel tests 9/9, ArchitectureTests 121/121, Release build 0 warnings/0 errors.
 - [x] Relaunch and inspect the packaged app after remediation; Light screenshot captured at artifacts/ui/06-01-light-after-review.png.
 - [ ] Obtain exact-head CI and independent re-review for 5729b454; Dark/HighContrast visual evidence remains an explicit limitation of the current scaffold, not a claimed pass.
+
+## Reviewer remediation checkpoint — 2026-08-29
+
+- [x] Map HighContrast resources to dynamic SystemColor...Color values via SolidColorBrush.Color.
+- [x] Define PegasusFocusVisualThickness as Thickness and retain the platform alias.
+- [x] Reject non-ThemeResource color references in the authored-source guard and cover StaticResource with a negative probe.
+- [x] Revalidate: ViewModel tests 10/10, ArchitectureTests 121/121, Release build 0 warnings/0 errors, packaged launch/UI inspection.
+- [ ] Resolve the three open design/contrast questions and obtain a fresh exact-head independent review; PR head is now 2aa753d3.
+- [ ] Capture the later shell/gallery Dark and HighContrast evidence under DSK-06-02; this is explicitly parked and not claimed for DUI-001.
