@@ -4,12 +4,13 @@ type: ticket
 title: >-
   DSK-07-05 · Box broker endpoints: list, metadata, download session, upload
   session, remove, confirm evidence
-status: implementing
+status: review
 area: desktop-features
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:31:41.111Z'
+  review: '2026-08-29T20:05:50.753Z'
 taken_at: '2026-08-29T19:47:20.956Z'
 branch: task/dsk-07-05-box-broker-endpoints
 worktree: 'C:\Users\PC\Documents\GitHub\pegasus-worktrees\dsk-07-05-box-broker-endpoints'
@@ -33,7 +34,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T08:18:48.673Z'
-updated: '2026-08-29T19:47:20.956Z'
+updated: '2026-08-29T20:05:50.753Z'
 ---
 
 ## What

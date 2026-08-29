@@ -46,3 +46,15 @@ Fresh independent review of this exact head is required. PLAT-039 token-age evid
 ## Canonical documentation and final validation update — 2026-08-27
 
 Commit `29e13dd1bc70fe0514b62d81279e0f3256ce7ce4` updates the endpoint map, parity flow record, FRD-05 desktop broker clause, and `docs/capabilities.md` DSK-07-05 row. The current-fork disposition is explicit: list/metadata/content/upload/removal/confirmation are brokered locally; export/evidence-gallery remain unexposed pending PLAT-041; PLAT-039 and live Key Vault evidence remain open. Final committed-head broker-focused tests passed 26/26 with `--no-restore`; the same-code broad integration profile passed 934 with 2 skipped and 0 failed; `git diff --check` passed and the worktree is clean. Independent review of full head `29e13dd1` is complete: FAIL for merge because the supported gateway slice is review-ready but PLAT-039, PLAT-041, live Key Vault evidence, PR, and exact-head CI remain open. This report does not claim done.
+
+## Current-head validation and independent review — 2026-08-29
+
+Current head after merging configured `origin/dev`: `3e53f5e9a70eb24e1a7ee5329984f3f69b75b88b`; `origin/dev` was `e071d3ca43e70fd695c1f9907856d61d5b189685`. The worktree is clean and `git diff --check origin/dev...HEAD` passed.
+
+- Locked restore: passed.
+- Release build: passed with 0 warnings and 0 errors.
+- Box broker focused integration tests: 26 passed, 0 failed, 0 skipped.
+- Broad integration profile excluding corpus and browser: 994 passed, 2 skipped, 0 failed, 996 total.
+- Architecture tests: 121 passed, 0 failed, 0 skipped.
+
+Independent reviewer result at exact head: BLOCKED for merge. The production Box content store still reads the entire provider response before the gateway can range/stream it (`BoxDocumentContentStore.cs:96-98`, `BoxCaseCustody.cs:334-346`), and no current-fork proof demonstrates a document download and case export succeeding more than one hour after gateway revision start. The review also confirms export/gallery withholding is correct, response contracts do not leak Box credentials or identifiers, and the implemented authorization, metadata/history, upload, mutation, and route-contract evidence passes. Live Key Vault names-only evidence remains unavailable under the current no-cloud instruction. This report does not claim Done.
