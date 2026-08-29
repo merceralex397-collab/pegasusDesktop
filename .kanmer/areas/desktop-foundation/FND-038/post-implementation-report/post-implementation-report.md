@@ -46,3 +46,29 @@ Completed 2026-08-29. Reused all TEST-004 support and added only one test file p
 - Skills consulted: `pegasus-desktop`; pinned dotnet-test `scaffold-dotnet-test-project`, `code-testing-agent`, `run-tests`, `test-gap-analysis`, and `assertion-quality` route `98f84851`.
 
 Remaining delivery gate: independent reviewer findings and disposition before any PR.
+
+## Final handoff correction — 2026-08-29
+
+This section supersedes earlier stale counts, commit references, and the earlier failed locked-restore/build claims. FND-038 is an intentionally partial handoff: the owned FND-031/current-infrastructure extension is complete and verified, while FND-032 host/options/log/fallback coverage is outstanding because `origin/dev` contains no `PegasusHost`, `DiagnosticsLoggerProvider`, `Host.CreateApplicationBuilder`, or `ValidateOnStart` matches in the desktop production paths.
+
+Final scope and Git:
+- Worktree: `C:/Users/PC/Documents/GitHub/pegasus-worktrees/desktop-viewmodel-tests`
+- Branch: `task/desktop-viewmodel-tests`
+- `origin/dev`: `ac8f4432`
+- Exact head: `55e42c4c81443205be18093700a62f98e38e6286`
+- FND-038 commits: `984b9f72`, `3ddfbf05`, `ad520f9d`, `55e42c4c`; merge `a0ab9bed` incorporates current `origin/dev`.
+- PR diff against `origin/dev`: exactly three files under `tests/Pegasus.Desktop.ViewModelTests/**`.
+
+Lock diagnosis:
+- `dotnet restore ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj -r win-x64 --force-evaluate`: exit 0, but generated only unrelated changes to `src/Pegasus.Contracts/packages.lock.json` and `src/Pegasus.Core/packages.lock.json` (removed `net10.0/linux-x64`, newline normalization). No desktop test lock changed; the two generated files were restored to HEAD and no lock commit was made.
+- `dotnet restore ./Pegasus.slnx --locked-mode`: exit 0.
+- `dotnet build --configuration Release --no-restore`: exit 0, 0 warnings/errors, 36.43 seconds.
+- Focused ViewModel command with TRX: exit 0, 18/18 passed, 0 skipped; TRX `artifacts/test-results/FND-038-handoff-viewmodel/PC_DESKTOP-S1M5C7P_2026-08-29_19_39_27_net10.0.trx`.
+- Architecture command with TRX: exit 0, 121/121 passed, 0 skipped; TRX `artifacts/test-results/FND-038-handoff-architecture/PC_DESKTOP-S1M5C7P_2026-08-29_19_39_30_net10.0.trx`.
+- `git diff --check`: passed. SQL shard verification is not applicable; no SQL/shard files changed.
+- CI was not edited or run; the suite remains outside the current CI project list. This is explicitly outside FND-038 scope.
+
+Review/simplification:
+- The pending test adaptation was committed as `55e42c4c` and only changes the assertion boundary to the merged gateway-validation API.
+- Simplification pass completed: reused TEST-004 support, kept one test/support file, and added no production code, CI change, duplicate fake/clock/host, UI thread, mock framework, or external service.
+- Independent review is required before PR. The ticket must remain partial and must not move to Done because FND-032 host coverage is unavailable.

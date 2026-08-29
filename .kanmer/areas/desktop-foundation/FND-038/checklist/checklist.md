@@ -40,3 +40,20 @@ The ownership amendment makes TEST-004 the owner of the existing scaffold and FN
 - [x] Confirmed the current target has no FND-032 host/options/log-provider API; documented host-fixture dependency without pulling another task branch or changing production.
 - [x] Ran the Windows RID restore, locked solution restore, Release build, focused ViewModel tests, architecture tests, scope guards, and simplification pass.
 - [ ] Independent `pegasus-desktop-reviewer` review and PR remain pending; no PR has been opened.
+
+## Final amended-scope checklist — 2026-08-29
+
+The original scaffold boxes remain superseded and unticked because TEST-004 owns that delivered project. Current FND-038 ownership is the extension only.
+
+- [x] Reused TEST-004's existing project and shared support without recreating or re-registering it.
+- [x] Added FND-031 credential-store, header, retry, redaction, rotation, retention, and current gateway-options tests.
+- [x] Inspected the pending gateway-validation adaptation; it is test-only and matches the merged `origin/dev` behavior (registration succeeds; named client creation fails without a base address).
+- [x] Ran `dotnet restore ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj -r win-x64 --force-evaluate`; unrelated Core/Contracts lock churn was restored and not committed.
+- [x] Ran `dotnet restore ./Pegasus.slnx --locked-mode`; exit 0.
+- [x] Ran Release build; exit 0, 0 warnings, 0 errors.
+- [x] Ran focused ViewModel tests; 18 passed, 0 failed, 0 skipped.
+- [x] Ran architecture tests; 121 passed, 0 failed, 0 skipped.
+- [x] Ran `git diff --check` and scope/support guards; passed.
+- [x] Ran and recorded the simplification pass.
+- [ ] FND-032 host/options/log/fallback tests: outstanding until the required APIs are present on `origin/dev`; the ticket is intentionally partial and not Done.
+- [ ] Independent named `pegasus-desktop-reviewer` approval and PR: pending final review.

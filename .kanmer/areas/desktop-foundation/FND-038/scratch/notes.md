@@ -15,3 +15,13 @@ Per the explicit duplicate-scaffold guard, stopped before editing. No FND-038 re
 2026-08-29 — Final validation: Windows RID restore exit 0; locked solution restore exit 0; Release no-restore solution build exit 0 with 0 warnings/errors in 27.15s; focused ViewModel run exit 0 with 17 passed/0 failed/0 skipped in 386ms, TRX artifacts/test-results/FND-038-viewmodel/PC_DESKTOP-S1M5C7P_2026-08-29_19_06_38_net10.0.trx; architecture run exit 0 with 121 passed/0 failed/0 skipped in 1m02s, TRX artifacts/test-results/FND-038-architecture/PC_DESKTOP-S1M5C7P_2026-08-29_19_07_50_net10.0.trx. An earlier rotation assertion failure was corrected and rerun.
 
 2026-08-29 — Simplification pass complete: removed one unused import; no duplicate support, unnecessary abstraction, forbidden dependency, production/CI/corpus change, or unapplied finding. Independent pegasus-desktop-reviewer is required before PR; no PR or merge yet.
+
+## Handoff refresh — 2026-08-29
+
+Final head before review: `55e42c4c81443205be18093700a62f98e38e6286` on `task/desktop-viewmodel-tests` in `C:/Users/PC/Documents/GitHub/pegasus-worktrees/desktop-viewmodel-tests`, with `origin/dev` at `ac8f4432`.
+
+The prescribed `dotnet restore ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj -r win-x64 --force-evaluate` exited 0 and generated only unrelated changes to `src/Pegasus.Contracts/packages.lock.json` and `src/Pegasus.Core/packages.lock.json` (removed `net10.0/linux-x64` and normalized final newline). No desktop test lock changed; restored those two files to HEAD and made no lock commit. `dotnet restore ./Pegasus.slnx --locked-mode` exited 0.
+
+`dotnet build --configuration Release --no-restore` exited 0 with 0 warnings/errors in 36.43 seconds. Final-head focused ViewModel test command exited 0: 18 passed, 0 failed, 0 skipped; TRX `artifacts/test-results/FND-038-handoff-viewmodel/PC_DESKTOP-S1M5C7P_2026-08-29_19_39_27_net10.0.trx`. Final-head architecture command exited 0: 121 passed, 0 failed, 0 skipped; TRX `artifacts/test-results/FND-038-handoff-architecture/PC_DESKTOP-S1M5C7P_2026-08-29_19_39_30_net10.0.trx`. `git diff --check` passed and the PR diff is exactly three test-project files.
+
+`git grep -n -E "PegasusHost|DiagnosticsLoggerProvider|Host\\.CreateApplicationBuilder|ValidateOnStart" origin/dev -- src/Pegasus.Desktop src/Pegasus.Desktop.Infrastructure` returned no matches. FND-032 host/options/log/fallback tests remain outstanding; ticket is partial and not Done. Simplification pass found no unapplied behaviour-preserving issue. Named independent reviewer and PR are pending.

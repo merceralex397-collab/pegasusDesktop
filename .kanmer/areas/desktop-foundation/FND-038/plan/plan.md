@@ -349,3 +349,46 @@ All commands ran in `C:/Users/PC/Documents/GitHub/pegasus-worktrees/desktop-view
 - Altitude: no production, CI, solution, architecture-list, corpus, or unrelated-ticket changes. No unapplied behaviour-preserving simplification finding remains.
 
 The implementation commit is `984b9f7278f1ac151ba8fa0f923d4c3bce6fa86e2`. Independent review is still required before any PR; no PR has been opened.
+
+## Handoff refresh — 2026-08-29
+
+FND-038 is a partial extension by design: it owns the FND-031/current-infrastructure coverage in the existing TEST-004 project. FND-032 host/options/log/fallback tests remain outstanding because the required production APIs are not present on `origin/dev`. The ticket is not Done.
+
+Current Git state:
+- Worktree: `C:/Users/PC/Documents/GitHub/pegasus-worktrees/desktop-viewmodel-tests`
+- Branch: `task/desktop-viewmodel-tests`
+- `origin/dev`: `ac8f4432`
+- FND-038 head before review: `55e42c4c81443205be18093700a62f98e38e6286`
+- Local FND-038 commits: `984b9f72`, `3ddfbf05`, `ad520f9d`, `55e42c4c`; `a0ab9bed` is the allowed merge of current `origin/dev`.
+- `git diff --name-status origin/dev...HEAD`: exactly these three files:
+  `tests/Pegasus.Desktop.ViewModelTests/Fnd031InfrastructureTests.cs`
+  `tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj`
+  `tests/Pegasus.Desktop.ViewModelTests/Support/InfrastructureTestSupport.cs`
+
+## Lock diagnosis and final verification — 2026-08-29
+
+All commands below ran in the FND-038 worktree.
+
+| Command | Exact result |
+| --- | --- |
+| `dotnet restore ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj -r win-x64 --force-evaluate` | Exit 0. The generated diff changed only `src/Pegasus.Contracts/packages.lock.json` and `src/Pegasus.Core/packages.lock.json`: removed `net10.0/linux-x64` and normalized the final newline. No `tests/Pegasus.Desktop.ViewModelTests/packages.lock.json` change occurred. These are unrelated baseline Core/Contracts lock files and outside this test-only ticket, so they were restored to HEAD and not committed. |
+| `dotnet restore ./Pegasus.slnx --locked-mode` | Exit 0 after restoring the unrelated generated files. |
+| `dotnet build --configuration Release --no-restore` | Exit 0; 0 warnings, 0 errors; 36.43 seconds on the current content. |
+| `dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-build --filter "Category!=Corpus" --logger trx --results-directory ./artifacts/test-results/FND-038-handoff-viewmodel` | Exit 0 at the final test head; Passed 18, Failed 0, Skipped 0; 629 ms. TRX: `artifacts/test-results/FND-038-handoff-viewmodel/PC_DESKTOP-S1M5C7P_2026-08-29_19_39_27_net10.0.trx`. |
+| `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-build --filter "Category!=Corpus" --logger trx --results-directory ./artifacts/test-results/FND-038-handoff-architecture` | Exit 0 at the final test head; Passed 121, Failed 0, Skipped 0; 46 seconds. TRX: `artifacts/test-results/FND-038-handoff-architecture/PC_DESKTOP-S1M5C7P_2026-08-29_19_39_30_net10.0.trx`. |
+| `git diff --check` | Passed. |
+| Scope/support scans | Passed: no production/CI/corpus/AGENTS.md changes; no forbidden mock/time-provider/server/Azure/Box/Graph dependencies; only TEST-004's existing shared `FixedTimeProvider` is present. |
+| SQL shard partition verification | Not applicable: this desktop test extension changes no SQL/shard files or runtime. |
+
+FND-032 dependency check:
+`git grep -n -E "PegasusHost|DiagnosticsLoggerProvider|Host\\.CreateApplicationBuilder|ValidateOnStart" origin/dev -- src/Pegasus.Desktop src/Pegasus.Desktop.Infrastructure` returned no matches. Therefore host/options/log/fallback tests stay clearly outstanding until those production APIs merge; no other task branch was pulled and no production file was changed.
+
+## Simplification pass — 2026-08-29
+
+- Reuse: retained TEST-004's project, shared clock, existing fakes, no-UI guard, solution registration, and architecture boundary.
+- Simplification: one FND-031 test file and one support file; only three small internal helpers; no duplicate fake, clock, host fixture, mock framework, or abstraction.
+- Efficiency: in-memory HTTP responses and temporary credential directories; no UI thread, server, database, Azure call, or external service.
+- Altitude: the diff remains exactly three files under `tests/Pegasus.Desktop.ViewModelTests`; no CI change was made because that is outside this ticket.
+- Disposition: no unapplied behaviour-preserving simplification finding remains. The CI execution gap and missing FND-032 host APIs are explicit scope/dependency items, not simplification findings.
+
+The extension is ready for independent review as a partial FND-038 handoff. It must not be marked Done while FND-032 host coverage is outstanding.
