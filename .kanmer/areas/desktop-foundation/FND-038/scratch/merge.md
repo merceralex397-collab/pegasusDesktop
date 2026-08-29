@@ -1,0 +1,1 @@
+2026-08-29: PR #47 merged to dev after CI run 33269301840 completed successfully at reviewed head 55e42c4c81443205be18093700a62f98e38e6286. origin/dev is 17f508dead86b5c739965905a274876a1aa8553b. FND-038 remains partial; implement its deferred FND-032 host/options/log/fallback tests next.

@@ -49,3 +49,15 @@ PR #45 merged the gateway registration timing correction to `dev`; the owned hos
 ## Prerequisite PR — 2026-08-29
 
 PR #46 is open to `dev` at exact head `f62407a30955d6ee2e1e1ee192c6e76d867a998c`. It is explicitly prerequisite-only for FND-038 and not a delivery, release, proof, or Done claim. Exact-head CI is active.
+
+## Prerequisite merge — 2026-08-29
+
+PR #46 merged into `dev` after the exact-head rerun completed successfully.
+
+- PR: https://github.com/merceralex397-collab/pegasusDesktop/pull/46
+- Reviewed head: `f62407a30955d6ee2e1e1ee192c6e76d867a998c`
+- Rerun: GitHub Actions run `33268689058` — completed `success`
+- Applicable jobs: browser, unit, all three SQL integration shards, SQL integration coverage, changes, documentation, local-development-scripts, and reference-data all succeeded; infrastructure was skipped by its documented path filter.
+- Resulting `origin/dev`: `cd1344fe524ec74e6fd5e61be816bf6ca8fec6cc`
+
+This is a prerequisite merge only. It does not satisfy FND-032's downstream FND-038 evidence, release configuration, proof, or Kanmer Done requirements. No deployment or cloud write was performed.
