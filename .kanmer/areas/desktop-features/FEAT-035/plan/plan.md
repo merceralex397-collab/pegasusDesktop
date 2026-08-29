@@ -68,3 +68,31 @@ Validation completed on the final compiled tree:
 - Replay fixtures are private temporary test data and do not alter the immutable `corpus/`.
 - No speculative compatibility path, fallback implementation, cloud integration, provider credential handling, migration, or unrelated cleanup was added.
 - No unapplied simplification findings remain. Provider-bound correlation is represented by the existing request correlation filter and durable operation key/action history; adding a new persistence field or migration would exceed this gateway ticket and is not required by the current Core/provider boundary.
+
+## Review-fix completion (2026-08-30)
+
+The first independent review returned BLOCK. Its findings were substantive and are now resolved:
+
+- Provider correlation was present at the HTTP boundary but was not durable through the queued work item and provider calls. Added the correlation field to the persisted vehicle lookup request, carried it through the Core work item and worker, sent it on DVLA, DVSA token, and DVSA vehicle requests, and recorded it in action history.
+- The previous integration coverage did not prove the complete route → durable store → worker → replay path. Added `VehicleGatewayReplayIntegrationTests`, which drives the real HTTP route and Core/SQL stores, runs the automatic sweep and worker with private replay fixtures, and verifies staff/automation attribution, correlations, distinct `error` versus `not_found` outcomes, and the read route.
+- Missing vehicle observations now use the typed `VehicleSuggestionUnavailableException` path rather than an accidental `KeyNotFoundException`.
+- `expectedVersion` is enforced as required at the request boundary, with validation for omission and matching OpenAPI required/schema metadata.
+- The OpenAPI output now declares the closed outcome/state/decision enums, conditional `If-None-Match` input, and `ETag` response headers.
+
+### Correction to the 2026-08-29 simplification note
+
+The earlier statement that provider-bound correlation required no persistence field or migration is superseded by the independent review finding. Durable provider correlation is required by this ticket's acceptance criteria and is within scope. The corrected implementation adds the minimal `CorrelationId` column and migration to the existing vehicle lookup request table; no new store, provider client, compatibility path, or cloud integration was introduced. After this review fix, the simplification pass was re-evaluated and has no unapplied findings.
+
+### Final validation
+
+- `dotnet restore ./Pegasus.slnx --locked-mode` — succeeded; packages up to date.
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore /nr:false` — succeeded; 0 warnings, 0 errors.
+- Full API contract suite — 29 passed, 0 failed.
+- Focused vehicle Core suite — 36 passed, 0 failed.
+- Focused vehicle/replay/production integration suite — 27 passed, 0 failed.
+- Architecture suite — 121 passed, 0 failed.
+- Required `Category!=Corpus&Category!=Browser` integration suite — 972 passed, 2 skipped, 0 failed, 974 total. The skips are the existing QDOS mapped-instruction and custody embedded-photograph tests.
+- Committed migration schema guard — 1 passed.
+- `git diff --check` — passed; only normal line-ending conversion warnings.
+- Secret scan — no provider credential values or keys introduced or exposed; only the existing bearer/token redaction regex matched.
+- No live provider call, cloud write, deployment, upstream sync, or corpus mutation was performed.
