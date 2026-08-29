@@ -19,3 +19,12 @@
 - [x] Verify the Release solution build with 0 warnings/errors and the one App.xaml theme merge.
 - [ ] Verify three-theme visual screenshots: Light capture exists at `artifacts/ui/06-01-light.png`; Dark/HighContrast cannot be honestly captured against the current scaffold because it has no theme switch or delivered shell/gallery. This remains a visual-evidence limitation for review.
 - [x] Simplification pass recorded in the plan.
+
+## Review remediation — 2026-08-29
+
+- [x] Add the documented PegasusFocusVisualThickness token and retain the platform thickness alias.
+- [x] Place focus brush aliases in explicit Light/Dark/HighContrast theme dictionaries.
+- [x] Extend the source guard to named colour attributes and composite numeric corner radii; negative probes cover both.
+- [x] Rebuild and rerun validation after remediation: ViewModel tests 9/9, ArchitectureTests 121/121, Release build 0 warnings/0 errors.
+- [x] Relaunch and inspect the packaged app after remediation; Light screenshot captured at artifacts/ui/06-01-light-after-review.png.
+- [ ] Obtain exact-head CI and independent re-review for 5729b454; Dark/HighContrast visual evidence remains an explicit limitation of the current scaffold, not a claimed pass.

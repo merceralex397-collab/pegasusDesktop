@@ -22,3 +22,7 @@
 ## Evidence boundary
 
 The current scaffold has no runtime theme switch and is not yet the delivered shell/gallery. Therefore Dark and HighContrast screenshots and the full manual contrast/focus review are not claimed. This is recorded as an evidence limitation, not treated as a pass. The documented Dark starting palette and authority-approved 2px radius were used without inventing new values.
+
+## Review remediation — 2026-08-29
+
+The independent review findings on the initial head were corrected in 5729b454. The canonical PegasusFocusVisualThickness token is present, focus aliases are theme-dictionary scoped, and the guard now rejects named colour attributes and composite numeric corner radii. Post-fix ViewModel tests passed 9/9, the Release solution build passed with 0 warnings/0 errors, and ArchitectureTests passed 121/121. A fresh packaged launch (PID 115896) was UI-inspected successfully and produced artifacts/ui/06-01-light-after-review.png; the process was stopped after capture. PR #41 now awaits exact-head CI and re-review. Dark/HighContrast screenshot and manual contrast evidence remains unclaimed because the current scaffold has no runtime theme switch or delivered shell/gallery.

@@ -56,3 +56,11 @@ The implementation worktree must record its simplification pass and independent 
 - No further behavior-preserving simplification identified.
 
 The Dark palette remains the documented starting assumption and the authority's 2px radius is adopted; no new design value was invented. Review must confirm the design-authority checklist and carry the screenshot limitation honestly.
+
+## Review remediation checkpoint — 2026-08-29
+
+- Independent review blocked the first PR head on three concrete issues: the documented token name was absent, focus aliases were outside theme dictionaries, and the source guard missed named colour/composite corner-radius literals.
+- Commit 5729b454 resolves those findings: Tokens.Focus.xaml now defines canonical PegasusFocusVisualThickness and aliases the platform key to it inside the explicit Light/Dark/HighContrast theme dictionaries; the guard recognizes named colour attributes and composite numeric CornerRadius values and has two negative probes.
+- Post-fix validation: ViewModel suite 9/9; Release solution build 0 warnings/0 errors; ArchitectureTests 121/121; git diff --check passed; static audit still reports 30 equal keys per theme, one App merge, and no forbidden authored literals.
+- Post-fix BuildAndRun.ps1 -Detach launched the packaged app as Pegasus.Desktop (PID 115896); winapp ui inspect --interactive succeeded and screenshot artifacts/ui/06-01-light-after-review.png was captured. PID 115896 was stopped after capture.
+- PR #41 is now at exact head 5729b454, pushed to origin/task/desktop-theme-resources; CI and independent re-review remain pending. Dark/HighContrast screenshot evidence remains explicitly deferred because the current scaffold has no runtime theme switch or delivered shell/gallery; no Tier-7 pass is claimed for those states.
