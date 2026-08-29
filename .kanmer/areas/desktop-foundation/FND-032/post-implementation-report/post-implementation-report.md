@@ -25,3 +25,7 @@ This report is evidence of the current state only. It does not assert merge, dep
 ## Follow-up read-only endpoint check — 2026-08-29
 
 Read-only Container App inspection returned the current production gateway ingress hostname: https://pegasus-prod-web-252ow37gij.ashymushroom-676209e5.uksouth.azurecontainerapps.io/. The pilot and production Gateway:BaseAddress entries were corrected in the ticket branch to this observed value. No Azure write or deployment was performed. The D-003 UNC feed host/share is not present in repository authority; pilot and production feed URIs remain placeholders and block release acceptance.
+
+## Dependency revalidation — 2026-08-29
+
+After PR #43 merged to `dev`, `origin/dev` was merged into `task/desktop-host` as `925e98724554c1ba7528492e6a3136f44c8b0416`. Locked solution restore and targeted Release builds for Infrastructure and Desktop passed with zero warnings/errors. The branch was pushed to `origin/task/desktop-host`. Remaining acceptance blockers are the exact pilot/production feed host/share and FND-038-owned host/log/validation test evidence; no cloud or deployment operation was performed.

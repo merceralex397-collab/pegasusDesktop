@@ -330,3 +330,9 @@ Zeno (pegasus-desktop-reviewer) reviewed exact head 704996c7d41c9c59de8a75ef7f2b
 ## Configuration correction — 2026-08-29
 
 A read-only Azure resource lookup of Container App pegasus-prod-web-252ow37gij in resource group rg-pegasus-prod returned the current ingress hostname https://pegasus-prod-web-252ow37gij.ashymushroom-676209e5.uksouth.azurecontainerapps.io/. The pilot and production Gateway:BaseAddress values were updated to that exact observed hostname in the ticket branch. No Azure resource was changed. The D-003 pilot and production feed host/share remains unresolved: repository authorities specify only the UNC form host/share/channel/Pegasus.appinstaller and contain no actual host/share. The local file URIs therefore remain a known non-release placeholder; they are not claimed as pilot or production acceptance.
+
+## Dependency revalidation — 2026-08-29
+
+Merged `origin/dev` into the owned `task/desktop-host` branch after PR #43 landed. The resulting branch head is `925e98724554c1ba7528492e6a3136f44c8b0416`, containing merge commit `52a1741cfa6544dfdad2632b5192a162c2430a2f` and the shared redaction correction. `dotnet restore ./Pegasus.slnx --locked-mode` passed. Targeted Release builds passed with zero warnings and zero errors for both `Pegasus.Desktop.Infrastructure` and `Pegasus.Desktop`. The branch was pushed to `origin/task/desktop-host`.
+
+The ticket remains implementing: exact feed host/share values are still not established by repository authority, and FND-038's required host/log/validation tests and later independent review remain outstanding.
