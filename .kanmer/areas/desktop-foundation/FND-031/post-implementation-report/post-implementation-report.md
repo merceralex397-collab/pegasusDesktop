@@ -27,3 +27,7 @@ No cloud, deployment, credential, mailbox, Box, upstream, or other external writ
 The implementation branch's exact reviewed head was `26aae2fa5a072e3518d93db0afdd8c241dd3a4bd` (the earlier `c39ea6f` remains the initial implementation commit). Exact-head CI run `33261673009` passed all required repository lanes. PR #42 merged that exact head into `dev` as `89fcfa20cb570845dbb1ad9b2f3c45fdd83723e4`.
 
 This remains a prerequisite-only merge. The FND-031-specific credential-store, header/correlation, retry asymmetry, and isolation tests are not yet present; [[FND-038]] owns adding them to the shared test project. Merged-main proof is also not yet available, so this ticket is not eligible for Done.
+
+## Redaction remediation — 2026-08-29
+
+Commit 627d3f613234a75203f1c7115ea590a2a176b199 corrected two findings from the prior redaction review: sensitive fields now redact a complete bearer value, and pipe-delimited context is preserved. Fresh independent review passed the exact commit. Infrastructure build passed with 0 warnings/errors; existing ViewModelTests passed 6/6; direct redaction and retention smoke passed; git diff --check passed. The shared test fixtures remain owned by FND-038 and are not duplicated here. FND-031 remains incomplete pending those tests and merged-main proof.
