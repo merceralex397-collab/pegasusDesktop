@@ -4,13 +4,15 @@ type: ticket
 title: >-
   DSK-07-09 · DVLA/DVSA gateway endpoints: request lookup, accept suggestion,
   status, cache lifetime and provenance
-status: review
+status: done
 area: desktop-features
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:31:42.711Z'
   review: '2026-08-29T21:34:53.593Z'
+  verifying: '2026-08-30T01:10:58.554Z'
+  done: '2026-08-30T01:11:02.568Z'
 taken_at: '2026-08-29T20:09:18.169Z'
 branch: task/dsk-07-09-vehicle-endpoints
 worktree: 'C:\Users\PC\Documents\GitHub\pegasus-worktrees\dsk-07-09-vehicle-endpoints'
@@ -35,12 +37,12 @@ commits:
   - 4f9dfc1e06ea7ba947791b5e9d28f7ca2d9949a2
   - 3663cd779194e7f24fc59a99d724e12ba54261d6
   - e2e9a2f5cfa4ba2827d73afb934d2da4bed025b9
-  - cc91137a
+  - cc91137a4a9e95b99021fe652d367677e3f2c574
 prs:
   - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/51'
 archived: false
 created: '2026-08-24T08:24:13.912Z'
-updated: '2026-08-30T00:24:43.222Z'
+updated: '2026-08-30T01:11:02.568Z'
 ---
 
 ## What
