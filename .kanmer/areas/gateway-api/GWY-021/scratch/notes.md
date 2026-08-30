@@ -1,3 +1,5 @@
 2026-08-30 checkpoint: ticket taken on task/gwy-021-bearer-auth from origin/dev after GWY-019 and GWY-002 dependencies were verified done. Full packet and EPIC-005/HZN-003 context read; specialist assigned with explicit seam preserving GWY-003's endpoint filter ownership. No Azure/cloud/upstream write.
 
 2026-08-30 final correction head `5cbe7033ad477895634fb8a8d769cc3943109b3c`: removed test-only startup/manual auth endpoints; tests use real `/api/v1/mail`; structural policy-group guard replaces exact source string. Parent final focused auth passed 7/7, guard 1/1, diff check passed. Full Release build/locked restore had passed 0/0 on unchanged production implementation. Independent re-review requested.
+
+2026-08-30 Fermat the 2nd independently reviewed final exact head `5cbe7033ad477895634fb8a8d769cc3943109b3c` and returned PASS. Production route evidence, auth/recheck behavior, structural guard, scope and DSK-03-15 seam were accepted; no merge blocker.

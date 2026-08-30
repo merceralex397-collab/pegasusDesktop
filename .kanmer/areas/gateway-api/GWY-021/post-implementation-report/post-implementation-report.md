@@ -31,3 +31,7 @@ Independent review of the final implementation/documentation head is pending. Pr
 - Parent rerun on this exact head: focused production-route authentication tests passed 7/7; structural architecture guard passed 1/1; `git diff --check` passed. The implementation head was already parent-validated with locked restore and a full Release build at 0 warnings/0 errors.
 - The tests now exercise the real `/api/v1/mail` production route. The future DSK-03-15 password-change endpoint is not yet composed, so its exemption is recorded as a seam rather than falsely claimed as runtime-tested.
 - Independent review of this final head is still pending; proof and merge state are not asserted.
+
+## Independent review — 2026-08-30
+
+Fermat the 2nd reviewed final exact head `5cbe7033ad477895634fb8a8d769cc3943109b3c` and returned PASS. The reviewer confirmed the production `/api/v1/mail` route evidence, bearer policy and per-request account checks, rejection/correlation behavior, structural guard, scope, and the intentional DSK-03-15 seam. No remaining merge blocker was identified.
