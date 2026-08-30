@@ -628,7 +628,9 @@ if (automationMcpOptions is not null || desktopGatewayOptions is not null)
 {
     builder.Services.AddPegasusOpenIddict(
         automationMcpOptions,
-        desktopGatewayOptions is not null);
+        desktopGatewayOptions is not null,
+        builder.Configuration,
+        builder.Environment);
 }
 if (automationMcpOptions is not null)
 {
@@ -891,9 +893,10 @@ if (automationMcpOptions is not null || desktopGatewayOptions is not null)
             return;
         }
 
-        // Transport-level denials on the automation surface are material and
-        // become attributable security events. Tool-level denials (scope,
-        // kill switch) are written by the actor resolver instead.
+        // Transport-level denials on the Automation surface are material and
+        // become attributable security events. Desktop writes its own
+        // grant-specific events; tool-level denials (scope, kill switch) are
+        // written by the actor resolver instead.
         var status = context.Response.StatusCode;
         var isDenied = isTokenEndpoint
             ? status is StatusCodes.Status400BadRequest
@@ -901,7 +904,12 @@ if (automationMcpOptions is not null || desktopGatewayOptions is not null)
                 or StatusCodes.Status403Forbidden
             : status is StatusCodes.Status401Unauthorized
                 or StatusCodes.Status403Forbidden;
-        if (isDenied)
+        var isDesktopToken = isTokenEndpoint
+            && string.Equals(
+                context.GetOpenIddictServerRequest()?.ClientId,
+                DesktopSession.ClientId,
+                StringComparison.Ordinal);
+        if (isDenied && !isDesktopToken)
         {
             await AppendAutomationDeniedSecurityEventAsync(context, isTokenEndpoint);
         }

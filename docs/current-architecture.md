@@ -455,6 +455,19 @@ Staff authentication and authorization are implemented and enforced:
 - anonymous intake review denied; disabled or stale staff sessions fail closed;
 - draft confirmation as a separate authenticated mutation with optimistic-concurrency evidence;
 - a gated production first-Administrator path (`--bootstrap-production-administrator`).
+- a shared OpenIddict token composition at `/connect/token`: the existing
+  Automation client retains its client-credentials and authorization-code +
+  PKCE paths, while the configuration-gated `pegasus-desktop` public client
+  uses staff password and rolling refresh grants with Identity role and
+  security-stamp checks. Desktop access tokens have a 10-minute lifetime,
+  refresh tokens have a 2-hour idle lifetime, and the original issue timestamp
+  enforces the 8-hour absolute session cap. Token payload protection uses the
+  configured Data Protection ring; OpenIddict signing/encryption credentials
+  remain required for the retained authorization-code capability. Development
+  uses a local development certificate with subject `CN=Collision Engineers`;
+  non-Development startup fails closed unless an operator-provided certificate
+  with that exact subject is configured. This is implemented and caller-proved
+  by LocalDB integration tests, not a claim of deployed Desktop activation.
 
 Login protection uses generic authentication failure plus transient request throttling rather than persistent Identity account lockout (ADR-0013 clause 12). Authentication alone does not authorize case creation; allocation still requires principal identity, durable custody, and the accepted allocation transaction. Decisions that withhold slices remain authoritative in [open decisions](open-decisions.md).
 
@@ -549,9 +562,11 @@ Provider API and Automation MCP are separate Web ingress boundaries. They must i
 The native desktop gateway is a third Web ingress boundary at `/api/v1`,
 composed in the existing `Pegasus.Web` host behind `Features:DesktopGateway`.
 Its route group supplies correlation identifiers and RFC 9457 problem details;
-endpoint authentication, authorization and business projections remain owned by
-the later gateway tickets. This source-state entry does not establish that the
-feature flag is enabled in any deployed environment.
+endpoint authorization and business projections remain owned by the later
+gateway tickets. Its first-party `pegasus-desktop` session is issued by the
+shared `/connect/token` composition described above. This source-state entry
+does not establish that the feature flag is enabled in any deployed
+environment.
 
 The Automation MCP ingress is implemented in `Pegasus.Web` per ADR-0011, ADR-0013 clause 10, and ADR-0026: `ActorKind.Automation` is a Core actor granted exactly the ordinary casework surface (every administration, system-work, and request-upload right is denied and unknown rights fail closed), one seeded OpenIddict registration authenticates the single vendor-neutral Automation client by client credentials or, for external connectors with administrator-configured redirect URIs, by authorization code with PKCE after Administrator consent (ADR-0027), and a streamable-HTTP MCP endpoint at `/mcp` exposes 35 typed tools wrapping existing Core case, intake, Unidentified, Triage, document, assessment, and mail use cases with per-area scopes (`automation.cases`, `automation.intake`, `automation.documents`, `automation.assessment`, `automation.mail`). Unidentified receipt/group detail and exact-member source download use the retained intake owners; Triage reads, source retrieval, lifecycle, evidence, and Case association use the same queries, commands, integrity checks, versions, replay rules, and Case leases as staff. Explicit named-Engineer assignment remains separately tracked by INTK-019 and no actor-relative assignment shortcut is exposed. Automation writes are direct writes with logging parity: they present the same edit lease, operation-key replay, and version guard as staff saves, they renew that lease through the same Core use case as the staff renew control rather than re-claiming, their assessment values are stored unconfirmed for review at manual engineer assignment, professional-finding confirmation stays staff-Engineer-only, and no confirmation, report-approval, or outward-dispatch tool exists. Every tool invocation and material denial is attributable permanent history. The whole surface registers only when `Features:AutomationMcp` enables it with valid Automation MCP settings (ADR-0026); the deployed state of that gate and its dated activation evidence are owned by [operations](operations.md#production-environment), and source inventory must not be mistaken for deployed inventory.
 

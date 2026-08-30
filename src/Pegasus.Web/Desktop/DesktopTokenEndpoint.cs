@@ -298,10 +298,13 @@ internal static class DesktopTokenPrincipal
         }
 
         identity.SetScopes(scopes);
+        // OpenIddict has no refresh-token destination. Claims needed to
+        // rehydrate a refresh request remain in the protected refresh-token
+        // principal; destinations govern the access/identity token claims.
         identity.SetDestinations(claim => claim.Type is Claims.Subject
             or Claims.Role
-            or DesktopSession.SecurityStampClaim
             or DesktopSession.OriginalIssueClaim
+            or DesktopSession.SecurityStampClaim
             ? [Destinations.AccessToken]
             : []);
         var principal = new ClaimsPrincipal(identity);
