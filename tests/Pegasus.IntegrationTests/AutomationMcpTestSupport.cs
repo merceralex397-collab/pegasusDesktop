@@ -30,10 +30,15 @@ internal static class AutomationMcpTestSupport
     public static readonly DateTimeOffset SeedUtcNow = new(2031, 5, 6, 10, 30, 0, TimeSpan.Zero);
 
     public static WebApplicationFactory<Program> WithAutomationMcp(
-        IntakeWebApplicationFactory factory) =>
+        IntakeWebApplicationFactory factory,
+        bool desktopGateway = false) =>
         factory.WithWebHostBuilder(builder =>
         {
             builder.UseSetting("Features:AutomationMcp", "true");
+            if (desktopGateway)
+            {
+                builder.UseSetting("Features:DesktopGateway", "true");
+            }
             builder.UseSetting("AutomationMcp:ClientId", ClientId);
             builder.UseSetting("AutomationMcp:ClientSecret", ClientSecret);
             builder.UseSetting("AutomationMcp:PublicOrigin", "http://localhost/");

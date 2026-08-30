@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Pegasus.Core.Actors;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using Pegasus.Core.Identity;
@@ -226,6 +227,88 @@ public sealed class DesktopTokenIssuanceTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         using var document = JsonDocument.Parse(body);
         Assert.Equal("invalid_request", document.RootElement.GetProperty("error").GetString());
+    }
+
+    [Fact]
+    public async Task DesktopPasswordGrantReturnsTooManyRequestsOnEleventhAttempt()
+    {
+        using var baseFactory = new IntakeWebApplicationFactory();
+        using var factory = WithDesktopGateway(baseFactory);
+        var user = await SeedStaffAsync(factory, enabled: true);
+        using var client = CreateClient(factory);
+
+        for (var attempt = 1; attempt <= 10; attempt++)
+        {
+            using var response = await PostTokenAsync(
+                client,
+                new Dictionary<string, string>
+                {
+                    ["grant_type"] = "password",
+                    ["client_id"] = DesktopSession.ClientId,
+                    ["username"] = user.UserName!,
+                    ["password"] = "wrong-password",
+                    ["scope"] = DesktopSession.Scope
+                });
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        using var limited = await PostTokenAsync(
+            client,
+            new Dictionary<string, string>
+            {
+                ["grant_type"] = "password",
+                ["client_id"] = DesktopSession.ClientId,
+                ["username"] = user.UserName!,
+                ["password"] = "wrong-password",
+                ["scope"] = DesktopSession.Scope
+            });
+        Assert.Equal(HttpStatusCode.TooManyRequests, limited.StatusCode);
+        Assert.Equal("60", limited.Headers.RetryAfter?.ToString());
+    }
+
+    [Fact]
+    public async Task DesktopPasswordGrantIsCoveredByTheGlobalSignInLimiter()
+    {
+        using var baseFactory = new IntakeWebApplicationFactory();
+        using var factory = WithDesktopGateway(baseFactory);
+        var user = await SeedStaffAsync(factory, enabled: true);
+        using var client = CreateClient(factory);
+
+        var globalLimiter = factory.Services
+            .GetRequiredService<System.Threading.RateLimiting.FixedWindowRateLimiter>();
+        for (var attempt = 0; attempt < StaffSessionPolicy.SignInAttemptsGlobalPerMinute - 1; attempt++)
+        {
+            using var lease = await globalLimiter.AcquireAsync(1);
+            Assert.True(lease.IsAcquired);
+        }
+
+        // The Desktop request consumes the last global permit. Without the
+        // pre-UseRateLimiter global middleware it would reach the handler and
+        // return invalid_grant instead of consuming the global budget.
+        using var lastPermitted = await PostTokenAsync(
+            client,
+            new Dictionary<string, string>
+            {
+                ["grant_type"] = "password",
+                ["client_id"] = DesktopSession.ClientId,
+                ["username"] = user.UserName!,
+                ["password"] = "wrong-password",
+                ["scope"] = DesktopSession.Scope
+            });
+        Assert.Equal(HttpStatusCode.BadRequest, lastPermitted.StatusCode);
+
+        using var limited = await PostTokenAsync(
+            client,
+            new Dictionary<string, string>
+            {
+                ["grant_type"] = "password",
+                ["client_id"] = DesktopSession.ClientId,
+                ["username"] = user.UserName!,
+                ["password"] = "wrong-password",
+                ["scope"] = DesktopSession.Scope
+            });
+        Assert.Equal(HttpStatusCode.TooManyRequests, limited.StatusCode);
+        Assert.Equal("60", limited.Headers.RetryAfter?.ToString());
     }
 
     private static WebApplicationFactory<Program> WithDesktopGateway(

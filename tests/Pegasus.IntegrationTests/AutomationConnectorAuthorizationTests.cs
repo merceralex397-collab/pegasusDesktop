@@ -218,6 +218,70 @@ public sealed partial class AutomationConnectorAuthorizationTests
         Assert.DoesNotContain("Authorise the connector", refusedBody, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task CombinedCompositionRejectsConnectorRefreshAfterFourteenDayAbsoluteCap()
+    {
+        var clock = new MutableTimeProvider(SeedUtcNow);
+        using var factory = new IntakeWebApplicationFactory(clock);
+        using var mcpFactory = WithAutomationMcp(factory, desktopGateway: true);
+        using var browser = CreateBrowser(mcpFactory);
+        using var connector = CreateConnector(mcpFactory);
+        var (verifier, challenge) = Pkce();
+
+        using var consent = await browser.GetAsync(AuthorizeUrl(challenge, "automation.cases"));
+        var html = await consent.Content.ReadAsStringAsync();
+        using var approve = await browser.PostAsync(AuthorizeHandlerUrl("Accept"), ConsentForm(html));
+        var callback = ParseQuery(approve.Headers.Location!);
+
+        using var tokens = await connector.PostAsync(
+            AutomationMcp.TokenEndpointPath,
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "authorization_code",
+                ["code"] = callback["code"]!,
+                ["code_verifier"] = verifier,
+                ["redirect_uri"] = ConnectorRedirectUri,
+                ["client_id"] = ClientId,
+                ["client_secret"] = ClientSecret
+            }));
+        var tokenBody = await tokens.Content.ReadAsStringAsync();
+        Assert.True(tokens.IsSuccessStatusCode, tokenBody);
+        using var tokenJson = JsonDocument.Parse(tokenBody);
+        var refreshToken = tokenJson.RootElement.GetProperty("refresh_token").GetString()!;
+
+        // A refresh at day 13 must be valid, but the refreshed token must not
+        // extend the connector session beyond the original 14-day boundary.
+        clock.Advance(TimeSpan.FromDays(13));
+        using var refreshed = await connector.PostAsync(
+            AutomationMcp.TokenEndpointPath,
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "refresh_token",
+                ["refresh_token"] = refreshToken,
+                ["client_id"] = ClientId,
+                ["client_secret"] = ClientSecret
+            }));
+        var refreshedBody = await refreshed.Content.ReadAsStringAsync();
+        Assert.True(refreshed.IsSuccessStatusCode, refreshedBody);
+        using var refreshedJson = JsonDocument.Parse(refreshedBody);
+        refreshToken = refreshedJson.RootElement.GetProperty("refresh_token").GetString()!;
+
+        clock.Advance(TimeSpan.FromDays(1));
+        using var expired = await connector.PostAsync(
+            AutomationMcp.TokenEndpointPath,
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "refresh_token",
+                ["refresh_token"] = refreshToken,
+                ["client_id"] = ClientId,
+                ["client_secret"] = ClientSecret
+            }));
+        var expiredBody = await expired.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.BadRequest, expired.StatusCode);
+        using var expiredJson = JsonDocument.Parse(expiredBody);
+        Assert.Equal("invalid_grant", expiredJson.RootElement.GetProperty("error").GetString());
+    }
+
     // The staff cookies (identity, antiforgery) are Secure, so the browser
     // half of the flow talks to the test host over https like the case web
     // tests do; the connector half uses the same origin so tokens issued and
@@ -237,6 +301,15 @@ public sealed partial class AutomationConnectorAuthorizationTests
             HandleCookies = false,
             BaseAddress = new Uri("https://localhost")
         });
+
+    private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        private DateTimeOffset current = utcNow;
+
+        public override DateTimeOffset GetUtcNow() => current;
+
+        public void Advance(TimeSpan amount) => current = current.Add(amount);
+    }
 
     private static (string Verifier, string Challenge) Pkce()
     {
