@@ -140,7 +140,10 @@ public sealed partial class DesktopTokenRateLimitTests
                 user.UserName!,
                 $"198.51.100.{attempt + 1}");
             var browserBody = await response.Content.ReadAsStringAsync();
-            Assert.True(response.StatusCode == HttpStatusCode.OK, browserBody);
+            // The TestServer handler does not provide the browser cookie jar, so
+            // endpoint antiforgery rejects this POST after the global middleware
+            // has already consumed its shared sign-in permit.
+            Assert.True(response.StatusCode == HttpStatusCode.BadRequest, browserBody);
         }
 
         for (var attempt = 0;
