@@ -282,6 +282,16 @@ The allocated workspace includes read-only search of Deleted Items within each
 exact approved mailbox/folder scope. It does not introduce a backlog scan,
 reconstruction, bulk replay, Case allocation, or mailbox mutation.
 
+The native desktop mail workspace presents the same retained list, freshness,
+inert preview, and opened-message detail as the staff workspace. Case linking
+and unlinking are explicit prepare-and-confirm actions; the confirmation
+includes the current versions and lease, and unlinking states
+“Unlinking this email cancels case <ref>” when that exact consequence applies.
+Classification correction preserves the prior decision in history. A folder
+move is a separate confirmation, and the move affordance is absent when the
+folder provider is unavailable; Deleted Items remains a capped read-only search
+with an explicit unavailable state rather than an empty-match claim.
+
 Which mailboxes an Outlook/Graph inbound route reads is settled by the approved
 mailbox allowlist, not by deployment configuration. `ApprovedMailbox.Id` is the
 durable source identity; the Graph mailbox and folder coordinates are replaceable

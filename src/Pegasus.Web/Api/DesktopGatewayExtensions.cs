@@ -42,6 +42,7 @@ public static class DesktopGatewayExtensions
         group.AddEndpointFilter<CorrelationIdEndpointFilter>();
         group.AddEndpointFilter<ClientVersionEndpointFilter>();
         group.MapVehicleEndpoints();
+        group.MapMailEndpoints();
         app.MapOpenApi("/openapi/{documentName}.json")
             .AllowAnonymous();
         return group;
