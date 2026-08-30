@@ -2,7 +2,7 @@
 
 ## Result
 
-FND-035 implementation is present on branch `task/desktop-single-instance` at `18493d485f8eab5c9d1fd8c63af9b478d54e04d`, based on current `origin/dev` `d278de7ba0fd...`. The change adds the explicit WinUI entry point, constant per-user AppInstance registration, pre-window activation redirection, activation routing/logging, host registration, and focused routing tests. The worktree is clean.
+FND-035 implementation is present on branch `task/desktop-single-instance` at `18493d4825d4609ba8dbfcb29960023839a98cc6`, based on current `origin/dev` `d278de7ba0fd...`. The change adds the explicit WinUI entry point, constant per-user AppInstance registration, pre-window activation redirection, activation routing/logging, host registration, and focused routing tests. The worktree is clean.
 
 ## Acceptance validation
 
@@ -41,3 +41,12 @@ The first review request contained a mistyped implementation SHA. The actual pri
 - `git diff --check` — passed before commit.
 
 No packaged two-launch proof is claimed. FND-033's concrete `INavigationService` registration remains a real runtime dependency; manifest activation declarations and packaged proof remain pending their owners.
+
+
+## Independent review correction — 2026-08-30
+
+The independent review found two stale references to nonexistent commit `18493d485f8eab5c9d1fd8c63af9b478d54e04d`; they are corrected here to the actual parent `18493d4825d4609ba8dbfcb29960023839a98cc6`. The final code head is `fa29f6f42dde60c7b5e3908dc3fcae60629a4d87`.
+
+The reviewer confirmed the Windows App SDK launch interface, null handling, async STA startup, pre-window redirect ordering, constant instance key, logging, supported window activation, scope, and clean worktree. Focused activation tests passed 3/3 and the serial solution Release build passed with 0 warnings/errors.
+
+Review does not claim the ticket done: FND-033's concrete navigation registration is still required for runtime composition, and packaged two-launch proof remains outstanding after the owning manifest declarations land.

@@ -283,7 +283,7 @@ diff before the PR, recorded here under a dated heading._
 
 ## Implementation and simplification pass — 2026-08-30
 
-Implementation commit `afb2341783d96a3de43c4f9fc3c9cf8d69948af7` adds the explicit startup entry point, constant AppInstance key, activation routing/logging, host registration, architecture note, and three focused activation tests within the planned scope. The manifest's existing operator-confirmed identity (`CollisionEngineers.Pegasus`, publisher `CN=Collision Engineers`) was not changed. A parent review found the initial `ManualResetEventSlim.Wait()` on the STA contradicted the WinUI performance rule and could deadlock activation; commit `18493d485f8eab5c9d1fd8c63af9b478d54e04d` removes that machinery and uses the documented `async Task Main`/`await RedirectActivationToAsync` path.
+Implementation commit `afb2341783d96a3de43c4f9fc3c9cf8d69948af7` adds the explicit startup entry point, constant AppInstance key, activation routing/logging, host registration, architecture note, and three focused activation tests within the planned scope. The manifest's existing operator-confirmed identity (`CollisionEngineers.Pegasus`, publisher `CN=Collision Engineers`) was not changed. A parent review found the initial `ManualResetEventSlim.Wait()` on the STA contradicted the WinUI performance rule and could deadlock activation; commit `18493d4825d4609ba8dbfcb29960023839a98cc6` removes that machinery and uses the documented `async Task Main`/`await RedirectActivationToAsync` path.
 
 Parent validation after the correction:
 
@@ -317,3 +317,12 @@ Validation after the correction:
 - `git diff --check` — passed before commit.
 
 The reviewer's required DI boundary remains unresolved: FND-033 must provide and register the concrete navigation service; FND-035 does not duplicate it. The packaged two-launch proof and protocol/file manifest declarations remain pending their owning tickets and cannot be claimed here.
+
+
+## Independent review correction — 2026-08-30
+
+The independent reviewer confirmed the actual correction sequence and found the earlier stale SHA references were evidence defects. All occurrences of the nonexistent `18493d485f8eab5c9d1fd8c63af9b478d54e04d` have been corrected to the actual parent `18493d4825d4609ba8dbfcb29960023839a98cc6`. The final code head is `fa29f6f42dde60c7b5e3908dc3fcae60629a4d87`.
+
+The reviewer confirmed that `AppActivationArguments.Data` is correctly matched through `Windows.ApplicationModel.Activation.ILaunchActivatedEventArgs`, the absent initial activation payload is guarded, async STA startup is non-blocking, the constant key and window activation shape are correct, and the worktree is clean. Focused activation tests passed 3/3 and the serial solution Release build passed with 0 warnings/errors.
+
+The review remains FAIL for two legitimate delivery blockers: FND-033 must land the owned `INavigationService` implementation and host registration before the activation router can resolve at runtime; then FND-035 must provide the packaged two-launch evidence after the owning manifest activation declarations are present. The public helper tests are a documented warning, not a merge blocker.
