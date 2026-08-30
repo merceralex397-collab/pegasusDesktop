@@ -265,3 +265,8 @@ The first `gateway/r<N>` tag is not present locally or on `origin`, and `docs/op
 - Added the explicit post-promotion `origin/main` read-back requirement and the C-01 private-runner 2× cost rationale to `docs/engineering.md` in commit `5d8be6841043c095b5fc7a2bc27127dbfa47a2e6`.
 - `pwsh ./scripts/Test-DocumentationLinks.ps1` passed (238 files); `git diff --check` passed; `.agents/skills/pegasus-release/SKILL.md` and `.codex/skills/pegasus-release/SKILL.md` remain byte-identical.
 - This does not claim the first `gateway/r<N>` tag. The tag and its `docs/operations.md` record remain a release-time handback, prohibited under the current no-release/cloud constraint.
+
+## PR handoff — 2026-08-30
+
+- PR #52 (`5d8be6841043c095b5fc7a2bc27127dbfa47a2e6`) is open against `dev` for the scoped documentation remediation.
+- Independent review is required before merge. No production tag, deployment, cloud write, or external release action is claimed.

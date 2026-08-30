@@ -13,3 +13,5 @@
 - `gateway/r21` is still not applied because no authorized production release occurred. The ticket remains open for that release-time tag and `docs/operations.md` record; no `dev` to `main` promotion was performed.
 
 2026-08-30 01:16 UTC — Re-read branch/release docs, committed remediation 5d8be684 (docs/engineering.md read-back + C-01 2× runner wording). Documentation links and diff check pass; first gateway tag remains release-time handback under the no-release constraint.
+
+2026-08-30 01:17 UTC — PR #52 opened against dev at 5d8be684; Kanmer PR reference updated. Awaiting independent reviewer; no tag/release evidence claimed.
