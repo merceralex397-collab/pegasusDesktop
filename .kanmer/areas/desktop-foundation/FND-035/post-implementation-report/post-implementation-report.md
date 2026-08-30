@@ -23,3 +23,11 @@ FND-035 implementation is present on branch `task/desktop-single-instance` at `1
 ## Evidence boundary
 
 The authoritative solution-wide build and the packaged two-launch `winapp run` demonstration remain pending. The real two-launch proof cannot be completed on this branch until FND-033 supplies the concrete `INavigationService` registration; claiming it now would be false. When that dependency lands, the remaining evidence must capture exactly one window/process, the redirected argument in the activation log, and whether the proof is manual or the TEST-006 batch. App Installer upgrade instancing remains FND-039/area-08 scope. No PR or merge is claimed by this report.
+
+## Validation update — 2026-08-30
+
+After generating the worktree assets with `dotnet restore ./Pegasus.slnx --locked-mode` (passed), the authoritative solution build was rerun:
+
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false` — passed, 0 warnings, 0 errors.
+
+The remaining evidence boundary is unchanged: no packaged `winapp run` two-launch proof is claimed, and the concrete `INavigationService` registration from FND-033 is still required before that proof can be meaningful.

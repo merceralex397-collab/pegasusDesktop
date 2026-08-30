@@ -294,3 +294,12 @@ Parent validation after the correction:
 Simplification findings: removed the unnecessary event/thread/exception-dispatch machinery rather than retaining it as a defensive path; no Win32 foreground wrapper, no mutable instance-key inputs, no package-identity change, and no new abstraction beyond the ticket's activation router and the navigation seam needed by [[FND-033]]. The temporary-compatible `INavigationService` declaration is deliberately a single shared contract for FND-033 to reuse; FND-033 must not create a duplicate contract. No unrelated files were changed.
 
 The authoritative solution-wide build and real two-launch packaged-app proof remain pending. The two-launch proof also needs FND-033's concrete navigation implementation; no claim of runtime completion is made yet. No PR or push has been made for this ticket.
+
+## Validation update — 2026-08-30
+
+The first solution-wide build attempt was not a source failure: the worktree had not yet generated assets for several projects under `--no-restore`, and the WinUI compiler also encountered a transient access-denied lock while another .NET host held generated output. A locked restore then completed successfully:
+
+- `dotnet restore ./Pegasus.slnx --locked-mode` — passed; all 13 projects restored.
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false` — passed, 0 warnings, 0 errors.
+
+The build was rerun after restore and completed successfully. This validates the requested solution-wide compile; it does not replace the missing packaged two-launch evidence.
