@@ -40,3 +40,7 @@ The ticket is implementation/review-ready. It is not yet merged, verified on mai
 ## Review correction update — 2026-08-30
 
 Independent review found and the branch corrected two contract defects: the retained-list route no longer advertises two competing 200 schemas (Deleted Items is only `/mail/deleted`), and all four conditional mail GETs now declare 304. After correction: Web Release build passed with 0 warnings/0 errors; OpenAPI export passed; API contract tests passed 62/62; `DesktopGatewayMailTests` passed 1/1; `MailWorkspaceWebTests` passed 39/39. The exact broad verification command was reopened because these source changes occurred after its prior run and is being rerun now.
+
+## Final-source verification — 2026-08-30
+
+After the independent review fixes, the exact broad command was rerun against the final source: `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "Category!=Corpus&Category!=Browser" --nologo` — passed 974, skipped 2, failed 0, total 976, duration 13m28s. Final focused checks remained green: API contract suite 62/62, `DesktopGatewayMailTests` 1/1, `MailWorkspaceWebTests` 39/39; full Release solution build passed with 0 warnings and 0 errors; OpenAPI export/snapshot passed; guarded-scope diff remained empty.

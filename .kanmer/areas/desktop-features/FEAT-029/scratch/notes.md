@@ -9,3 +9,5 @@ Independent review handoff: reviewer found no code-specific defect because its f
 2026-08-30 verification checkpoint: exact broad command `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "Category!=Corpus&Category!=Browser" --nologo` passed 974, skipped 2, failed 0, total 976, duration 12m52s. Focused API 62/62, MailWorkspace 39/39, DesktopGatewayMail parity 1/1, full Release solution build 0 warnings/0 errors, OpenAPI snapshot passed, forbidden-scope diff empty. Final verification evidence is complete; independent review rerun is next.
 
 Independent review disposition: fixed duplicate retained/deleted 200 OpenAPI metadata by making `/mail/deleted` the sole Deleted Items route, and added 304 metadata to all conditional GETs. Focused gates green after correction. Broad verification reopened for the final source state.
+
+Final-source verification complete after review fixes: broad non-browser integration 974 passed, 2 skipped, 0 failed, 976 total, 13m28s. API contracts 62/62, MailWorkspace 39/39, parity 1/1, solution build 0 warnings/0 errors, OpenAPI snapshot green, guarded scope empty.
