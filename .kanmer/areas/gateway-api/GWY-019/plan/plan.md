@@ -64,3 +64,23 @@ Register a first-party **public** OpenIddict client `pegasus-desktop` in `Pegasu
 - The pinned OpenIddict 7.6.0 XML and source require at least one encryption credential and one asymmetric signing credential unconditionally during server-options validation (OpenIddictServerConfiguration, validation of `EncryptionCredentials` and `SigningCredentials`). The Data Protection integration replaces formats for access, authorization-code, refresh, device, user and request tokens; it does not remove the JWT identity-token key requirement.
 - The current Automation composition enables authorization-code + PKCE, so retaining that existing capability requires a signing/encryption credential. The repository contains no approved durable certificate/configuration source for this branch. Development or ephemeral credentials would contradict this ticket's acceptance and the repository's security boundary; no cloud, credential, or external-environment write is authorized.
 - Do not proceed to desktop issuance tests or PR while the existing Automation path is broken. The smallest unblock is an approved in-repository/runtime credential source for the retained authorization-code capability, or an explicit product decision to remove/defer that capability; neither is being guessed here.
+
+## Decision — 2026-08-30
+
+The desktop password-grant token is issued even when `MustChangePassword` is true. The later desktop request gate owns the `password-change-required` response; withholding the session here would prevent that flow from being reached.
+
+## Implementation finding resolution — 2026-08-30
+
+The 2026-08-27 startup finding is resolved in-repository. OpenIddict 7.6 still validates signing and encryption credentials when the retained Automation authorization-code + PKCE capability is composed, even when token payload protection uses Data Protection. The shared composition now registers user-scoped Development signing/encryption certificates with the settled publisher subject `CN=Collision Engineers` for local/test hosts. Non-Development hosts fail closed unless `OpenIddict:CertificatePath` is supplied; the loaded certificate subject must exactly match `CN=Collision Engineers`, and its private key is held outside the repository.
+
+This does not create or change cloud state, add a certificate or secret to the repository, or alter the persisted production Data Protection ring. The package identity remains `CollisionEngineers.Pegasus` with Publisher `CN=Collision Engineers`; the same subject is the only accepted runtime token-certificate subject. Production certificate issuance/trust rollout remains owned by the release/distribution work and is not claimed by this ticket.
+
+Evidence: `dotnet build tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore` succeeded with 0 warnings and 0 errors; `DesktopTokenIssuance` passed 3/3; `Automation` passed 33/33; `pwsh ./scripts/Test-MigrationGrants.ps1` checked 74 migration files with exit 0; `rg` found no `AddEphemeralEncryptionKey` or `AddEphemeralSigningKey` in `src/Pegasus.Web`.
+
+## Simplification pass — 2026-08-30
+
+- Reuse: the shared `AutomationMcp.TokenEndpointPath`, existing OpenIddict application manager, Identity `UserManager`/ `SignInManager`, `StaffSessionPolicy`, rate limiter, security-event writer, and existing test factory were reused. No new business-policy or persistence layer was introduced.
+- Simplification: Automation remains in its existing handler; only the OpenIddict composition and token route were consolidated because Desktop needs the same endpoint. Desktop-specific grants, registration, lifetimes, claims, and account checks remain in the Desktop folder.
+- Security: no client secret, cloud write, certificate file, or private key was added to the repository. Missing/mismatched non-Development certificate configuration fails closed.
+- Test support: the claim probe is test-only middleware in `DesktopTokenIssuanceTests.cs`, needed to validate the actual bearer validation pipeline; it is not an application endpoint.
+- Disposition: no behaviour-preserving simplification remained after the pass. The earlier invalid `Destinations.RefreshToken` assumption was removed because OpenIddict has no such destination; refresh principal preservation is proved by the rolling refresh and absolute-cap tests.
