@@ -1,0 +1,30 @@
+# Post-implementation report — DUI-005
+
+## Implementation
+
+- Added `Pegasus.Desktop.Presentation.OperatorText` as the desktop presentation boundary.
+- Business vocabulary delegates to the single shared `Pegasus.Contracts.Vocabulary.OperatorVocabulary) owner.
+- Added Europe/London formatting with UTC fallback labelling, invariant count formatting, and one-decimal MB formatting.
+- Changed the scaffold counter's XAML-facing property from `int` to formatted `string`.
+- Added reflection and theory coverage for mapped enums, raw values, identifier entry, Target/reference identifiers, date/time, numeric formatting, and banned operator wording.
+- Added only the required direct project references and updated the test lock file.
+- Updated `docs/desktop/06-ui-design/README.md` and `docs/desktop/05-implementation-and-migration/reuse-map.md`.
+
+## Validation
+
+- `dotnet restore ./Pegasus.slnx --locked-mode`: passed; all projects up to date.
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false --nologo`: passed; 0 warnings, 0 errors.
+- `pwsh .codex/skills/winui-dev-workflow/BuildAndRun.ps1 src/Pegasus.Desktop/Pegasus.Desktop.csproj -SkipRun`: passed; Debug x64 WinUI build, 0 warnings, 0 errors.
+- `dotnet test tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-restore --logger "console;verbosity=minimal"`: passed; 63 passed, 0 failed, 0 skipped.
+- `rg -n "\\.ToString\\(\\)|ToLocalTime\\(\\)|DateTime\\.Now" src/Pegasus.Desktop --glob "!**/obj/**"`: only three diagnostic serialization calls in `Logging/DiagnosticsLoggerProvider.cs`; no display-path matches in ViewModels/Presentation.
+- `git diff --stat origin/dev -- src/Pegasus.Worker`: empty.
+
+## Acceptance disposition
+
+- Shared vocabulary, raw-value guards, date/time rules, unmapped enum-set guards, banned-word checks, and current-surface identifier/Target checks are implemented and validated.
+- The current desktop scaffold contains no identifier input or Target/reference column, so no product picker screen was invented. The guard test fails if a future surface exposes a typed identifier or raw aggregate identifier.
+- No clean-machine UI/install evidence is claimed; that is outside this Tier 1 static/build/architecture ticket.
+
+## Review handoff
+
+The branch is ready for independent `pegasus-desktop-reviewer` review. Merge and Kanmer proof remain outstanding.

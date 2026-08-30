@@ -42,3 +42,20 @@ The implementation worktree must record its simplification pass and independent 
 ## Simplification pass — 2026-08-28
 
 - N/A — blocked before implementation; there is no DUI-005 branch diff to simplify. No code, tests, documentation paths, commit, push, or Kanmer stage mutation was made for the product change.
+
+## Execution revalidation — 2026-08-30
+
+- The dependency decision is resolved: [[GWY-016]] is done and owns `src/Pegasus.Contracts/Vocabulary/OperatorVocabulary.cs`; [[FEAT-023]] is archived as duplicate/covered. The desktop consumes this owner through a direct `Pegasus.Contracts` project reference. No shared map copy or edit was made.
+- Added `src/Pegasus.Desktop/Presentation/OperatorText.cs`. Its vocabulary methods delegate to `OperatorVocabulary`; its only local presentation rules are Europe/London date/time conversion with an explicitly labelled UTC fallback, invariant count formatting, and one-decimal megabyte formatting.
+- The current desktop scaffold exposes the counter as a formatted `string` to XAML. It has no identifier-entry controls, Target/reference columns, enum properties, GUID/hash/version properties, or byte-count properties. The guard tests fail if those raw forms are introduced.
+- Added `tests/Pegasus.Desktop.ViewModelTests/OperatorVocabularyTests.cs` covering the current displayed enums, shared-map labels, Europe/London summer/winter conversion, preformatted numeric values, raw presentation types, typed identifier inputs, raw Target/reference identifiers, and banned operator words.
+- Added the direct `Pegasus.Core` test reference required by the enum coverage and updated the locked test dependency graph. Updated the two named desktop design/reuse documents to record the facade and second-consumer boundary.
+- Scope check: `git diff --stat origin/dev -- src/Pegasus.Worker` is empty. No Azure, deployment, upstream, corpus, or transient repository planning change was made.
+
+## Simplification pass — 2026-08-30
+
+- Reuse: the facade delegates the existing `OperatorVocabulary` owner instead of introducing a second label table or wrapper hierarchy.
+- The scaffold originally exposed an `int Counter` directly to XAML; it now stores the numeric state privately and exposes the required formatted string. This is the smallest change that enforces the display boundary.
+- No new screen, service, interface, cache, compatibility path, or feature flag was introduced. The direct `Pegasus.Contracts` reference is required by the facade; the direct `Pegasus.Core` reference is test-only for enum coverage.
+- The repository-wide grep reports only diagnostic logging `ToString()` calls in `Logging/DiagnosticsLoggerProvider.cs`; the ViewModels/Presentation paths have no `ToString()`, `ToLocalTime()`, or `DateTime.Now`. Those logging calls are not operator display bindings and are outside this ticket's scope.
+- The current XAML has no identifier TextBox or Target/reference column. The companion tests enforce the rule for future bound surfaces without inventing a screen or picker flow that the scaffold does not contain.
