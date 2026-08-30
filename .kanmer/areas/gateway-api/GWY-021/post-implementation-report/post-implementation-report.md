@@ -45,3 +45,9 @@ The branch was reconciled with `origin/dev` in its own worktree; the documentati
 - `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~EveryDesktopGatewayEndpointInheritsTheDesktopApiPolicy" --logger "console;verbosity=minimal" -nr:false -p:UseSharedCompilation=false` — passed 1/1.
 
 The final solution build, independent review of the reconciled exact head, and exact-head PR CI remain required. No proof or merge is claimed yet.
+
+## Exact-head CI — 2026-08-30
+
+- GitHub Actions run `33320252751` matched PR #59 head `6db7511d9648e63a328af39e1c00348c8fa5d33e` and completed **successfully**.
+- Passed jobs: changes, documentation, reference-data, local-development-scripts, browser, unit, all three SQL integration shards, and SQL integration coverage. Infrastructure was correctly skipped.
+- The corrected branch now has independent review PASS, local focused validation, and exact-head CI. Merge to `dev` is authorized under the recorded review and CI conditions; no cloud or deployment write is involved.

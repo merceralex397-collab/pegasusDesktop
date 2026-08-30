@@ -101,3 +101,9 @@ The branch was four commits ahead and four behind `origin/dev`; `git merge --no-
 - The independent review of `4044446b` found production code/scope correct but required this simplification record, exact-head evidence, and branch reconciliation. A new review of the reconciled exact head is required before merge.
 
 No production, Worker, cloud, upstream, or deployment write was made.
+
+## Exact-head CI — 2026-08-30
+
+- GitHub Actions run `33320252751` completed **successfully** at exact head `6db7511d9648e63a328af39e1c00348c8fa5d33e`.
+- Applicable jobs passed: changes, documentation, reference-data, local-development-scripts, browser, unit, sql-integration shards 1–3, and sql-integration-coverage. Infrastructure was skipped by the workflow's path selection.
+- The exact-head CI gate is satisfied; the remaining delivery sequence is merge PR #59 to `dev`, exact-SHA promotion to `main`, main CI, proof, and Kanmer closeout.
