@@ -24,3 +24,10 @@ The implementation reuses the existing OpenIddict validation scheme, Core `Staff
 ## Review state
 
 Independent review of the final implementation/documentation head is pending. Proof and merge state must not be asserted until that review passes.
+
+## Final correction and parent validation — 2026-08-30
+
+- Final branch head: `5cbe7033ad477895634fb8a8d769cc3943109b3c`. It contains the implementation head `481d29c84d27efbdd78f0e23b13ad6ce2cc2a1d8`, docs snapshot `20cd20bc29d035e1bb7689fdd71ce71394191cb`, and the production-route/structural-guard correction `5cbe7033ad477895634fb8a8d769cc3943109b3c`.
+- Parent rerun on this exact head: focused production-route authentication tests passed 7/7; structural architecture guard passed 1/1; `git diff --check` passed. The implementation head was already parent-validated with locked restore and a full Release build at 0 warnings/0 errors.
+- The tests now exercise the real `/api/v1/mail` production route. The future DSK-03-15 password-change endpoint is not yet composed, so its exemption is recorded as a seam rather than falsely claimed as runtime-tested.
+- Independent review of this final head is still pending; proof and merge state are not asserted.
