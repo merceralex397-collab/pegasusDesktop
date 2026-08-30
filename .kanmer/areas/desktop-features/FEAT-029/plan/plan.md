@@ -323,3 +323,12 @@ this branch's own diff before the PR, recorded here under a dated heading._
 ## Route ownership decision — 2026-08-30
 
 Live Kanmer recheck before implementation: [[GWY-012]] (the board's DSK-03-12 mail-endpoints ticket) is still in Preparing with no claim and no landed implementation; its `get_item` has no commits/PR and the current `origin/dev` contains no mail API endpoint file. This ticket therefore creates the single `/api/v1/mail` group and its endpoints. [[GWY-012]] remains the planned reviewer/contract owner; no second mail route group will be created. The existing `DesktopGateway` skeleton from [[GWY-002]] is present on `origin/dev` and is the only group this ticket extends.
+
+## Simplification pass — 2026-08-30
+
+- Reused the existing `Pegasus.Core` mail, association, classification and folder-move owners plus the established `MailMcpTools` projection conventions; no new Core policy, provider adapter, worker path, Razor path, or compatibility layer was added.
+- Kept the folder recommendation as the Core-owned whole projection instead of introducing a Web-side availability authority. Kept Deleted Items as the existing GET-only `SearchDeletedMail` path.
+- Removed one unused `Scope` helper and the unused `System.Globalization` import found during the pass. No additional abstraction or dependency was justified by this diff.
+- Added the focused SQL-backed parity fact required by step 9. It runs equivalent link-confirm flows through the Razor handler and `/api/v1/mail`, then compares persisted association and mutation-history version effects.
+- Regenerated `openapi/pegasus-v1.json` after the final contract shape and verified the complete API contract suite against it.
+- Kiota generation is deliberately not duplicated here: `eng/api/Generate-ApiClient.ps1` and the generated tree are owned by [[GWY-005]], whose documented prerequisites [[FND-031]] and [[GWY-004]] are not yet available on this branch. The API snapshot is the completed contract artifact for this ticket; the client handoff remains an explicit downstream dependency rather than an invented parallel implementation.
