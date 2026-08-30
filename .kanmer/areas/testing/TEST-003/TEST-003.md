@@ -4,13 +4,14 @@ type: ticket
 title: >-
   DSK-08-03 · Extend the `Pegasus.IntegrationTests` shards with `/api/v1`
   persistence paths; keep `-VerifyPartition` green
-status: review
+status: verifying
 area: testing
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
   preparing: '2026-08-24T21:34:13.245Z'
   review: '2026-08-30T07:38:27.148Z'
+  verifying: '2026-08-30T10:19:44.101Z'
 taken_at: '2026-08-30T06:45:01.262Z'
 branch: task/dsk-08-03-integration-shard-persistence
 worktree: >-
@@ -33,7 +34,7 @@ prs:
   - '56'
 archived: false
 created: '2026-08-24T07:46:12.580Z'
-updated: '2026-08-30T09:33:49.944Z'
+updated: '2026-08-30T10:19:44.101Z'
 ---
 
 ## What
