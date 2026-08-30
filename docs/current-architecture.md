@@ -562,9 +562,14 @@ Provider API and Automation MCP are separate Web ingress boundaries. They must i
 The native desktop gateway is a third Web ingress boundary at `/api/v1`,
 composed in the existing `Pegasus.Web` host behind `Features:DesktopGateway`.
 Its route group supplies correlation identifiers and RFC 9457 problem details;
-endpoint authorization and business projections remain owned by the later
-gateway tickets. Its first-party `pegasus-desktop` session is issued by the
-shared `/connect/token` composition described above. Desktop password grants at `/connect/token` share the staff sign-in throttle with browser `POST /Account/SignIn` requests. This source-state entry
+its `/api/v1` endpoints validate the existing `pegasus-desktop` OpenIddict
+bearer flow and recheck staff `IsEnabled`, security stamp, and absolute-session
+age on every request, returning the `not-authorized`, `account-disabled`, or
+`password-change-required` problem type as applicable. Its first-party
+`pegasus-desktop` session is issued by the
+shared `/connect/token` composition described above. Desktop password grants at
+`/connect/token` share the staff sign-in throttle with browser
+`POST /Account/SignIn` requests. This source-state entry
 does not establish that the feature flag is enabled in any deployed
 environment.
 

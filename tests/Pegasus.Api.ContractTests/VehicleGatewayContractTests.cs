@@ -6,15 +6,19 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using OpenIddict.Abstractions;
 using Pegasus.Contracts;
 using Pegasus.Contracts.ProblemDetails;
 using Pegasus.Core.Identity;
 using Pegasus.Core.Vehicle;
+using Pegasus.Infrastructure.Persistence;
 using Pegasus.Web.Api;
+using Pegasus.Web.Desktop;
 
 namespace Pegasus.Api.ContractTests;
 
@@ -310,8 +314,9 @@ public sealed class VehicleGatewayContractTests
             builder.UseSetting(DesktopGateway.FeatureFlag, "true");
             builder.ConfigureTestServices(services =>
             {
+                ContractTestIdentity.Configure(services);
                 services.RemoveAll<IAuthenticationService>();
-                services.AddSingleton<IAuthenticationService, TestAuthenticationService>();
+                services.AddScoped<IAuthenticationService, TestAuthenticationService>();
                 services.RemoveAll<IRequestVehicleLookupStore>();
                 services.AddSingleton<IRequestVehicleLookupStore>(LookupStore);
                 services.RemoveAll<IAcceptVehicleSuggestionStore>();
@@ -324,23 +329,53 @@ public sealed class VehicleGatewayContractTests
 
     private sealed class TestAuthenticationService : IAuthenticationService
     {
-        public Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string? scheme)
+        private readonly UserManager<PegasusIdentityUser> userManager;
+
+        public TestAuthenticationService(UserManager<PegasusIdentityUser> userManager)
+        {
+            this.userManager = userManager;
+        }
+
+        public async Task<AuthenticateResult> AuthenticateAsync(
+            HttpContext context,
+            string? scheme)
         {
             if (context.Request.Headers.ContainsKey("X-Test-Unauthenticated"))
             {
-                return Task.FromResult(AuthenticateResult.NoResult());
+                return AuthenticateResult.NoResult();
             }
 
             var claims = new List<Claim>();
             if (!context.Request.Headers.ContainsKey("X-Test-Invalid-Actor"))
             {
-                claims.Add(new Claim(ClaimTypes.NameIdentifier, "4de7c7b0-6119-4b3e-a0ba-b5e8e042c4b0"));
+                var user = await userManager.FindByIdAsync(
+                    "4de7c7b0-6119-4b3e-a0ba-b5e8e042c4b0");
+                if (user is null)
+                {
+                    return AuthenticateResult.NoResult();
+                }
+
+                claims.Add(new Claim(
+                    ClaimTypes.NameIdentifier,
+                    user.Id.ToString("D")));
                 claims.Add(new Claim(ClaimTypes.Role, StaffRoleNames.User));
+                claims.Add(new Claim(
+                    OpenIddictConstants.Claims.Subject,
+                    user.Id.ToString("D")));
+                claims.Add(new Claim(OpenIddictConstants.Claims.Role, StaffRoleNames.User));
+                claims.Add(new Claim(
+                    DesktopSession.OriginalIssueClaim,
+                    DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(
+                        System.Globalization.CultureInfo.InvariantCulture)));
+                claims.Add(new Claim(
+                    DesktopSession.SecurityStampClaim,
+                    user.SecurityStamp ?? string.Empty));
             }
 
             var identity = new ClaimsIdentity(claims, "VehicleGatewayTest");
-            return Task.FromResult(AuthenticateResult.Success(
-                new AuthenticationTicket(new ClaimsPrincipal(identity), scheme ?? "VehicleGatewayTest")));
+            identity.SetScopes([DesktopSession.Scope]);
+            return AuthenticateResult.Success(
+                new AuthenticationTicket(new ClaimsPrincipal(identity), scheme ?? "VehicleGatewayTest"));
         }
 
         public Task ChallengeAsync(

@@ -1,12 +1,11 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using Pegasus.Contracts;
 using Pegasus.Contracts.ProblemDetails;
 using Pegasus.Contracts.Vehicle;
-using Pegasus.Core.Actors;
 using Pegasus.Core.Identity;
 using Pegasus.Core.Vehicle;
+using Pegasus.Web.Desktop;
 
 namespace Pegasus.Web.Api;
 
@@ -383,34 +382,19 @@ internal sealed record VehicleAccessRightMetadata(StaffAccessRight AccessRight);
 
 internal sealed class VehicleAuthorizationEndpointFilter : IEndpointFilter
 {
-    private static readonly object ActorKey = new();
-
     public async ValueTask<object?> InvokeAsync(
         EndpointFilterInvocationContext context,
         EndpointFilterDelegate next)
     {
-        var actor = GetActor(context.HttpContext);
-        context.HttpContext.Items[ActorKey] = actor;
+        _ = GetActor(context.HttpContext);
         return await next(context);
     }
 
     public static ActionActor GetActor(HttpContext httpContext)
     {
-        if (httpContext.Items.TryGetValue(ActorKey, out var value) && value is ActionActor cachedActor)
-        {
-            return cachedActor;
-        }
-
-        var subjectId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var roles = httpContext.User.FindAll(ClaimTypes.Role).Select(claim => claim.Value);
-        if (!StaffActorFactory.TryCreate(subjectId, roles, out ActionActor? resolvedActor)
-            || resolvedActor is null)
-        {
-            throw new StaffAuthorizationException(StaffAccessRight.PerformCasework);
-        }
-
-        StaffAuthorization.Require(resolvedActor, StaffAccessRight.PerformCasework);
-        return resolvedActor;
+        var actor = DesktopActorResolver.GetActor(httpContext);
+        StaffAuthorization.Require(actor, StaffAccessRight.PerformCasework);
+        return actor;
     }
 }
 

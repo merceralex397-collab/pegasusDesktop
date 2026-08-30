@@ -2,6 +2,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Pegasus.Core;
 using Pegasus.Core.Cases;
 using Pegasus.Core.Intake;
@@ -580,6 +582,56 @@ public sealed class DependencyDirectionTests
             Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute>());
         Assert.False(typeof(StaffPageModel).IsAssignableFrom(typeof(RequestModel)));
     }
+
+    [Fact]
+    public void EveryDesktopGatewayEndpointInheritsTheDesktopApiPolicy()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(
+            root,
+            "src/Pegasus.Web/Api/DesktopGatewayExtensions.cs"));
+        var syntax = CSharpSyntaxTree.ParseText(source).GetRoot();
+        var group = Assert.Single(
+            syntax.DescendantNodes().OfType<VariableDeclaratorSyntax>(),
+            variable => variable.Identifier.ValueText == "group");
+        var groupCalls = group.Initializer!.Value
+            .DescendantNodesAndSelf()
+            .OfType<InvocationExpressionSyntax>()
+            .ToArray();
+
+        Assert.Contains(
+            groupCalls,
+            call => IsMemberCall(call, "MapGroup")
+                && call.ArgumentList.Arguments.Count == 1
+                && call.ArgumentList.Arguments[0].Expression.ToString()
+                    == "DesktopGateway.BasePath");
+        Assert.Contains(
+            groupCalls,
+            call => IsMemberCall(call, "RequireAuthorization")
+                && call.ArgumentList.Arguments.Count == 1
+                && call.ArgumentList.Arguments[0].Expression.ToString()
+                    == "DesktopGateway.AuthorizationPolicy");
+
+        foreach (var slice in new[] { "MapVehicleEndpoints", "MapMailEndpoints" })
+        {
+            var sliceCalls = syntax.DescendantNodes()
+                .OfType<InvocationExpressionSyntax>()
+                .Where(call => IsMemberCall(call, slice))
+                .ToArray();
+            Assert.Contains(sliceCalls, call => IsMemberCall(call, slice, "group"));
+            Assert.DoesNotContain(sliceCalls, call => IsMemberCall(call, slice, "app"));
+        }
+    }
+
+    private static bool IsMemberCall(
+        InvocationExpressionSyntax call,
+        string memberName,
+        string? receiverName = null) =>
+        call.Expression is MemberAccessExpressionSyntax member
+        && member.Name.Identifier.ValueText == memberName
+        && (receiverName is null
+            || member.Expression is IdentifierNameSyntax receiver
+                && receiver.Identifier.ValueText == receiverName);
 
     [Fact]
     public void CustodyAndEvaPoliciesHaveOneCoreOwnerAndAdaptersRemainAtBoundaries()

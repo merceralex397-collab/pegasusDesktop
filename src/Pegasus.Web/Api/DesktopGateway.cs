@@ -9,6 +9,7 @@ public static class DesktopGateway
 {
     public const string FeatureFlag = "Features:DesktopGateway";
     public const string BasePath = "/api/v1";
+    public const string AuthorizationPolicy = "DesktopApi";
 }
 
 /// <summary>

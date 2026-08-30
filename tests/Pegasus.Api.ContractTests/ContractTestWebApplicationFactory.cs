@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using OpenIddict.Abstractions;
 using Pegasus.Api.ContractTests.CommandCoverage;
 using Pegasus.Core.Vehicle;
 using Pegasus.Infrastructure.Persistence;
+using Pegasus.Web.Desktop;
 
 namespace Pegasus.Api.ContractTests;
 
@@ -57,9 +59,21 @@ public class ContractTestWebApplicationFactory : WebApplicationFactory<Program>
                 new System.Security.Claims.Claim(
                     System.Security.Claims.ClaimTypes.NameIdentifier,
                     "4de7c7c0-6119-4b3e-a0ba-b5e8e042c4b0"),
-                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, role)
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, role),
+                new System.Security.Claims.Claim(
+                    OpenIddictConstants.Claims.Subject,
+                    "4de7c7c0-6119-4b3e-a0ba-b5e8e042c4b0"),
+                new System.Security.Claims.Claim(OpenIddictConstants.Claims.Role, role),
+                new System.Security.Claims.Claim(
+                    DesktopSession.OriginalIssueClaim,
+                    DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(
+                        System.Globalization.CultureInfo.InvariantCulture)),
+                new System.Security.Claims.Claim(
+                    DesktopSession.SecurityStampClaim,
+                    "contract-test-security-stamp")
             };
             var identity = new System.Security.Claims.ClaimsIdentity(claims, "ContractTest");
+            identity.SetScopes([DesktopSession.Scope]);
             return Task.FromResult(AuthenticateResult.Success(
                 new AuthenticationTicket(
                     new System.Security.Claims.ClaimsPrincipal(identity),
@@ -183,6 +197,7 @@ internal sealed class ContractTestUserStore : IUserStore<PegasusIdentityUser>
         UserName = "contract-test-user",
         NormalizedUserName = "CONTRACT-TEST-USER",
         IsEnabled = true,
-        MustChangePassword = false
+        MustChangePassword = false,
+        SecurityStamp = "contract-test-security-stamp"
     };
 }

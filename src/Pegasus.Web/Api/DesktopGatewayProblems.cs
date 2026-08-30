@@ -1,6 +1,9 @@
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Policy;
+using Microsoft.AspNetCore.Authentication;
 using Pegasus.Contracts;
 using Pegasus.Contracts.ProblemDetails;
 using Pegasus.Core.Identity;
@@ -134,8 +137,98 @@ internal sealed class DesktopGatewayExceptionHandler : IExceptionHandler
     }
 }
 
+internal sealed class DesktopGatewayAuthorizationMiddlewareResultHandler
+    : IAuthorizationMiddlewareResultHandler
+{
+    private readonly AuthorizationMiddlewareResultHandler defaultHandler = new();
+
+    public async Task HandleAsync(
+        RequestDelegate next,
+        HttpContext context,
+        AuthorizationPolicy policy,
+        PolicyAuthorizationResult authorizeResult)
+    {
+        if (!context.Request.Path.StartsWithSegments(DesktopGateway.BasePath)
+            || !policy.AuthenticationSchemes.Contains(
+                OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme,
+                StringComparer.Ordinal))
+        {
+            await defaultHandler.HandleAsync(next, context, policy, authorizeResult);
+            return;
+        }
+
+        if (authorizeResult.Challenged)
+        {
+            await context.ChallengeAsync(
+                OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+            await DesktopGatewayProblems.WriteAsync(
+                context,
+                new PegasusProblem(
+                    PegasusProblemTypes.NotAuthorized,
+                    "Not authorized",
+                    StatusCodes.Status401Unauthorized,
+                    "A valid desktop bearer token is required.",
+                    null,
+                    DesktopGatewayCorrelation.Apply(context)),
+                context.RequestAborted);
+            return;
+        }
+
+        if (authorizeResult.Forbidden)
+        {
+            await context.ForbidAsync(
+                OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+            await DesktopGatewayProblems.WriteAsync(
+                context,
+                new PegasusProblem(
+                    PegasusProblemTypes.NotAuthorized,
+                    "Not authorized",
+                    StatusCodes.Status403Forbidden,
+                    "The desktop bearer token is not authorized for this resource.",
+                    null,
+                    DesktopGatewayCorrelation.Apply(context)),
+                context.RequestAborted);
+            return;
+        }
+
+        await next(context);
+    }
+}
+
 internal static class DesktopGatewayProblems
 {
+    public static IResult NotAuthorized(HttpContext httpContext) =>
+        new ProblemResult(new PegasusProblem(
+            PegasusProblemTypes.NotAuthorized,
+            "Not authorized",
+            StatusCodes.Status403Forbidden,
+            "The desktop bearer token is not authorized for this resource.",
+            null,
+            DesktopGatewayCorrelation.Apply(httpContext)));
+
+    public static IResult AccountDisabled(
+        HttpContext httpContext,
+        string? reasonCode = null) =>
+        new ProblemResult(new PegasusProblem(
+            PegasusProblemTypes.AccountDisabled,
+            "Account disabled",
+            StatusCodes.Status401Unauthorized,
+            "The staff account is disabled or the desktop session is no longer valid.",
+            null,
+            DesktopGatewayCorrelation.Apply(httpContext),
+            reasonCode is null
+                ? null
+                : new Dictionary<string, object?> { ["reasonCode"] = reasonCode }));
+
+    public static IResult PasswordChangeRequired(HttpContext httpContext) =>
+        new ProblemResult(new PegasusProblem(
+            PegasusProblemTypes.PasswordChangeRequired,
+            "Password change required",
+            StatusCodes.Status403Forbidden,
+            "Change the staff password before continuing.",
+            null,
+            DesktopGatewayCorrelation.Apply(httpContext)));
+
     public static IResult NotFound(
         HttpContext httpContext,
         string detail = "The requested mail resource was not found.") =>
