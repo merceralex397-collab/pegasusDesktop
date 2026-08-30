@@ -280,3 +280,17 @@ The `proof` document is produced from these four outputs.
 
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this branch's own
 diff before the PR, recorded here under a dated heading._
+
+## Implementation and simplification pass — 2026-08-30
+
+Implementation commit `afb2341783d96a3de43c4f9fc3c9cf8d69948af7` adds the explicit startup entry point, constant AppInstance key, activation routing/logging, host registration, architecture note, and three focused activation tests within the planned scope. The manifest's existing operator-confirmed identity (`CollisionEngineers.Pegasus`, publisher `CN=Collision Engineers`) was not changed. A parent review found the initial `ManualResetEventSlim.Wait()` on the STA contradicted the WinUI performance rule and could deadlock activation; commit `18493d485f8eab5c9d1fd8c63af9b478d54e04d` removes that machinery and uses the documented `async Task Main`/`await RedirectActivationToAsync` path.
+
+Parent validation after the correction:
+
+- `dotnet test tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~Activation" --logger "console;verbosity=minimal" -nr:false -p:UseSharedCompilation=false` — 3 passed, 0 failed, 0 skipped.
+- `dotnet build src/Pegasus.Desktop/Pegasus.Desktop.csproj --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false` — succeeded, 0 warnings, 0 errors.
+- `git diff --check` — passed.
+
+Simplification findings: removed the unnecessary event/thread/exception-dispatch machinery rather than retaining it as a defensive path; no Win32 foreground wrapper, no mutable instance-key inputs, no package-identity change, and no new abstraction beyond the ticket's activation router and the navigation seam needed by [[FND-033]]. The temporary-compatible `INavigationService` declaration is deliberately a single shared contract for FND-033 to reuse; FND-033 must not create a duplicate contract. No unrelated files were changed.
+
+The authoritative solution-wide build and real two-launch packaged-app proof remain pending. The two-launch proof also needs FND-033's concrete navigation implementation; no claim of runtime completion is made yet. No PR or push has been made for this ticket.
