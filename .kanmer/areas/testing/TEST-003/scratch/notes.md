@@ -34,3 +34,15 @@ Final validation after remediation:
 - Exact cleanup: 9 exact disposable databases (8 final-rerun plus 1 exploratory-run residue) dropped after testhost exit; follow-up exact-name census returned zero and no backup file was present.
 
 Fresh post-implementation report version `db1fe6a0f80e17f8` now records commit `f85e5236` and the concurrency disposition. Ready for fresh independent review.
+
+2026-08-30 — Exact-head evidence correction.
+
+Reviewer found the previous shard artifacts predated commit `f85e5236`. Reran the full shard commands from that committed checkout:
+- shard 1: 330/330 passed in 5m02s;
+- shard 2: 323 passed, 1 pre-existing skip, 324 total in 4m39s;
+- shard 3: 325 passed, 1 pre-existing skip, 326 total in 6m47s;
+- VerifyPartition: all 980 enumerated tests exactly once.
+
+After testhost exit, 11 databases created by this post-commit rerun were verified by exact name and dropped; the follow-up exact-name census returned zero. The older `Pegasus_Test_29a0ec4012034d2591bd9570dab5670f` database was deliberately not touched because it predates this run and is protected by the runbook's one-day safety floor.
+
+Reconciled the canonical plan through Kanmer: verification rows checked, current disposition updated from pre-implementation to commit `f85e5236`, focused count corrected to four tests, docs-change statement corrected, and exact-head results recorded. The testing-area DSK-08-03 row and ticket-body checkboxes remain aligned. Fresh review requested for the exact commit and reconciled plan.
