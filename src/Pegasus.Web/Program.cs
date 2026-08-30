@@ -25,6 +25,7 @@ using Microsoft.EntityFrameworkCore;
 using Pegasus.Core.Identity;
 using Pegasus.Web.AiWork;
 using Pegasus.Web.Api;
+using Pegasus.Web.Desktop;
 using Pegasus.Web.Mcp;
 using Pegasus.Web.Pages.Uploads;
 using Azure.Core;
@@ -36,7 +37,6 @@ using Pegasus.Infrastructure.Custody;
 using Pegasus.Infrastructure.Email;
 using Microsoft.ApplicationInsights.Extensibility;
 
-const string OriginalIssueClaim = "pegasus:original-issued-at";
 const string DevelopmentOfflineProfile = "DevelopmentOffline";
 const string DevelopmentOfflineAuthenticationScheme = "DevelopmentOffline";
 const string AuthenticationRoutingScheme = "Pegasus";
@@ -355,11 +355,11 @@ builder.Services.Configure<SecurityStampValidatorOptions>(options =>
     options.ValidationInterval = TimeSpan.Zero;
     options.OnRefreshingPrincipal = context =>
     {
-        var originalIssue = context.CurrentPrincipal?.FindFirst(OriginalIssueClaim);
+        var originalIssue = context.CurrentPrincipal?.FindFirst(DesktopSession.OriginalIssueClaim);
         var identity = context.NewPrincipal?.Identity as System.Security.Claims.ClaimsIdentity;
         if (originalIssue is not null
             && identity is not null
-            && !identity.HasClaim(claim => claim.Type == OriginalIssueClaim))
+            && !identity.HasClaim(claim => claim.Type == DesktopSession.OriginalIssueClaim))
         {
             identity.AddClaim(originalIssue);
         }
@@ -385,11 +385,11 @@ builder.Services.ConfigureApplicationCookie(options =>
             ?? throw new InvalidOperationException("A staff sign-in requires a principal.");
         var identity = principal.Identity as System.Security.Claims.ClaimsIdentity
             ?? throw new InvalidOperationException("A staff sign-in requires a claims identity.");
-        if (!identity.HasClaim(claim => claim.Type == OriginalIssueClaim))
+        if (!identity.HasClaim(claim => claim.Type == DesktopSession.OriginalIssueClaim))
         {
             var clock = context.HttpContext.RequestServices.GetRequiredService<TimeProvider>();
             identity.AddClaim(new(
-                OriginalIssueClaim,
+                DesktopSession.OriginalIssueClaim,
                 clock.GetUtcNow().ToUnixTimeSeconds().ToString(
                     System.Globalization.CultureInfo.InvariantCulture)));
         }
@@ -422,7 +422,7 @@ builder.Services.ConfigureApplicationCookie(options =>
             .GetRequiredService<TimeProvider>()
             .GetUtcNow()
             .ToUnixTimeSeconds();
-        var issuedValue = context.Principal.FindFirst(OriginalIssueClaim)?.Value;
+        var issuedValue = context.Principal.FindFirst(DesktopSession.OriginalIssueClaim)?.Value;
         if (!long.TryParse(
                 issuedValue,
                 System.Globalization.NumberStyles.None,
@@ -624,6 +624,12 @@ builder.Services.AddScoped<IGroupedIntakeSubmission>(serviceProvider =>
 // view in every profile; the ingress itself stays behind the composition gate.
 builder.Services.AddScoped<IAutomationActivityQueries, EfAutomationActivityStore>();
 builder.Services.AddScoped<IListAutomationActivity, ListAutomationActivity>();
+if (automationMcpOptions is not null || desktopGatewayOptions is not null)
+{
+    builder.Services.AddPegasusOpenIddict(
+        automationMcpOptions,
+        desktopGatewayOptions is not null);
+}
 if (automationMcpOptions is not null)
 {
     builder.Services.AddPegasusAutomationMcp(automationMcpOptions, productVersion);
@@ -838,7 +844,7 @@ app.Use(async (context, next) =>
 });
 
 app.UseRateLimiter();
-if (automationMcpOptions is not null)
+if (automationMcpOptions is not null || desktopGatewayOptions is not null)
 {
     app.Use(async (context, next) =>
     {
@@ -863,9 +869,18 @@ if (automationMcpOptions is not null)
             // Seed/reconcile the single Automation client registration before
             // OpenIddict validates the caller (token) or the connector's
             // authorization request against it.
-            await context.RequestServices
-                .GetRequiredService<AutomationClientRegistry>()
-                .EnsureRegisteredAsync(context.RequestAborted);
+            if (automationMcpOptions is not null)
+            {
+                await context.RequestServices
+                    .GetRequiredService<AutomationClientRegistry>()
+                    .EnsureRegisteredAsync(context.RequestAborted);
+            }
+            if (desktopGatewayOptions is not null)
+            {
+                await context.RequestServices
+                    .GetRequiredService<DesktopClientRegistry>()
+                    .EnsureRegisteredAsync(context.RequestAborted);
+            }
         }
 
         await next(context);
@@ -979,6 +994,10 @@ app.MapGet("/diagnostics/version", () => Results.Ok(new
 })).AllowAnonymous();
 app.MapRazorPages()
    .WithStaticAssets();
+if (automationMcpOptions is not null || desktopGatewayOptions is not null)
+{
+    app.MapPegasusOpenIddictTokenEndpoint();
+}
 if (automationMcpOptions is not null)
 {
     app.MapPegasusAutomationMcp();

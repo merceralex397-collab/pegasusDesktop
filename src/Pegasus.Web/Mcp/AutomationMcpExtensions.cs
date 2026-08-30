@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using ModelContextProtocol.AspNetCore.Authentication;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
-using Pegasus.Infrastructure.Persistence;
 
 namespace Pegasus.Web.Mcp;
 
@@ -29,48 +28,6 @@ public static class AutomationMcpExtensions
         services.AddScoped<AutomationClientRegistry>();
         services.AddScoped<AutomationActorResolver>();
         services.AddScoped<AutomationMcpAuditor>();
-
-        services.AddOpenIddict()
-            .AddCore(core => core
-                .UseEntityFrameworkCore()
-                .UseDbContext<PegasusDbContext>())
-            .AddServer(server =>
-            {
-                server.SetTokenEndpointUris(AutomationMcp.TokenEndpointPath);
-                server.SetAuthorizationEndpointUris(AutomationMcp.AuthorizationEndpointPath);
-                server.AllowClientCredentialsFlow();
-                // External MCP connectors (for example the Claude.ai remote
-                // connector) obtain tokens by authorization code + PKCE with an
-                // Administrator consent step; the client registration only
-                // receives that grant when redirect URIs are configured.
-                server.AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange();
-                server.AllowRefreshTokenFlow();
-                server.RegisterScopes([.. AutomationMcp.Scopes]);
-                // MCP clients name the protected resource (RFC 8707) in their
-                // authorization requests; the only valid one is this /mcp.
-                server.RegisterResources(options.ResourceUri.AbsoluteUri);
-                server.SetAccessTokenLifetime(AutomationMcp.AccessTokenLifetime);
-                server.SetRefreshTokenLifetime(AutomationMcp.RefreshTokenLifetime);
-                // A hard cap: a connector re-consents at least fortnightly.
-                server.DisableSlidingRefreshTokenExpiration();
-                // This deployment has one always-on replica, so local keys are
-                // sufficient for its short-lived client-credentials tokens.
-                server.AddEphemeralEncryptionKey();
-                server.AddEphemeralSigningKey();
-                // TLS terminates at the Container Apps ingress
-                // (allowInsecure: false); the app listens on plain HTTP behind
-                // it, as does the in-process integration test server.
-                server.UseAspNetCore()
-                    .EnableTokenEndpointPassthrough()
-                    .EnableAuthorizationEndpointPassthrough()
-                    .DisableTransportSecurityRequirement();
-            })
-            .AddValidation(validation =>
-            {
-                validation.UseLocalServer();
-                validation.UseAspNetCore();
-                validation.AddAudiences(AutomationMcp.Audience);
-            });
 
         services.AddAuthentication()
             .AddMcp(
@@ -120,9 +77,10 @@ public static class AutomationMcpExtensions
     }
 
     /// <summary>
-    /// Maps the bearer-only automation surface: the token endpoint (client
-    /// credentials, authorization code, refresh) and the streamable-HTTP MCP
-    /// endpoint. The Administrator consent page at <c>/authorize</c> is a
+    /// Maps the bearer-only automation surface: the streamable-HTTP MCP
+    /// endpoint. The shared token endpoint (client credentials, authorization
+    /// code, refresh, and Desktop staff sessions) is mapped by the shared
+    /// OpenIddict composition. The Administrator consent page at <c>/authorize</c> is a
     /// Razor Page (staff cookie), not mapped here. A staff browser cookie is
     /// never accepted on <c>/mcp</c>: the endpoint policy authenticates
     /// exclusively with the automation bearer scheme, and an unauthenticated
@@ -131,9 +89,6 @@ public static class AutomationMcpExtensions
     public static void MapPegasusAutomationMcp(this WebApplication app)
     {
         ArgumentNullException.ThrowIfNull(app);
-        app.MapPost(AutomationMcp.TokenEndpointPath, AutomationTokenEndpoint.ExchangeAsync)
-            .AllowAnonymous()
-            .RequireRateLimiting(AutomationMcp.RateLimitPolicy);
         app.MapMcp(AutomationMcp.McpEndpointPath)
             .RequireAuthorization(AutomationMcp.EndpointPolicy)
             .RequireRateLimiting(AutomationMcp.RateLimitPolicy);
