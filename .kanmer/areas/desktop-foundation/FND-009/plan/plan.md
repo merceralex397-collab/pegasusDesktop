@@ -270,3 +270,17 @@ The first `gateway/r<N>` tag is not present locally or on `origin`, and `docs/op
 
 - PR #52 (`5d8be6841043c095b5fc7a2bc27127dbfa47a2e6`) is open against `dev` for the scoped documentation remediation.
 - Independent review is required before merge. No production tag, deployment, cloud write, or external release action is claimed.
+
+## Simplification pass — 2026-08-30 — PR #52 exact head `5d8be6841043c095b5fc7a2bc27127dbfa47a2e6`
+
+- **Reuse:** The remediation reuses the existing `docs/engineering.md` branch-delivery paragraph and the already-published tag procedure in both release-skill copies; it adds no new document, command, abstraction, or workflow.
+- **Simplification:** The diff is limited to the two missing policy statements: the post-promotion `origin/main` read-back and the C-01 private-runner cost constraint. Existing tag, CI, feed, and immutable-tag wording remains the single canonical rule.
+- **Efficiency:** The wording keeps the release route as one exact-SHA promotion/read-back followed by narrow tag lanes; it introduces no additional CI lane, build, release action, or external call.
+- **Altitude:** The policy belongs in `docs/engineering.md` § Branches and delivery, while executable tag commands remain in the release skill and the future tag execution remains a release-time operator step. No deployment or release state is asserted.
+- **Disposition:** No behaviour-preserving simplification remains. This pass covers the complete PR #52 head; the first production tag remains an explicit release-time handback.
+
+## Independent review — 2026-08-30 — PASS
+
+- Reviewer: Heisenberg the 2nd (independent of implementation).
+- PR #52 exact head: `5d8be6841043c095b5fc7a2bc27127dbfa47a2e6`.
+- Result: PASS; no concrete findings. The reviewer confirmed the exact-head simplification pass covers reuse, simplification, efficiency, altitude, and disposition; the one-file docs scope, exact-head checks, and honest first-tag handback are correct.
