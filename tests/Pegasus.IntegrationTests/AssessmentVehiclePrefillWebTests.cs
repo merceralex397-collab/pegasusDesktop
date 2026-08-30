@@ -125,7 +125,8 @@ public sealed class AssessmentVehiclePrefillWebTests
             [new(new DateOnly(2026, 3, 4), "PASSED", new DateOnly(2027, 3, 3), 45123, VehicleMileageUnit.Miles)],
             new(45123, VehicleMileageUnit.Miles, new DateOnly(2026, 3, 4), VehicleMileagePolicy.MethodKey, VehicleMileagePolicy.MethodVersion, 1),
             null,
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow,
+            "assessment-vehicle-correlation");
 
     private static CaseDataProjection Data(CaseIdentity identity, CaseWorkflowRecord workflow)
     {

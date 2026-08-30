@@ -35,7 +35,8 @@ public sealed record VehicleLookupObservation(
     IReadOnlyList<MotTestObservation> MotTests,
     VehicleMileageCalculation? Mileage,
     VehicleLookupFailure? Failure,
-    DateTimeOffset RecordedAtUtc);
+    DateTimeOffset RecordedAtUtc,
+    string CorrelationId);
 
 public sealed record VehicleConfirmationHistory(
     Guid Id,
@@ -94,6 +95,7 @@ public sealed record RequestedVehicleLookup(
     string Registration,
     VehicleLookupWorkState State,
     long ResultingCaseVersion,
+    string CorrelationId,
     bool IsReplay);
 
 public sealed record AcceptVehicleSuggestionCommand(
@@ -115,6 +117,7 @@ public sealed record AcceptedVehicleSuggestion(
     VehicleConfirmationValues Values,
     VehicleEvidenceProvenance Provenance,
     long ResultingCaseVersion,
+    string CorrelationId,
     bool IsReplay);
 
 public sealed record VehicleLookupAvailability(bool RequestsEnabled, string Mode)

@@ -83,6 +83,7 @@ internal sealed class EfVehicleWorkflowStore(
                 replay.Registration,
                 EfVehicleLookupWorkStore.MapWorkState(replay.WorkItem),
                 replay.ResultingCaseVersion,
+                replay.CorrelationId,
                 IsReplay: true);
         }
 
@@ -182,6 +183,7 @@ internal sealed class EfVehicleWorkflowStore(
             command.Registration,
             VehicleLookupWorkState.Pending,
             workflow.Version,
+            command.CorrelationId,
             IsReplay: false);
     }
 
@@ -483,6 +485,7 @@ internal sealed class EfVehicleWorkflowStore(
             proposedValues,
             observation.Provenance,
             workflow.Version,
+            observation.CorrelationId,
             IsReplay: false);
     }
 
@@ -814,6 +817,7 @@ internal sealed class EfVehicleWorkflowStore(
             new(entity.Registration, entity.Make, entity.Model, entity.Mileage, unit),
             observation.Provenance,
             entity.AfterCaseVersion,
+            observation.CorrelationId,
             isReplay);
     }
 
@@ -871,10 +875,7 @@ internal sealed class EfVehicleWorkflowStore(
                 : CaseDataCodes.Fact;
             var values = group
                 .Where(candidate => candidate.ValueKind == tier)
-                .Select(candidate => new string(
-                    candidate.Value.ToUpperInvariant()
-                        .Where(char.IsAsciiLetterOrDigit)
-                        .ToArray()))
+                .Select(candidate => candidate.Value)
                 .Distinct(StringComparer.Ordinal)
                 .ToArray();
             if (values.Length != 1)

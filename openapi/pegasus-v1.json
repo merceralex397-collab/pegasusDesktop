@@ -74,6 +74,9 @@
           "provenance": {
             "$ref": "#/components/schemas/VehicleEvidenceProvenanceResponse"
           },
+          "providerCorrelationId": {
+            "type": "string"
+          },
           "resultingCaseVersion": {
             "format": "int64",
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -94,7 +97,8 @@
           "values",
           "provenance",
           "resultingCaseVersion",
-          "correlationId"
+          "correlationId",
+          "providerCorrelationId"
         ],
         "type": "object"
       },
@@ -802,6 +806,9 @@
           "provenance": {
             "$ref": "#/components/schemas/VehicleEvidenceProvenanceResponse"
           },
+          "providerCorrelationId": {
+            "type": "string"
+          },
           "recordedAtUtc": {
             "format": "date-time",
             "type": "string"
@@ -836,7 +843,8 @@
           "motTests",
           "mileage",
           "failure",
-          "recordedAtUtc"
+          "recordedAtUtc",
+          "providerCorrelationId"
         ],
         "type": "object"
       },
@@ -877,6 +885,9 @@
           "correlationId": {
             "type": "string"
           },
+          "providerCorrelationId": {
+            "type": "string"
+          },
           "registration": {
             "type": "string"
           },
@@ -910,7 +921,8 @@
           "registration",
           "state",
           "resultingCaseVersion",
-          "correlationId"
+          "correlationId",
+          "providerCorrelationId"
         ],
         "type": "object"
       },

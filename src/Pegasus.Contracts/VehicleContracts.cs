@@ -64,7 +64,8 @@ public sealed record VehicleLookupResponse(
     string Registration,
     string State,
     long ResultingCaseVersion,
-    string CorrelationId);
+    string CorrelationId,
+    string ProviderCorrelationId);
 
 /// <summary>Reports an accepted vehicle suggestion and its provenance.</summary>
 public sealed record AcceptedVehicleSuggestionResponse(
@@ -75,7 +76,8 @@ public sealed record AcceptedVehicleSuggestionResponse(
     VehicleConfirmationValuesResponse Values,
     VehicleEvidenceProvenanceResponse Provenance,
     long ResultingCaseVersion,
-    string CorrelationId);
+    string CorrelationId,
+    string ProviderCorrelationId);
 
 /// <summary>Confirmed vehicle values written to a case.</summary>
 public sealed record VehicleConfirmationValuesResponse(
@@ -139,7 +141,8 @@ public sealed record VehicleLookupObservationResponse(
     IReadOnlyList<MotTestResponse> MotTests,
     VehicleMileageResponse? Mileage,
     VehicleLookupFailureResponse? Failure,
-    DateTimeOffset RecordedAtUtc);
+    DateTimeOffset RecordedAtUtc,
+    string ProviderCorrelationId);
 
 /// <summary>A confirmed text field and its audit provenance.</summary>
 public sealed record ConfirmedVehicleTextFieldResponse(

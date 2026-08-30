@@ -212,7 +212,8 @@ public sealed class VehicleWorkflowTests
             motTests,
             calculation,
             null,
-            FixedUtcNow);
+            FixedUtcNow,
+            "vehicle-observation-correlation");
 
         var values = VehicleSuggestionAcceptancePolicy.Resolve(
             observation,
@@ -404,6 +405,7 @@ public sealed class VehicleWorkflowTests
                 command.Registration,
                 VehicleLookupWorkState.Pending,
                 command.ExpectedCaseVersion + 1,
+                command.CorrelationId,
                 false));
         }
     }
@@ -433,6 +435,7 @@ public sealed class VehicleWorkflowTests
                     null,
                     FixedUtcNow.AddDays(-1)),
                 command.ExpectedCaseVersion + 1,
+                "vehicle-accept-correlation",
                 false));
         }
     }

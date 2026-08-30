@@ -324,7 +324,8 @@ internal sealed class EfVehicleLookupWorkStore(
             motTests,
             mileage,
             failure,
-            entity.RecordedAtUtc);
+            entity.RecordedAtUtc,
+            entity.Request.CorrelationId);
     }
 
     internal static VehicleLookupWorkState MapWorkState(ExternalWorkItemEntity work) =>

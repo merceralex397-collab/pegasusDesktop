@@ -388,6 +388,7 @@ public sealed class VehicleGatewayContractTests
                 command.Registration,
                 VehicleLookupWorkState.Pending,
                 command.ExpectedCaseVersion + 1,
+                command.CorrelationId,
                 IsReplay: false));
         }
     }
@@ -410,6 +411,7 @@ public sealed class VehicleGatewayContractTests
                 values,
                 Provenance(),
                 command.ExpectedCaseVersion + 1,
+                "vehicle-accept-correlation",
                 IsReplay: false));
         }
     }
@@ -474,7 +476,8 @@ public sealed class VehicleGatewayContractTests
                 VehicleLookupOutcome.Failed => new VehicleLookupFailure("provider-timeout", true),
                 _ => null
             },
-            new DateTimeOffset(2031, 5, 6, 12, 0, index, TimeSpan.Zero))).ToArray();
+            new DateTimeOffset(2031, 5, 6, 12, 0, index, TimeSpan.Zero),
+            $"vehicle-evidence-correlation-{index}")).ToArray();
         return new(CaseId, null, observations[^1], observations, [], Version: 7);
     }
 

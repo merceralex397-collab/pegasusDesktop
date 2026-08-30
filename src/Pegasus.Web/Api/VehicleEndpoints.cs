@@ -84,7 +84,8 @@ public static class VehicleEndpoints
                 result.Registration,
                 ToWireValue(result.State),
                 result.ResultingCaseVersion,
-                VehicleGatewayCorrelation(httpContext));
+                VehicleGatewayCorrelation(httpContext),
+                result.CorrelationId);
             return TypedResults.Accepted($"/api/v1/cases/{caseId:D}/vehicle", response);
         }
         catch (Exception exception) when (VehicleGatewayProblems.IsKnownVehicleException(exception))
@@ -132,7 +133,8 @@ public static class VehicleEndpoints
                 Map(result.Values),
                 Map(result.Provenance),
                 result.ResultingCaseVersion,
-                VehicleGatewayCorrelation(httpContext)));
+                VehicleGatewayCorrelation(httpContext),
+                result.CorrelationId));
         }
         catch (Exception exception) when (VehicleGatewayProblems.IsKnownVehicleException(exception))
         {
@@ -265,7 +267,8 @@ public static class VehicleEndpoints
             observation.MotTests.Select(Map).ToArray(),
             Map(observation.Mileage),
             Map(observation.Failure),
-            observation.RecordedAtUtc);
+            observation.RecordedAtUtc,
+            observation.CorrelationId);
 
     private static VehicleDetailsResponse? Map(VehicleDetails? vehicle) => vehicle is null
         ? null

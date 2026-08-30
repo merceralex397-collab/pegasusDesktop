@@ -116,6 +116,28 @@ public sealed class VehicleGatewayReplayIntegrationTests
                 staffResponse.Headers.GetValues(PegasusHeaders.CorrelationId).Single());
             using var staffBody = JsonDocument.Parse(staffResponseBody);
             var staffWorkItemId = staffBody.RootElement.GetProperty("workItemId").GetGuid();
+            Assert.Equal(
+                staffCorrelation,
+                staffBody.RootElement.GetProperty("providerCorrelationId").GetString());
+
+            using var replayRequest = new HttpRequestMessage(
+                HttpMethod.Post,
+                $"/api/v1/cases/{staffCaseId:D}/vehicle/lookups");
+            replayRequest.Headers.Add(PegasusHeaders.ClientVersion, "1.0.0.0");
+            replayRequest.Headers.Add(PegasusHeaders.CorrelationId, "desktop-replay-correlation");
+            replayRequest.Content = new StringContent(
+                "{\"registration\":\"AB12CDE\",\"expectedVersion\":0,\"operationKey\":\"desktop-staff-lookup\",\"editLeaseToken\":\"vehicle-edit-lease\"}",
+                Encoding.UTF8,
+                "application/json");
+            using var replayResponse = await client.SendAsync(replayRequest);
+            Assert.Equal(HttpStatusCode.Accepted, replayResponse.StatusCode);
+            Assert.Equal(
+                "desktop-replay-correlation",
+                replayResponse.Headers.GetValues(PegasusHeaders.CorrelationId).Single());
+            using var replayBody = JsonDocument.Parse(await replayResponse.Content.ReadAsStreamAsync());
+            Assert.Equal(
+                staffCorrelation,
+                replayBody.RootElement.GetProperty("providerCorrelationId").GetString());
 
             await using (var scope = factory.Services.CreateAsyncScope())
             {
@@ -178,8 +200,15 @@ public sealed class VehicleGatewayReplayIntegrationTests
             Assert.Equal(HttpStatusCode.OK, evidenceResponse.StatusCode);
             using var evidenceBody = JsonDocument.Parse(await evidenceResponse.Content.ReadAsStreamAsync());
             Assert.Equal(
+                "desktop-read-correlation",
+                evidenceBody.RootElement.GetProperty("correlationId").GetString());
+            Assert.Equal(
                 "notFound",
                 evidenceBody.RootElement.GetProperty("latestObservation").GetProperty("outcome").GetString());
+            Assert.Equal(
+                await baseFactory.Database.ScalarAsync<string>(
+                    $"SELECT CorrelationId FROM VehicleLookupRequests WHERE WorkItemId = '{automaticWorkItemId:D}'"),
+                evidenceBody.RootElement.GetProperty("latestObservation").GetProperty("providerCorrelationId").GetString());
         }
         finally
         {

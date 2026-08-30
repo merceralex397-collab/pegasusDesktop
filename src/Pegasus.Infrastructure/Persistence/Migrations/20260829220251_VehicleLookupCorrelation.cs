@@ -15,8 +15,23 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                 table: "VehicleLookupRequests",
                 type: "nvarchar(200)",
                 maxLength: 200,
+                nullable: true);
+
+            migrationBuilder.Sql(
+                "UPDATE [VehicleLookupRequests] " +
+                "SET [CorrelationId] = CONCAT(N'vehicle-lookup:migrated:', CONVERT(nvarchar(36), [WorkItemId])) " +
+                "WHERE [CorrelationId] IS NULL;");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "CorrelationId",
+                table: "VehicleLookupRequests",
+                type: "nvarchar(200)",
+                maxLength: 200,
                 nullable: false,
-                defaultValue: "vehicle-lookup:migrated");
+                oldClrType: typeof(string),
+                oldType: "nvarchar(200)",
+                oldMaxLength: 200,
+                oldNullable: true);
         }
 
         /// <inheritdoc />

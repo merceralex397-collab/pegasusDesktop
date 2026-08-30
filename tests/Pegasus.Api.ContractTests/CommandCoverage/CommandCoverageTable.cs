@@ -248,6 +248,7 @@ internal sealed class VehicleCommandCoverageStore :
             command.Registration,
             VehicleLookupWorkState.Pending,
             ++CurrentCaseVersion,
+            command.CorrelationId,
             IsReplay: false);
         lookupOperations.Add(command.OperationKey, result);
         state = "pending";
@@ -279,6 +280,7 @@ internal sealed class VehicleCommandCoverageStore :
                 null,
                 new DateTimeOffset(2031, 5, 6, 10, 0, 0, TimeSpan.Zero)),
             ++CurrentCaseVersion,
+            "vehicle-accept-correlation",
             IsReplay: false);
         acceptanceOperations.Add(command.OperationKey, result);
         state = "confirmed";
