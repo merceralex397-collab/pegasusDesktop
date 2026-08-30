@@ -135,3 +135,7 @@ The test now sends `X-Contract-Unauthenticated` for this unauthenticated disable
 ## Final-head hosted CI success (2026-08-30)
 
 Run `33283250011` passed at exact head `cc91137a4a9e95b99021fe652d367677e3f2c574` (`cc91137a`). All required jobs passed: unit, SQL integration shards 1–3, SQL integration coverage, browser, changes, documentation, local-development-scripts, and reference-data. Infrastructure was skipped by the workflow. PR #51 reports `CLEAN`. The disabled-gateway test correction is therefore validated on the hosted runner; independent review remains the only pre-merge gate.
+
+## Independent review PASS (2026-08-30)
+
+Helmholtz the 2nd (`01a0500d-f4e9-7eb0-9b7d-e9cdae9ba3c8`), an independent `pegasus-desktop-reviewer` that did not implement this ticket, reviewed PR #51 at exact head `cc91137a4a9e95b99021fe652d367677e3f2c574` and returned PASS with no findings. The review rechecked all prior blockers, route/Core/contract coverage, migration ordering, security boundary, simplification pass, exact-head CI, and merge readiness. PR #51 is eligible for merge to `dev`.

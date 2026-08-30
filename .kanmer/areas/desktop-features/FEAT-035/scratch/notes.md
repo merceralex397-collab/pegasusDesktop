@@ -9,3 +9,5 @@
 2026-08-30 exact-head CI run 33282640860 failed in unit because the disabled-gateway OpenAPI test authenticated the request and status-page rail counts queried absent PegasusDevelopment, producing 500 instead of 404. Corrected the test to send the existing X-Contract-Unauthenticated header; focused and full Category=Contract local tests pass. Commit/push and fresh review/CI remain required.
 
 2026-08-30 final-head hosted CI run 33283250011 passed at cc91137a4a9e95b99021fe652d367677e3f2c574. Unit, SQL shards 1-3, SQL coverage, browser, changes, documentation, local-development-scripts, and reference-data passed; infrastructure skipped by workflow. PR #51 is CLEAN. Fresh independent review remains pending.
+
+Independent review PASS: Helmholtz the 2nd reviewed exact head cc91137a4a9e95b99021fe652d367677e3f2c574 and found no issues. Rechecked normalization, durable/provider correlation separation, migration ordering, CI correction, scope, security, simplification, and hosted CI. PR #51 is merge-ready for dev.

@@ -19,7 +19,7 @@
 - [x] Required filtered integration suite — 972 passed, 2 skipped, 0 failed, 974 total; skips are the existing QDOS mapped-instruction and custody embedded-photograph tests.
 - [x] Migration schema guard — 1 passed.
 - [x] Review-fix simplification correction recorded; no unapplied findings remain.
-- [ ] Fresh independent reviewer PASS — pending; no merge or final Kanmer closeout is claimed.
+- [x] Fresh independent reviewer PASS — Helmholtz the 2nd reviewed exact head `cc91137a`; no findings; merge-ready.
 
 ## Hosted CI correction (2026-08-30)
 
@@ -35,7 +35,7 @@
 - [x] Backfill legacy correlation values uniquely from each WorkItemId before enforcing non-null storage.
 - [x] Add regression coverage for invalid automatic input and replay/read correlation separation.
 - [x] Corrected local validation — build 0/0; Core 941/941; Architecture 121/121; contract filter 18/18; focused vehicle/SQL set 31/31; full filtered integration 973 passed, 2 skipped, 0 failed, 975 total; migration guard 1/1.
-- [ ] Fresh independent reviewer PASS — pending against the final pushed head.
+- [x] Fresh independent reviewer PASS against exact head `cc91137a` — Helmholtz the 2nd returned PASS with no findings.
 - [x] Hosted CI green at the final pushed head — run `33283250011` passed all required jobs at exact head `cc91137a4a9e95b99021fe652d367677e3f2c574`.
 
 ## Exact-head CI failure and correction (2026-08-30)
@@ -44,5 +44,5 @@
 - [x] Correct only the contract test request to use the existing unauthenticated test header; no product authentication or gateway behavior changed.
 - [x] Focused disabled-gateway test — 1 passed, 0 failed.
 - [x] Full `Category=Contract` suite after correction — 18 passed, 0 failed.
-- [ ] Fresh independent reviewer PASS against the new pushed head — pending.
+- [x] Fresh independent reviewer PASS against exact head `cc91137a` — Helmholtz the 2nd returned PASS with no findings.
 - [x] Hosted CI green against the new pushed head — run `33283250011` passed all required jobs at exact head `cc91137a4a9e95b99021fe652d367677e3f2c574`.
