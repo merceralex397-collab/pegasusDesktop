@@ -138,8 +138,13 @@ public partial class App : Application
         }
     }
 
-    private static void HandleActivation(AppActivationArguments activationArguments)
+    private static void HandleActivation(AppActivationArguments? activationArguments)
     {
+        if (activationArguments is null)
+        {
+            return;
+        }
+
         var router = Services?.Services.GetService<IActivationRouter>();
         router?.Route(activationArguments);
         BringWindowForward();

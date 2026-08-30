@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Windows.AppLifecycle;
 using Pegasus.Desktop.Infrastructure.Diagnostics;
 using Windows.ApplicationModel.Activation;
-using XamlLaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
+using LaunchActivatedEventArgs = Windows.ApplicationModel.Activation.ILaunchActivatedEventArgs;
 
 namespace Pegasus.Desktop.Services;
 
@@ -77,7 +77,7 @@ public sealed partial class ActivationRouter : IActivationRouter
                 file.Files.Count > 0 &&
                 TryGetFileRoute(file.Files[0].Path, out route, out target),
             ExtendedActivationKind.Launch =>
-                activationArguments.Data is XamlLaunchActivatedEventArgs launch &&
+                activationArguments.Data is LaunchActivatedEventArgs launch &&
                 TryGetRoute(launch.Arguments, out route, out target),
             _ => false
         };
@@ -265,7 +265,7 @@ internal static class ActivationLog
             IFileActivatedEventArgs file => string.Join(
                 "|",
                 file.Files.Select(static item => item.Path)),
-            XamlLaunchActivatedEventArgs launch => launch.Arguments,
+            LaunchActivatedEventArgs launch => launch.Arguments,
             _ => activationArguments.Kind.ToString()
         };
 }
