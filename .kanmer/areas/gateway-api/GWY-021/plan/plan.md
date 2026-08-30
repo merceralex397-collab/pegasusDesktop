@@ -72,3 +72,9 @@ Authenticate every `/api/v1` request with the desktop bearer token: translate it
 ## Independent review — 2026-08-30
 
 Fermat the 2nd independently reviewed final exact head `5cbe7033ad477895634fb8a8d769cc3943109b3c` and returned PASS. The reviewer confirmed the 7/7 production-route authentication tests, DesktopApi policy and resolver checks, GWY-003 seam, structural architecture guard, scope, and explicit DSK-03-15 future password-change seam. No merge blocker remains.
+
+## CI correction — 2026-08-30
+
+The first PR CI run (`33316926035`) failed because the new production `/api/v1` policy names the OpenIddict validation scheme and requires the `pegasus.desktop` scope plus subject/original-issued-at/security-stamp claims, while existing contract and LocalDB test harnesses still supplied only the legacy test identity. The correction is commit `4044446b63d66b0f8c05a7c84345fb543c01e1da` and changes only `tests/Pegasus.Api.ContractTests/ContractTestWebApplicationFactory.cs`, `tests/Pegasus.Api.ContractTests/VehicleGatewayContractTests.cs`, and `tests/Pegasus.IntegrationTests/IntakeWebTestSupport.cs`. It adapts test composition to the explicit production scheme without weakening the production policy.
+
+The specialist reported locked restore, Release build with 0 warnings/errors, 36 contract tests, vehicle replay integration, and desktop-mail integration passing. A parent confirmation attempted concurrently with the worker's build was blocked by that worker's `.NET Host` file lock on `src/Pegasus.Core/bin/Release/net10.0/Pegasus.Core.dll`; no code failure was established. The SQL-only MailPersistence run hung and was terminated, so the exact PR head must complete its GitHub CI run before merge. Independent review must review the corrected exact head, not only the earlier `5cbe7033` head.
