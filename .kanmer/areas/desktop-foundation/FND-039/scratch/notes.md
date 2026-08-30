@@ -11,3 +11,13 @@
 - Commits pushed: `a46570e7`, `673a7f91`; final branch head `673a7f91`.
 
 2026-08-29: Galileo independently reviewed exact head 8a2dd5f0a1594aab5474277dc9166569bdbb3d66. Script implementation passed review. Full acceptance is blocked by the exact --self-contained packaging/toolchain failure, certificate trust, clean Windows 11 install/launch/uninstall, result log, screenshot, cleanup read-back, and no-elevation evidence. No merge or Done claim.
+
+## Exact package repair and revalidation — 2026-08-30
+
+- Used operator-confirmed identity unchanged: CollisionEngineers.Pegasus / CN=Collision Engineers.
+- Added pinned winapp.yaml and ignored generated .winapp/ staging; winapp restore completed.
+- Release BuildAndRun -SkipRun passed with 0 warnings/errors.
+- winapp cert info passed: subject CN=Collision Engineers, thumbprint AC3468D9C8D1FF64FAE3980F93A0E92CC0BA3AED, private key present.
+- Exact self-contained package command passed and produced CollisionEngineers.Pegasus_0.1.0.0_x64.msix, 94,569,334 bytes; manifest/resources.pri present; manifest identity/publisher/version/architecture and signer match.
+- Get-AuthenticodeSignature is UnknownError only because local cert trust is not installed. No cert-store write performed.
+- Commit a8c4abf9 pushed to origin/task/desktop-dev-msix. Remaining gates: trust, clean Windows 11 install/launch/uninstall, result log/screenshot/cleanup/no-elevation evidence, independent review, merge, proof, closeout.

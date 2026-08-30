@@ -345,3 +345,19 @@ PR #48 merged into `dev` after the exact reviewed head passed every applicable C
 - Resulting `origin/dev`: `e071d3ca43e70fd695c1f9907856d61d5b189685`
 
 This is a prerequisite merge only. FND-039 remains in Review and is not Done: the exact repo-root self-contained packaging command still lacks the CLI runtime package configuration, and the operator certificate-trust plus clean-machine install/launch/uninstall, result-log, screenshot, cleanup, and no-elevation evidence remain outstanding.
+
+## Exact package repair and revalidation — 2026-08-30
+
+The operator-confirmed identity values were used unchanged: `Identity.Name=CollisionEngineers.Pegasus`, `Identity.Publisher=CN=Collision Engineers`, and `PublisherDisplayName=Collision Engineers`. The dev certificate reports subject `CN=Collision Engineers` and thumbprint `AC3468D9C8D1FF64FAE3980F93A0E92CC0BA3AED`.
+
+The previously diagnosed standalone WinApp CLI failure was repaired in the owned branch by adding a pinned `winapp.yaml` for the already-restored Windows App SDK/Windows SDK package set and ignoring the generated `.winapp/` staging directory. `winapp restore . --config-dir .` completed successfully. This is repository-local packaging setup; no upstream, cloud, deployment, or certificate-store write was performed.
+
+Validation on branch `task/desktop-dev-msix`:
+
+- `pwsh -NoProfile -File ./.codex/skills/winui-dev-workflow/BuildAndRun.ps1 src/Pegasus.Desktop/Pegasus.Desktop.csproj /p:Configuration=Release -SkipRun`: passed, x64 Release, 0 warnings/errors.
+- `winapp cert info ./devcert.pfx`: passed; subject `CN=Collision Engineers`, thumbprint `AC3468D9C8D1FF64FAE3980F93A0E92CC0BA3AED`, private key present.
+- `winapp package ./src/Pegasus.Desktop/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64 --cert ./devcert.pfx --self-contained`: passed; signed package `CollisionEngineers.Pegasus_0.1.0.0_x64.msix` produced, 94,569,334 bytes.
+- Archive inspection: `AppxManifest.xml` and `resources.pri` present; manifest identity `CollisionEngineers.Pegasus`, publisher `CN=Collision Engineers`, version `0.1.0.0`, architecture `x64`; signer subject/thumbprint match the certificate. `Get-AuthenticodeSignature` reports `UnknownError` because this development certificate is not yet trusted locally; `winapp` itself reports the package signed.
+- `git diff --check`: passed before commit. Commit `a8c4abf9` pushed to `origin/task/desktop-dev-msix`.
+
+This repair clears the missing local runtime-package configuration, not the operator gates. Certificate trust, clean Windows 11 install/launch/uninstall, result log, screenshot, post-uninstall package-family/DPAPI cleanup readback, and no-elevation confirmation remain outstanding. No merge or Done claim is made.
