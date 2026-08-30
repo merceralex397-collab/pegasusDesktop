@@ -4,12 +4,13 @@ type: ticket
 title: >-
   DSK-07-03 · Mail endpoints reuse: list, preview, detail, link/unlink,
   classify, move-to-recommended
-status: implementing
+status: review
 area: desktop-features
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
   preparing: '2026-08-24T21:31:40.214Z'
+  review: '2026-08-30T06:22:22.899Z'
 taken_at: '2026-08-30T04:05:52.485Z'
 branch: task/dsk-07-03-mail-endpoints
 worktree: 'C:\Users\PC\Documents\GitHub\pegasus-worktrees\dsk-07-03-mail-endpoints'
@@ -25,9 +26,13 @@ links: []
 refs:
   - docs/frd/frd-08-email-mailbox-and-background-processing.md
 docs_todo: true
+commits:
+  - e12ad914
+prs:
+  - '55'
 archived: false
 created: '2026-08-24T08:18:48.639Z'
-updated: '2026-08-30T04:05:52.485Z'
+updated: '2026-08-30T06:22:58.733Z'
 ---
 
 ## What
