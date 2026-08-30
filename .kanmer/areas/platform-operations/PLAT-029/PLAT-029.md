@@ -4,7 +4,7 @@ type: ticket
 title: >-
   upstream:PLAT-038 · Serve intake-retained document content in the local
   profile
-status: implementing
+status: review
 area: platform-operations
 order: 90
 assignee: codex-mcp-client
@@ -42,7 +42,7 @@ prs:
   - '25'
 archived: false
 created: '2026-08-24T11:49:22.980Z'
-updated: '2026-08-28T01:41:02.965Z'
+updated: '2026-08-30T02:24:29.811Z'
 ---
 
 ## What
