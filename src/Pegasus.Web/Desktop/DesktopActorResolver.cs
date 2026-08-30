@@ -1,7 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Identity;
 using OpenIddict.Abstractions;
-using Pegasus.Contracts.ProblemDetails;
 using Pegasus.Core.Actors;
 using Pegasus.Core.Identity;
 using Pegasus.Infrastructure.Persistence;
@@ -15,10 +14,10 @@ namespace Pegasus.Web.Desktop;
 /// </summary>
 internal sealed class DesktopActorResolver(
     UserManager<PegasusIdentityUser> userManager,
-    TimeProvider timeProvider) : IEndpointFilter
+    TimeProvider timeProvider,
+    StaffActorAccessor staffActorAccessor,
+    ISecurityEventWriter securityEvents) : IEndpointFilter
 {
-    internal static readonly object ActorKey = new();
-
     private static readonly string[] PasswordChangeExemptPaths =
     [
         "/api/v1/session/password-change",
@@ -62,6 +61,10 @@ internal sealed class DesktopActorResolver(
             || nowSeconds - issuedSeconds
                 >= (long)DesktopSession.AbsoluteSessionLifetime.TotalSeconds)
         {
+            await RecordDeniedAsync(
+                httpContext,
+                subjectId.ToString("D"),
+                "absolute_session_expired");
             return DesktopGatewayProblems.AccountDisabled(
                 httpContext,
                 "absolute_session_expired");
@@ -70,12 +73,20 @@ internal sealed class DesktopActorResolver(
         var user = await userManager.FindByIdAsync(subjectId.ToString("D"));
         if (user is null || !user.IsEnabled)
         {
+            await RecordDeniedAsync(
+                httpContext,
+                subjectId.ToString("D"),
+                "account_disabled");
             return DesktopGatewayProblems.AccountDisabled(httpContext);
         }
 
         var securityStamp = principal.FindFirst(DesktopSession.SecurityStampClaim)?.Value;
         if (!string.Equals(securityStamp, user.SecurityStamp, StringComparison.Ordinal))
         {
+            await RecordDeniedAsync(
+                httpContext,
+                subjectId.ToString("D"),
+                "invalid_security_stamp");
             return DesktopGatewayProblems.AccountDisabled(
                 httpContext,
                 "invalid_security_stamp");
@@ -88,27 +99,34 @@ internal sealed class DesktopActorResolver(
             return DesktopGatewayProblems.PasswordChangeRequired(httpContext);
         }
 
-        var roles = principal
-            .FindAll(OpenIddictConstants.Claims.Role)
-            .Select(claim => claim.Value);
-        if (!StaffActorFactory.TryCreate(subject, roles, out var actor)
-            || actor is null)
+        var actor = await staffActorAccessor.ResolveAsync(httpContext.RequestAborted);
+        if (actor is null)
         {
             return DesktopGatewayProblems.NotAuthorized(httpContext);
         }
 
-        httpContext.Items[ActorKey] = actor;
+        httpContext.Items[DesktopGateway.ActorItemKey] = actor;
         return null;
     }
+
+    private Task RecordDeniedAsync(
+        HttpContext httpContext,
+        string subjectId,
+        string reasonCode) =>
+        securityEvents.AppendAsync(
+            new SecurityEvent(
+                Guid.NewGuid(),
+                SecurityEventType.Token,
+                SecurityEventOutcome.Denied,
+                subjectId,
+                timeProvider.GetUtcNow(),
+                DesktopGatewayCorrelation.Apply(httpContext),
+                reasonCode),
+            httpContext.RequestAborted);
 
     public static ActionActor GetActor(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-        return httpContext.Items.TryGetValue(
-                ActorKey,
-                out var value)
-            && value is ActionActor actor
-            ? actor
-            : throw new StaffAuthorizationException(StaffAccessRight.AccessStaffApplication);
+        return StaffActorAccessor.GetActor(httpContext);
     }
 }
