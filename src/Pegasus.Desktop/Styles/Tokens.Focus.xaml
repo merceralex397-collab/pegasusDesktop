@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Thickness x:Key="PegasusFocusVisualThickness">3</Thickness>
+    <StaticResource x:Key="FocusVisualPrimaryThickness" ResourceKey="PegasusFocusVisualThickness" />
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <StaticResource x:Key="FocusVisualPrimaryBrush" ResourceKey="PegasusFocusBrush" />
+            <StaticResource x:Key="FocusVisualSecondaryBrush" ResourceKey="PegasusPanelBrush" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <StaticResource x:Key="FocusVisualPrimaryBrush" ResourceKey="PegasusFocusBrush" />
+            <StaticResource x:Key="FocusVisualSecondaryBrush" ResourceKey="PegasusPanelBrush" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="FocusVisualPrimaryBrush" ResourceKey="PegasusFocusBrush" />
+            <StaticResource x:Key="FocusVisualSecondaryBrush" ResourceKey="PegasusPanelBrush" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>
