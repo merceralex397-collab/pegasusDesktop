@@ -1,0 +1,1 @@
+2026-08-30 checkpoint: ticket taken on task/gwy-020-token-limiter from origin/dev. Read full packet and EPIC-005/HZN-003 context. Origin/dev already contains the runtime marker/global-limiter/per-client policy logic from the token-session merge; specialist is adding the missing request buffering and dedicated integration coverage. No Azure/cloud/upstream write.

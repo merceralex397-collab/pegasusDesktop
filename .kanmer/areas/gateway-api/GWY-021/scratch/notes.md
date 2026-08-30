@@ -1,0 +1,1 @@
+2026-08-30 checkpoint: ticket taken on task/gwy-021-bearer-auth from origin/dev after GWY-019 and GWY-002 dependencies were verified done. Full packet and EPIC-005/HZN-003 context read; specialist assigned with explicit seam preserving GWY-003's endpoint filter ownership. No Azure/cloud/upstream write.
