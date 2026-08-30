@@ -151,8 +151,31 @@ internal static class CommandCoverageTable
             },
             context => Task.FromResult(Store(context).ReadEffect()),
             context => Task.FromResult(Store(context).CurrentCaseVersion.ToString(CultureInfo.InvariantCulture)),
-            "confirmed")
+            "confirmed"),
+        MailPlaceholder("/api/v1/mail/{messageId:guid}/link-case/prepare"),
+        MailPlaceholder("/api/v1/mail/{messageId:guid}/unlink-case/prepare"),
+        MailPlaceholder("/api/v1/mail/{messageId:guid}/link-case"),
+        MailPlaceholder("/api/v1/mail/{messageId:guid}/unlink-case"),
+        MailPlaceholder("/api/v1/mail/{messageId:guid}/classification"),
+        MailPlaceholder("/api/v1/mail/{messageId:guid}/move-to-recommended-folder")
     ];
+
+    private static CommandCoverageRow MailPlaceholder(string routePattern) => new(
+        routePattern,
+        "POST",
+        StaffAccessRight.PerformCasework,
+        HasVersionToken: false,
+        HasOperationKey: false,
+        _ => new HttpRequestMessage(),
+        _ => new HttpRequestMessage(),
+        _ => new HttpRequestMessage(),
+        null,
+        _ => new HttpRequestMessage(),
+        null,
+        _ => Task.FromResult(new CommandEffectSnapshot(string.Empty, 0)),
+        null,
+        string.Empty,
+        IsPlaceholder: true);
 
     private static VehicleCommandCoverageStore Store(CommandCoverageTestContext context) =>
         context.Services.GetRequiredService<VehicleCommandCoverageStore>();

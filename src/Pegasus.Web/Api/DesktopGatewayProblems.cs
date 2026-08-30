@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Pegasus.Contracts;
 using Pegasus.Contracts.ProblemDetails;
 using Pegasus.Core.Identity;
+using Pegasus.Core.Intake;
 using Pegasus.Core.Workflow;
 
 namespace Pegasus.Web.Api;
@@ -86,6 +87,34 @@ internal sealed class DesktopGatewayExceptionHandler : IExceptionHandler
                 "The operation key was already used with different inputs.",
                 null,
                 correlationId),
+            IntakeVersionConflictException or MailClassificationConcurrencyException => new PegasusProblem(
+                PegasusProblemTypes.VersionConflict,
+                "Version conflict",
+                StatusCodes.Status409Conflict,
+                "The mail or intake changed since it was read. Reload before retrying.",
+                null,
+                correlationId),
+            IntakeOperationConflictException or IntakeAssociationConflictException => new PegasusProblem(
+                PegasusProblemTypes.OperationConflict,
+                "Operation conflict",
+                StatusCodes.Status409Conflict,
+                "The operation key or association was already used with different inputs.",
+                null,
+                correlationId),
+            KeyNotFoundException => new PegasusProblem(
+                PegasusProblemTypes.NotFound,
+                "Not found",
+                StatusCodes.Status404NotFound,
+                "The requested mail resource was not found.",
+                null,
+                correlationId),
+            RetainedMailFolderMoveException => new PegasusProblem(
+                PegasusProblemTypes.ProviderUnavailable,
+                "Provider unavailable",
+                StatusCodes.Status503ServiceUnavailable,
+                "The requested mail-folder operation is not available.",
+                null,
+                correlationId),
             ArgumentException or InvalidOperationException or InvalidDataException or JsonException or BadHttpRequestException =>
                 new PegasusProblem(
                     PegasusProblemTypes.Validation,
@@ -107,6 +136,17 @@ internal sealed class DesktopGatewayExceptionHandler : IExceptionHandler
 
 internal static class DesktopGatewayProblems
 {
+    public static IResult NotFound(
+        HttpContext httpContext,
+        string detail = "The requested mail resource was not found.") =>
+        new ProblemResult(new PegasusProblem(
+            PegasusProblemTypes.NotFound,
+            "Not found",
+            StatusCodes.Status404NotFound,
+            detail,
+            null,
+            DesktopGatewayCorrelation.Apply(httpContext)));
+
     public static async Task WriteNotFoundAsync(
         HttpContext httpContext,
         CancellationToken cancellationToken = default)
@@ -150,5 +190,11 @@ internal static class DesktopGatewayProblems
             PegasusJson.Options,
             cancellationToken);
         return true;
+    }
+
+    private sealed class ProblemResult(PegasusProblem problem) : IResult
+    {
+        public Task ExecuteAsync(HttpContext httpContext) =>
+            WriteAsync(httpContext, problem, httpContext.RequestAborted);
     }
 }

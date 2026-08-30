@@ -52,7 +52,13 @@ internal sealed class VehicleOpenApiOperationTransformer : IOpenApiOperationTran
                 break;
             case "GetVehicleEvidence":
                 SetEnum(document, "VehicleLookupObservationResponse", "outcome", LookupOutcomes);
-                AddConditionalGetMetadata(operation);
+                AddConditionalGetMetadata(operation, "vehicle evidence");
+                break;
+            case "ListMail":
+            case "SearchDeletedMail":
+            case "PreviewMail":
+            case "GetMail":
+                AddConditionalGetMetadata(operation, "mail");
                 break;
         }
 
@@ -99,7 +105,7 @@ internal sealed class VehicleOpenApiOperationTransformer : IOpenApiOperationTran
             .ToList();
     }
 
-    private static void AddConditionalGetMetadata(OpenApiOperation operation)
+    private static void AddConditionalGetMetadata(OpenApiOperation operation, string projectionName)
     {
         var parameters = operation.Parameters ??= [];
         if (!parameters.Any(parameter =>
@@ -110,7 +116,7 @@ internal sealed class VehicleOpenApiOperationTransformer : IOpenApiOperationTran
             {
                 Name = "If-None-Match",
                 In = ParameterLocation.Header,
-                Description = "The weak evidence version previously returned by this endpoint.",
+                Description = $"The weak {projectionName} version previously returned by this endpoint.",
                 Required = false,
                 Schema = new OpenApiSchema { Type = JsonSchemaType.String }
             });
@@ -132,7 +138,7 @@ internal sealed class VehicleOpenApiOperationTransformer : IOpenApiOperationTran
             openApiResponse.Headers ??= new Dictionary<string, IOpenApiHeader>(StringComparer.OrdinalIgnoreCase);
             openApiResponse.Headers["ETag"] = new OpenApiHeader
             {
-                Description = "Weak version of the vehicle evidence projection.",
+                Description = $"Weak version of the {projectionName} projection.",
                 Schema = new OpenApiSchema { Type = JsonSchemaType.String }
             };
         }

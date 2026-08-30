@@ -431,6 +431,14 @@ public sealed record IntakeReceipt(
         ManualAssociationVersion is null
             ? AcceptedCaseReference
             : ManualLinkedCaseReference ?? AcceptedCaseReference;
+
+    /// <summary>
+    /// The operation key of the retained manual association row, including a
+    /// reversed row. A command surface uses this only to let an exact retry
+    /// reach the durable mutation replay guard after the first request changed
+    /// the projected association state.
+    /// </summary>
+    public string? ManualAssociationOperationKey { get; init; }
 }
 
 public sealed record IntakeReceiptDraft(

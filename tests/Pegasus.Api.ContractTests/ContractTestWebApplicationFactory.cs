@@ -12,7 +12,7 @@ using Pegasus.Infrastructure.Persistence;
 
 namespace Pegasus.Api.ContractTests;
 
-public sealed class ContractTestWebApplicationFactory : WebApplicationFactory<Program>
+public class ContractTestWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

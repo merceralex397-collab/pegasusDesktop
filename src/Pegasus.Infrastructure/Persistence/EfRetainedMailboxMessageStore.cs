@@ -657,6 +657,7 @@ internal sealed class EfRetainedMailboxMessageStore(
             {
                 item.Id,
                 item.ExternalReceiptToken,
+                item.Version,
                 item.Decision,
                 Classification = item.MailClassificationDecision,
                 EffectiveSenderAddress = item.MailRouteDecision == null
@@ -702,6 +703,21 @@ internal sealed class EfRetainedMailboxMessageStore(
             .ToListAsync(cancellationToken);
         var polledAddresses = polled.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+        var caseIds = associations.Current.Values
+            .Select(item => item.CaseId)
+            .Concat(allocationStates.Values
+                .Select(item => item.CaseId)
+                .OfType<Guid>())
+            .Distinct()
+            .ToArray();
+        var caseVersions = caseIds.Length == 0
+            ? new Dictionary<Guid, long>()
+            : await context.CaseWorkflows
+                .AsNoTracking()
+                .Where(item => caseIds.Contains(item.CaseId))
+                .Select(item => new { item.CaseId, item.Version })
+                .ToDictionaryAsync(item => item.CaseId, item => item.Version, cancellationToken);
+
         return rows
             .Select(row =>
             {
@@ -719,6 +735,11 @@ internal sealed class EfRetainedMailboxMessageStore(
                     && associations.AllocationMayStandIn(receipt.Id)
                         ? allocationState
                         : null;
+                var caseId = linkedCase?.CaseId ?? allocationCase?.CaseId;
+                long? caseVersion = caseId is { } currentCaseId
+                    && caseVersions.TryGetValue(currentCaseId, out var currentCaseVersion)
+                    ? currentCaseVersion
+                    : null;
                 var classification = receipt?.Classification is null
                     ? null
                     : EfIntakeReceiptStore.MapMailClassificationDecision(receipt.Classification);
@@ -769,7 +790,7 @@ internal sealed class EfRetainedMailboxMessageStore(
                     // The manual acceptance route writes a CaseIntakeLinks row;
                     // the automatic allocation route records its created case on
                     // the succeeded attempt instead. Either one is the case.
-                    linkedCase?.CaseId ?? allocationCase?.CaseId,
+                    caseId,
                     linkedCase?.Reference ?? allocationCase?.CaseReference,
                     allocationState,
                     row.SearchMatches,
@@ -779,7 +800,9 @@ internal sealed class EfRetainedMailboxMessageStore(
                     classification,
                     classification is null
                         ? null
-                        : MailOperationalDestinationPolicy.Map(classification));
+                        : MailOperationalDestinationPolicy.Map(classification),
+                    receipt?.Version,
+                    caseVersion);
             })
             .ToArray();
     }
