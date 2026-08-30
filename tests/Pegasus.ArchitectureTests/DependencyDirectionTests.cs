@@ -18,6 +18,7 @@ using Pegasus.Infrastructure.Persistence;
 using Pegasus.Contracts.Vocabulary;
 using Pegasus.Web.Pages;
 using Pegasus.Web.Presentation;
+using Pegasus.Web.Api;
 
 namespace Pegasus.ArchitectureTests;
 
@@ -579,6 +580,25 @@ public sealed class DependencyDirectionTests
         Assert.NotNull(typeof(RequestModel).GetCustomAttribute<
             Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute>());
         Assert.False(typeof(StaffPageModel).IsAssignableFrom(typeof(RequestModel)));
+    }
+
+    [Fact]
+    public void EveryDesktopGatewayEndpointInheritsTheDesktopApiPolicy()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(
+            root,
+            "src/Pegasus.Web/Api/DesktopGatewayExtensions.cs"))
+            .Replace("\r\n", "\n", StringComparison.Ordinal);
+
+        Assert.Contains(
+            $"app.MapGroup(DesktopGateway.BasePath)\n            .WithGroupName(OpenApiDocumentName)\n            .RequireAuthorization(DesktopGateway.AuthorizationPolicy)",
+            source,
+            StringComparison.Ordinal);
+        Assert.Contains("group.MapVehicleEndpoints();", source, StringComparison.Ordinal);
+        Assert.Contains("group.MapMailEndpoints();", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("app.MapVehicleEndpoints();", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("app.MapMailEndpoints();", source, StringComparison.Ordinal);
     }
 
     [Fact]
