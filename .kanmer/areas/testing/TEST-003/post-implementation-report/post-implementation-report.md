@@ -2,7 +2,7 @@
 
 ## Delivered
 
-Added `tests/Pegasus.IntegrationTests/MailPersistenceTests.cs` on branch `task/dsk-08-03-integration-shard-persistence`. The single class contains four tests covering the six retained-mail write routes currently present on `origin/dev` at `69a88bbdc0f9a223f8c7da60e24277b664d4b495`:
+Added `tests/Pegasus.IntegrationTests/MailPersistenceTests.cs` on branch `task/dsk-08-03-integration-shard-persistence`; the CI filter fix is also in the same tests project. The single class contains four tests covering the six retained-mail write routes currently present on `origin/dev` at `69a88bbdc0f9a223f8c7da60e24277b664d4b495`:
 
 - link-case prepare and link-case;
 - unlink-case prepare and unlink-case;
@@ -14,17 +14,17 @@ Each test owns an isolated `IntakeWebApplicationFactory`/LocalDB database and ve
 
 ## Exact-head validation
 
-All evidence below was produced from commit `f85e5236a27bfbda91278569ef46743776fc3160`:
+The final local evidence below was produced from commit `4547ecce0f5898fd58f717b3cc9576d6dbfcf39c`:
 
 - `dotnet build ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore`: passed, 0 warnings and 0 errors.
 - Exact focused filter for the four association/concurrency/classification/folder tests: 4 passed, 0 skipped.
-- Shard 1: 330 passed of 330 assigned, 5m02s.
-- Shard 2: 323 passed, 1 pre-existing skip, 324 assigned, 4m39s.
-- Shard 3: 325 passed, 1 pre-existing skip, 326 assigned, 6m47s.
-- `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3`: passed; all 980 enumerated tests were covered exactly once.
+- Shard 1: 330 passed of 330 assigned, 4m09s.
+- Shard 2: 323 passed, 1 pre-existing skip, 324 assigned, 4m30s.
+- Shard 3: 324 passed of 324 assigned, 6m40s.
+- `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3`: passed; all 978 filtered tests were covered exactly once.
 - The two skips are pre-existing and unrelated to this change:
   `CustodyOutboxIntegrationTests.AcceptedCaseRetainsEmbeddedPhotographsBesideTheSource` and `QdosMappingExtractionTests.MappedInstructionEmailExtractsItsDocumentedFieldSet`.
-- LocalDB cleanup: the 11 exact disposable databases created by this post-commit rerun were verified after testhost exit, dropped through the normal ALTER SINGLE_USER/DROP path, and absent in a follow-up exact-name census. No `Pegasus_Test_*.bak` file was present. The older `Pegasus_Test_29a0ec4012034d2591bd9570dab5670f` database was not touched because it predates this run and is protected by the runbook one-day floor.
+- LocalDB cleanup: the ten exact disposable databases created by this post-fix run were censused after testhost exit and are absent. Two databases created by the unrelated active `uiimp-005` test process were excluded from cleanup. No `Pegasus_Test_*.bak` file was present.
 
 ## Concurrency disposition
 
@@ -37,3 +37,8 @@ Product-tree changes are limited to `tests/Pegasus.IntegrationTests/MailPersiste
 ## Review handoff
 
 The first independent review’s findings were addressed and the canonical plan/report/checklists reconciled. A fresh independent review is required for this exact commit before PR merge. The PR must target `dev`; merge requires that review and exact-head CI to be green.
+
+
+## CI follow-up
+
+PR #56 at the prior exact head `f85e5236a27bfbda91278569ef46743776fc3160` passed every check except `sql-integration (3)`, which timed out at 20m10s. Its completed log showed the corpus-only QDOS classes being discovered and skipped after multi-minute corpus-root scans because they lacked the `Category=Corpus` trait required by the CI filter. Commit `4547ecce0f5898fd58f717b3cc9576d6dbfcf39c` adds that trait to both classes. The local fixed-head suite completes all 978 filtered tests, and PR #56 has been pushed at this fixed head for fresh CI and review.

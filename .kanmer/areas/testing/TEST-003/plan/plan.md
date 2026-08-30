@@ -27,7 +27,7 @@ Use the existing integration-test and local-stack conventions; this fix remains 
 
 ## Current disposition
 
-Implementation is complete on commit `f85e5236a27bfbda91278569ef46743776fc3160`. The ticket is in Review on its own branch and worktree. The live route inventory was re-run after `FEAT-029` merged; this ticket covers only the six retained-mail writes that exist on `origin/dev`, with no placeholders for absent future route groups. Final exact-head shard evidence was rerun after the commit and recorded below.
+Implementation is complete on commit `4547ecce0f5898fd58f717b3cc9576d6dbfcf39c`. The ticket is in Review on its own branch and worktree. The live route inventory was re-run after `FEAT-029` merged; this ticket covers only the six retained-mail writes that exist on `origin/dev`, with no placeholders for absent future route groups. Final exact-head shard evidence was rerun after the commit and recorded below.
 
 ## Live route recheck — 2026-08-30
 
@@ -42,7 +42,7 @@ Implementation is complete on commit `f85e5236a27bfbda91278569ef46743776fc3160`.
 - Kept the change to one self-contained `MailPersistenceTests` class so the shard assigner owns it as one unit. The class contains four tests for the six landed retained-mail writes plus the concurrent conflict path; absent future route groups remain unrepresented rather than receiving placeholders.
 - Assertions read the persisted association, lease, classification, folder-move, mutation-history, and action-history rows and preserve the repository's actual actor/outcome representations. The recording folder mover is the smallest deterministic test seam needed for the successful move command.
 - No simplification finding was left unapplied. No shard script, CI matrix, production code, Azure resource, or corpus file changed; the explicitly planned existing testing-area row was updated.
-- Final exact-head validation after commit `f85e5236a27bfbda91278569ef46743776fc3160`: Release build passed with 0 warnings/0 errors; the four focused tests passed; shard 1 passed 330/330 in 5m02s, shard 2 passed 323/324 with one pre-existing skip in 4m39s, and shard 3 passed 325/326 with one pre-existing skip in 6m47s; VerifyPartition covered all 980 enumerated tests exactly once. The 11 exact disposable databases created by this post-commit rerun were independently verified after testhost exit and dropped; the older `Pegasus_Test_29a0ec4012034d2591bd9570dab5670f` database was not touched because it predates this run and remains protected by the runbook's one-day floor. A follow-up exact-name census for the 11 run databases returned zero rows.
+- Final exact-head validation after commit `4547ecce0f5898fd58f717b3cc9576d6dbfcf39c`: Release build passed with 0 warnings/0 errors; the four focused tests passed; shard 1 passed 330/330 in 4m09s, shard 2 passed 323/324 with one pre-existing skip in 4m30s, and shard 3 passed 324/324 in 6m40s; VerifyPartition covered all 978 filtered tests exactly once. The ten exact disposable databases created by this post-fix run were independently censused after testhost exit and are absent; two databases created by the unrelated active `uiimp-005` test process were excluded from cleanup. No `Pegasus_Test_*.bak` file was present.
 
 ## Review findings disposition — 2026-08-30
 
@@ -50,3 +50,10 @@ Implementation is complete on commit `f85e5236a27bfbda91278569ef46743776fc3160`.
 - **Missing link/unlink API audit assertions:** fixed. The sequential association test now queries `ActionHistory` by `mail_api` aggregate, message id, event kind, and operation correlation key, and asserts successful outcome, actor, and null failure reason for both operations.
 - **Unticked evidence/checklists and area row:** fixed through Kanmer ticket-body checklist updates and the existing `docs/desktop/08-testing/README.md` DSK-08-03 row now records retained-mail persistence, lease, audit, and concurrent-conflict coverage.
 - **Independent reproduction:** the reviewer reproduced the corrected four-test focus and VerifyPartition result; the full three-shard commands were rerun after commit `f85e5236a27bfbda91278569ef46743776fc3160`, with literal results recorded in the post-implementation report. The remaining handoff is a fresh review of this exact commit.
+
+
+## CI follow-up — 2026-08-30
+
+- PR #56 at the prior exact head `f85e5236a27bfbda91278569ef46743776fc3160` passed every check except `sql-integration (3)`, which hit its configured 20-minute timeout. The completed log showed the two corpus-only classes being discovered and skipped at approximately 05:14 and 11:26 into the test step; both classes lacked the `Category=Corpus` trait, so the repository filter did not exclude them and the shard timed out before completing.
+- Fixed in `4547ecce0f5898fd58f717b3cc9576d6dbfcf39c` by adding the existing `Category=Corpus` convention to `QdosExtractionCoverageTests` and `QdosMappingExtractionTests`. No shard script, timeout, production code, Azure, or corpus content changed.
+- After the fix, the filtered universe is 978 tests and all three exact local shards plus VerifyPartition pass. PR #56 is pushed at the fixed head and requires a fresh independent review and fresh exact-head CI.
