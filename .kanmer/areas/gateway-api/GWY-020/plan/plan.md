@@ -50,3 +50,24 @@ Make a desktop password grant on `POST /connect/token` obey exactly the same thr
 - **Scope boundary**: may touch `src/Pegasus.Web/Program.cs` (limiter policy, `OnRejected`, the global-limiter middleware), the desktop token endpoint added by [[DSK-04-02]], and `tests/Pegasus.IntegrationTests`. Must not touch `src/Pegasus.Core/Actors/StaffSessionPolicy.cs` values, Identity lockout options (`Program.cs:270`), or any Worker or infra file.
 - **Traps**: (a) the `StaffSignIn` policy keys on the raw remote IP — behind the Container Apps ingress every desktop collapses into one bucket unless forwarded headers are configured before `UseRateLimiter()`; (b) `OnRejected` derives the reason code from the path alone, so `/connect/token` needs an explicit discriminator or desktop throttles are mislabelled `automation_rate_limited`; (c) reading the form to find `grant_type` consumes the body — enable buffering or OpenIddict sees an empty request.
 - **Simplification pass** (`AGENTS.md` step 4): required over this branch diff before the PR, recorded under a dated `## Simplification pass` heading in the plan document.
+
+## Implementation and validation — 2026-08-30
+
+- The existing `MarkDesktopPasswordGrantAsync` now enables request buffering before `ReadFormAsync`, preserving the form for OpenIddict. It marks only POST `/connect/token` requests whose client is `pegasus-desktop` and whose grant type is `password`.
+- The existing global `FixedWindowRateLimiter` middleware now charges browser POST `/Account/SignIn` and marked desktop password grants against the shared 100-per-minute budget. The existing `/connect/token` policy remains the single endpoint policy; its partition keeps automation grants at 120/minute and gives marked desktop password grants the 10-per-client sign-in limit.
+- `OnRejected` recognizes the marker so desktop rejections record `sign_in_rate_limited`; automation requests remain `automation_rate_limited`. The existing `Retry-After: 60` response is retained.
+- Forwarded headers are configured in the production profile before `UseRateLimiter()` (`UseForwardedHeaders` at the production middleware boundary precedes routing/rate limiting), so the limiter's remote-IP key receives the forwarded client address when the deployment supplies it. No Azure or deployment change was made.
+
+## Simplification pass — 2026-08-30
+
+- Reused the existing token endpoint, global limiter, automation limiter, `OnRejected` callback, marker convention, and security-event writer; no new service, policy owner, configuration, or compatibility path was introduced.
+- The only implementation change required after review of the branch diff was request buffering before form inspection. The dedicated integration test file is limited to the ticket's three observable rate-limit/security cases. No unrelated cleanup or speculative time-control mechanism was added.
+- No unapplied simplification finding remains. The one-minute replenishment path was not simulated by advancing wall time; the tests prove the fixed-window limits and response/event/lockout behavior without claiming a time-advanced result.
+
+## Validation commands — 2026-08-30
+
+- `dotnet restore ./Pegasus.slnx --locked-mode` — passed; all projects up to date.
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false` — passed; 0 warnings, 0 errors.
+- `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~DesktopTokenRateLimit"` — passed; 3/3.
+- `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~DesktopTokenRateLimit|FullyQualifiedName~StaffSignInSecurity|FullyQualifiedName~Automation"` — passed; 40/40.
+- `git diff --check` — passed.
