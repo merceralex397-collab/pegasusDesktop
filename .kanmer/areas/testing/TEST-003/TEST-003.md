@@ -28,7 +28,7 @@ links: []
 docs_todo: true
 archived: false
 created: '2026-08-24T07:46:12.580Z'
-updated: '2026-08-30T07:38:27.148Z'
+updated: '2026-08-30T07:48:26.958Z'
 ---
 
 ## What
@@ -79,17 +79,17 @@ Proposal §22.2 ("Server integration tests") wants migrations, transactions, aud
 
 ## Acceptance criteria
 
-- [ ] Every new integration test appears in exactly one shard.
-- [ ] `-VerifyPartition` passes with `-ShardCount 3`.
-- [ ] The LocalDB template-database backup path is still used (no per-test migration fallback).
-- [ ] Each `/api/v1` write command asserts its persisted row, actor and version increment.
-- [ ] No new test class depends on another class's database state.
+- [x] Every new integration test appears in exactly one shard.
+- [x] `-VerifyPartition` passes with `-ShardCount 3`.
+- [x] The LocalDB template-database backup path is still used (no per-test migration fallback).
+- [x] Each `/api/v1` write command asserts its persisted row, actor and version increment.
+- [x] No new test class depends on another class's database state.
 
 ## Verification
 
-- [ ] `pwsh ./scripts/Invoke-TestShard.ps1 -Project ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -Filter "Category!=Corpus&Category!=Browser" -Shard 1 -ShardCount 3` (then 2, then 3) — expected: exit 0, executed count equals assigned count for each shard.
-- [ ] `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` — expected: exit 0, every enumerated test attributed to exactly one shard.
-- [ ] `sqlcmd` census from `docs/runbook.md` § Locked restore, build, and test — expected: no `Pegasus_Test_*` database left attached from this run.
+- [x] `pwsh ./scripts/Invoke-TestShard.ps1 -Project ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj -Filter "Category!=Corpus&Category!=Browser" -Shard 1 -ShardCount 3` (then 2, then 3) — expected: exit 0, executed count equals assigned count for each shard.
+- [x] `pwsh ./scripts/Invoke-TestShard.ps1 -VerifyPartition -ArtifactRoot ./artifacts/test-shards -ShardCount 3` — expected: exit 0, every enumerated test attributed to exactly one shard.
+- [x] `sqlcmd` census from `docs/runbook.md` § Locked restore, build, and test — expected: no `Pegasus_Test_*` database left attached from this run.
 
 ## Evidence tier
 
@@ -98,6 +98,7 @@ Tiers 4 and 5 — LocalDB persistence, and Web/API caller. It obliges committed-
 ## Documentation changes
 
 - `docs/desktop/08-testing/README.md` § 4 — mark the "Server integration" row as extended to `/api/v1`.
+- Updated the DSK-08-03 work-breakdown row with retained-mail persistence, lease, audit, and concurrent-conflict coverage.
 
 ## Guardrails
 
