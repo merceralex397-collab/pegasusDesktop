@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,9 +14,10 @@ using Pegasus.Web.Mcp;
 namespace Pegasus.IntegrationTests;
 
 [Trait("Category", "SqlServer")]
-public sealed class DesktopTokenRateLimitTests
+public sealed partial class DesktopTokenRateLimitTests
 {
     private const string Password = "desktop-rate-limit-password";
+    private const string TestRemoteIpHeader = "X-Test-Remote-IP";
 
     [Fact]
     public async Task EleventhPasswordGrantIsRateLimitedAndRecordedWithoutIdentityLockout()
@@ -93,31 +95,93 @@ public sealed class DesktopTokenRateLimitTests
     }
 
     [Fact]
-    public async Task DesktopPasswordGrantConsumesTheSharedGlobalSignInBudget()
+    public async Task AutomationClientCredentialsKeep120PerMinutePolicyAndReasonCode()
     {
         using var baseFactory = new IntakeWebApplicationFactory();
-        using var factory = WithDesktopGateway(baseFactory);
-        var user = await SeedStaffAsync(factory);
+        using var factory = WithDesktopGateway(baseFactory, automation: true);
         using var client = CreateClient(factory);
-        var globalLimiter = factory.Services
-            .GetRequiredService<System.Threading.RateLimiting.FixedWindowRateLimiter>();
+        const int expectedRequestsPerMinute = 120;
 
-        for (var attempt = 0; attempt < StaffSessionPolicy.SignInAttemptsGlobalPerMinute - 1; attempt++)
+        Assert.Equal(expectedRequestsPerMinute, AutomationMcp.RequestsPerClientPerMinute);
+        for (var attempt = 0; attempt < expectedRequestsPerMinute; attempt++)
         {
-            using var lease = await globalLimiter.AcquireAsync(1);
-            Assert.True(lease.IsAcquired);
+            using var response = await PostAutomationTokenAsync(client);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.True(response.IsSuccessStatusCode, body);
         }
 
-        using var permitted = await PostPasswordAsync(client, user, "wrong-password");
-        Assert.Equal(HttpStatusCode.BadRequest, permitted.StatusCode);
-
-        using var limited = await PostPasswordAsync(client, user, "wrong-password");
+        using var limited = await PostAutomationTokenAsync(client);
         Assert.Equal(HttpStatusCode.TooManyRequests, limited.StatusCode);
         Assert.Equal("60", limited.Headers.RetryAfter?.ToString());
+        Assert.Equal(
+            1,
+            await baseFactory.Database.ScalarAsync<int>(
+                """
+                SELECT COUNT(*) FROM SecurityEvents
+                WHERE Type = N'RateLimited'
+                  AND Outcome = N'Denied'
+                  AND ReasonCode = N'automation_rate_limited'
+                """));
+    }
+
+    [Fact]
+    public async Task DesktopPasswordGrantConsumesTheSharedGlobalSignInBudget()
+    {
+        using var baseFactory = new IntakeWebApplicationFactory(useIntegrationTestAuthentication: true);
+        using var factory = WithDesktopGateway(baseFactory);
+        var user = await SeedStaffAsync(factory);
+        using var browser = CreatePipelineClient(factory);
+        using var desktop = CreatePipelineClient(factory);
+
+        for (var attempt = 0; attempt < 10; attempt++)
+        {
+            using var response = await PostBrowserSignInAsync(
+                browser,
+                user.UserName!,
+                $"198.51.100.{attempt + 1}");
+            var browserBody = await response.Content.ReadAsStringAsync();
+            Assert.True(response.StatusCode == HttpStatusCode.OK, browserBody);
+        }
+
+        for (var attempt = 0;
+             attempt < StaffSessionPolicy.SignInAttemptsGlobalPerMinute - 11;
+             attempt++)
+        {
+            using var response = await PostPasswordAsync(
+                desktop,
+                user,
+                "wrong-password",
+                $"198.51.101.{attempt % 10 + 1}");
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        using var permitted = await PostPasswordAsync(
+            desktop,
+            user,
+            "wrong-password",
+            "198.51.101.10");
+        Assert.Equal(HttpStatusCode.BadRequest, permitted.StatusCode);
+
+        using var limited = await PostPasswordAsync(
+            desktop,
+            user,
+            "wrong-password",
+            "198.51.101.10");
+        Assert.Equal(HttpStatusCode.TooManyRequests, limited.StatusCode);
+        Assert.Equal("60", limited.Headers.RetryAfter?.ToString());
+        Assert.Equal(
+            1,
+            await baseFactory.Database.ScalarAsync<int>(
+                """
+                SELECT COUNT(*) FROM SecurityEvents
+                WHERE Type = N'RateLimited'
+                  AND Outcome = N'Denied'
+                  AND ReasonCode = N'sign_in_rate_limited'
+                """));
     }
 
     private static WebApplicationFactory<Program> WithDesktopGateway(
-        IntakeWebApplicationFactory baseFactory,
+        WebApplicationFactory<Program> baseFactory,
         bool automation = false) =>
         baseFactory.WithWebHostBuilder(builder =>
         {
@@ -135,12 +199,77 @@ public sealed class DesktopTokenRateLimitTests
             }
         });
 
-    private static HttpClient CreateClient(WebApplicationFactory<Program> factory) =>
+    private static HttpClient CreateClient(
+        WebApplicationFactory<Program> factory,
+        bool handleCookies = false) =>
         factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false,
+            HandleCookies = handleCookies,
             BaseAddress = new Uri("https://localhost:7139")
         });
+
+    private static HttpClient CreatePipelineClient(WebApplicationFactory<Program> factory)
+    {
+        var handler = factory.Server.CreateHandler(context =>
+        {
+            if (IPAddress.TryParse(
+                    context.Request.Headers[TestRemoteIpHeader].FirstOrDefault(),
+                    out var remoteIpAddress))
+            {
+                context.Connection.RemoteIpAddress = remoteIpAddress;
+            }
+        });
+        return new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://localhost:7139")
+        };
+    }
+
+    private static async Task<HttpResponseMessage> PostAutomationTokenAsync(HttpClient client)
+    {
+        return await client.PostAsync(
+            AutomationMcp.TokenEndpointPath,
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "client_credentials",
+                ["client_id"] = AutomationMcpTestSupport.ClientId,
+                ["client_secret"] = AutomationMcpTestSupport.ClientSecret,
+                ["scope"] = AutomationMcp.Scopes[0]
+            }));
+    }
+
+    private static async Task<HttpResponseMessage> PostBrowserSignInAsync(
+        HttpClient client,
+        string userName,
+        string forwardedFor)
+    {
+        using var signInPageRequest = new HttpRequestMessage(HttpMethod.Get, "/Account/SignIn");
+        signInPageRequest.Headers.TryAddWithoutValidation("X-Test-Anonymous", "1");
+        using var signInPage = await client.SendAsync(signInPageRequest);
+        var signInHtml = await signInPage.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, signInPage.StatusCode);
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/Account/SignIn")
+        {
+            Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["__RequestVerificationToken"] = ReadAntiforgeryToken(signInHtml),
+                ["UserName"] = userName,
+                ["Password"] = "wrong-password",
+                ["ReturnUrl"] = "/"
+            })
+        };
+        request.Headers.TryAddWithoutValidation(TestRemoteIpHeader, forwardedFor);
+        if (signInPage.Headers.TryGetValues("Set-Cookie", out var setCookieValues))
+        {
+            request.Headers.TryAddWithoutValidation(
+                "Cookie",
+                string.Join(
+                    "; ",
+                    setCookieValues.Select(value => value.Split(';', 2)[0])));
+        }
+        return await client.SendAsync(request);
+    }
 
     private static async Task<PegasusIdentityUser> SeedStaffAsync(
         WebApplicationFactory<Program> factory)
@@ -171,15 +300,49 @@ public sealed class DesktopTokenRateLimitTests
     private static Task<HttpResponseMessage> PostPasswordAsync(
         HttpClient client,
         PegasusIdentityUser user,
-        string password) =>
-        client.PostAsync(
-            DesktopSession.TokenEndpointPath,
-            new FormUrlEncodedContent(new Dictionary<string, string>
+        string password,
+        string? forwardedFor = null) =>
+        SendPasswordRequestAsync(client, user, password, forwardedFor);
+
+    private static async Task<HttpResponseMessage> SendPasswordRequestAsync(
+        HttpClient client,
+        PegasusIdentityUser user,
+        string password,
+        string? forwardedFor)
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            DesktopSession.TokenEndpointPath)
+        {
+            Content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 ["grant_type"] = "password",
                 ["client_id"] = DesktopSession.ClientId,
                 ["username"] = user.UserName!,
                 ["password"] = password,
                 ["scope"] = DesktopSession.Scope
-            }));
+            })
+        };
+        if (forwardedFor is not null)
+        {
+            request.Headers.TryAddWithoutValidation(TestRemoteIpHeader, forwardedFor);
+        }
+
+        return await client.SendAsync(request);
+    }
+
+    private static string ReadAntiforgeryToken(string html)
+    {
+        var tokenTag = AntiforgeryTagRegex().Match(html);
+        Assert.True(tokenTag.Success, "The sign-in form must render an antiforgery token.");
+        var tokenValue = InputValueRegex().Match(tokenTag.Value);
+        Assert.True(tokenValue.Success, "The sign-in antiforgery token must have a value.");
+        return WebUtility.HtmlDecode(tokenValue.Groups["value"].Value);
+    }
+
+    [GeneratedRegex("<input[^>]*name=\"__RequestVerificationToken\"[^>]*>", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex AntiforgeryTagRegex();
+
+    [GeneratedRegex("value=\"(?<value>[^\"]+)\"", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex InputValueRegex();
 }
