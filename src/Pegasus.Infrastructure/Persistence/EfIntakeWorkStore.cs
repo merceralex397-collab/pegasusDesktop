@@ -10,10 +10,10 @@ public sealed class EfIntakeWorkStore(
 {
     private const int CandidateBatchSize = 256;
 
-    private static readonly IComparer<LeaseRecoveryCandidate> LatestLeaseFirst =
+    private static readonly IComparer<LeaseRecoveryCandidate> LatestRecoveryFirst =
         Comparer<LeaseRecoveryCandidate>.Create(static (left, right) =>
         {
-            var comparison = right.LeaseExpiresAtUtc.CompareTo(left.LeaseExpiresAtUtc);
+            var comparison = right.RecoveryAtUtc.CompareTo(left.RecoveryAtUtc);
             return comparison != 0 ? comparison : right.Id.CompareTo(left.Id);
         });
 
@@ -423,6 +423,7 @@ public sealed class EfIntakeWorkStore(
     public async Task<int> RecoverExpiredLeasesAsync(
         DateTimeOffset nowUtc,
         int maximumItems,
+        TimeSpan dispatchedRecoveryAge,
         CancellationToken cancellationToken)
     {
         if (maximumItems <= 0)
@@ -430,10 +431,15 @@ public sealed class EfIntakeWorkStore(
             return 0;
         }
 
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(
+            dispatchedRecoveryAge,
+            TimeSpan.Zero);
+
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
         var candidates = await FindExpiredLeaseCandidatesAsync(
             context,
             nowUtc,
+            dispatchedRecoveryAge,
             maximumItems,
             cancellationToken);
         var recovered = 0;
@@ -443,6 +449,7 @@ public sealed class EfIntakeWorkStore(
             var targetState = candidate.State switch
             {
                 "dispatching" => ToCode(IntakeWorkState.Pending),
+                "dispatched" => ToCode(IntakeWorkState.Pending),
                 "processing" when terminal => ToCode(IntakeWorkState.Failed),
                 "processing" => ToCode(IntakeWorkState.RetryScheduled),
                 _ => throw new InvalidDataException(
@@ -454,7 +461,8 @@ public sealed class EfIntakeWorkStore(
                     && item.State == candidate.State
                     && item.AttemptCount == candidate.AttemptCount
                     && item.LeaseToken == candidate.LeaseToken
-                    && item.LeaseExpiresAtUtc == candidate.LeaseExpiresAtUtc)
+                    && item.LeaseExpiresAtUtc == candidate.LeaseExpiresAtUtc
+                    && item.DueAtUtc == candidate.DueAtUtc)
                 .ExecuteUpdateAsync(
                     setters => setters
                         .SetProperty(item => item.State, targetState)
@@ -541,17 +549,22 @@ public sealed class EfIntakeWorkStore(
     private static async Task<LeaseRecoveryCandidate[]> FindExpiredLeaseCandidatesAsync(
         PegasusDbContext context,
         DateTimeOffset nowUtc,
+        TimeSpan dispatchedRecoveryAge,
         int maximumItems,
         CancellationToken cancellationToken)
     {
         var earliest = new PriorityQueue<LeaseRecoveryCandidate, LeaseRecoveryCandidate>(
-            LatestLeaseFirst);
+            LatestRecoveryFirst);
         for (var offset = 0; ; offset += CandidateBatchSize)
         {
             var batch = await context.IntakeWorkItems
                 .AsNoTracking()
-                .Where(item => (item.State == "dispatching" || item.State == "processing")
-                    && item.LeaseExpiresAtUtc != null)
+                .Where(item =>
+                    ((item.State == "dispatching" || item.State == "processing")
+                        && item.LeaseExpiresAtUtc != null)
+                    || (item.State == "dispatched"
+                        && item.LeaseToken == null
+                        && item.LeaseExpiresAtUtc == null))
                 .OrderBy(item => item.Id)
                 .Skip(offset)
                 .Take(CandidateBatchSize)
@@ -560,11 +573,14 @@ public sealed class EfIntakeWorkStore(
                     item.State,
                     item.AttemptCount,
                     item.LeaseToken,
-                    item.LeaseExpiresAtUtc!.Value))
+                    item.LeaseExpiresAtUtc,
+                    item.DueAtUtc))
                 .ToListAsync(cancellationToken);
             foreach (var candidate in batch)
             {
-                if (candidate.LeaseExpiresAtUtc > nowUtc)
+                if (candidate.State == "dispatched"
+                    ? candidate.DueAtUtc > nowUtc.Subtract(dispatchedRecoveryAge)
+                    : candidate.LeaseExpiresAtUtc > nowUtc)
                 {
                     continue;
                 }
@@ -584,7 +600,7 @@ public sealed class EfIntakeWorkStore(
             {
                 return earliest.UnorderedItems
                     .Select(item => item.Element)
-                    .OrderBy(item => item.LeaseExpiresAtUtc)
+                    .OrderBy(item => item.RecoveryAtUtc)
                     .ThenBy(item => item.Id)
                     .ToArray();
             }
@@ -599,7 +615,7 @@ public sealed class EfIntakeWorkStore(
 
     private static int Compare(LeaseRecoveryCandidate left, LeaseRecoveryCandidate right)
     {
-        var comparison = left.LeaseExpiresAtUtc.CompareTo(right.LeaseExpiresAtUtc);
+        var comparison = left.RecoveryAtUtc.CompareTo(right.RecoveryAtUtc);
         return comparison != 0 ? comparison : left.Id.CompareTo(right.Id);
     }
 
@@ -610,7 +626,11 @@ public sealed class EfIntakeWorkStore(
         string State,
         int AttemptCount,
         string? LeaseToken,
-        DateTimeOffset LeaseExpiresAtUtc);
+        DateTimeOffset? LeaseExpiresAtUtc,
+        DateTimeOffset DueAtUtc)
+    {
+        public DateTimeOffset RecoveryAtUtc => LeaseExpiresAtUtc ?? DueAtUtc;
+    }
 
     private async Task UpdateDispatchClaimIfOwnedAsync(
         Guid workItemId,

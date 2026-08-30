@@ -93,8 +93,11 @@ Pegasus acknowledges receipt only after the original bytes, source receipt, and 
 The Web receipt path stages work as pending and never executes queued-intake
 processing. The Worker is the sole processing owner: it dispatches pending work,
 claims queue deliveries idempotently, recovers expired leases, and records a
-completed or failed outcome. Duplicate delivery must not duplicate an evaluation,
-case, reference, or downstream side effect. Staff can inspect Received,
+completed or failed outcome. The existing reconciliation sweep also returns an
+unleased dispatched item that has exceeded its bounded recovery age to pending,
+so it can be dispatched again rather than stranded as Received. Duplicate
+delivery must not duplicate an evaluation, case, reference, or downstream side
+effect. Staff can inspect Received,
 Processing, Complete, or Failed by the staged receipt identifier; failure wording
 is bounded and does not disclose exception or infrastructure detail.
 

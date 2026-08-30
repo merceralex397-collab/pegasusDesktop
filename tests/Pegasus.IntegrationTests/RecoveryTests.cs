@@ -39,11 +39,7 @@ public sealed class RecoveryTests
         Assert.Equal(IntakeWorkState.Dispatching, claimedWork.State);
 
         clock.Advance(TimeSpan.FromMinutes(1));
-        var reconciler = new ReconcileStagedArtifacts(
-            store,
-            services.GetRequiredService<IStagedArtifactAuthority>(),
-            services.GetRequiredService<IIntakeArtifactStore>(),
-            clock);
+        var reconciler = CreateReconciler(services, store, clock);
         Assert.Equal(1, (await reconciler.ExecuteAsync(10)).RecoveredLeases);
         Assert.Equal(0, (await reconciler.ExecuteAsync(10)).RecoveredLeases);
 
@@ -55,6 +51,175 @@ public sealed class RecoveryTests
         var recoveredWork = recovered!;
         Assert.Equal(first.StagedReceiptId, recoveredWork.StagedReceiptId);
         Assert.NotEqual(claimedWork.LeaseToken, recoveredWork.LeaseToken);
+    }
+
+    [Fact]
+    [Trait("Category", "QdosAlphaAcceptance")]
+    public async Task ExpiredUnleasedDispatchedWorkIsRedispatchedAndProcessedOnce()
+    {
+        var clock = new AdjustableTimeProvider(new(2031, 5, 6, 10, 30, 0, TimeSpan.Zero));
+        using var factory = new IntakeWebApplicationFactory(clock);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var services = scope.ServiceProvider;
+        var store = services.GetRequiredService<IIntakeWorkStore>();
+        var artifactStore = services.GetRequiredService<IIntakeArtifactStore>();
+        var received = await StageAndDispatchAsync(
+            store,
+            artifactStore,
+            clock,
+            "expired-dispatched");
+        var beforeRecovery = Assert.IsType<IntakeWorkItem>(await store.FindWorkItemAsync(
+            received.StagedReceiptId,
+            CancellationToken.None));
+
+        clock.Advance(TimeSpan.FromHours(1));
+        var reconciler = CreateReconciler(services, store, clock);
+
+        Assert.Equal(1, (await reconciler.ExecuteAsync(10)).RecoveredLeases);
+        var recovered = Assert.IsType<IntakeWorkItem>(await store.FindWorkItemAsync(
+            received.StagedReceiptId,
+            CancellationToken.None));
+        Assert.Equal(IntakeWorkState.Pending, recovered.State);
+        Assert.Equal(beforeRecovery.AttemptCount, recovered.AttemptCount);
+        Assert.Null(recovered.LeaseToken);
+        Assert.Null(recovered.LeaseExpiresAtUtc);
+
+        var dispatcher = new DispatchPendingIntakeWork(
+            store,
+            new IntakeWebDriver.NoOpIntakeWorkEnqueuer(),
+            clock);
+        Assert.Equal(1, await dispatcher.ExecuteAsync(1, CancellationToken.None));
+        var redispatched = Assert.IsType<IntakeWorkItem>(await store.FindWorkItemAsync(
+            received.StagedReceiptId,
+            CancellationToken.None));
+        Assert.Equal(IntakeWorkState.Dispatched, redispatched.State);
+
+        var processor = IntakeWebDriver.CreateProcessor(services);
+        Assert.Equal(
+            QueuedIntakeProcessingOutcome.Completed,
+            await processor.ExecuteAsync(received.StagedReceiptId));
+        var completed = Assert.IsType<IntakeWorkItem>(await store.FindWorkItemAsync(
+            received.StagedReceiptId,
+            CancellationToken.None));
+        Assert.Equal(IntakeWorkState.Completed, completed.State);
+        Assert.Equal(1, completed.AttemptCount);
+        Assert.NotNull(await store.GetCompletedEvaluationAsync(
+            received.StagedReceiptId,
+            CancellationToken.None));
+        Assert.Single((await services.GetRequiredService<IIntakeReceiptQueries>()
+            .ListAsync(null, 1, 100, CancellationToken.None)).Items);
+    }
+
+    [Fact]
+    [Trait("Category", "QdosAlphaAcceptance")]
+    public async Task FreshUnleasedDispatchedWorkIsNotRecovered()
+    {
+        var clock = new AdjustableTimeProvider(new(2031, 5, 6, 10, 30, 0, TimeSpan.Zero));
+        using var factory = new IntakeWebApplicationFactory(clock);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var services = scope.ServiceProvider;
+        var store = services.GetRequiredService<IIntakeWorkStore>();
+        var artifactStore = services.GetRequiredService<IIntakeArtifactStore>();
+        var received = await StageAndDispatchAsync(
+            store,
+            artifactStore,
+            clock,
+            "fresh-dispatched");
+        var beforeRecovery = Assert.IsType<IntakeWorkItem>(await store.FindWorkItemAsync(
+            received.StagedReceiptId,
+            CancellationToken.None));
+        var reconciler = CreateReconciler(services, store, clock);
+
+        Assert.Equal(0, (await reconciler.ExecuteAsync(10)).RecoveredLeases);
+        var afterRecovery = Assert.IsType<IntakeWorkItem>(await store.FindWorkItemAsync(
+            received.StagedReceiptId,
+            CancellationToken.None));
+        Assert.Equal(beforeRecovery, afterRecovery);
+    }
+
+    [Fact]
+    [Trait("Category", "QdosAlphaAcceptance")]
+    public async Task ConcurrentRecoveryClaimsOnlyOneStaleDispatchedRow()
+    {
+        var clock = new AdjustableTimeProvider(new(2031, 5, 6, 10, 30, 0, TimeSpan.Zero));
+        using var factory = new IntakeWebApplicationFactory(clock);
+        await using var firstScope = factory.Services.CreateAsyncScope();
+        await using var secondScope = factory.Services.CreateAsyncScope();
+        var firstStore = firstScope.ServiceProvider.GetRequiredService<IIntakeWorkStore>();
+        var secondStore = secondScope.ServiceProvider.GetRequiredService<IIntakeWorkStore>();
+        var received = await StageAndDispatchAsync(
+            firstStore,
+            firstScope.ServiceProvider.GetRequiredService<IIntakeArtifactStore>(),
+            clock,
+            "concurrent-recovery");
+        clock.Advance(TimeSpan.FromHours(1));
+
+        var results = await Task.WhenAll(
+            firstStore.RecoverExpiredLeasesAsync(
+                clock.GetUtcNow(),
+                10,
+                TimeSpan.FromHours(1),
+                CancellationToken.None),
+            secondStore.RecoverExpiredLeasesAsync(
+                clock.GetUtcNow(),
+                10,
+                TimeSpan.FromHours(1),
+                CancellationToken.None));
+
+        Assert.Equal(1, results.Sum());
+        var recovered = Assert.IsType<IntakeWorkItem>(await firstStore.FindWorkItemAsync(
+            received.StagedReceiptId,
+            CancellationToken.None));
+        Assert.Equal(IntakeWorkState.Pending, recovered.State);
+        Assert.Equal(0, recovered.AttemptCount);
+        Assert.Null(recovered.LeaseToken);
+        Assert.Null(recovered.LeaseExpiresAtUtc);
+    }
+
+    [Fact]
+    [Trait("Category", "QdosAlphaAcceptance")]
+    public async Task DuplicateQueueMessageAfterRecoveryIsNoOp()
+    {
+        var clock = new AdjustableTimeProvider(new(2031, 5, 6, 10, 30, 0, TimeSpan.Zero));
+        using var factory = new IntakeWebApplicationFactory(clock);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var services = scope.ServiceProvider;
+        var store = services.GetRequiredService<IIntakeWorkStore>();
+        var artifactStore = services.GetRequiredService<IIntakeArtifactStore>();
+        var received = await StageAndDispatchAsync(
+            store,
+            artifactStore,
+            clock,
+            "duplicate-after-recovery");
+        clock.Advance(TimeSpan.FromHours(1));
+        var reconciler = CreateReconciler(services, store, clock);
+        Assert.Equal(1, (await reconciler.ExecuteAsync(10)).RecoveredLeases);
+
+        var dispatcher = new DispatchPendingIntakeWork(
+            store,
+            new IntakeWebDriver.NoOpIntakeWorkEnqueuer(),
+            clock);
+        Assert.Equal(1, await dispatcher.ExecuteAsync(1, CancellationToken.None));
+        var processor = IntakeWebDriver.CreateProcessor(services);
+        Assert.Equal(
+            QueuedIntakeProcessingOutcome.Completed,
+            await processor.ExecuteAsync(received.StagedReceiptId));
+        var evaluation = Assert.IsType<IntakeEvaluationRevision>(
+            await store.GetCompletedEvaluationAsync(
+                received.StagedReceiptId,
+                CancellationToken.None));
+
+        Assert.Equal(
+            QueuedIntakeProcessingOutcome.NoOp,
+            await processor.ExecuteAsync(received.StagedReceiptId));
+        var replayEvaluation = Assert.IsType<IntakeEvaluationRevision>(
+            await store.GetCompletedEvaluationAsync(
+                received.StagedReceiptId,
+                CancellationToken.None));
+        Assert.Equal(evaluation.Id, replayEvaluation.Id);
+        Assert.Equal(1, replayEvaluation.Revision);
+        Assert.Single((await services.GetRequiredService<IIntakeReceiptQueries>()
+            .ListAsync(null, 1, 100, CancellationToken.None)).Items);
     }
 
     [Fact]
@@ -346,6 +511,16 @@ public sealed class RecoveryTests
         return received;
     }
 
+    private static ReconcileStagedArtifacts CreateReconciler(
+        IServiceProvider services,
+        IIntakeWorkStore store,
+        TimeProvider clock) =>
+        new(
+            store,
+            services.GetRequiredService<IStagedArtifactAuthority>(),
+            services.GetRequiredService<IIntakeArtifactStore>(),
+            clock);
+
     [Fact]
     public async Task QueuedStatusProjectsAnActiveProcessingLease()
     {
@@ -375,6 +550,11 @@ public sealed class RecoveryTests
             clock.GetUtcNow(),
             TimeSpan.FromMinutes(5),
             CancellationToken.None));
+
+        Assert.Equal(
+            QueuedIntakeProcessingOutcome.NoOp,
+            await IntakeWebDriver.CreateProcessor(services)
+                .ExecuteAsync(received.StagedReceiptId));
 
         var status = Assert.IsType<QueuedIntakeStatus>(
             await services.GetRequiredService<IQueuedIntakeStatusQueries>()

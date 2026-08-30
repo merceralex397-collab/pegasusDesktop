@@ -216,6 +216,7 @@ public interface IIntakeWorkStore
     Task<int> RecoverExpiredLeasesAsync(
         DateTimeOffset nowUtc,
         int maximumItems,
+        TimeSpan dispatchedRecoveryAge,
         CancellationToken cancellationToken);
 
     Task ScheduleReevaluationAsync(
@@ -944,6 +945,8 @@ public sealed class ReconcileStagedArtifacts(
     IIntakeArtifactStore artifactStore,
     TimeProvider timeProvider)
 {
+    private static readonly TimeSpan DispatchedRecoveryAge = TimeSpan.FromHours(1);
+
     public async Task<ReconcileStagedArtifactsResult> ExecuteAsync(
         int maximumItems,
         CancellationToken cancellationToken = default)
@@ -953,6 +956,7 @@ public sealed class ReconcileStagedArtifacts(
         var recoveredLeases = await workStore.RecoverExpiredLeasesAsync(
             timeProvider.GetUtcNow(),
             maximumItems,
+            DispatchedRecoveryAge,
             cancellationToken);
         var items = await artifactStore.ListStagedAsync(maximumItems, cancellationToken);
         var completed = 0;

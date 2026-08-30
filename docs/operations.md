@@ -129,6 +129,18 @@ Managed identity itself is unavailable locally. LocalDB does not prove Azure SQL
 
 Graph Sent-item evidence does not prove recipient delivery or automatic case matching.
 
+### Durable intake queue recovery
+
+The Worker queue host uses a five-minute message `visibilityTimeout`, a
+maximum of five dequeues, and a two-second maximum polling interval
+(`src/Pegasus.Worker/host.json`). The intake publisher omits Azure Queue
+Storage `timeToLive`, so the service default of seven days applies. The
+existing reconciliation timer therefore recovers an unleased `dispatched`
+intake row only after one hour since its `DueAtUtc`: that threshold is safely
+above the queue visibility timeout while remaining well below message expiry.
+Recovery returns the row to `pending` through the existing dispatch path,
+preserves `AttemptCount`, and does not add a second timer or a new table.
+
 ### Automation MCP is implemented and enabled in production
 
 The Automation Actor ingress (MCP-01–04, MCP-06) is implemented inside `Pegasus.Web`
