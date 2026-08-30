@@ -17,3 +17,13 @@
 2026-08-27 final review checkpoint: Hilbert independently reviewed full head `29e13dd1bc70fe0514b62d81279e0f3256ce7ce4` and returned FAIL for merge, while confirming the supported gateway/documentation slice is review-ready. Reconciled findings: full-head label corrected in plan/report, existing IntegrationTests ownership explicitly amended in ticket/checklist, canonical docs already committed. Remaining blockers are ticket acceptance itself: PLAT-039 token-age proof, PLAT-041 O(1)+N/export-gallery implementation and measurement, live Key Vault names-only evidence prohibited by the current no-cloud boundary, and no PR/exact-head CI. Ticket remains implementing and not done; branch/worktree preserved for a future in-repository resolution.
 
 2026-08-27 — Coordinator audit after taking FEAT-031. Complete ticket-folder, EPIC-008/HZN-007 context, linked FRD, dependency, and gate review performed. Existing branch `task/dsk-07-05-box-broker-endpoints` is clean at `29e13dd1bc70fe0514b62d81279e0f3256ce7ce4`; the supported broker slice has the recorded 26 focused tests and Release build evidence. It is not cleared: current-fork proof is absent for PLAT-039 (download and export after >1 hour revision age), PLAT-041 (O(1)+N Box call-budget implementation/measurement for export and gallery), and the live Key Vault names-only read; the latter is prohibited by the operator's no-cloud/deployment boundary. No upstream synchronization or cloud operation will be used. Export/gallery remain unexposed. Ticket remains implementing and must not move to done until these acceptance conditions are genuinely satisfied or a documented scope/product resolution changes them. Coordinator releasing claim to work an independent ticket.
+
+## 2026-08-30 CI repair delivery checkpoint
+
+- Commit `493f3512` pushed to `origin/task/dsk-07-05-box-broker-endpoints`.
+- Changed only `eng/api/Export-OpenApiDocument.ps1`, `openapi/pegasus-v1.json`, and `tests/Pegasus.Api.ContractTests/CommandCoverage/CommandCoverageTable.cs`.
+- Local Release solution build passed with 0 warnings/errors.
+- `pwsh ./eng/api/Export-OpenApiDocument.ps1` completed successfully.
+- `dotnet test tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj --configuration Release --no-restore --filter "Category=Contract"` passed 24/24 with 0 failures/skips.
+- The PR exact head is now `493f3512`; GitHub CI is pending/running for that SHA.
+- This does not resolve the independent-review blockers: provider-response buffering, current-fork >1-hour token-age proof, PLAT-041 call-budget implementation/measurement, and live Key Vault evidence. FEAT-031 remains not mergeable or Done.
