@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Pegasus.Desktop.Infrastructure\Pegasus.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\Pegasus.Contracts\Pegasus.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

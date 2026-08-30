@@ -174,7 +174,12 @@ before the first slice ships. No Azure writes arise from this area.
   naming convention in [screen-specs.md § AutomationId convention](screen-specs.md#automationid-convention).
 - The desktop consumes the same operator vocabulary as the web through the
   relocated label map (one list per concept); a value with no mapping is a
-  build-time failure in the view-model tests, not a silent `ToString()`.
+  build-time failure in the view-model tests, not a silent `ToString()`. The
+  desktop boundary is `Pegasus.Desktop.Presentation.OperatorText`: it delegates
+  vocabulary to `OperatorVocabulary` and adds only Europe/London date/time,
+  count and megabyte formatting. Identifiers are selected from named pickers,
+  never typed; the companion view-model test covers both entry properties and
+  raw identifiers in Target/reference columns.
 - WebView2 is used only by the report renderer (L-03) and is never parented
   into a visible page; the reviewer checklist verifies no `WebView2` element
   appears in any XAML view.
