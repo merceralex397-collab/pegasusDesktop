@@ -68,3 +68,7 @@ Run `33283250011` passed at exact head `cc91137a4a9e95b99021fe652d367677e3f2c574
 ## Independent review PASS (2026-08-30)
 
 Helmholtz the 2nd independently reviewed exact head `cc91137a4a9e95b99021fe652d367677e3f2c574` and returned PASS with no findings. The review confirmed the three prior corrections, the test-only CI harness fix, acceptance coverage, security boundary, simplification evidence, and exact-head hosted CI run `33283250011`. PR #51 is merge-ready for `dev`.
+
+## Merge and promotion evidence (2026-08-30)
+
+PR #51 merged into `dev` as `8aa8f211d34f9b476c5231eff60fce071104b4e3` after exact-head hosted CI run `33283250011` passed and Helmholtz the 2nd returned independent PASS at `cc91137a`. The documented atomic exact-SHA promotion advanced both remote `dev` and `main` to `8aa8f211`. A main-head repository-check run is in progress; proof and Kanmer closeout remain pending.

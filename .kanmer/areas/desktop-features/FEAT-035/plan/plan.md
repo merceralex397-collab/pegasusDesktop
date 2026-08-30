@@ -139,3 +139,7 @@ Run `33283250011` passed at exact head `cc91137a4a9e95b99021fe652d367677e3f2c574
 ## Independent review PASS (2026-08-30)
 
 Helmholtz the 2nd (`01a0500d-f4e9-7eb0-9b7d-e9cdae9ba3c8`), an independent `pegasus-desktop-reviewer` that did not implement this ticket, reviewed PR #51 at exact head `cc91137a4a9e95b99021fe652d367677e3f2c574` and returned PASS with no findings. The review rechecked all prior blockers, route/Core/contract coverage, migration ordering, security boundary, simplification pass, exact-head CI, and merge readiness. PR #51 is eligible for merge to `dev`.
+
+## Merge and promotion evidence (2026-08-30)
+
+Helmholtz the 2nd returned independent PASS at exact head `cc91137a`, and hosted PR run `33283250011` passed all required jobs. PR #51 merged into `dev` as `8aa8f211d34f9b476c5231eff60fce071104b4e3`; the atomic exact-SHA promotion preflight proved `origin/main` `66aa3eba` was an ancestor of `origin/dev` `8aa8f211`, and the authorized non-force promotion advanced both `main` and `dev` to `8aa8f211`. No upstream sync, cloud write, deployment, or corpus mutation occurred. Main-head repository validation is pending before proof/closeout.
