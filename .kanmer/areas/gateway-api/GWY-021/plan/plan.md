@@ -78,3 +78,26 @@ Fermat the 2nd independently reviewed final exact head `5cbe7033ad477895634fb8a8
 The first PR CI run (`33316926035`) failed because the new production `/api/v1` policy names the OpenIddict validation scheme and requires the `pegasus.desktop` scope plus subject/original-issued-at/security-stamp claims, while existing contract and LocalDB test harnesses still supplied only the legacy test identity. The correction is commit `4044446b63d66b0f8c05a7c84345fb543c01e1da` and changes only `tests/Pegasus.Api.ContractTests/ContractTestWebApplicationFactory.cs`, `tests/Pegasus.Api.ContractTests/VehicleGatewayContractTests.cs`, and `tests/Pegasus.IntegrationTests/IntakeWebTestSupport.cs`. It adapts test composition to the explicit production scheme without weakening the production policy.
 
 The specialist reported locked restore, Release build with 0 warnings/errors, 36 contract tests, vehicle replay integration, and desktop-mail integration passing. A parent confirmation attempted concurrently with the worker's build was blocked by that worker's `.NET Host` file lock on `src/Pegasus.Core/bin/Release/net10.0/Pegasus.Core.dll`; no code failure was established. The SQL-only MailPersistence run hung and was terminated, so the exact PR head must complete its GitHub CI run before merge. Independent review must review the corrected exact head, not only the earlier `5cbe7033` head.
+
+## Simplification pass — 2026-08-30
+
+The required four-lens pass was completed over the reconciled branch diff:
+
+- **Reuse:** retained the existing OpenIddict validation scheme, `DesktopApi` policy, Core `StaffActorFactory` and `StaffAuthorization`, existing Identity lookup, API problem mapping, and the existing test authentication seams. The correction adds only the claims/scope/security-stamp composition needed by those production seams.
+- **Simplification:** no production authentication policy, cache, alternate actor factory, cookie-path change, Worker change, cloud change, or compatibility path was added. The `origin/dev` merge retained its token-throttle documentation instead of dropping unrelated current-state truth.
+- **Efficiency:** the runtime path still performs the required uncached per-request Identity read; no cache or extra request was introduced. Test-only claims are created in the existing doubles.
+- **Altitude:** the change stays at the test-composition boundary and does not move policy into tests or duplicate Core rules. No new abstraction was added.
+
+Independent review noted that the contract and vehicle authentication doubles do not reject an unexpected requested scheme; they return a ticket using the requested scheme. This is not a production defect or merge blocker because the production policy explicitly names the OpenIddict scheme, the production-route authentication tests and structural guard pass, and the doubles are only compatibility composition for existing contract tests. It is recorded as a test-double limitation rather than silently treated as stronger scheme-regression coverage.
+
+## Reconciliation and exact-head validation — 2026-08-30
+
+The branch was four commits ahead and four behind `origin/dev`; `git merge --no-edit origin/dev` required one conflict in `docs/current-architecture.md`. The resolved file preserves both the GWY-021 bearer-authentication snapshot and the GWY-020 token-throttle statement. Merge commit: `6db7511d`.
+
+- `dotnet restore ./Pegasus.slnx --locked-mode` — passed.
+- `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~DesktopApiAuthenticationTests" --logger "console;verbosity=minimal" -nr:false -p:UseSharedCompilation=false` — passed 7/7 in 1m44s.
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~EveryDesktopGatewayEndpointInheritsTheDesktopApiPolicy" --logger "console;verbosity=minimal" -nr:false -p:UseSharedCompilation=false` — passed 1/1.
+- The prior locked Release solution build and 0-warning validation remain recorded for the implementation; the reconciled head still requires the final solution build and exact-head CI before merge.
+- The independent review of `4044446b` found production code/scope correct but required this simplification record, exact-head evidence, and branch reconciliation. A new review of the reconciled exact head is required before merge.
+
+No production, Worker, cloud, upstream, or deployment write was made.

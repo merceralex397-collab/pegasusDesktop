@@ -35,3 +35,13 @@ Independent review of the final implementation/documentation head is pending. Pr
 ## Independent review — 2026-08-30
 
 Fermat the 2nd reviewed final exact head `5cbe7033ad477895634fb8a8d769cc3943109b3c` and returned PASS. The reviewer confirmed the production `/api/v1/mail` route evidence, bearer policy and per-request account checks, rejection/correlation behavior, structural guard, scope, and the intentional DSK-03-15 seam. No remaining merge blocker was identified.
+
+## Reconciled exact-head validation — 2026-08-30
+
+The branch was reconciled with `origin/dev` in its own worktree; the documentation conflict was resolved by retaining both the bearer-authentication snapshot and the current token-throttle statement. Merge commit: `6db7511d`.
+
+- `dotnet restore ./Pegasus.slnx --locked-mode` — passed.
+- `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~DesktopApiAuthenticationTests" --logger "console;verbosity=minimal" -nr:false -p:UseSharedCompilation=false` — passed 7/7 in 1m44s.
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~EveryDesktopGatewayEndpointInheritsTheDesktopApiPolicy" --logger "console;verbosity=minimal" -nr:false -p:UseSharedCompilation=false` — passed 1/1.
+
+The final solution build, independent review of the reconciled exact head, and exact-head PR CI remain required. No proof or merge is claimed yet.
