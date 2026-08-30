@@ -241,9 +241,9 @@ if ((localDocumentCustodyConfigured || productionProfile)
 }
 
 
-// The Automation MCP ingress is composition-gated off by default: when the
-// flag is absent nothing below registers and no /mcp or /connect/token route
-// exists. An explicitly configured deployment may enable it in Production.
+// The Automation MCP ingress is composition-gated off by default. When both
+// feature flags are absent, no /mcp or /connect/token route exists. An
+// explicitly configured deployment may enable either first-party surface.
 var automationMcpOptions = AutomationMcpOptions.TryCreate(builder.Configuration);
 var desktopGatewayOptions = DesktopGatewayOptions.TryCreate(builder.Configuration);
 
@@ -289,7 +289,10 @@ builder.Services.AddRateLimiter(options =>
                 || rejectedPath.Equals(
                     AutomationMcp.TokenEndpointPath,
                     StringComparison.OrdinalIgnoreCase)
-                ? "automation_rate_limited"
+                ? context.HttpContext.Items.ContainsKey(
+                    DesktopSession.PasswordGrantRateLimitMarker)
+                    ? "sign_in_rate_limited"
+                    : "automation_rate_limited"
                 : "authentication_rate_limited";
         return new ValueTask(AppendRateLimitedSecurityEventAsync(
             context.HttpContext,
@@ -309,15 +312,24 @@ builder.Services.AddRateLimiter(options =>
             }));
     options.AddPolicy(
         AutomationMcp.RateLimitPolicy,
-        context => RateLimitPartition.GetFixedWindowLimiter(
-            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                AutoReplenishment = true,
-                PermitLimit = AutomationMcp.RequestsPerClientPerMinute,
-                QueueLimit = 0,
-                Window = TimeSpan.FromMinutes(1)
-            }));
+        context =>
+        {
+            var desktopPasswordGrant = context.Items.ContainsKey(
+                DesktopSession.PasswordGrantRateLimitMarker);
+            var partition = (context.Connection.RemoteIpAddress?.ToString() ?? "unknown")
+                + (desktopPasswordGrant ? ":desktop-sign-in" : ":automation");
+            return RateLimitPartition.GetFixedWindowLimiter(
+                partition,
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    AutoReplenishment = true,
+                    PermitLimit = desktopPasswordGrant
+                        ? StaffSessionPolicy.SignInAttemptsPerClientPerMinute
+                        : AutomationMcp.RequestsPerClientPerMinute,
+                    QueueLimit = 0,
+                    Window = TimeSpan.FromMinutes(1)
+                });
+        });
 });
 builder.Services.AddSingleton(_ => new FixedWindowRateLimiter(
     new FixedWindowRateLimiterOptions
@@ -496,6 +508,34 @@ static Task AppendAutomationDeniedSecurityEventAsync(
             context.TraceIdentifier,
             tokenEndpoint ? "automation_token_rejected" : "automation_access_denied"),
         CancellationToken.None);
+}
+
+static async Task<bool> MarkDesktopPasswordGrantAsync(HttpContext context)
+{
+    if (!HttpMethods.IsPost(context.Request.Method)
+        || !context.Request.Path.Equals(
+            DesktopSession.TokenEndpointPath,
+            StringComparison.OrdinalIgnoreCase)
+        || !context.Request.HasFormContentType)
+    {
+        return false;
+    }
+
+    var form = await context.Request.ReadFormAsync(context.RequestAborted);
+    if (!string.Equals(
+            form["client_id"].ToString(),
+            DesktopSession.ClientId,
+            StringComparison.Ordinal)
+        || !string.Equals(
+            form["grant_type"].ToString(),
+            "password",
+            StringComparison.Ordinal))
+    {
+        return false;
+    }
+
+    context.Items[DesktopSession.PasswordGrantRateLimitMarker] = true;
+    return true;
 }
 
 static Task AppendRateLimitedSecurityEventAsync(
@@ -825,8 +865,10 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.Use(async (context, next) =>
 {
-    if (HttpMethods.IsPost(context.Request.Method)
-        && context.Request.Path.Equals("/Account/SignIn", StringComparison.OrdinalIgnoreCase))
+    var isStaffSignIn = HttpMethods.IsPost(context.Request.Method)
+        && context.Request.Path.Equals("/Account/SignIn", StringComparison.OrdinalIgnoreCase);
+    var isDesktopPasswordGrant = await MarkDesktopPasswordGrantAsync(context);
+    if (isStaffSignIn || isDesktopPasswordGrant)
     {
         var limiter = context.RequestServices.GetRequiredService<FixedWindowRateLimiter>();
         using var lease = await limiter.AcquireAsync(1, context.RequestAborted);

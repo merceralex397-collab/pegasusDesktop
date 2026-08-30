@@ -122,8 +122,16 @@ public sealed class AuthorizeModel : AdministrationPageModel
         // The code is issued for the Automation Actor, never the staff member;
         // offline_access lets the connector refresh without a new consent
         // until the refresh token expires or the client is disabled.
+        var issuedAt = HttpContext.RequestServices
+            .GetRequiredService<TimeProvider>()
+            .GetUtcNow()
+            .ToUnixTimeSeconds();
         return SignIn(
-            AutomationPrincipal.Create(clientId, [.. scopes, Scopes.OfflineAccess]),
+            AutomationPrincipal.Create(
+                clientId,
+                [.. scopes, Scopes.OfflineAccess],
+                issuedAt,
+                issuedAt),
             OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
 

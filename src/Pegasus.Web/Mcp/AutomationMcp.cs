@@ -22,6 +22,7 @@ public static class AutomationMcp
     public const string EndpointPolicy = "AutomationMcpEndpoint";
     public const string RateLimitPolicy = "AutomationMcp";
     public const string Audience = "pegasus-automation-mcp";
+    public const string OriginalIssueClaim = "pegasus:automation-original-issued-at";
     public const string TokenEndpointPath = "/connect/token";
     public const string AuthorizationEndpointPath = "/authorize";
     public const string McpEndpointPath = "/mcp";

@@ -15,6 +15,7 @@ using Pegasus.Core.Identity;
 using Pegasus.Infrastructure.Persistence;
 using Pegasus.Web.Api;
 using Pegasus.Web.Desktop;
+using Pegasus.Web.Mcp;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Pegasus.IntegrationTests;
@@ -133,11 +134,117 @@ public sealed class DesktopTokenIssuanceTests
             document.RootElement.GetProperty("error_description").GetString());
     }
 
+    [Fact]
+    public async Task CombinedCompositionKeepsDesktopRefreshRollingAndAutomationAvailable()
+    {
+        var clock = new MutableTimeProvider(StartUtc);
+        using var baseFactory = new IntakeWebApplicationFactory(clock);
+        using var factory = WithDesktopGateway(baseFactory, automation: true);
+        var user = await SeedStaffAsync(factory, enabled: true);
+        using var client = CreateClient(factory);
+
+        using var issued = await RequestPasswordAsync(client, user);
+        var refreshToken = issued.RootElement.GetProperty("refresh_token").GetString()!;
+
+        // With sliding refresh enabled, this exchange remains valid beyond
+        // the original two-hour idle window. Automation's own flow is present
+        // in the same composition and continues to issue its client token.
+        clock.Advance(TimeSpan.FromHours(1));
+        using var firstRefresh = await RequestRefreshAsync(client, refreshToken);
+        refreshToken = firstRefresh.RootElement.GetProperty("refresh_token").GetString()!;
+        clock.Advance(TimeSpan.FromMinutes(30));
+        using var secondRefresh = await RequestRefreshAsync(client, refreshToken);
+        refreshToken = secondRefresh.RootElement.GetProperty("refresh_token").GetString()!;
+        clock.Advance(TimeSpan.FromHours(1));
+        using var thirdRefresh = await RequestRefreshAsync(client, refreshToken);
+        Assert.False(string.IsNullOrWhiteSpace(
+            thirdRefresh.RootElement.GetProperty("access_token").GetString()));
+
+        var automationToken = await AutomationMcpTestSupport.RequestTokenAsync(
+            client,
+            AutomationMcp.CasesScope);
+        Assert.False(string.IsNullOrWhiteSpace(automationToken));
+        Assert.Equal(1, await baseFactory.Database.ScalarAsync<int>(
+            """
+            SELECT COUNT(*) FROM OpenIddictApplications
+            WHERE ClientId = N'pegasus-desktop'
+              AND ClientType = N'public'
+              AND (ClientSecret IS NULL OR ClientSecret = N'')
+            """));
+    }
+
+    [Fact]
+    public async Task CombinedCompositionRejectsDesktopRefreshAfterSecurityStampChanges()
+    {
+        var clock = new MutableTimeProvider(StartUtc);
+        using var baseFactory = new IntakeWebApplicationFactory(clock);
+        using var factory = WithDesktopGateway(baseFactory, automation: true);
+        var user = await SeedStaffAsync(factory, enabled: true);
+        using var client = CreateClient(factory);
+        using var issued = await RequestPasswordAsync(client, user);
+        var refreshToken = issued.RootElement.GetProperty("refresh_token").GetString()!;
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var userManager = scope.ServiceProvider
+                .GetRequiredService<UserManager<PegasusIdentityUser>>();
+            var trackedUser = await userManager.FindByIdAsync(user.Id.ToString("D"));
+            Assert.NotNull(trackedUser);
+            var result = await userManager.UpdateSecurityStampAsync(trackedUser);
+            Assert.True(result.Succeeded);
+        }
+
+        using var response = await PostTokenAsync(
+            client,
+            new Dictionary<string, string>
+            {
+                ["grant_type"] = "refresh_token",
+                ["client_id"] = DesktopSession.ClientId,
+                ["refresh_token"] = refreshToken
+            });
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        using var document = JsonDocument.Parse(body);
+        Assert.Equal("invalid_grant", document.RootElement.GetProperty("error").GetString());
+    }
+
+    [Fact]
+    public async Task DesktopClientCannotUseAutomationGrant()
+    {
+        using var baseFactory = new IntakeWebApplicationFactory();
+        using var factory = WithDesktopGateway(baseFactory, automation: true);
+        using var client = CreateClient(factory);
+
+        using var response = await PostTokenAsync(
+            client,
+            new Dictionary<string, string>
+            {
+                ["grant_type"] = "client_credentials",
+                ["client_id"] = DesktopSession.ClientId
+            });
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        using var document = JsonDocument.Parse(body);
+        Assert.Equal("invalid_request", document.RootElement.GetProperty("error").GetString());
+    }
+
     private static WebApplicationFactory<Program> WithDesktopGateway(
-        IntakeWebApplicationFactory baseFactory) =>
+        IntakeWebApplicationFactory baseFactory,
+        bool automation = false) =>
         baseFactory.WithWebHostBuilder(builder =>
         {
             builder.UseSetting(DesktopGateway.FeatureFlag, "true");
+            if (automation)
+            {
+                builder.UseSetting(AutomationMcp.FeatureFlag, "true");
+                builder.UseSetting("AutomationMcp:ClientId", AutomationMcpTestSupport.ClientId);
+                builder.UseSetting("AutomationMcp:ClientSecret", AutomationMcpTestSupport.ClientSecret);
+                builder.UseSetting("AutomationMcp:PublicOrigin", "http://localhost/");
+                builder.UseSetting(
+                    "AutomationMcp:RedirectUris",
+                    AutomationMcpTestSupport.ConnectorRedirectUri);
+                builder.UseSetting("AutomationMcp:RegistrationCacheSeconds", "0");
+            }
             builder.ConfigureServices(services =>
                 services.AddSingleton<IStartupFilter, ValidationCaptureStartupFilter>());
         });

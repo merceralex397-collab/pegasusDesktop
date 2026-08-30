@@ -69,7 +69,6 @@ public static class DesktopSessionExtensions
                     server.RegisterResources(automationOptions.ResourceUri.AbsoluteUri);
                     server.SetAccessTokenLifetime(AutomationMcp.AccessTokenLifetime);
                     server.SetRefreshTokenLifetime(AutomationMcp.RefreshTokenLifetime);
-                    server.DisableSlidingRefreshTokenExpiration();
                 }
 
                 server.UseAspNetCore()

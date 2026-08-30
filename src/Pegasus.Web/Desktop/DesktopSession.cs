@@ -14,6 +14,7 @@ public static class DesktopSession
     public const string OriginalIssueClaim = "pegasus:original-issued-at";
     public const string SecurityStampClaim = "pegasus:security-stamp";
     public const string CertificateSubject = "CN=Collision Engineers";
+    public static readonly object PasswordGrantRateLimitMarker = new();
 
     public static readonly TimeSpan AccessTokenLifetime = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan RefreshTokenLifetime = Pegasus.Core.Actors.StaffSessionPolicy.IdleLifetime;
