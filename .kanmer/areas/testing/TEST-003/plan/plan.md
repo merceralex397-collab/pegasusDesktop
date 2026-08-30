@@ -28,3 +28,10 @@ Use the existing integration-test and local-stack conventions; this fix remains 
 ## Current disposition
 
 Implementation is intentionally not started. The ticket remains in Preparing and unclaimed while the route dependency is absent. Next action: after a real `/api/v1` command ticket merges to `dev`, refresh the board and target SHA, re-audit the endpoint map, then take TEST-003 and add the corresponding LocalDB persistence tests and partition evidence.
+
+## Live route recheck — 2026-08-30
+
+- Refreshed the configured `origin` remote only; `origin/dev` is `69a88bbdc0f9a223f8c7da60e24277b664d4b495`.
+- `FEAT-029` is merged and the current desktop gateway exposes these retained-mail writes: `POST /api/v1/mail/{messageId}/link-case/prepare`, `unlink-case/prepare`, `link-case`, `unlink-case`, `classification`, and `move-to-recommended-folder`.
+- `TEST-002` is done. No other `/api/v1` route groups are present in this current checkout.
+- This execution will add one self-contained `MailPersistenceTests` class for the landed mail writes only; it will not fabricate future cases, received, uploads, vehicle, assessment, or administration route tests. The older blocked disposition below is superseded for this execution by this measured route recheck; absent future routes remain outside scope.
