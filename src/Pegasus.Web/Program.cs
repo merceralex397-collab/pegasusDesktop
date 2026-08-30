@@ -521,6 +521,7 @@ static async Task<bool> MarkDesktopPasswordGrantAsync(HttpContext context)
         return false;
     }
 
+    context.Request.EnableBuffering();
     var form = await context.Request.ReadFormAsync(context.RequestAborted);
     if (!string.Equals(
             form["client_id"].ToString(),

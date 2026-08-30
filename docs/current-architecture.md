@@ -567,7 +567,9 @@ bearer flow and recheck staff `IsEnabled`, security stamp, and absolute-session
 age on every request, returning the `not-authorized`, `account-disabled`, or
 `password-change-required` problem type as applicable. Its first-party
 `pegasus-desktop` session is issued by the
-shared `/connect/token` composition described above. This source-state entry
+shared `/connect/token` composition described above. Desktop password grants at
+`/connect/token` share the staff sign-in throttle with browser
+`POST /Account/SignIn` requests. This source-state entry
 does not establish that the feature flag is enabled in any deployed
 environment.
 
