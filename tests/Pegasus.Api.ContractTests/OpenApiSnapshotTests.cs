@@ -103,7 +103,9 @@ public sealed class OpenApiSnapshotTests
         using var factory = new DisabledGatewayWebApplicationFactory();
         using var client = factory.CreateClient();
 
-        using var response = await client.GetAsync("/openapi/v1.json");
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/openapi/v1.json");
+        request.Headers.Add("X-Contract-Unauthenticated", "true");
+        using var response = await client.SendAsync(request);
 
         if (response.StatusCode != HttpStatusCode.NotFound)
         {
