@@ -18,3 +18,11 @@
 - [x] Update canonical endpoint, parity, FRD, and capability documentation with the current-fork broker scope and explicit PLAT-039/PLAT-041/no-cloud boundary disposition (`29e13dd1`).
 - [x] Run final committed-head broker-focused validation: 26 passed, 0 failed, 0 skipped; broad same-code integration profile: 934 passed, 2 skipped, 0 failed.
 - [x] Obtain fresh independent re-review of full head `29e13dd1`; review completed FAIL for merge, with the supported slice review-ready and remaining acceptance/delivery blockers recorded.
+
+## CI repair — 2026-08-30
+
+- [x] Reproduce and correct the exact-head OpenAPI snapshot/export mismatch; regenerate `openapi/pegasus-v1.json` with the prescribed exporter.
+- [x] Add explicit command-coverage rows for the five live Box command endpoints; endpoint behavior remains owned by the existing Box broker integration suite because the SQL-free generic contract host has no Core command doubles.
+- [x] Release solution build passed with 0 warnings and 0 errors.
+- [x] Contract suite passed: 24 passed, 0 failed, 0 skipped.
+- [ ] Exact-head GitHub CI rerun, independent review, merge, provider-streaming acceptance, token-age proof, PLAT-041 call-budget proof, and Key Vault evidence remain open.
