@@ -1,4 +1,3 @@
-using System.Runtime.ExceptionServices;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
@@ -14,7 +13,7 @@ internal static class Program
     internal static string SessionId { get; } = Guid.NewGuid().ToString("N");
 
     [STAThread]
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         WinRT.ComWrappersSupport.InitializeComWrappers();
 
@@ -27,7 +26,7 @@ internal static class Program
                 PegasusHost.CreateDiagnosticsWriter(),
                 SessionId,
                 activatedArguments);
-            RedirectWithoutBlockingSta(instance, activatedArguments);
+            await instance.RedirectActivationToAsync(activatedArguments);
             return;
         }
 
@@ -41,36 +40,5 @@ internal static class Program
             SynchronizationContext.SetSynchronizationContext(context);
             _ = new App();
         });
-    }
-
-    private static void RedirectWithoutBlockingSta(
-        AppInstance instance,
-        AppActivationArguments activatedArguments)
-    {
-        using var redirectCompleted = new ManualResetEventSlim(false);
-        Exception? redirectException = null;
-
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await instance.RedirectActivationToAsync(activatedArguments);
-            }
-            catch (Exception exception)
-            {
-                redirectException = exception;
-            }
-            finally
-            {
-                redirectCompleted.Set();
-            }
-        });
-
-        redirectCompleted.Wait();
-
-        if (redirectException is not null)
-        {
-            ExceptionDispatchInfo.Capture(redirectException).Throw();
-        }
     }
 }
