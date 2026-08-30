@@ -159,7 +159,10 @@ Decisions taken in this plan:
    `WindowsAppSDKSelfContained=true`, .NET `SelfContained=true`,
    `RuntimeIdentifier=win-x64`, `PublishReadyToRun=false` and no trimming/AOT
    initially (profile before enabling, §7.1), `Microsoft.WindowsAppSDK` pinned
-   centrally to the 2.x stable chosen at kickoff (2.4.0 on 2026-08-13).
+   centrally to the 2.x stable chosen at kickoff (2.4.0 on 2026-08-13). FND-030
+   fixes the permanent package identity as `CollisionEngineers.Pegasus` and
+   `Publisher=CN=Collision Engineers`, matching D-002's certificate-subject
+   requirement exactly.
 4. **Central package management**: introduce `Directory.Packages.props` and set
    `RestorePackagesWithLockFile=true` for every project (today only tests).
    Major Windows App SDK / toolkit upgrades are reviewed PRs, never automatic.

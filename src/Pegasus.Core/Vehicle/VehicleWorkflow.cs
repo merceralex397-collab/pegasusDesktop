@@ -35,7 +35,8 @@ public sealed record VehicleLookupObservation(
     IReadOnlyList<MotTestObservation> MotTests,
     VehicleMileageCalculation? Mileage,
     VehicleLookupFailure? Failure,
-    DateTimeOffset RecordedAtUtc);
+    DateTimeOffset RecordedAtUtc,
+    string CorrelationId);
 
 public sealed record VehicleConfirmationHistory(
     Guid Id,
@@ -76,7 +77,8 @@ public sealed record CaseVehicleEvidence(
     ConfirmedVehicleEvidence? Confirmed,
     VehicleLookupObservation? LatestObservation,
     IReadOnlyList<VehicleLookupObservation> Observations,
-    IReadOnlyList<VehicleConfirmationHistory> ConfirmationHistory);
+    IReadOnlyList<VehicleConfirmationHistory> ConfirmationHistory,
+    long Version);
 
 public sealed record RequestVehicleLookupCommand(
     Guid CaseId,
@@ -84,7 +86,8 @@ public sealed record RequestVehicleLookupCommand(
     string Registration,
     ActionActor Actor,
     string OperationKey,
-    string EditLeaseToken);
+    string EditLeaseToken,
+    string CorrelationId);
 
 public sealed record RequestedVehicleLookup(
     Guid WorkItemId,
@@ -92,6 +95,7 @@ public sealed record RequestedVehicleLookup(
     string Registration,
     VehicleLookupWorkState State,
     long ResultingCaseVersion,
+    string CorrelationId,
     bool IsReplay);
 
 public sealed record AcceptVehicleSuggestionCommand(
@@ -113,6 +117,7 @@ public sealed record AcceptedVehicleSuggestion(
     VehicleConfirmationValues Values,
     VehicleEvidenceProvenance Provenance,
     long ResultingCaseVersion,
+    string CorrelationId,
     bool IsReplay);
 
 public sealed record VehicleLookupAvailability(bool RequestsEnabled, string Mode)
@@ -179,7 +184,8 @@ public sealed class RequestVehicleLookup(
             command.ExpectedCaseVersion,
             command.Actor,
             command.OperationKey,
-            command.EditLeaseToken);
+            command.EditLeaseToken,
+            command.CorrelationId);
         if (!availability.RequestsEnabled)
         {
             throw new VehicleLookupUnavailableException(availability.Mode);
@@ -201,7 +207,8 @@ public sealed class RequestVehicleLookup(
         long expectedCaseVersion,
         ActionActor actor,
         string operationKey,
-        string editLeaseToken)
+        string editLeaseToken,
+        string? correlationId = null)
     {
         if (caseId == Guid.Empty)
         {
@@ -222,6 +229,14 @@ public sealed class RequestVehicleLookup(
             128,
             "An active edit lease token is required.",
             nameof(editLeaseToken));
+        if (correlationId is not null)
+        {
+            RequireText(
+                correlationId,
+                200,
+                "A correlation identifier is required.",
+                nameof(correlationId));
+        }
     }
 
     internal static void RequireText(

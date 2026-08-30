@@ -24,7 +24,8 @@ public sealed class AutoLinkReportEvidenceTests
             evidenceId,
             WorkerActor,
             "report-auto-link-operation",
-            "Exact approved-mailbox Sent evidence and one authoritative Case identity");
+            "Exact approved-mailbox Sent evidence and one authoritative Case identity",
+            Guid.NewGuid());
 
         var result = await useCase.ExecuteAsync(request, default);
 
@@ -57,7 +58,8 @@ public sealed class AutoLinkReportEvidenceTests
                 requestedEvidenceId,
                 WorkerActor,
                 "report-auto-link-substitution",
-                "Only the exact retained evidence may be associated"),
+                "Only the exact retained evidence may be associated",
+                Guid.NewGuid()),
             default));
     }
 
@@ -76,12 +78,37 @@ public sealed class AutoLinkReportEvidenceTests
                 Guid.NewGuid(),
                 WorkerActor,
                 "report-auto-link-denied",
-                "Exact approved-mailbox Sent evidence and one authoritative Case identity"),
+                "Exact approved-mailbox Sent evidence and one authoritative Case identity",
+                Guid.NewGuid()),
             default);
 
         Assert.Equal(AutoLinkReportEvidenceDisposition.NotLinked, result.Disposition);
         Assert.Null(result.Link);
         Assert.Equal("case_not_report_preparation", result.NotLinkedReasonCode);
+    }
+
+    [Fact]
+    public async Task MissingReportVersionIsRetainedAsAnExplicitNonLink()
+    {
+        var store = new RecordingStore(new(
+            AutoLinkReportEvidenceDisposition.Linked,
+            new(Guid.NewGuid(), Guid.NewGuid(), CaseLifecycleState.PostReport, Version: 1),
+            NotLinkedReasonCode: null));
+        var useCase = new AutoLinkReportEvidence(store);
+
+        var result = await useCase.ExecuteAsync(
+            new(
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                WorkerActor,
+                "report-auto-link-missing-version",
+                "No immutable report version was supplied"),
+            default);
+
+        Assert.Equal(AutoLinkReportEvidenceDisposition.NotLinked, result.Disposition);
+        Assert.Null(result.Link);
+        Assert.Equal("report_version_required", result.NotLinkedReasonCode);
+        Assert.Empty(store.Requests);
     }
 
     [Fact]

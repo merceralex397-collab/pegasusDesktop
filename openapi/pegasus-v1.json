@@ -1,6 +1,1774 @@
 {
   "components": {
     "schemas": {
+      "AcceptVehicleSuggestionRequest": {
+        "properties": {
+          "correction": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleCorrectionRequest"
+              }
+            ]
+          },
+          "decision": {
+            "enum": [
+              "accept",
+              "correct"
+            ],
+            "type": "string"
+          },
+          "editLeaseToken": {
+            "type": "string"
+          },
+          "expectedVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "operationKey": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "decision",
+          "operationKey",
+          "reason",
+          "editLeaseToken"
+        ],
+        "type": "object"
+      },
+      "AcceptedVehicleSuggestionResponse": {
+        "properties": {
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "confirmationId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "correlationId": {
+            "type": "string"
+          },
+          "decision": {
+            "enum": [
+              "accept",
+              "correct"
+            ],
+            "type": "string"
+          },
+          "lookupObservationId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/VehicleEvidenceProvenanceResponse"
+          },
+          "providerCorrelationId": {
+            "type": "string"
+          },
+          "resultingCaseVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "values": {
+            "$ref": "#/components/schemas/VehicleConfirmationValuesResponse"
+          }
+        },
+        "required": [
+          "confirmationId",
+          "caseId",
+          "lookupObservationId",
+          "decision",
+          "values",
+          "provenance",
+          "resultingCaseVersion",
+          "correlationId",
+          "providerCorrelationId"
+        ],
+        "type": "object"
+      },
+      "CaseVehicleResponse": {
+        "properties": {
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "confirmationHistory": {
+            "items": {
+              "$ref": "#/components/schemas/VehicleConfirmationHistoryResponse"
+            },
+            "type": "array"
+          },
+          "confirmed": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ConfirmedVehicleEvidenceResponse"
+              }
+            ]
+          },
+          "correlationId": {
+            "type": "string"
+          },
+          "latestObservation": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleLookupObservationResponse"
+              }
+            ]
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/VehicleLookupObservationResponse"
+            },
+            "type": "array"
+          },
+          "version": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "caseId",
+          "version",
+          "confirmed",
+          "latestObservation",
+          "observations",
+          "confirmationHistory",
+          "correlationId"
+        ],
+        "type": "object"
+      },
+      "ConfirmedVehicleEvidenceResponse": {
+        "properties": {
+          "make": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ConfirmedVehicleTextFieldResponse"
+              }
+            ]
+          },
+          "mileage": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ConfirmedVehicleMileageFieldResponse"
+              }
+            ]
+          },
+          "mileageUnit": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ConfirmedVehicleMileageUnitFieldResponse"
+              }
+            ]
+          },
+          "model": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ConfirmedVehicleTextFieldResponse"
+              }
+            ]
+          },
+          "registration": {
+            "$ref": "#/components/schemas/ConfirmedVehicleTextFieldResponse"
+          }
+        },
+        "required": [
+          "registration",
+          "make",
+          "model",
+          "mileage",
+          "mileageUnit"
+        ],
+        "type": "object"
+      },
+      "ConfirmedVehicleMileageFieldResponse": {
+        "properties": {
+          "confirmedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "confirmedByActor": {
+            "type": "string"
+          },
+          "externalProvenance": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleEvidenceProvenanceResponse"
+              }
+            ]
+          },
+          "policyKey": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "sourceIdentity": {
+            "type": "string"
+          },
+          "sourceKind": {
+            "type": "string"
+          },
+          "sourceLabel": {
+            "type": "string"
+          },
+          "value": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "sourceKind",
+          "sourceIdentity",
+          "sourceLabel",
+          "policyKey",
+          "policyVersion",
+          "confirmedByActor",
+          "confirmedAtUtc",
+          "externalProvenance"
+        ],
+        "type": "object"
+      },
+      "ConfirmedVehicleMileageUnitFieldResponse": {
+        "properties": {
+          "confirmedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "confirmedByActor": {
+            "type": "string"
+          },
+          "externalProvenance": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleEvidenceProvenanceResponse"
+              }
+            ]
+          },
+          "policyKey": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "sourceIdentity": {
+            "type": "string"
+          },
+          "sourceKind": {
+            "type": "string"
+          },
+          "sourceLabel": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "sourceKind",
+          "sourceIdentity",
+          "sourceLabel",
+          "policyKey",
+          "policyVersion",
+          "confirmedByActor",
+          "confirmedAtUtc",
+          "externalProvenance"
+        ],
+        "type": "object"
+      },
+      "ConfirmedVehicleTextFieldResponse": {
+        "properties": {
+          "confirmedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "confirmedByActor": {
+            "type": "string"
+          },
+          "externalProvenance": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleEvidenceProvenanceResponse"
+              }
+            ]
+          },
+          "policyKey": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "sourceIdentity": {
+            "type": "string"
+          },
+          "sourceKind": {
+            "type": "string"
+          },
+          "sourceLabel": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "sourceKind",
+          "sourceIdentity",
+          "sourceLabel",
+          "policyKey",
+          "policyVersion",
+          "confirmedByActor",
+          "confirmedAtUtc",
+          "externalProvenance"
+        ],
+        "type": "object"
+      },
+      "DeletedMailItemResponse": {
+        "properties": {
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/MailAttachmentResponse"
+            },
+            "type": "array"
+          },
+          "bodyPlainText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "immutableMessageId": {
+            "type": "string"
+          },
+          "isRead": {
+            "type": "boolean"
+          },
+          "mailboxAddress": {
+            "type": "string"
+          },
+          "mailboxId": {
+            "type": "string"
+          },
+          "matches": {
+            "items": {
+              "$ref": "#/components/schemas/MailSearchMatchResponse"
+            },
+            "type": "array"
+          },
+          "receivedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "senderAddress": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "senderDisplayName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "mailboxId",
+          "mailboxAddress",
+          "immutableMessageId",
+          "senderAddress",
+          "senderDisplayName",
+          "subject",
+          "bodyPlainText",
+          "receivedAtUtc",
+          "isRead",
+          "attachments",
+          "matches"
+        ],
+        "type": "object"
+      },
+      "DeletedMailPageResponse": {
+        "properties": {
+          "isTruncated": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DeletedMailItemResponse"
+            },
+            "type": "array"
+          },
+          "mailboxes": {
+            "items": {
+              "$ref": "#/components/schemas/MailboxResponse"
+            },
+            "type": "array"
+          },
+          "page": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "pageSize": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "state": {
+            "type": "string"
+          },
+          "totalCount": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "totalPages": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "totalPages",
+          "isTruncated",
+          "state",
+          "mailboxes",
+          "version"
+        ],
+        "type": "object"
+      },
+      "MailAttachmentResponse": {
+        "properties": {
+          "contentLength": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "isSearchable": {
+            "type": "boolean"
+          },
+          "mediaType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fileName",
+          "mediaType",
+          "contentLength",
+          "isSearchable"
+        ],
+        "type": "object"
+      },
+      "MailCaseAssociationRequest": {
+        "properties": {
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "editLeaseToken": {
+            "type": "string"
+          },
+          "expectedCaseVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "expectedIntakeVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "operationKey": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "caseId",
+          "expectedIntakeVersion",
+          "expectedCaseVersion",
+          "editLeaseToken",
+          "operationKey",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "MailCaseAssociationResponse": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "consequence": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "messageId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "receiptId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "version": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "messageId",
+          "receiptId",
+          "action",
+          "caseId",
+          "version"
+        ],
+        "type": "object"
+      },
+      "MailCasePreparationRequest": {
+        "properties": {
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "expectedCaseVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "expectedIntakeVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "leaseOperationKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "caseId",
+          "expectedIntakeVersion",
+          "expectedCaseVersion",
+          "leaseOperationKey"
+        ],
+        "type": "object"
+      },
+      "MailCasePreparationResponse": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "consequence": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "expectedCaseVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "expectedIntakeVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "expiresAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "leaseToken": {
+            "type": "string"
+          },
+          "messageId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "receiptId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "messageId",
+          "receiptId",
+          "action",
+          "caseId",
+          "expectedIntakeVersion",
+          "expectedCaseVersion",
+          "leaseToken",
+          "expiresAtUtc"
+        ],
+        "type": "object"
+      },
+      "MailCategoryResponse": {
+        "properties": {
+          "direction": {
+            "type": "string"
+          },
+          "isOther": {
+            "type": "boolean"
+          },
+          "isReplyContext": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "otherName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "otherReasoning": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "receivedFamily": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sentFamily": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "subtype": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "direction",
+          "name",
+          "receivedFamily",
+          "sentFamily",
+          "subtype",
+          "isReplyContext",
+          "isOther",
+          "otherName",
+          "otherReasoning"
+        ],
+        "type": "object"
+      },
+      "MailClassificationCorrectionRequest": {
+        "properties": {
+          "classificationKey": {
+            "type": "string"
+          },
+          "expectedClassificationVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "operationKey": {
+            "type": "string"
+          },
+          "otherName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "otherReasoning": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedClassificationVersion",
+          "classificationKey",
+          "reason",
+          "operationKey"
+        ],
+        "type": "object"
+      },
+      "MailClassificationHistoryResponse": {
+        "properties": {
+          "actorDisplayName": {
+            "type": "string"
+          },
+          "after": {
+            "$ref": "#/components/schemas/MailClassificationResultResponse"
+          },
+          "before": {
+            "$ref": "#/components/schemas/MailClassificationResultResponse"
+          },
+          "correctedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "version": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "version",
+          "before",
+          "after",
+          "actorDisplayName",
+          "reason",
+          "correctedAtUtc"
+        ],
+        "type": "object"
+      },
+      "MailClassificationOptionResponse": {
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "label"
+        ],
+        "type": "object"
+      },
+      "MailClassificationResponse": {
+        "properties": {
+          "correctionOptions": {
+            "items": {
+              "$ref": "#/components/schemas/MailClassificationOptionResponse"
+            },
+            "type": "array"
+          },
+          "current": {
+            "$ref": "#/components/schemas/MailClassificationResultResponse"
+          },
+          "currentActorDisplayName": {
+            "type": "string"
+          },
+          "currentDecidedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/MailClassificationHistoryResponse"
+            },
+            "type": "array"
+          },
+          "operationalDestination": {
+            "type": "string"
+          },
+          "version": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "version",
+          "current",
+          "currentActorDisplayName",
+          "currentDecidedAtUtc",
+          "operationalDestination",
+          "history",
+          "correctionOptions"
+        ],
+        "type": "object"
+      },
+      "MailClassificationResultResponse": {
+        "properties": {
+          "ambiguousCandidates": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "caseType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "category": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MailCategoryResponse"
+              }
+            ]
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "policyKey": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "predicates": {
+            "items": {
+              "$ref": "#/components/schemas/MailPredicateResponse"
+            },
+            "type": "array"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "standaloneAuditReport": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MailStandaloneAuditResponse"
+              }
+            ]
+          }
+        },
+        "required": [
+          "outcome",
+          "category",
+          "ambiguousCandidates",
+          "predicates",
+          "reason",
+          "policyKey",
+          "policyVersion",
+          "caseType",
+          "standaloneAuditReport"
+        ],
+        "type": "object"
+      },
+      "MailDetailResponse": {
+        "properties": {
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/MailAttachmentResponse"
+            },
+            "type": "array"
+          },
+          "bodyPlainText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ccAddresses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "classification": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MailClassificationResponse"
+              }
+            ]
+          },
+          "classificationOutcome": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "folder": {
+            "type": "string"
+          },
+          "folderRecommendation": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MailFolderRecommendationResponse"
+              }
+            ]
+          },
+          "latestFolderMove": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MailFolderMoveResponse"
+              }
+            ]
+          },
+          "routeDisposition": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "suggestedMove": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MailSuggestedMoveResponse"
+              }
+            ]
+          },
+          "summary": {
+            "$ref": "#/components/schemas/MailSummaryResponse"
+          },
+          "thread": {
+            "items": {
+              "$ref": "#/components/schemas/MailThreadEntryResponse"
+            },
+            "type": "array"
+          },
+          "toAddresses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "toAddresses",
+          "ccAddresses",
+          "bodyPlainText",
+          "attachments",
+          "thread",
+          "folder",
+          "classificationOutcome",
+          "routeDisposition",
+          "classification",
+          "folderRecommendation",
+          "latestFolderMove",
+          "suggestedMove",
+          "version"
+        ],
+        "type": "object"
+      },
+      "MailFolderMoveResponse": {
+        "properties": {
+          "expectedClassificationVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "expectedMailboxVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "expectedRecommendationPolicyKey": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "expectedRecommendationPolicyVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "failureReason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "folderType": {
+            "type": "string"
+          },
+          "isReplay": {
+            "type": "boolean"
+          },
+          "operationKey": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "operatorMessage": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "recordedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "folderType",
+          "reason",
+          "recordedAtUtc",
+          "isReplay",
+          "operationKey",
+          "failureReason",
+          "expectedClassificationVersion",
+          "expectedRecommendationPolicyKey",
+          "expectedRecommendationPolicyVersion",
+          "expectedMailboxVersion",
+          "operatorMessage"
+        ],
+        "type": "object"
+      },
+      "MailFolderRecommendationResponse": {
+        "properties": {
+          "canMove": {
+            "type": "boolean"
+          },
+          "folderType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mailboxVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "policyKey": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "folderType",
+          "policyKey",
+          "policyVersion",
+          "reason",
+          "mailboxVersion",
+          "canMove"
+        ],
+        "type": "object"
+      },
+      "MailFreshnessResponse": {
+        "properties": {
+          "lastSuccessfulUpdateAtUtc": {
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "lastSuccessfulUpdateAtUtc"
+        ],
+        "type": "object"
+      },
+      "MailMoveRequest": {
+        "properties": {
+          "expectedClassificationVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "expectedMailboxVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "expectedRecommendationPolicyKey": {
+            "type": "string"
+          },
+          "expectedRecommendationPolicyVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "operationKey": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedClassificationVersion",
+          "expectedRecommendationPolicyKey",
+          "expectedRecommendationPolicyVersion",
+          "expectedMailboxVersion",
+          "operationKey",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "MailPageResponse": {
+        "properties": {
+          "freshness": {
+            "$ref": "#/components/schemas/MailFreshnessResponse"
+          },
+          "hasUnretainedHistory": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MailSummaryResponse"
+            },
+            "type": "array"
+          },
+          "mailboxes": {
+            "items": {
+              "$ref": "#/components/schemas/MailboxResponse"
+            },
+            "type": "array"
+          },
+          "page": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "pageSize": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "totalCount": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "totalPages": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "totalPages",
+          "hasUnretainedHistory",
+          "mailboxes",
+          "freshness",
+          "version"
+        ],
+        "type": "object"
+      },
+      "MailPredicateResponse": {
+        "properties": {
+          "detail": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "matched": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "matched",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "MailPreviewResponse": {
+        "properties": {
+          "association": {
+            "type": "string"
+          },
+          "attachments": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "classification": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "received": {
+            "type": "string"
+          },
+          "receivedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "sender": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sender",
+          "subject",
+          "receivedAtUtc",
+          "received",
+          "excerpt",
+          "classification",
+          "association",
+          "attachments",
+          "version"
+        ],
+        "type": "object"
+      },
+      "MailSearchMatchResponse": {
+        "properties": {
+          "attachmentFileName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "attachmentOrdinal": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "kind": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "attachmentFileName",
+          "attachmentOrdinal"
+        ],
+        "type": "object"
+      },
+      "MailStandaloneAuditResponse": {
+        "properties": {
+          "assessment": {
+            "type": "string"
+          },
+          "assetSourceLabel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetSourceLabel",
+          "assessment"
+        ],
+        "type": "object"
+      },
+      "MailSuggestedMoveResponse": {
+        "properties": {
+          "folderType": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "folderType",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "MailSummaryResponse": {
+        "properties": {
+          "allocationState": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "attachmentCount": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "bodyExcerpt": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "caseId": {
+            "format": "uuid",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "caseReference": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "caseVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "classification": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MailClassificationResultResponse"
+              }
+            ]
+          },
+          "currentFolderType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "effectiveSenderAddress": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "intakeReceiptId": {
+            "format": "uuid",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "intakeVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "isRead": {
+            "type": "boolean"
+          },
+          "mailboxAddress": {
+            "type": "string"
+          },
+          "mailboxId": {
+            "type": "string"
+          },
+          "mailboxIsPolled": {
+            "type": "boolean"
+          },
+          "operationalDestination": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "processingOutcome": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "receivedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "searchMatches": {
+            "items": {
+              "$ref": "#/components/schemas/MailSearchMatchResponse"
+            },
+            "type": "array"
+          },
+          "senderAddress": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "senderDisplayName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "mailboxId",
+          "mailboxAddress",
+          "mailboxIsPolled",
+          "senderAddress",
+          "senderDisplayName",
+          "effectiveSenderAddress",
+          "subject",
+          "bodyExcerpt",
+          "receivedAtUtc",
+          "isRead",
+          "attachmentCount",
+          "processingOutcome",
+          "intakeReceiptId",
+          "caseId",
+          "caseReference",
+          "allocationState",
+          "searchMatches",
+          "currentFolderType",
+          "classification",
+          "operationalDestination",
+          "intakeVersion",
+          "caseVersion"
+        ],
+        "type": "object"
+      },
+      "MailThreadEntryResponse": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "receivedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "senderAddress": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "senderDisplayName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "senderDisplayName",
+          "senderAddress",
+          "subject",
+          "receivedAtUtc"
+        ],
+        "type": "object"
+      },
+      "MailboxResponse": {
+        "properties": {
+          "isPolled": {
+            "type": "boolean"
+          },
+          "mailboxAddress": {
+            "type": "string"
+          },
+          "mailboxId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "mailboxId",
+          "mailboxAddress",
+          "isPolled"
+        ],
+        "type": "object"
+      },
+      "MotTestResponse": {
+        "properties": {
+          "expiryDate": {
+            "format": "date",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mileage": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "mileageUnit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "testDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "testStatus": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "testDate",
+          "testStatus",
+          "expiryDate",
+          "mileage",
+          "mileageUnit"
+        ],
+        "type": "object"
+      },
       "PagedResult": {
         "properties": {
           "hasNextPage": {
@@ -38,39 +1806,507 @@
         ],
         "type": "object"
       },
-      "PegasusProblem": {
-        "description": "RFC 9457 problem details returned by the desktop gateway.",
+      "PegasusProblem": {},
+      "VehicleConfirmationHistoryResponse": {
         "properties": {
-          "correlationId": {
+          "actorSubjectId": {
             "type": "string"
           },
-          "detail": {
+          "afterCaseVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "beforeCaseVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "lookupObservationId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "occurredAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "policyKey": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "values": {
+            "$ref": "#/components/schemas/VehicleConfirmationValuesResponse"
+          }
+        },
+        "required": [
+          "id",
+          "caseId",
+          "lookupObservationId",
+          "decision",
+          "values",
+          "actorSubjectId",
+          "reason",
+          "occurredAtUtc",
+          "beforeCaseVersion",
+          "afterCaseVersion",
+          "policyKey",
+          "policyVersion"
+        ],
+        "type": "object"
+      },
+      "VehicleConfirmationValuesResponse": {
+        "properties": {
+          "make": {
             "type": [
               "null",
               "string"
             ]
           },
-          "instance": {
+          "mileage": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "mileageUnit": {
             "type": [
               "null",
               "string"
             ]
           },
-          "status": {
-            "type": "integer"
+          "model": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
-          "title": {
-            "type": "string"
-          },
-          "type": {
+          "registration": {
             "type": "string"
           }
         },
         "required": [
-          "type",
-          "title",
-          "status",
-          "correlationId"
+          "registration",
+          "make",
+          "model",
+          "mileage",
+          "mileageUnit"
+        ],
+        "type": "object"
+      },
+      "VehicleCorrectionRequest": {
+        "properties": {
+          "make": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mileage": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "mileageUnit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "model": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "registration": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "registration"
+        ],
+        "type": "object"
+      },
+      "VehicleDetailsResponse": {
+        "properties": {
+          "engineCapacityCc": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "fuelType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "make": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "manufactureYear": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "model": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "make",
+          "model",
+          "manufactureYear",
+          "engineCapacityCc",
+          "fuelType"
+        ],
+        "type": "object"
+      },
+      "VehicleEvidenceProvenanceResponse": {
+        "properties": {
+          "effectiveAtUtc": {
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "provider": {
+            "type": "string"
+          },
+          "providerVersion": {
+            "type": "string"
+          },
+          "responseIdentity": {
+            "type": "string"
+          },
+          "retrievedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "sourceAgeSeconds": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "sourceObservedAtUtc": {
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "provider",
+          "providerVersion",
+          "responseIdentity",
+          "retrievedAtUtc",
+          "effectiveAtUtc",
+          "sourceObservedAtUtc",
+          "sourceAgeSeconds"
+        ],
+        "type": "object"
+      },
+      "VehicleLookupFailureResponse": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "retryAfterSeconds": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "retryable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "retryable",
+          "retryAfterSeconds"
+        ],
+        "type": "object"
+      },
+      "VehicleLookupObservationResponse": {
+        "properties": {
+          "attemptNumber": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "failure": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleLookupFailureResponse"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "mileage": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleMileageResponse"
+              }
+            ]
+          },
+          "motTests": {
+            "items": {
+              "$ref": "#/components/schemas/MotTestResponse"
+            },
+            "type": "array"
+          },
+          "outcome": {
+            "enum": [
+              "current",
+              "stale",
+              "partial",
+              "notFound",
+              "throttled",
+              "unavailable",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/VehicleEvidenceProvenanceResponse"
+          },
+          "providerCorrelationId": {
+            "type": "string"
+          },
+          "recordedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "registration": {
+            "type": "string"
+          },
+          "vehicle": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VehicleDetailsResponse"
+              }
+            ]
+          },
+          "workItemId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workItemId",
+          "caseId",
+          "attemptNumber",
+          "outcome",
+          "registration",
+          "provenance",
+          "vehicle",
+          "motTests",
+          "mileage",
+          "failure",
+          "recordedAtUtc",
+          "providerCorrelationId"
+        ],
+        "type": "object"
+      },
+      "VehicleLookupRequest": {
+        "properties": {
+          "editLeaseToken": {
+            "type": "string"
+          },
+          "expectedVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "operationKey": {
+            "type": "string"
+          },
+          "registration": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "registration",
+          "expectedVersion",
+          "operationKey",
+          "editLeaseToken"
+        ],
+        "type": "object"
+      },
+      "VehicleLookupResponse": {
+        "properties": {
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "correlationId": {
+            "type": "string"
+          },
+          "providerCorrelationId": {
+            "type": "string"
+          },
+          "registration": {
+            "type": "string"
+          },
+          "resultingCaseVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "state": {
+            "enum": [
+              "pending",
+              "processing",
+              "retryScheduled",
+              "completed",
+              "failed",
+              "poisoned"
+            ],
+            "type": "string"
+          },
+          "workItemId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workItemId",
+          "caseId",
+          "registration",
+          "state",
+          "resultingCaseVersion",
+          "correlationId",
+          "providerCorrelationId"
+        ],
+        "type": "object"
+      },
+      "VehicleMileageResponse": {
+        "properties": {
+          "methodKey": {
+            "type": "string"
+          },
+          "methodVersion": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "observedOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "supportingObservationCount": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "unit": {
+            "type": "string"
+          },
+          "value": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "unit",
+          "observedOn",
+          "methodKey",
+          "methodVersion",
+          "supportingObservationCount"
         ],
         "type": "object"
       }
@@ -82,5 +2318,1333 @@
     "version": "0.1.0-alpha.1"
   },
   "openapi": "3.1.1",
-  "paths": {}
+  "paths": {
+    "/api/v1/cases/{caseId}/vehicle": {
+      "get": {
+        "description": "Returns confirmed vehicle evidence, lookup observations and provenance.",
+        "operationId": "GetVehicleEvidence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "caseId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The weak vehicle evidence version previously returned by this endpoint.",
+            "in": "header",
+            "name": "If-None-Match",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseVehicleResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "ETag": {
+                "description": "Weak version of the vehicle evidence projection.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified",
+            "headers": {
+              "ETag": {
+                "description": "Weak version of the vehicle evidence projection.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "summary": "Get vehicle evidence",
+        "tags": [
+          "VehicleEndpoints"
+        ]
+      }
+    },
+    "/api/v1/cases/{caseId}/vehicle/lookups": {
+      "post": {
+        "description": "Queues a provider lookup through the server-side vehicle workflow.",
+        "operationId": "RequestVehicleLookup",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "caseId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VehicleLookupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehicleLookupResponse"
+                }
+              }
+            },
+            "description": "Accepted"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Request a vehicle lookup",
+        "tags": [
+          "VehicleEndpoints"
+        ]
+      }
+    },
+    "/api/v1/cases/{caseId}/vehicle/suggestions/{suggestionId}/accept": {
+      "post": {
+        "description": "Accepts or corrects a provider vehicle suggestion through Core.",
+        "operationId": "AcceptVehicleSuggestion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "caseId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "suggestionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptVehicleSuggestionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptedVehicleSuggestionResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Accept a vehicle suggestion",
+        "tags": [
+          "VehicleEndpoints"
+        ]
+      }
+    },
+    "/api/v1/mail": {
+      "get": {
+        "description": "Returns retained mail newest first, its mailbox scopes and workspace freshness.",
+        "operationId": "ListMail",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "mailbox",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "folder",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "format": "int32",
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "format": "int32",
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "queue",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "destination",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "classification",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The weak mail version previously returned by this endpoint.",
+            "in": "header",
+            "name": "If-None-Match",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailPageResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "ETag": {
+                "description": "Weak version of the mail projection.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified",
+            "headers": {
+              "ETag": {
+                "description": "Weak version of the mail projection.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "List retained mail",
+        "tags": [
+          "MailEndpoints"
+        ]
+      }
+    },
+    "/api/v1/mail/deleted": {
+      "get": {
+        "description": "Searches the exact approved mailbox Deleted Items folder without retaining or backfilling messages.",
+        "operationId": "SearchDeletedMail",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "mailbox",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "format": "int32",
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "format": "int32",
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "queue",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The weak mail version previously returned by this endpoint.",
+            "in": "header",
+            "name": "If-None-Match",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedMailPageResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "ETag": {
+                "description": "Weak version of the mail projection.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified",
+            "headers": {
+              "ETag": {
+                "description": "Weak version of the mail projection.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "Search deleted mail",
+        "tags": [
+          "MailEndpoints"
+        ]
+      }
+    },
+    "/api/v1/mail/{messageId}": {
+      "get": {
+        "operationId": "GetMail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "messageId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The weak mail version previously returned by this endpoint.",
+            "in": "header",
+            "name": "If-None-Match",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailDetailResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "ETag": {
+                "description": "Weak version of the mail projection.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified",
+            "headers": {
+              "ETag": {
+                "description": "Weak version of the mail projection.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "summary": "Get retained mail detail",
+        "tags": [
+          "MailEndpoints"
+        ]
+      }
+    },
+    "/api/v1/mail/{messageId}/classification": {
+      "post": {
+        "operationId": "CorrectMailClassification",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "messageId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailClassificationCorrectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailClassificationResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Correct retained-mail classification",
+        "tags": [
+          "MailEndpoints"
+        ]
+      }
+    },
+    "/api/v1/mail/{messageId}/link-case": {
+      "post": {
+        "operationId": "LinkMailCase",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "messageId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailCaseAssociationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailCaseAssociationResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Link retained mail to a case",
+        "tags": [
+          "MailEndpoints"
+        ]
+      }
+    },
+    "/api/v1/mail/{messageId}/link-case/prepare": {
+      "post": {
+        "operationId": "PrepareMailCaseLink",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "messageId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailCasePreparationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailCasePreparationResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Prepare a retained-mail case link",
+        "tags": [
+          "MailEndpoints"
+        ]
+      }
+    },
+    "/api/v1/mail/{messageId}/move-to-recommended-folder": {
+      "post": {
+        "operationId": "MoveMailToRecommendedFolder",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "messageId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailMoveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailFolderMoveResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Move retained mail to its recommended folder",
+        "tags": [
+          "MailEndpoints"
+        ]
+      }
+    },
+    "/api/v1/mail/{messageId}/preview": {
+      "get": {
+        "operationId": "PreviewMail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "messageId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The weak mail version previously returned by this endpoint.",
+            "in": "header",
+            "name": "If-None-Match",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailPreviewResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "ETag": {
+                "description": "Weak version of the mail projection.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified",
+            "headers": {
+              "ETag": {
+                "description": "Weak version of the mail projection.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "summary": "Preview retained mail",
+        "tags": [
+          "MailEndpoints"
+        ]
+      }
+    },
+    "/api/v1/mail/{messageId}/unlink-case": {
+      "post": {
+        "operationId": "UnlinkMailCase",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "messageId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailCaseAssociationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailCaseAssociationResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Unlink retained mail from a case",
+        "tags": [
+          "MailEndpoints"
+        ]
+      }
+    },
+    "/api/v1/mail/{messageId}/unlink-case/prepare": {
+      "post": {
+        "operationId": "PrepareMailCaseUnlink",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "messageId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailCasePreparationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailCasePreparationResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PegasusProblem"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Prepare a retained-mail case unlink",
+        "tags": [
+          "MailEndpoints"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "VehicleEndpoints"
+    },
+    {
+      "name": "MailEndpoints"
+    }
+  ]
 }

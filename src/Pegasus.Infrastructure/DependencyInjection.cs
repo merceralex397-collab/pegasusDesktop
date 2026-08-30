@@ -445,6 +445,8 @@ public static class DependencyInjection
         services.AddSingleton<IAssessmentReportRenderer, PlaywrightAssessmentReportRenderer>();
         services.AddScoped<GenerateAssessmentReportDraft>();
         services.AddScoped<IAssessmentReportProjectionSource, EfAssessmentReportProjectionSource>();
+        services.AddScoped<AssessCaseReportReadiness>();
+        services.AddScoped<IAssessmentReportStore, EfAssessmentReportStore>();
         services.AddScoped<GenerateCaseAssessmentReportDraft>();
         return services;
     }

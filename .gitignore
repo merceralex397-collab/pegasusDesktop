@@ -11,6 +11,12 @@ appsettings.*.local.json
 !/.azure/deployment-plan.md
 **/local.settings.json
 *.user
+*.pfx
+*.cer
+devcert.*
+.winapp/
+*.msix
+*.msixbundle
 # .NET build and test output
 **/bin/
 **/obj/

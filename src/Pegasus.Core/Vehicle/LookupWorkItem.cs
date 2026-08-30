@@ -15,6 +15,7 @@ public sealed record VehicleLookupWorkItem(
     Guid CaseId,
     string Registration,
     string OperationKey,
+    string CorrelationId,
     VehicleLookupWorkState State,
     int AttemptCount,
     DateTimeOffset DueAtUtc,
@@ -110,7 +111,10 @@ public sealed class ProcessQueuedVehicleLookup(
         VehicleLookupResult result;
         try
         {
-            result = await lookupAdapter.LookupAsync(request, cancellationToken);
+            result = await lookupAdapter.LookupAsync(
+                request,
+                workItem.CorrelationId,
+                cancellationToken);
             result.EnsureValidFor(request);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

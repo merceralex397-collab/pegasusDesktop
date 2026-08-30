@@ -69,10 +69,14 @@ Repository evidence (read on the 2026-08-23 baseline):
   actions render only when populated and available, a "What is removed" table
   citing the authority line by line, and one recorded deliberate departure (no
   action bar).
-- `src/Pegasus.Web/Presentation/OperatorLabels.cs` (685 lines) is the single
-  code→operator-vocabulary map, consumed by 24 `.cshtml` files; it has no
-  ASP.NET dependency and is the vocabulary the desktop must reuse (relocation
-  is planned in [05 · reuse map](../05-implementation-and-migration/reuse-map.md)).
+
+- The prototype-to-page join is preserved in the reference-only
+  [screen map](../../design/references/screen-map.md); `docs/design/README.md`
+  remains the authority.
+- `src/Pegasus.Contracts/Vocabulary/OperatorVocabulary.cs` is the single
+  code→operator-vocabulary map consumed by the gateway and desktop. The
+  Core-typed `src/Pegasus.Web/Presentation/OperatorLabels.cs` adapter preserves
+  the 24 existing `.cshtml` consumers (see [05 · reuse map](../05-implementation-and-migration/reuse-map.md)).
 - `src/Pegasus.Web/wwwroot/css/site.css` (2,471 lines) is the implemented web
   stylesheet; `.design-sync/conventions.md` and `.stitch/DESIGN.md` restate it
   and record `--radius: 6px` / 5px controls, which conflicts with the
@@ -170,7 +174,12 @@ before the first slice ships. No Azure writes arise from this area.
   naming convention in [screen-specs.md § AutomationId convention](screen-specs.md#automationid-convention).
 - The desktop consumes the same operator vocabulary as the web through the
   relocated label map (one list per concept); a value with no mapping is a
-  build-time failure in the view-model tests, not a silent `ToString()`.
+  build-time failure in the view-model tests, not a silent `ToString()`. The
+  desktop boundary is `Pegasus.Desktop.Presentation.OperatorText`: it delegates
+  vocabulary to `OperatorVocabulary` and adds only Europe/London date/time,
+  count and megabyte formatting. Identifiers are selected from named pickers,
+  never typed; the companion view-model test covers both entry properties and
+  raw identifiers in Target/reference columns.
 - WebView2 is used only by the report renderer (L-03) and is never parented
   into a visible page; the reviewer checklist verifies no `WebView2` element
   appears in any XAML view.

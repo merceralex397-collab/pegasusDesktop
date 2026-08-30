@@ -67,7 +67,10 @@ function ConvertTo-StableValue {
             $stable.Add((ConvertTo-StableValue -Value $item))
         }
 
-        return $stable
+        # PowerShell enumerates function output by default. Preserve an
+        # OpenAPI array with one item as an array rather than collapsing it to
+        # a scalar when assigning the normalized value into its parent object.
+        return ,$stable
     }
 
     return $Value

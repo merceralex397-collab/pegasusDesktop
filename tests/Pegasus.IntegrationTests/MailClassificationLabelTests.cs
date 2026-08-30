@@ -44,6 +44,28 @@ public sealed class MailClassificationLabelTests
     }
 
     [Fact]
+    public void EverySettledFamilyAndSubtypeKeepsItsExactOperatorWords()
+    {
+        Assert.Equal("General", OperatorLabels.MailClassification(MailCategory.Received(ReceivedMailFamily.General)));
+        Assert.Equal("Billing", OperatorLabels.MailClassification(MailCategory.Received(ReceivedMailFamily.Billing)));
+        Assert.Equal("New instruction", OperatorLabels.MailClassification(MailCategory.Received(ReceivedMailFamily.NewInstructionReceived)));
+        Assert.Equal("Not client related", OperatorLabels.MailClassification(MailCategory.Received(ReceivedMailFamily.NonClientRelated)));
+        Assert.Equal("In-progress case", OperatorLabels.MailClassification(MailCategory.Received(ReceivedMailFamily.InProgressCases)));
+        Assert.Equal("Post-report", OperatorLabels.MailClassification(MailCategory.Received(ReceivedMailFamily.PostReportEmails)));
+        Assert.Equal("Pre-instruction", OperatorLabels.MailClassification(MailCategory.Received(ReceivedMailFamily.PreInstructionEmails)));
+        Assert.Equal("Internal CC", OperatorLabels.MailClassification(MailCategory.Received(ReceivedMailFamily.InternalCc)));
+        Assert.Equal("Sent · Report sent", OperatorLabels.MailClassification(MailCategory.Sent(SentMailFamily.ReportSent)));
+        Assert.Equal("Sent · Case rejected", OperatorLabels.MailClassification(MailCategory.Sent(SentMailFamily.CaseRejected)));
+        Assert.Equal("Sent · Query sent", OperatorLabels.MailClassification(MailCategory.Sent(SentMailFamily.QuerySent)));
+        Assert.Equal("Sent · Additional image request", OperatorLabels.MailClassification(MailCategory.Sent(SentMailFamily.AdditionalImageRequest)));
+        Assert.Equal(
+            "New instruction · Inspection",
+            OperatorLabels.MailClassification(MailCategory.Received(
+                ReceivedMailFamily.NewInstructionReceived,
+                "inspection")));
+    }
+
+    [Fact]
     public void RegistryNamesStillRoundTrip()
     {
         foreach (var family in Enum.GetValues<ReceivedMailFamily>())

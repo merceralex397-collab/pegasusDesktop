@@ -118,6 +118,64 @@ public sealed class CaseWorkflowMigrationTests
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
     }
 
+    [Fact]
+    public async Task IssuedVersionLedgerMigrationPreservesLegacyApprovalAndSentAssociationAsUnresolved()
+    {
+        const string previous = "20260826095720_AssessmentReportPendingState";
+        const string approvalId = "73000000-0000-0000-0000-000000000001";
+        const string evidenceId = "74000000-0000-0000-0000-000000000001";
+        await using var database = await LocalDbTestDatabase.CreateAsync(migrate: false);
+        await using var context = await database.CreateContextAsync();
+        await context.Database.MigrateAsync(previous);
+        await database.ExecuteAsync(ExistingCasesSql);
+        await database.ExecuteAsync(
+            $"""
+            INSERT INTO CaseReportApprovals
+                (Id, CaseId, ArtifactIdentity, ArtifactSha256, ApprovedByKind,
+                 ApprovedBySubjectId, ApprovedByRolesJson, ApprovedAtUtc)
+            VALUES
+                ('{approvalId}', '{ReviewCaseId}', 'legacy-report.pdf',
+                 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+                 'Staff', '73000000-0000-0000-0000-000000000002', '["Administrator"]',
+                 '2031-05-06T10:30:00+00:00');
+            INSERT INTO CaseReportSentEvidence
+                (Id, CaseId, MailboxIdentity, SentFolderIdentity, ImmutableItemIdentity,
+                 InternetMessageIdentity, ConversationIdentity, ReplyChainIdentity,
+                 SourceOccurrenceIdentity, SourceSha256, MimeSha256, SentAtUtc,
+                 DiscoveredAtUtc, DiscoveredByKind, DiscoveredBySubjectId,
+                 RetentionOperationKey, RetentionRequestHash, LinkedAtUtc, LinkedByKind,
+                 LinkedBySubjectId, LinkedByRolesJson)
+            VALUES
+                ('{evidenceId}', '{ReviewCaseId}', 'instructions@collisionengineers.co.uk',
+                 'legacy-sent', 'legacy-item', 'legacy-message', 'legacy-conversation',
+                 'legacy-reply-chain', 'legacy-occurrence',
+                 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB',
+                 'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC',
+                 '2031-05-06T10:31:00+00:00', '2031-05-06T10:32:00+00:00',
+                 'SystemWorker', 'legacy-worker', 'legacy-retention',
+                 'DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD',
+                 '2031-05-06T10:33:00+00:00', 'Staff',
+                 '73000000-0000-0000-0000-000000000002', '["Administrator"]');
+            UPDATE CaseWorkflows
+            SET ReportApprovalId = '{approvalId}', ReportSentEvidenceId = '{evidenceId}'
+            WHERE CaseId = '{ReviewCaseId}';
+            """);
+
+        await context.Database.MigrateAsync();
+
+        Assert.Equal(ReviewCaseId, await database.ScalarAsync<string>(
+            $"SELECT CONVERT(varchar(36), CaseId) FROM CaseReportApprovals WHERE Id = '{approvalId}'"));
+        Assert.Equal("Unresolved", await database.ScalarAsync<string>(
+            $"SELECT AssociationStatus FROM CaseReportApprovals WHERE Id = '{approvalId}'"));
+        Assert.Equal(ReviewCaseId, await database.ScalarAsync<string>(
+            $"SELECT CONVERT(varchar(36), CaseId) FROM CaseReportSentEvidence WHERE Id = '{evidenceId}'"));
+        Assert.Equal("Unresolved", await database.ScalarAsync<string>(
+            $"SELECT AssociationStatus FROM CaseReportSentEvidence WHERE Id = '{evidenceId}'"));
+        Assert.Equal(0, await database.ScalarAsync<int>(
+            $"SELECT COUNT(*) FROM CaseReportVersionLedgers WHERE CaseId = '{ReviewCaseId}'"));
+        Assert.Empty(await context.Database.GetPendingMigrationsAsync());
+    }
+
     private const string ExistingCasesSql =
         """
         INSERT INTO IntakeReceipts

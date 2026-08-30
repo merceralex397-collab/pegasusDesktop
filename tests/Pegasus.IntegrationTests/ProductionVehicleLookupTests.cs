@@ -12,6 +12,9 @@ public sealed class ProductionVehicleLookupTests
     {
         using var adapter = Create(request =>
         {
+            Assert.Equal(
+                "production-test-correlation",
+                request.Headers.GetValues("X-Correlation-Id").Single());
             if (request.RequestUri!.Host == "driver-vehicle-licensing.api.gov.uk")
             {
                 Assert.Equal(HttpMethod.Post, request.Method);
@@ -27,7 +30,7 @@ public sealed class ProductionVehicleLookupTests
             return Json(HttpStatusCode.OK, """[{"motTests":[{"completedDate":"2026-01-02","testResult":"PASSED","expiryDate":"2027-01-01","odometerValue":"12000","odometerUnit":"mi"}]}]""");
         });
 
-        var result = await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), CancellationToken.None);
+        var result = await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), "production-test-correlation", CancellationToken.None);
 
         Assert.Equal(VehicleLookupOutcome.Current, result.Outcome);
         Assert.Equal("FORD", result.Vehicle?.Make);
@@ -58,7 +61,7 @@ public sealed class ProductionVehicleLookupTests
             return Json(HttpStatusCode.OK, """{"make":"TOYOTA","model":"ALPHARD","registration":"DP07EFB","motTests":[{"completedDate":"2026-05-14T13:11:22.000Z","testResult":"PASSED","expiryDate":"2027-05-13","odometerValue":"113068","odometerUnit":"KM"},{"completedDate":"2025-05-14T15:38:02.000Z","testResult":"PASSED","odometerValue":"102742","odometerUnit":"KM"}]}""");
         });
 
-        var result = await adapter.LookupAsync(new VehicleLookupRequest("DP07EFB"), CancellationToken.None);
+        var result = await adapter.LookupAsync(new VehicleLookupRequest("DP07EFB"), "production-test-correlation", CancellationToken.None);
 
         Assert.Equal(VehicleLookupOutcome.Current, result.Outcome);
         Assert.Equal(2, result.MotTests.Count);
@@ -87,7 +90,7 @@ public sealed class ProductionVehicleLookupTests
             return Json(HttpStatusCode.OK, """[{"motTests":[{"completedDate":"not a date at all","testResult":"PASSED"}]}]""");
         });
 
-        var result = await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), CancellationToken.None);
+        var result = await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), "production-test-correlation", CancellationToken.None);
 
         Assert.Empty(result.MotTests);
         Assert.Equal("dvsa_unreadable_tests", result.Failure?.Code);
@@ -118,7 +121,7 @@ public sealed class ProductionVehicleLookupTests
             return Json(dvsaStatus, "{}");
         });
 
-        var result = await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), CancellationToken.None);
+        var result = await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), "production-test-correlation", CancellationToken.None);
 
         Assert.Equal(expected, result.Outcome);
         Assert.Equal(expectedFailureCode, result.Failure?.Code);
@@ -142,7 +145,7 @@ public sealed class ProductionVehicleLookupTests
             return Json(HttpStatusCode.NotFound, "{}");
         });
 
-        var result = await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), CancellationToken.None);
+        var result = await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), "production-test-correlation", CancellationToken.None);
 
         Assert.Equal(VehicleLookupOutcome.Partial, result.Outcome);
         Assert.Equal("FORD", result.Vehicle?.Make);
@@ -168,7 +171,7 @@ public sealed class ProductionVehicleLookupTests
             return Json(HttpStatusCode.OK, """[{"motTests":[]}]""");
         });
 
-        var result = await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), CancellationToken.None);
+        var result = await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), "production-test-correlation", CancellationToken.None);
 
         Assert.Equal(VehicleLookupOutcome.Stale, result.Outcome);
         Assert.Equal(TimeSpan.FromMinutes(30), result.SourceAge);
@@ -193,8 +196,8 @@ public sealed class ProductionVehicleLookupTests
             return Json(HttpStatusCode.NotFound, "{}");
         });
 
-        await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), CancellationToken.None);
-        await adapter.LookupAsync(new VehicleLookupRequest("XY12ZZZ"), CancellationToken.None);
+        await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), "production-test-correlation", CancellationToken.None);
+        await adapter.LookupAsync(new VehicleLookupRequest("XY12ZZZ"), "production-test-correlation", CancellationToken.None);
 
         Assert.Equal(1, tokenCalls);
     }
@@ -217,8 +220,8 @@ public sealed class ProductionVehicleLookupTests
             return Json(HttpStatusCode.NotFound, "{}");
         });
 
-        await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), CancellationToken.None);
-        await adapter.LookupAsync(new VehicleLookupRequest("XY12ZZZ"), CancellationToken.None);
+        await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), "production-test-correlation", CancellationToken.None);
+        await adapter.LookupAsync(new VehicleLookupRequest("XY12ZZZ"), "production-test-correlation", CancellationToken.None);
 
         Assert.Equal(2, tokenCalls);
     }
@@ -239,7 +242,7 @@ public sealed class ProductionVehicleLookupTests
             return Json(HttpStatusCode.NotFound, "{}");
         });
 
-        var result = await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), CancellationToken.None);
+        var result = await adapter.LookupAsync(new VehicleLookupRequest("AB12CDE"), "production-test-correlation", CancellationToken.None);
 
         Assert.Equal(VehicleLookupOutcome.Failed, result.Outcome);
         Assert.Equal("dvla_malformed", result.Failure?.Code);

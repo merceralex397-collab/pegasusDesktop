@@ -26,7 +26,7 @@ Registration, tests, migration presence, generated infrastructure, predecessor b
 
 ## System shape
 
-Pegasus is a four-project modular monolith:
+Pegasus is a seven-project modular monolith, including the native desktop client:
 
 ```mermaid
 flowchart LR
@@ -39,6 +39,11 @@ flowchart LR
     Web --> Infra[Pegasus.Infrastructure]
     Worker --> Infra
     Infra --> Core
+    Desktop[Pegasus.Desktop\nWinUI 3 packaged client] --> DesktopInfra[Pegasus.Desktop.Infrastructure]
+    Desktop --> Core
+    Desktop --> Contracts[Pegasus.Contracts]
+    DesktopInfra --> Core
+    DesktopInfra --> Contracts
 
     Infra --> SQL[(LocalDB local / Azure SQL deployed)]
     Infra -. target .-> Outlook[Outlook / Graph]
@@ -48,7 +53,7 @@ flowchart LR
     Infra -. target .-> EVA[EVA]
 ```
 
-The current repository exposes an ASP.NET Core Razor Pages host and a .NET 10 isolated Azure Functions Worker. The Worker has timer and queue-trigger callers that translate bounded work into Core use cases. Any provider API caller remains separately gated. The Automation MCP ingress is implemented inside `Pegasus.Web` behind a composition gate that is off by default; when the gate is off no automation route exists, and live activation remains separately approved.
+The current repository exposes an ASP.NET Core Razor Pages host, a .NET 10 isolated Azure Functions Worker, and a packaged .NET 10 WinUI 3 desktop client with a separate infrastructure boundary. The Worker has timer and queue-trigger callers that translate bounded work into Core use cases. The desktop infrastructure owns the gateway HTTP pipeline, per-user credential protection, bounded in-memory snapshots, and bounded redacted diagnostics; it has no database or provider credentials. Any provider API caller remains separately gated. The desktop composition root builds one generic host with embedded base plus build-time channel configuration (`local`, `pilot`, or `production`) before creating the WinUI window, and disposes that host when the application exits. The Automation MCP ingress is implemented inside `Pegasus.Web` behind a composition gate that is off by default; when the gate is off no automation route exists, and live activation remains separately approved.
 
 The repository identifies its package and release target as `0.1.0-alpha.1`. Pegasus is deployed to its sole production environment by exact-SHA fast-forward releases of `main`; the current production state (release, revision, migration head, gate settings) is owned exclusively by [operations § Production environment](operations.md#production-environment) and is not restated here. Operator acceptance remains outstanding.
 
@@ -57,13 +62,15 @@ The repository identifies its package and release target as `0.1.0-alpha.1`. Peg
 | Component | Ownership and permitted dependencies |
 | --- | --- |
 | `src/Pegasus.Core/` | Business use cases, invariants, models, decisions, and ports. It must not depend on Web, Worker, Infrastructure, EF Core, Azure, Graph, Box, or other adapter implementations. |
-| `src/Pegasus.Contracts/` | Dependency-free shared request, response, problem-details, paging, concurrency, operation-key, and compatibility DTOs for the gateway and desktop. It depends only on the .NET base class library. |
+| `src/Pegasus.Contracts/` | Dependency-free shared request, response, problem-details, paging, concurrency, operation-key, compatibility DTOs, and operator vocabulary for the gateway and desktop. It depends only on the .NET base class library. |
+| `src/Pegasus.Desktop/` | Packaged WinUI 3 presentation client (`net10.0-windows10.0.26100.0`, x64, self-contained). It may depend on Core, Contracts, and `Pegasus.Desktop.Infrastructure`; it must not depend on server Infrastructure, EF Core, Azure, Graph, Box, or Web. |
+| `src/Pegasus.Desktop.Infrastructure/` | Desktop-only gateway HTTP pipeline, DPAPI credential store, bounded in-memory snapshot cache, and bounded redacted diagnostics writer (`net10.0-windows10.0.26100.0`). It references only Core and Contracts; it must not depend on server Infrastructure, EF Core, Azure, Graph, Box, or Web. |
 | `src/Pegasus.Core/ReferenceData/` | Exact provider/domain-suffix package validation, deterministic candidate semantics, and the catalog port. It contains no workbook, package-file, or EF implementation. |
 | `src/Pegasus.Infrastructure/` | EF persistence and source, artifact, package, and future external-system adapters implementing Core ports. It depends on Core. |
 | `src/Pegasus.Web/` | Razor Pages and HTTP composition root, request translation, configuration, route gates, and health endpoints. It invokes Core through configured ports and Infrastructure adapters. |
 | `src/Pegasus.Worker/` | Isolated Functions composition root. Its timer and queue triggers translate persisted intake, external-work, mailbox, sent-evidence, and reconciliation signals into Core use cases; it contains no duplicate business policy. |
 
-Web and Worker may translate transport, identity, and configuration. They must not reproduce business policy. Infrastructure may implement Core ports but does not own business decisions.
+Web and Worker may translate transport, identity, and configuration. They must not reproduce business policy. Infrastructure may implement Core ports but does not own business decisions. Core-typed Web label calls use the thin `Pegasus.Web.Presentation.OperatorLabels` adapter; the words and persisted-code maps are owned by `Pegasus.Contracts.Vocabulary.OperatorVocabulary` so the desktop and gateway share one vocabulary without a Core dependency.
 
 A new project, runtime, store, migration stream, deployment unit, or top-level application boundary requires an accepted ADR demonstrating that these owners cannot carry the change. Decision status and supersession are maintained in the [decision index](adr/README.md).
 
@@ -180,14 +187,17 @@ The following remain planned or absent, not merely unverified:
   produces most of the volume, so measuring before buying quota is the cheaper
   order. Correlation, retention and alert delivery remain unproved until the
   window covers a working day (PLAT-034, open).
-- an automated check that a runtime role may write what the code writes. The
-  least-privilege grant matrix (`20260729199000_RuntimeRoleReconciliation`) is
-  the one list of what Web and Worker may touch, and nothing verifies it against
-  the stores each composition root actually registers. Tests and LocalDB runs are
-  full-privilege, so the suite is green while the deployed estate refuses the
-  write. This has now shipped three times — `20260814092852`, `20260821095500`
-  and `20260822044425`, the last of which broke case custody for every case
-  created after release 17 (PLAT-035, open).
+- an implemented automated check that composition-root persistence writes remain covered by
+   the runtime-role grant catalogue. The architecture suite now derives registered
+   EF stores (including concrete stores resolved by their registered factory interfaces),
+   their EF `IModel` entity/table mappings, and detected INSERT/UPDATE/DELETE writes,
+   then compares them with the two grant shapes accepted by
+   `scripts/Test-MigrationGrants.ps1`. It also reconstructs the three shipped
+   missing-write regressions — `20260814092852`, `20260821095500` and
+   `20260822044425` — and carries a forward ungranted-table fixture. The static
+   migration-grant script remains unchanged; full-privilege tests and LocalDB runs
+   therefore no longer provide the only signal for this boundary (PLAT-035,
+   automated coverage added).
 
 ## Current intake and extraction boundary
 
@@ -423,6 +433,18 @@ A release-owned migration bundle or explicit operation must apply deployed migra
 
 The platform's supported local SQL Server (LocalDB on Windows, a per-run container on Linux) is the canonical local provider for persistence, migration, concurrency, and recovery evidence. Each disposable result proves only the exercised local behavior; it does not prove Azure SQL locking, upgrade behavior, recovery, or live deployment.
 
+Report custody is implemented in the existing workflow boundary. Each generated
+report version has a `CaseReportVersionLedgers` row, and
+`CaseReportAssociationHistory` records approval, link, unlink, and relink actions
+with ordered ledger versions and former-link metadata. Versioned approval and
+Sent evidence carry the exact report-version artifact identity and hash; a
+correction therefore leaves predecessor custody intact while the workflow's
+current pointer advances to the successor. The latest migration preserves
+pre-ledger approval and Sent rows and marks them `Unresolved` rather than
+guessing a report-version association. This is implemented and covered by
+local Release/LocalDB evidence; no deployed schema or cloud migration is claimed
+here.
+
 ## Authentication and authorization boundary
 
 Staff authentication and authorization are implemented and enforced:
@@ -654,6 +676,7 @@ The staff `/Received/{id}`, `/Received/{id}/Source`, and `/Inbox` routes are ser
 | Dependency-direction evidence | `tests/Pegasus.ArchitectureTests/DependencyDirectionTests.cs` |
 | Core assessment-report draft contract and caller | `src/Pegasus.Core/Reports/AssessmentReportRendering.cs` |
 | Integrated Scriban/Playwright/PDFsharp report adapter and governed resources | `src/Pegasus.Infrastructure/Reports/`, composed by `src/Pegasus.Infrastructure/DependencyInjection.cs` in the existing Web boundary |
+| Issued report-version custody ledger and association history | `src/Pegasus.Infrastructure/Persistence/CaseWorkflowEntities.cs`, `EfCaseWorkflowStore.cs`, and the latest EF migration; projected by `CaseWorkflowRecord.IssuedReportVersions` |
 
 Relevant architectural decisions include ADR-0003 for PdfPig, ADR-0005 for multi-format assets, ADR-0006 for provider-neutral intake with a contained QDOS policy, and ADR-0007 for direct-terminal Azure deployment. Their status and supersession must be read through the [decision index](adr/README.md).
 

@@ -60,7 +60,9 @@ public sealed record RetainedMailSummary(
     IReadOnlyList<RetainedMailSearchMatch>? SearchMatches = null,
     MailLogicalFolderType? CurrentFolderType = null,
     MailClassificationResult? Classification = null,
-    MailOperationalDestinationResult? OperationalDestination = null)
+    MailOperationalDestinationResult? OperationalDestination = null,
+    long? IntakeVersion = null,
+    long? CaseVersion = null)
 {
     public IReadOnlyList<RetainedMailSearchMatch> Matches => SearchMatches ?? [];
 }

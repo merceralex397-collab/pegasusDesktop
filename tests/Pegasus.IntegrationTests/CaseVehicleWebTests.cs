@@ -168,6 +168,7 @@ public sealed partial class CaseDetailsWebTests
                 command.Registration,
                 VehicleLookupWorkState.Pending,
                 CaseVersion + 1,
+                command.CorrelationId,
                 IsReplay: false));
         }
 
@@ -185,6 +186,7 @@ public sealed partial class CaseDetailsWebTests
                 command.Correction ?? new("AB12CDE", "Ford", "Transit", 42_000, VehicleMileageUnit.Miles),
                 new("dvla", "1", "response-1", _now, null, null),
                 CaseVersion + 1,
+                "vehicle-accept-correlation",
                 IsReplay: false));
         }
 

@@ -564,7 +564,10 @@ internal sealed class EfIntakeReceiptStore(IDbContextFactory<PegasusDbContext> c
             entity.ManualAssociation is { IsActive: true } activeAssociation
                 && Enum.TryParse<ActorKind>(activeAssociation.ActorKind, ignoreCase: false, out var associationActorKind)
                 ? associationActorKind
-                : null);
+                : null)
+        {
+            ManualAssociationOperationKey = entity.ManualAssociation?.LastOperationKey
+        };
     }
 
     private static async Task<IntakeAllocationState?> GetAllocationStateAsync(

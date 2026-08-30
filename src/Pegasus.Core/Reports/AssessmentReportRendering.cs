@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Globalization;
+using Pegasus.Core.Assessment;
 
 namespace Pegasus.Core.Reports;
 
@@ -91,13 +92,45 @@ public sealed record ReportRepairCosts(
     decimal SpecialistOther,
     bool RepairerVatRegistered)
 {
-    public decimal Labour => LabourHours * HourlyRate;
+    /// <summary>
+    /// The accepted repair-specification path supplies a source-attributed
+    /// labour amount and VAT amount directly. The legacy hours/rate shape is
+    /// retained for the renderer fixtures and older in-repo callers, but no
+    /// rate-card value is inferred for an imported estimate.
+    /// </summary>
+    public decimal? ImportedLabour { get; init; }
+
+    public decimal? ImportedVat { get; init; }
+
+    public string? ImportedPolicyVersion { get; init; }
+
+    public decimal Labour => ImportedLabour ?? LabourHours * HourlyRate;
     public decimal Subtotal => Labour + Parts + PaintMaterials + SpecialistOther;
     public decimal Vat => decimal.Round(
-        (RepairerVatRegistered ? Subtotal : Parts + PaintMaterials) * 0.20m,
+        ImportedVat ?? (RepairerVatRegistered ? Subtotal : Parts + PaintMaterials) * 0.20m,
         2,
         MidpointRounding.AwayFromZero);
     public decimal Total => Subtotal + Vat;
+
+    public bool IsImported => ImportedLabour is not null || ImportedVat is not null;
+
+    public static ReportRepairCosts FromAcceptedBasis(RepairCalculationBasis basis)
+    {
+        ArgumentNullException.ThrowIfNull(basis);
+        RepairSpecificationPolicy.ValidateCalculationBasis(basis);
+        return new(
+            LabourHours: 0m,
+            HourlyRate: 0m,
+            Parts: basis.Parts,
+            PaintMaterials: basis.PaintMaterials,
+            SpecialistOther: basis.SpecialistOther,
+            RepairerVatRegistered: basis.RepairerVatRegistered)
+        {
+            ImportedLabour = basis.Labour,
+            ImportedVat = basis.Vat,
+            ImportedPolicyVersion = basis.PolicyVersion
+        };
+    }
 }
 
 public sealed record ReportEngineer(
@@ -146,7 +179,12 @@ public sealed record AssessmentReportSnapshot(
     IReadOnlyList<string> FeeDescriptionLines,
     IReadOnlyList<ReportImageEvidence> Photos,
     IReadOnlyList<AcceptedReportSource> Sources,
-    string PayloadVersion = AssessmentReportContract.TemplateVersion)
+    string PayloadVersion = AssessmentReportContract.TemplateVersion,
+    Guid CaseId = default,
+    long AssessmentCaseVersion = 0,
+    Guid? RepairSpecificationId = null,
+    int? RepairSpecificationVersion = null,
+    AcceptedReportSource? RepairCostSource = null)
 {
     private static readonly Dictionary<string, (string Name, string Qualifications)> AcceptedEngineers =
         new(StringComparer.Ordinal)
@@ -187,7 +225,9 @@ public sealed record AssessmentReportSnapshot(
         {
             throw new ReportRenderRejectedException("Report addressee, photo custody and accepted source evidence are required.");
         }
-        if (Costs.LabourHours < 0 || Costs.HourlyRate <= 0 || Costs.Parts < 0 ||
+        if ((!Costs.IsImported && (Costs.LabourHours < 0 || Costs.HourlyRate <= 0))
+            || (Costs.IsImported && (Costs.Labour < 0 || Costs.ImportedVat is null || Costs.Vat < 0))
+            || Costs.Parts < 0 ||
             Costs.PaintMaterials < 0 || Costs.SpecialistOther < 0 || EngineerValue <= 0 || AgreedFee <= 0)
         {
             throw new ReportRenderRejectedException("Accepted report amounts are incomplete or invalid.");
@@ -205,6 +245,20 @@ public sealed record AssessmentReportSnapshot(
         if (ReportFor.Any(string.IsNullOrWhiteSpace))
         {
             throw new ReportRenderRejectedException("Report inputs cannot contain blank entries.");
+        }
+        if (RepairSpecificationId is not null
+            || RepairSpecificationVersion is not null
+            || RepairCostSource is not null)
+        {
+            if (RepairSpecificationId is null
+                || RepairSpecificationVersion is not > 0
+                || RepairCostSource is null)
+            {
+                throw new ReportRenderRejectedException(
+                    "A selected repair estimate requires its accepted identity, version, and source evidence.");
+            }
+
+            RepairCostSource.Validate();
         }
         foreach (var source in Sources)
         {

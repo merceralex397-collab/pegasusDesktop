@@ -31,17 +31,10 @@ namespace Pegasus.Core.Reports;
 /// evidence" the domain has today.
 /// </para>
 /// <para>
-/// <see cref="Costs"/> is deliberately nullable and supplied by the caller,
-/// not derived here. <c>AssessmentPolicy</c> already documents that estimate
-/// derivation (totals, worklists) is "deliberately absent until its formulas
-/// hold accepted authority (EXT-09, open decision D2)", and the assessment
-/// screen's own rate-card section states the labour/paint rate is "published
-/// reference data with their own dates and caveat, not a Pegasus tariff" — no
-/// numeric hourly rate or paint-materials figure is accepted anywhere in the
-/// domain today. Inventing one here would fabricate a legal-report money
-/// figure, which is exactly what this projection must not do. Until EXT-09
-/// lands, every production caller passes <c>Costs: null</c> and the report
-/// draft fails closed with that reason named.
+/// <see cref="Costs"/> is supplied by the selected accepted repair estimate.
+/// This projection never derives an internal rate-card value. The source
+/// reference is carried separately so a report snapshot can retain both the
+/// imported numbers and the evidence that supplied them.
 /// </para>
 /// </remarks>
 public sealed record AssessmentReportProjectionInput(
@@ -53,7 +46,10 @@ public sealed record AssessmentReportProjectionInput(
     DateOnly ReportDate,
     IReadOnlyList<ReportImageEvidence> Photos,
     IReadOnlyList<AcceptedReportSource> Sources,
-    ReportRepairCosts? Costs);
+    ReportRepairCosts? Costs,
+    AcceptedReportSource? RepairCostSource = null,
+    Guid? RepairSpecificationId = null,
+    int? RepairSpecificationVersion = null);
 
 /// <summary>
 /// Either a snapshot ready to render, or the enumerated reasons it is not —
@@ -125,6 +121,16 @@ public static class AssessmentReportProjection
             "Accepted source evidence", "Case documents",
             "No custody-confirmed source document is attached to the case.",
             "Attach and confirm at least one document on the case.");
+        Require(
+            input.Sources.All(IsValidSource),
+            "Accepted source evidence", "Case documents",
+            "At least one accepted source has incomplete or invalid provenance.",
+            "Retain a source name, version, and SHA-256 hash for every accepted source.");
+        Require(
+            input.Photos.All(IsValidPhoto),
+            "Report photographs", "Case documents",
+            "At least one report photograph has incomplete or invalid custody evidence.",
+            "Use custody-confirmed image bytes with their matching SHA-256 hash.");
 
         var assessmentMethod = MapAssessmentMethod(assessment.CaseOwned.InspectionMode);
         Require(
@@ -149,22 +155,35 @@ public static class AssessmentReportProjection
                 "Record the exact accepted engineer name, qualifications and signature.");
         }
 
-        // The rate-card / paint-materials formula the report needs has no
-        // accepted authority anywhere in the domain yet (EXT-09, open
-        // decision D2) — see the remarks on AssessmentReportProjectionInput.
-        // A production caller never supplies Costs, so this fires for every
-        // case today; that is the honest state of the capability, not a bug.
         Require(
-            input.Costs is not null,
-            RepairCostRequirement, "Estimate lines and rate card",
-            "No accepted formula exists yet to convert recorded estimate lines and the "
-                + "chosen rate card into a labour rate and repair cost (EXT-09, open decision D2).",
-            "This becomes available once EXT-09's estimate-derivation formula is accepted.");
+            input.Costs is not null && input.RepairCostSource is not null,
+            RepairCostRequirement, "Selected accepted repair estimate",
+            "The selected repair estimate is missing, unaccepted, or has ambiguous source provenance.",
+            "Select one accepted estimate with its external source and version evidence.");
+        Require(
+            input.RepairCostSource is not null && IsValidSource(input.RepairCostSource),
+            "Repair cost source", "Selected accepted repair estimate",
+            "The selected repair estimate does not carry valid source/version/hash evidence.",
+            "Select an accepted estimate whose source evidence includes a SHA-256 hash.");
+        Require(
+            input.Costs is null || IsValidCosts(input.Costs),
+            RepairCostRequirement, "Selected accepted repair estimate",
+            "The selected repair estimate contains incomplete or invalid accepted amounts.",
+            "Select one accepted estimate with a validated calculation basis.");
+        Require(
+            input.RepairSpecificationId is not null && input.RepairSpecificationVersion is > 0,
+            "Selected repair estimate", "Selected accepted repair estimate",
+            "The selected estimate identity or accepted version is missing.",
+            "Select an accepted repair-estimate version explicitly.");
 
         if (reasons.Count > 0)
         {
             return new(null, reasons);
         }
+
+        var sources = input.RepairCostSource is null
+            ? input.Sources
+            : input.Sources.Append(input.RepairCostSource).ToArray();
 
         var snapshot = new AssessmentReportSnapshot(
             OurReference: input.OurReference,
@@ -201,7 +220,12 @@ public static class AssessmentReportProjection
             AgreedFee: ParseMoney(Field(assessment, AssessmentVocabulary.AgreedFee)) ?? 0m,
             FeeDescriptionLines: SplitLines(Field(assessment, AssessmentVocabulary.FeeDescriptionLines)),
             Photos: input.Photos,
-            Sources: input.Sources);
+            Sources: sources,
+            CaseId: assessment.CaseId,
+            AssessmentCaseVersion: assessment.CaseVersion,
+            RepairSpecificationId: input.RepairSpecificationId,
+            RepairSpecificationVersion: input.RepairSpecificationVersion,
+            RepairCostSource: input.RepairCostSource);
 
         return new(snapshot, []);
     }
@@ -281,6 +305,52 @@ public static class AssessmentReportProjection
         value is null
             ? []
             : value.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    private static bool IsValidSource(AcceptedReportSource source)
+    {
+        try
+        {
+            source.Validate();
+            return true;
+        }
+        catch (ReportRenderRejectedException)
+        {
+            return false;
+        }
+    }
+
+    private static bool IsValidPhoto(ReportImageEvidence photo)
+    {
+        try
+        {
+            photo.Validate();
+            return true;
+        }
+        catch (ReportRenderRejectedException)
+        {
+            return false;
+        }
+    }
+
+    private static bool IsValidCosts(ReportRepairCosts costs)
+    {
+        if (costs.IsImported)
+        {
+            return costs.ImportedLabour is >= 0
+                && costs.ImportedVat is >= 0
+                && !string.IsNullOrWhiteSpace(costs.ImportedPolicyVersion)
+                && costs.Parts >= 0
+                && costs.PaintMaterials >= 0
+                && costs.SpecialistOther >= 0
+                && costs.Total >= 0;
+        }
+
+        return costs.LabourHours >= 0
+            && costs.HourlyRate > 0
+            && costs.Parts >= 0
+            && costs.PaintMaterials >= 0
+            && costs.SpecialistOther >= 0;
+    }
 }
 
 /// <summary>
@@ -293,7 +363,32 @@ public static class AssessmentReportProjection
 public interface IAssessmentReportProjectionSource
 {
     Task<AssessmentReportProjectionInput?> GetAsync(
-        Guid caseId, ActionActor actor, CancellationToken cancellationToken = default);
+        Guid caseId,
+        ActionActor actor,
+        Guid? selectedRepairSpecificationId = null,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Shared readiness use case for both the operator draft action and a future
+/// report-registration caller. Callers receive the same projection result;
+/// neither Web nor Infrastructure owns a second required-field list.
+/// </summary>
+public sealed class AssessCaseReportReadiness(IAssessmentReportProjectionSource source)
+{
+    public async Task<AssessmentReportProjectionResult?> ExecuteAsync(
+        Guid caseId,
+        ActionActor actor,
+        Guid? selectedRepairSpecificationId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var input = await source.GetAsync(
+            caseId,
+            actor,
+            selectedRepairSpecificationId,
+            cancellationToken);
+        return input is null ? null : AssessmentReportProjection.Project(input);
+    }
 }
 
 /// <summary>
@@ -329,34 +424,98 @@ public sealed record GenerateCaseAssessmentReportDraftResult(
 /// nothing new is invented here.
 /// </summary>
 public sealed class GenerateCaseAssessmentReportDraft(
-    IAssessmentReportProjectionSource source,
-    GenerateAssessmentReportDraft generate)
+    AssessCaseReportReadiness readiness,
+    GenerateAssessmentReportDraft generate,
+    IAssessmentReportStore reportStore)
 {
+    public Task<IReadOnlyList<AssessmentReportVersion>> GetVersionsAsync(
+        Guid caseId,
+        CancellationToken cancellationToken = default) =>
+        reportStore.ListAsync(caseId, cancellationToken);
+
     public async Task<AssessmentReportDraftPreparation?> PrepareAsync(
-        Guid caseId, ActionActor actor, CancellationToken cancellationToken = default)
+        Guid caseId,
+        ActionActor actor,
+        Guid? selectedRepairSpecificationId = null,
+        CancellationToken cancellationToken = default)
     {
-        var input = await source.GetAsync(caseId, actor, cancellationToken);
-        return input is null
+        var projected = await readiness.ExecuteAsync(
+            caseId,
+            actor,
+            selectedRepairSpecificationId,
+            cancellationToken);
+        return projected is null
             ? null
-            : new AssessmentReportDraftPreparation(AssessmentReportProjection.Project(input).Reasons);
+            : new AssessmentReportDraftPreparation(projected.Reasons);
     }
 
     public async Task<GenerateCaseAssessmentReportDraftResult> ExecuteAsync(
-        Guid caseId, ActionActor actor, CancellationToken cancellationToken = default)
+        Guid caseId,
+        ActionActor actor,
+        Guid? selectedRepairSpecificationId = null,
+        Guid? reportVersionId = null,
+        CancellationToken cancellationToken = default)
     {
-        var input = await source.GetAsync(caseId, actor, cancellationToken);
-        if (input is null)
+        AssessmentReportSnapshot snapshot;
+        if (reportVersionId is { } requestedVersionId)
         {
-            return new(GenerateCaseAssessmentReportDraftOutcome.NotFound, null, []);
+            var storedVersion = (await reportStore.ListAsync(caseId, cancellationToken))
+                .SingleOrDefault(item => item.Id == requestedVersionId);
+            if (storedVersion is null)
+            {
+                return new(GenerateCaseAssessmentReportDraftOutcome.NotFound, null, []);
+            }
+
+            snapshot = AssessmentReportPayload.Deserialize(storedVersion.AcceptedPayloadJson);
+        }
+        else
+        {
+            var projected = await readiness.ExecuteAsync(
+                caseId,
+                actor,
+                selectedRepairSpecificationId,
+                cancellationToken);
+            if (projected is null)
+            {
+                return new(GenerateCaseAssessmentReportDraftOutcome.NotFound, null, []);
+            }
+
+            if (!projected.IsReady)
+            {
+                return new(GenerateCaseAssessmentReportDraftOutcome.NotReady, null, projected.Reasons);
+            }
+
+            snapshot = projected.Snapshot!;
         }
 
-        var projected = AssessmentReportProjection.Project(input);
-        if (!projected.IsReady)
+        var reservation = await reportStore.BeginAsync(
+            new AssessmentReportGenerationRequest(caseId, snapshot, actor),
+            cancellationToken);
+        if (reservation.IsReplay)
         {
-            return new(GenerateCaseAssessmentReportDraftOutcome.NotReady, null, projected.Reasons);
+            var replay = await reportStore.ReadDraftAsync(reservation.Version, cancellationToken)
+                ?? throw new InvalidOperationException("The stored report version has no complete artifact pair.");
+            return new(GenerateCaseAssessmentReportDraftOutcome.Generated, replay, []);
         }
 
-        var draft = await generate.ExecuteAsync(projected.Snapshot!, cancellationToken);
-        return new(GenerateCaseAssessmentReportDraftOutcome.Generated, draft, []);
+        if (!reservation.ShouldRender)
+        {
+            throw new InvalidOperationException(
+                "A report draft for this accepted input is already being generated. Retry after it completes.");
+        }
+
+        try
+        {
+            var canonicalSnapshot = AssessmentReportPayload.Deserialize(
+                reservation.Version.AcceptedPayloadJson);
+            var draft = await generate.ExecuteAsync(canonicalSnapshot, cancellationToken);
+            await reportStore.CompleteAsync(reservation, draft, cancellationToken);
+            return new(GenerateCaseAssessmentReportDraftOutcome.Generated, draft, []);
+        }
+        catch (Exception exception)
+        {
+            await reportStore.FailAsync(reservation, exception.Message, CancellationToken.None);
+            throw;
+        }
     }
 }

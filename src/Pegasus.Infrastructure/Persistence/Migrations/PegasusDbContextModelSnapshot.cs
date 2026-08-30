@@ -923,6 +923,176 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                     b.ToTable("ApprovedSentPollStates", (string)null);
                 });
 
+            modelBuilder.Entity("Pegasus.Infrastructure.Persistence.AssessmentReportArtifactEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("ContentLength")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("DocumentOrdinal")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DocumentVersion")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("DocumentVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EngineVersion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("MediaType")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<Guid>("OccurrenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("PageCount")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ReportVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Sha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nchar(64)")
+                        .IsFixedLength();
+
+                    b.Property<string>("TemplateVersion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentVersionId")
+                        .IsUnique();
+
+                    b.HasIndex("OccurrenceId")
+                        .IsUnique();
+
+                    b.HasIndex("ReportVersionId", "Kind")
+                        .IsUnique();
+
+                    b.ToTable("AssessmentReportArtifacts", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AssessmentReportArtifacts_Kind", "[Kind] IN ('Assessment', 'FeeNote')");
+
+                            t.HasCheckConstraint("CK_AssessmentReportArtifacts_Length", "[ContentLength] >= 0");
+
+                            t.HasCheckConstraint("CK_AssessmentReportArtifacts_Pages", "[PageCount] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Pegasus.Infrastructure.Persistence.AssessmentReportVersionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AcceptedPayloadJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AcceptedPayloadSha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nchar(64)")
+                        .IsFixedLength();
+
+                    b.Property<string>("AssessmentFamily")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("CaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CompletedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTimeOffset?>("LeaseExpiresAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LeaseId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("LogicalKey")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<DateTimeOffset?>("NextAttemptAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("PredecessorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TemplateVersion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PredecessorId");
+
+                    b.HasIndex("CaseId", "CreatedAtUtc");
+
+                    b.HasIndex("CaseId", "Version")
+                        .IsUnique();
+
+                    b.HasIndex("CaseId", "AssessmentFamily", "AcceptedPayloadSha256", "TemplateVersion")
+                        .IsUnique();
+
+                    b.ToTable("AssessmentReportVersions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AssessmentReportVersions_AttemptCount", "[AttemptCount] >= 0");
+
+                            t.HasCheckConstraint("CK_AssessmentReportVersions_State", "[State] IN ('Pending', 'Rendering', 'Generated', 'Failed')");
+
+                            t.HasCheckConstraint("CK_AssessmentReportVersions_Version", "[Version] > 0");
+                        });
+                });
+
             modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseAssessmentFieldEntity", b =>
                 {
                     b.Property<Guid>("CaseId")
@@ -1946,9 +2116,7 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CaseId")
-                        .IsUnique()
-                        .HasFilter("[State] = 'Accepted'");
+                    b.HasIndex("CaseId");
 
                     b.HasIndex("CaseId", "CreationOperationKey")
                         .IsUnique();
@@ -2003,6 +2171,14 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                         .HasColumnType("nchar(64)")
                         .IsFixedLength();
 
+                    b.Property<string>("AssociationStatus")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("AssociationStatusReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<Guid>("CaseId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2014,11 +2190,104 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                     b.ToTable("CaseReportApprovals", (string)null);
                 });
 
+            modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseReportAssociationHistoryEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("ActorKind")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("ActorRolesJson")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ActorSubjectId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid?>("AfterReportVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ApprovalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BeforeReportVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("EvidenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("FormerCaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("FormerLinkedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("FormerLinkedByKind")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("FormerLinkedByRolesJson")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("FormerLinkedBySubjectId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("LedgerReportVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("LedgerVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("OperationKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LedgerReportVersionId", "OperationKey")
+                        .IsUnique();
+
+                    b.HasIndex("LedgerReportVersionId", "OccurredAtUtc", "Id");
+
+                    b.ToTable("CaseReportAssociationHistory", (string)null);
+                });
+
             modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseReportSentEvidenceEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AssociationStatus")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("AssociationStatusReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<Guid?>("CaseId")
                         .HasColumnType("uniqueidentifier");
@@ -2101,10 +2370,22 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("SourceArtifactIdentity")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("SourceArtifactSha256")
+                        .HasMaxLength(64)
+                        .HasColumnType("nchar(64)")
+                        .IsFixedLength();
+
                     b.Property<string>("SourceOccurrenceIdentity")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid?>("SourceReportVersionId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("SourceSha256")
                         .IsRequired()
@@ -2119,13 +2400,64 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                     b.HasIndex("RetentionOperationKey")
                         .IsUnique();
 
+                    b.HasIndex("SourceReportVersionId");
+
                     b.HasIndex("DiscoveredAtUtc", "Id")
                         .IsDescending(true, false);
 
                     b.HasIndex("MailboxIdentity", "ImmutableItemIdentity")
                         .IsUnique();
 
-                    b.ToTable("CaseReportSentEvidence", (string)null);
+                    b.ToTable("CaseReportSentEvidence", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CaseReportSentEvidence_SourceReportVersion", "([SourceReportVersionId] IS NULL AND [SourceArtifactIdentity] IS NULL AND [SourceArtifactSha256] IS NULL) OR ([SourceReportVersionId] IS NOT NULL AND [SourceArtifactIdentity] IS NOT NULL AND [SourceArtifactSha256] IS NOT NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseReportVersionLedgerEntity", b =>
+                {
+                    b.Property<Guid>("ReportVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ApprovalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ConcurrencyToken")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CorrectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("CurrentEvidenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ReportVersionId");
+
+                    b.HasIndex("ApprovalId")
+                        .IsUnique()
+                        .HasFilter("[ApprovalId] IS NOT NULL");
+
+                    b.HasIndex("CaseId");
+
+                    b.HasIndex("CurrentEvidenceId")
+                        .IsUnique()
+                        .HasFilter("[CurrentEvidenceId] IS NOT NULL");
+
+                    b.ToTable("CaseReportVersionLedgers", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CaseReportVersionLedgers_Case", "[CaseId] IS NOT NULL");
+
+                            t.HasCheckConstraint("CK_CaseReportVersionLedgers_Version", "[Version] >= 0");
+                        });
                 });
 
             modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseSequenceEntity", b =>
@@ -5868,6 +6200,11 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("CaseId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("CorrelationId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("OperationKey")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -6068,6 +6405,47 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                         .HasForeignKey("MailboxId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Pegasus.Infrastructure.Persistence.AssessmentReportArtifactEntity", b =>
+                {
+                    b.HasOne("Pegasus.Infrastructure.Persistence.DocumentVersionEntity", null)
+                        .WithMany()
+                        .HasForeignKey("DocumentVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Pegasus.Infrastructure.Persistence.DocumentOccurrenceEntity", null)
+                        .WithMany()
+                        .HasForeignKey("OccurrenceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Pegasus.Infrastructure.Persistence.AssessmentReportVersionEntity", "ReportVersion")
+                        .WithMany("Artifacts")
+                        .HasForeignKey("ReportVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ReportVersion");
+                });
+
+            modelBuilder.Entity("Pegasus.Infrastructure.Persistence.AssessmentReportVersionEntity", b =>
+                {
+                    b.HasOne("Pegasus.Infrastructure.Persistence.CaseEntity", "Case")
+                        .WithMany()
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Pegasus.Infrastructure.Persistence.AssessmentReportVersionEntity", "Predecessor")
+                        .WithMany()
+                        .HasForeignKey("PredecessorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Case");
+
+                    b.Navigation("Predecessor");
                 });
 
             modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseAssessmentFieldEntity", b =>
@@ -6294,12 +6672,61 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseReportAssociationHistoryEntity", b =>
+                {
+                    b.HasOne("Pegasus.Infrastructure.Persistence.CaseReportVersionLedgerEntity", "Ledger")
+                        .WithMany("AssociationHistory")
+                        .HasForeignKey("LedgerReportVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Ledger");
+                });
+
             modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseReportSentEvidenceEntity", b =>
                 {
                     b.HasOne("Pegasus.Infrastructure.Persistence.CaseEntity", null)
                         .WithMany()
                         .HasForeignKey("CaseId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Pegasus.Infrastructure.Persistence.AssessmentReportVersionEntity", null)
+                        .WithMany()
+                        .HasForeignKey("SourceReportVersionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseReportVersionLedgerEntity", b =>
+                {
+                    b.HasOne("Pegasus.Infrastructure.Persistence.CaseReportApprovalEntity", "Approval")
+                        .WithMany()
+                        .HasForeignKey("ApprovalId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Pegasus.Infrastructure.Persistence.CaseWorkflowEntity", "Workflow")
+                        .WithMany("ReportVersionLedgers")
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Pegasus.Infrastructure.Persistence.CaseReportSentEvidenceEntity", "CurrentEvidence")
+                        .WithMany()
+                        .HasForeignKey("CurrentEvidenceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Pegasus.Infrastructure.Persistence.AssessmentReportVersionEntity", "ReportVersion")
+                        .WithMany()
+                        .HasForeignKey("ReportVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Approval");
+
+                    b.Navigation("CurrentEvidence");
+
+                    b.Navigation("ReportVersion");
+
+                    b.Navigation("Workflow");
                 });
 
             modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseSequenceEntity", b =>
@@ -7006,6 +7433,11 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                     b.Navigation("FolderBindings");
                 });
 
+            modelBuilder.Entity("Pegasus.Infrastructure.Persistence.AssessmentReportVersionEntity", b =>
+                {
+                    b.Navigation("Artifacts");
+                });
+
             modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseDataSnapshotEntity", b =>
                 {
                     b.Navigation("Fields");
@@ -7027,9 +7459,16 @@ namespace Pegasus.Infrastructure.Persistence.Migrations
                     b.Navigation("Lines");
                 });
 
+            modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseReportVersionLedgerEntity", b =>
+                {
+                    b.Navigation("AssociationHistory");
+                });
+
             modelBuilder.Entity("Pegasus.Infrastructure.Persistence.CaseWorkflowEntity", b =>
                 {
                     b.Navigation("DueWork");
+
+                    b.Navigation("ReportVersionLedgers");
                 });
 
             modelBuilder.Entity("Pegasus.Infrastructure.Persistence.IntakeMailClassificationDecisionEntity", b =>

@@ -202,7 +202,8 @@ Deviations from the proposal, stated explicitly:
   tests before moving any business rule. No business rule moves — Core stays
   the single owner and the desktop reaches it through the gateway — so
   characterization is limited to (a) the read-model shapes the Razor pages
-  compose today and (b) the `OperatorLabels` vocabulary map, both captured as
+  compose today and (b) the shared `OperatorVocabulary` map with its Web
+  adapter, both captured as
   contract snapshots rather than behaviour tests. Page-level behaviours
   (TempData proposed values, PRG redirects, antiforgery) are transport
   mechanics, not behaviour to preserve.
@@ -249,7 +250,7 @@ Tier numbers are the `docs/engineering.md` evidence tiers. Routing is
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | DSK-08-01 | Scaffold `tests/Pegasus.Api.ContractTests` (xunit 2.9.3, WebApplicationFactory, locked restore) | feature | 03 route-group skeleton (DSK-03-01) | One registered project, locked restore, host fixture and contract-discovery smoke fact; GWY-004 owns the OpenAPI snapshot and GWY-005 owns generated-client freshness | `dotnet test tests/Pegasus.Api.ContractTests` green locally and in CI | 5 | `pegasus-test-engineer` · `scaffold-dotnet-test-project`, `run-tests` · Microsoft Learn, Kanmer |
 | DSK-08-02 | Authorization and failure-path test template for every `/api/v1` command | feature | DSK-08-01 | One theory per command: unauthenticated 401, wrong right 403, stale version 409, bad input 400 problem, replayed operation key idempotent | Tests enumerate the endpoint map and fail when a command lacks coverage | 5 | `pegasus-test-engineer` · `code-testing-agent`, `test-gap-analysis` · Kanmer |
-| DSK-08-03 | Extend `Pegasus.IntegrationTests` shards with `/api/v1` persistence paths; keep `-VerifyPartition` green | fix | DSK-08-02 | New tests appear in exactly one shard; LocalDB template backup still used | `scripts/Invoke-TestShard.ps1 -VerifyPartition` | 4, 5 | `pegasus-test-engineer` · `run-tests` · Kanmer |
+| DSK-08-03 | Extend `Pegasus.IntegrationTests` shards with `/api/v1` persistence paths; keep `-VerifyPartition` green | fix | DSK-08-02 | Retained-mail command tests cover persisted rows, actors, versions, leases, audit history, and one concurrent `409`; new tests appear in exactly one shard; LocalDB template backup still used | `scripts/Invoke-TestShard.ps1 -VerifyPartition` | 4, 5 | `pegasus-test-engineer` · `run-tests` · Kanmer |
 | DSK-08-04 | Scaffold `tests/Pegasus.Desktop.ViewModelTests` (`net10.0-windows10.0.26100.0`, no UI thread) | feature | 02 desktop scaffold (DSK-02-03) | VMs testable without `DispatcherQueue`; fake gateway client; fake clock (one shared `FixedTimeProvider` for desktop tests — Deviation from per-file copies) | `dotnet test` on `windows-latest` | 2 (desktop-side) | `pegasus-test-engineer` · `scaffold-dotnet-test-project`, `code-testing-agent` · Microsoft Learn, Kanmer |
 | DSK-08-05 | VM test catalogue: states, commands, cancellation, dirty state, validation, navigation, stale session, mandatory update | feature | DSK-08-04, 04 startup orchestrator | Each slice VM has state-machine tests; mandatory-update and stale-session VMs covered | `dotnet test --filter Category=ViewModel` | 2 | `pegasus-test-engineer` · `code-testing-agent`, `assertion-quality` · Kanmer |
 | DSK-08-06 | `tests/Pegasus.Desktop.UITests`: `ui-tests.ps1` harness around `winapp ui` with the AutomationId contract | feature | 06 AutomationId convention, 02 MSIX dev build | Script launches installed package, runs batch, writes results JSON and screenshots; AutomationId coverage audit passes | Run against the Test/UAT stack; results filed under `artifacts/ui-tests/` | 7 | `pegasus-ui-verifier` · `winui-ui-testing` · Kanmer |

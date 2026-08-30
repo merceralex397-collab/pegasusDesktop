@@ -321,7 +321,8 @@ public sealed class EvaHandoffPersistenceTests
                     VehicleField(VehicleMileageUnit.Miles)),
                 null,
                 [],
-                []);
+                [],
+                Version: 7);
             var store = new EvaHandoffStore(
                 factory,
                 new FixedCaseDataQueries(AcceptedCaseData(caseId, version: 7)),
@@ -537,7 +538,8 @@ public sealed class EvaHandoffPersistenceTests
             VehicleField(VehicleMileageUnit.Miles)),
         null,
         [],
-        []);
+        [],
+        Version: 7);
 
     private static CaseField<T> Field<T>(T value)
         where T : notnull => new(

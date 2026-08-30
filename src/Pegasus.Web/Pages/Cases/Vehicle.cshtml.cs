@@ -39,7 +39,8 @@ public sealed class VehicleModel(
                     registration,
                     actor,
                     operationKey,
-                    editLeaseToken),
+                    editLeaseToken,
+                    CorrelationId: operationKey),
                 cancellationToken),
             "The vehicle lookup was queued. Refresh later for current, stale, partial, no-result, unavailable, or failed evidence.");
 

@@ -1,0 +1,6 @@
+<Project>
+  <!-- Preserve the repository-wide build policy while making the vendored WinUI analyzer visible to plain dotnet builds. -->
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Directory.Build.props" />
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\.codex\skills\winui-dev-workflow\analyzer\Microsoft.WindowsAppSDK.Analyzers.targets" />
+</Project>

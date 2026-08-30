@@ -24,15 +24,14 @@ public static class DesktopGatewayExtensions
         {
             openApiOptions.ShouldInclude = description => description.GroupName == OpenApiDocumentName;
             openApiOptions.AddDocumentTransformer<OpenApiDocumentTransformer>();
+            openApiOptions.AddOperationTransformer<VehicleOpenApiOperationTransformer>();
         });
         return services;
     }
 
     /// <summary>
-    /// Maps the versioned desktop API group. Authentication and endpoint
-    /// authorization are added by the endpoint tickets that attach routes to
-    /// this group; this ticket only composes the shared filters and returns the
-    /// group for those callers.
+    /// Maps the versioned desktop API group and its currently composed endpoint
+    /// slices. Each slice adds its own Core-backed routes to this group.
     /// </summary>
     public static RouteGroupBuilder MapPegasusDesktopGateway(this WebApplication app)
     {
@@ -42,6 +41,8 @@ public static class DesktopGatewayExtensions
             .WithGroupName(OpenApiDocumentName);
         group.AddEndpointFilter<CorrelationIdEndpointFilter>();
         group.AddEndpointFilter<ClientVersionEndpointFilter>();
+        group.MapVehicleEndpoints();
+        group.MapMailEndpoints();
         app.MapOpenApi("/openapi/{documentName}.json")
             .AllowAnonymous();
         return group;
