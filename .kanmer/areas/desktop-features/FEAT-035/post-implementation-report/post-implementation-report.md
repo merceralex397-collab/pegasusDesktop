@@ -60,3 +60,7 @@ Corrected local evidence: Release build 0 warnings/0 errors; Core 941/941; Archi
 ## Exact-head CI failure and correction (2026-08-30)
 
 Hosted run `33282640860` at `e2e9a2f5cfa4ba2827d73afb934d2da4bed025b9` exposed one concrete test-harness defect: `OpenApiSnapshotTests.DisabledGatewayDoesNotExposeOpenApiDocument` authenticated the request, so the 404 status-page re-execution invoked the rail count query and returned 500 when `PegasusDevelopment` was absent. This was not waived. The test now opts into the existing unauthenticated contract header for that probe, and the focused test plus full contract suite pass locally (1/1 and 18/18). The branch must be committed/pushed, independently reviewed at its new exact head, and re-run through hosted CI before merge.
+
+## Final-head hosted CI success (2026-08-30)
+
+Run `33283250011` passed at exact head `cc91137a4a9e95b99021fe652d367677e3f2c574`.

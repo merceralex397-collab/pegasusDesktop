@@ -26,7 +26,7 @@
 - [x] Diagnose exact-head CI run `33280183638`: Core 941/941 and architecture 121/121 passed; the API contract filter failed because authenticated contract hosts still resolved SQL-backed `UserManager` on a clean runner.
 - [x] Add scoped in-memory identity-store isolation to both contract fixtures — commit `3663cd779194e7f24fc59a99d724e12ba54261d6`.
 - [x] Re-run exact filtered contract suite locally — 18 passed, 0 failed.
-- [ ] Hosted CI rerun green at the new head — pending.
+- [x] Hosted CI rerun green at the new head — run `33283250011` passed at exact head `cc91137a4a9e95b99021fe652d367677e3f2c574`.
 
 ## Fresh review-fix correction (2026-08-30)
 
@@ -36,7 +36,7 @@
 - [x] Add regression coverage for invalid automatic input and replay/read correlation separation.
 - [x] Corrected local validation — build 0/0; Core 941/941; Architecture 121/121; contract filter 18/18; focused vehicle/SQL set 31/31; full filtered integration 973 passed, 2 skipped, 0 failed, 975 total; migration guard 1/1.
 - [ ] Fresh independent reviewer PASS — pending against the final pushed head.
-- [ ] Hosted CI green at the final pushed head — pending.
+- [x] Hosted CI green at the final pushed head — run `33283250011` passed all required jobs at exact head `cc91137a4a9e95b99021fe652d367677e3f2c574`.
 
 ## Exact-head CI failure and correction (2026-08-30)
 
@@ -45,4 +45,4 @@
 - [x] Focused disabled-gateway test — 1 passed, 0 failed.
 - [x] Full `Category=Contract` suite after correction — 18 passed, 0 failed.
 - [ ] Fresh independent reviewer PASS against the new pushed head — pending.
-- [ ] Hosted CI green against the new pushed head — pending.
+- [x] Hosted CI green against the new pushed head — run `33283250011` passed all required jobs at exact head `cc91137a4a9e95b99021fe652d367677e3f2c574`.

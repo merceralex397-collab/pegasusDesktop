@@ -131,3 +131,7 @@ No merge, proof, hosted-green claim, or Kanmer finalization is made by this corr
 Hosted run `33282640860` at head `e2e9a2f5cfa4ba2827d73afb934d2da4bed025b9` failed in `unit` only: `OpenApiSnapshotTests.DisabledGatewayDoesNotExposeOpenApiDocument` received HTTP 500 because the authenticated contract host's status-page rail query opened the absent `PegasusDevelopment` database. Core 941/941, architecture 121/121, SQL shard 1, and all non-test jobs passed; remaining SQL/browser jobs were still running at diagnosis.
 
 The test now sends `X-Contract-Unauthenticated` for this unauthenticated disabled-gateway probe, preventing the unrelated authenticated status-page rail query while retaining the expected 404 assertion. Focused test and full `Category=Contract` suite pass locally (18/18). A new commit and exact-head CI run are required; no merge or finalization is claimed.
+
+## Final-head hosted CI success (2026-08-30)
+
+Run `33283250011` passed at exact head `cc91137a4a9e95b99021fe652d367677e3f2c574` (`cc91137a`). All required jobs passed: unit, SQL integration shards 1–3, SQL integration coverage, browser, changes, documentation, local-development-scripts, and reference-data. Infrastructure was skipped by the workflow. PR #51 reports `CLEAN`. The disabled-gateway test correction is therefore validated on the hosted runner; independent review remains the only pre-merge gate.
