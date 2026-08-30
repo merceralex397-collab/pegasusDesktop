@@ -319,3 +319,7 @@ or a green build does not satisfy it.
 
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over
 this branch's own diff before the PR, recorded here under a dated heading._
+
+## Route ownership decision — 2026-08-30
+
+Live Kanmer recheck before implementation: [[GWY-012]] (the board's DSK-03-12 mail-endpoints ticket) is still in Preparing with no claim and no landed implementation; its `get_item` has no commits/PR and the current `origin/dev` contains no mail API endpoint file. This ticket therefore creates the single `/api/v1/mail` group and its endpoints. [[GWY-012]] remains the planned reviewer/contract owner; no second mail route group will be created. The existing `DesktopGateway` skeleton from [[GWY-002]] is present on `origin/dev` and is the only group this ticket extends.
