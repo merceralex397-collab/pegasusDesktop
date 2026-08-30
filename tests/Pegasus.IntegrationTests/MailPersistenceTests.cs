@@ -115,6 +115,17 @@ public sealed class MailPersistenceTests
             Assert.Equal(initialVersions.IntakeVersion + 1, history.AfterIntakeVersion);
             Assert.Equal(initialVersions.CaseVersion, history.BeforeCaseVersion);
             Assert.Equal(initialVersions.CaseVersion + 1, history.AfterCaseVersion);
+
+            var action = await linkedContext.ActionHistory
+                .AsNoTracking()
+                .SingleAsync(item => item.AggregateType == "mail_api"
+                    && item.AggregateId == messageId.ToString("D")
+                    && item.EventKind == "mail_case_link"
+                    && item.CorrelationId == linkOperation);
+            Assert.Equal(nameof(ActorKind.Staff), action.ActorKind);
+            Assert.Equal(ExpectedStaffId.ToString("D"), action.ActorSubjectId);
+            Assert.Equal("Succeeded", action.Outcome);
+            Assert.Null(action.Reason);
         }
 
         using var prepareUnlink = await client.PostAsJsonAsync(
@@ -183,6 +194,113 @@ public sealed class MailPersistenceTests
         Assert.Equal(initialVersions.IntakeVersion + 1, historyRows[1].BeforeIntakeVersion);
         Assert.Equal(initialVersions.IntakeVersion + 2, historyRows[1].AfterIntakeVersion);
         Assert.Equal(ExpectedStaffId.ToString("D"), historyRows[1].ActorSubjectId);
+
+        var unlinkAction = await finalContext.ActionHistory
+            .AsNoTracking()
+            .SingleAsync(item => item.AggregateType == "mail_api"
+                && item.AggregateId == messageId.ToString("D")
+                && item.EventKind == "mail_case_unlink"
+                && item.CorrelationId == unlinkOperation);
+        Assert.Equal(nameof(ActorKind.Staff), unlinkAction.ActorKind);
+        Assert.Equal(ExpectedStaffId.ToString("D"), unlinkAction.ActorSubjectId);
+        Assert.Equal("Succeeded", unlinkAction.Outcome);
+        Assert.Null(unlinkAction.Reason);
+    }
+
+    [Fact]
+    public async Task ConcurrentLinkCommandsCommitExactlyOneMutationAndReturnConflictToLoser()
+    {
+        using var baseFactory = new IntakeWebApplicationFactory(
+            useIntegrationTestAuthentication: true);
+        var messageId = await SeedRetainedMailAsync(baseFactory, "association-concurrency");
+        await StoreClassificationAsync(baseFactory, "association-concurrency");
+        var receiptId = await ReceiptIdAsync(baseFactory, "association-concurrency");
+        var caseId = await ImageIntakeTestData.SeedCaseAsync(
+            baseFactory.Services,
+            receiptId,
+            "API31002",
+            nameof(Pegasus.Core.Workflow.CaseLifecycleState.Review));
+        var initialVersions = await ReadVersionsAsync(baseFactory, receiptId, caseId);
+
+        using var factory = baseFactory.WithWebHostBuilder(builder =>
+            builder.UseSetting(DesktopGateway.FeatureFlag, "true"));
+        using var firstClient = CreateClient(factory);
+        using var secondClient = CreateClient(factory);
+
+        using var prepare = await firstClient.PostAsJsonAsync(
+            $"/api/v1/mail/{messageId:D}/link-case/prepare",
+            new MailCasePreparationRequest(
+                caseId,
+                initialVersions.IntakeVersion,
+                initialVersions.CaseVersion,
+                "association-concurrency-lease"));
+        Assert.Equal(HttpStatusCode.OK, prepare.StatusCode);
+        var preparation = await prepare.Content
+            .ReadFromJsonAsync<MailCasePreparationResponse>();
+        Assert.NotNull(preparation);
+
+        var firstRequest = new MailCaseAssociationRequest(
+            caseId,
+            initialVersions.IntakeVersion,
+            initialVersions.CaseVersion,
+            preparation.LeaseToken,
+            "api-association-concurrency-first",
+            "The first concurrent caller owns the association.");
+        var secondRequest = firstRequest with
+        {
+            // The second caller presents the post-commit snapshot. Whether it
+            // reaches the endpoint before or after the first request commits,
+            // the two callers must not produce two mutations: it is rejected
+            // by the version/association precondition with 409.
+            ExpectedIntakeVersion = initialVersions.IntakeVersion + 1,
+            ExpectedCaseVersion = initialVersions.CaseVersion + 1,
+            OperationKey = "api-association-concurrency-second",
+            Reason = "The second concurrent caller must be rejected."
+        };
+        var responses = await Task.WhenAll(
+            firstClient.PostAsJsonAsync($"/api/v1/mail/{messageId:D}/link-case", firstRequest),
+            secondClient.PostAsJsonAsync($"/api/v1/mail/{messageId:D}/link-case", secondRequest));
+
+        Assert.Single(responses, response => response.StatusCode == HttpStatusCode.OK);
+        Assert.Single(responses, response => response.StatusCode == HttpStatusCode.Conflict);
+        var successfulOperationKey = responses[0].StatusCode == HttpStatusCode.OK
+            ? firstRequest.OperationKey
+            : secondRequest.OperationKey;
+
+        await using var context = await baseFactory.Services
+            .GetRequiredService<IDbContextFactory<PegasusDbContext>>()
+            .CreateDbContextAsync();
+        var association = await context.IntakeManualAssociations
+            .AsNoTracking()
+            .SingleAsync(item => item.IntakeReceiptId == receiptId);
+        Assert.True(association.IsActive);
+        Assert.Equal(caseId, association.CaseId);
+        Assert.Equal(0, association.Version);
+
+        var receipt = await context.IntakeReceipts
+            .AsNoTracking()
+            .SingleAsync(item => item.Id == receiptId);
+        var workflow = await context.CaseWorkflows
+            .AsNoTracking()
+            .SingleAsync(item => item.CaseId == caseId);
+        Assert.Equal(initialVersions.IntakeVersion + 1, receipt.Version);
+        Assert.Equal(initialVersions.CaseVersion + 1, workflow.Version);
+
+        Assert.Equal(
+            1,
+            await context.IntakeMutationHistory
+                .AsNoTracking()
+                .CountAsync(item => item.IntakeReceiptId == receiptId));
+        var actions = await context.ActionHistory
+            .AsNoTracking()
+            .Where(item => item.AggregateType == "mail_api"
+                && item.AggregateId == messageId.ToString("D")
+                && item.EventKind == "mail_case_link")
+            .ToArrayAsync();
+        Assert.Contains(actions, item => item.Outcome == "Succeeded"
+            && item.CorrelationId == successfulOperationKey
+            && item.ActorSubjectId == ExpectedStaffId.ToString("D"));
+        Assert.Single(actions, item => item.Outcome == "Succeeded");
     }
 
     [Fact]
