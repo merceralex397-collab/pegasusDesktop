@@ -2,20 +2,22 @@
 
 One box per plan step, in plan order. The last box produces `proof`.
 
-- [ ] Read `docs/desktop/03-gateway-api-and-data/README.md` § 3 and § 7, `endpoint-map.md` § Conventions, `docs/desktop/04-auth-session-update-and-startup/README.md` § 5 row `DSK-04-04`, and `src/Pegasus.Core/Identity/StaffAuthorization.cs` whole; call `get_doc_gates GWY-003`; `take_ticket` on branch `task/gateway-staff-authorization` from `origin/dev`.
-- [ ] Confirm [[GWY-021]] (plan handle `DSK-04-04`) has landed a bearer scheme for `/api/v1` populating `ClaimTypes.NameIdentifier` and every `ClaimTypes.Role`, and that [[GWY-002]] (plan handle `DSK-03-02`) has landed `Api/DesktopGateway.cs`, `Api/DesktopGatewayExtensions.cs` and `Api/DesktopGatewayProblems.cs`. If either is missing, stop and record the blocker — do not invent a second token pipeline.
-- [ ] Create `src/Pegasus.Web/Api/StaffActorAccessor.cs` as an `internal sealed` scoped service calling `StaffActorFactory.TryCreate` with `ClaimTypes.NameIdentifier` and every `ClaimTypes.Role`, exactly as `Pages/StaffPageModel.cs:12-15` does; re-derive none of the parsing rules from `StaffActorFactory.cs:15-34`.
-- [ ] Add the pre-right refusal to the accessor: unauthenticated, `AutomationMcp.Audience` (`Mcp/AutomationMcp.cs:24`, via the constant), or any resolved `ActorKind` other than `Staff` → 403 `not-authorized`, with a `Denied` `SecurityEvent` written through the existing `ISecurityEventWriter` carrying **the request's correlation id from [[GWY-002]]'s filter**, not `HttpContext.TraceIdentifier`.
-- [ ] Create `src/Pegasus.Web/Api/RequireStaffRightFilter.cs`: an `IEndpointFilter` over one `StaffAccessRight` that calls `StaffAuthorization.IsAuthorized` and throws `StaffAuthorizationException(right)` on refusal, plus the single-argument `RouteGroupBuilder.RequireStaffRight(StaffAccessRight)` extension.
-- [ ] Add the XML documentation stating the filter is a fail-fast boundary and that Core still calls `StaffAuthorization.Require` in every use case, quoting the enum summary at `StaffAuthorization.cs:3-6`; add no business precondition.
-- [ ] Register the accessor in `AddPegasusDesktopGateway` and stash the resolved `ActionActor` in `HttpContext.Items` under a new `const` on `DesktopGateway`; change no existing member and do not alter `MapPegasusDesktopGateway`'s return type.
-- [ ] Extend `Api/DesktopGatewayProblems.cs` with the `account-disabled` and `password-change-required` mappings over [[GWY-021]]'s signal, reordering no existing exception branch; if the signal is undefined, record the deferral in the plan rather than querying `UserManager` from a filter.
-- [ ] Create `tests/Pegasus.IntegrationTests/DesktopGatewayAuthorizationTests.cs` with the twelve-right matrix written to the four measured shapes — any-role positive for `AccessStaffApplication`/`PerformCasework`; `Administrator` positive and `Engineer`/`User` negative for the eight management rights; **permanent-refusal** facts for `ExecuteSystemWork` and `SubmitRequestUpload` across all three roles — plus the disabled-account, Automation-audience and anonymous-401 facts.
-- [ ] Assert the audit side effect in at least the disabled-account and Automation-token facts: a `Denied` `SecurityEvent` with the expected reason code **and the same correlation id the response carried**.
-- [ ] Run `dotnet test … --filter "FullyQualifiedName~DesktopGatewayAuthorizationTests"` and confirm 27 facts pass with none skipped; run `grep -rn "StaffActorFactory.TryCreate" src/Pegasus.Web` and confirm exactly two call sites.
-- [ ] Run the simplification pass over the branch diff and record findings and dispositions under a dated `## Simplification pass` heading in the plan document.
-- [ ] **Verification run (this box produces `proof`)** — capture, as tier-5 and tier-9 evidence: the 27-fact `DesktopGatewayAuthorizationTests` run with none skipped; the two-call-site `StaffActorFactory.TryCreate` grep; `dotnet build Pegasus.slnx -c Release` showing `0 Warning(s)`; the whole `Pegasus.IntegrationTests` run proving the cookie and MCP paths are unchanged; `grep -rn '"pegasus-automation-mcp"' src/Pegasus.Web --include=*.cs` showing one match at `Mcp/AutomationMcp.cs:24`; and the step-10 audit assertion output showing the denial `SecurityEvent` carrying the response's correlation id.
+- [x] Read the governing gateway/auth documents and Core `StaffAuthorization`; called `get_doc_gates GWY-003`; took the ticket on `task/gateway-staff-authorization` from `origin/dev`.
+- [x] Confirmed GWY-021 is merged at `0e7fa423` with the bearer gateway resolver and GWY-002's gateway/problem mappings are present; no second token pipeline was invented.
+- [x] Created `src/Pegasus.Web/Api/StaffActorAccessor.cs` as the single Web claims-to-actor factory caller beside `Pages/StaffPageModel.cs`.
+- [x] Added fail-closed unauthenticated/Automation-audience/non-staff refusal and persisted `Denied` token events using the gateway correlation id.
+- [x] Created `RequireStaffRightFilter` and the single-argument `RouteGroupBuilder.RequireStaffRight(StaffAccessRight)` extension, delegating to Core authorization.
+- [x] Documented the filter as a fail-fast boundary; business-state preconditions remain in Core use cases.
+- [x] Registered the accessor and stored the resolved actor under `DesktopGateway.ActorItemKey` without changing the gateway group return type.
+- [x] Preserved GWY-021's existing account/password problem mappings and added token denial evidence for disabled, invalid-stamp, and absolute-expiry account refusals without querying Identity from the right filter.
+- [x] Added `DesktopGatewayAuthorizationTests` over the real `/api/v1` group: 24 right cases plus disabled-account, Automation-audience, and anonymous cases. The two permanent-refusal rights each exercise Administrator, Engineer, and User.
+- [x] Asserted disabled-account and Automation-audience `Denied` security events with the response correlation id.
+- [x] Focused authorization test passed 27/27 with 0 skipped; the factory call-site grep returned exactly two; the audience literal grep returned exactly one.
+- [x] Completed the four-lens simplification pass and recorded findings/dispositions in the plan.
+- [ ] **Verification on merged `main` (this box produces `proof`)** — local locked restore, Release solution build (0 warnings/0 errors), full IntegrationTests (1,075 passed, 0 failed, 16 existing corpus-gated skips), and focused authorization evidence are recorded in the post-implementation report. Remaining proof requires the reviewed PR, green exact-head CI, merge to `dev`, exact-SHA promotion to `main`, main CI, then `proof.md` and Kanmer closeout.
 
 ## Progress notes
 
-(append with `set_ticket_doc(doc: "checklist", append: true)`)
+- 2026-08-30: GWY-021 dependency merged at main/dev `0e7fa423`; this ticket's branch starts from that exact head.
+- 2026-08-30: Initial independent review identified missing Engineer coverage in the two permanent-refusal cases; both cases now exercise all three staff roles while retaining the required 27 facts.
+- 2026-08-30: Final local focused authorization gate is 27 passed, 0 failed, 0 skipped. Full IntegrationTests is 1,075 passed, 0 failed, 16 skipped, 1,091 total; skips are pre-existing corpus-gated tests outside this ticket.
