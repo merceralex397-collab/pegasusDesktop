@@ -143,6 +143,26 @@ value, or higher-tier mileage. Acceptance, rejection, or linking of an
 external fact enters permanent business history. Routine calls, retries, and
 polling remain content-safe telemetry.
 
+#### Desktop gateway projection
+
+When the desktop gateway is composed, it exposes the vehicle workflow through
+the versioned `/api/v1` surface: staff may request a lookup, accept or correct
+a retained suggestion, and read the confirmed evidence and lookup history.
+The gateway calls the existing Core vehicle ports and carries explicit case
+version, edit-lease, and operation-key fields for mutations. Read responses
+include the typed lookup outcome, provider and provider-version identity,
+retrieved-at and source-observed-at timestamps, source age, and any typed
+retryable failure. The seven outcomes remain distinct, including `NotFound`,
+`Unavailable`, and `Failed`; provider failure is never rendered as vehicle not
+found. A correlation identifier is echoed on every gateway response and is
+available on provider-bound work and problem details. Provider credentials,
+raw provider payloads, and provider-specific secrets never cross this boundary.
+
+The development-offline composition uses the approved replay adapter for
+validation and contract evidence. This projection does not select or activate
+a live DVLA/DVSA provider, and it does not create a direct desktop provider
+client.
+
 **Source limitation:** no allowed source selects the live DVLA/DVSA provider,
 API, licence, exact response fields, credentials, rate/limit behavior, error
 contract, target, or caller proof. Those items remain activation gates.

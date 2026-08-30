@@ -50,7 +50,7 @@ public sealed class CommandCoverageGuardTests
             {
                 services.RemoveAll<IAuthenticationService>();
                 services.AddSingleton<IAuthenticationService,
-                    ContractTestWebApplicationFactory.NoOpAuthenticationService>();
+                    ContractTestWebApplicationFactory.ContractAuthenticationService>();
                 services.AddTransient<IStartupFilter, ProbeStartupFilter>();
             });
         }

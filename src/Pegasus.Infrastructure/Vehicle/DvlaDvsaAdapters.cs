@@ -23,9 +23,11 @@ public sealed class DvlaDvsaReplayAdapter
 
     public async Task<VehicleLookupResult> LookupAsync(
         VehicleLookupRequest request,
+        string correlationId,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(correlationId);
         cancellationToken.ThrowIfCancellationRequested();
 
         var fixturePath = Path.GetFullPath(

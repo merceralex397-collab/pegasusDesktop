@@ -33,7 +33,7 @@ public sealed class VehicleWorkflowTerminalTests
 
         var requestException = await Assert.ThrowsAnyAsync<InvalidOperationException>(() =>
             scope.ServiceProvider.GetRequiredService<IRequestVehicleLookup>().ExecuteAsync(
-                new(caseId, 0, "AB12CDE", Staff, "terminal-vehicle-request", "lease-token"),
+                new(caseId, 0, "AB12CDE", Staff, "terminal-vehicle-request", "lease-token", "terminal-vehicle-correlation"),
                 CancellationToken.None));
         Assert.Contains("read-only", requestException.Message, StringComparison.Ordinal);
 
@@ -66,6 +66,31 @@ public sealed class VehicleWorkflowTerminalTests
 
         Assert.Equal(0, exception.ConfirmedRegistrationCount);
         Assert.Equal(0, await ExternalWorkCountAsync(database, caseId));
+    }
+
+    [Fact]
+    public async Task MissingObservationIsReportedAsTypedSuggestionUnavailable()
+    {
+        await using var database = await CreateDatabaseAsync();
+        var caseId = await SeedCaseAsync(database, CaseLifecycleState.Review);
+        var editLeaseToken = await PrepareCanonicalRegistrationAsync(database, caseId, "AB12CDE");
+        await using var scope = database.CreateAsyncScope();
+
+        var exception = await Assert.ThrowsAsync<VehicleSuggestionUnavailableException>(() =>
+            scope.ServiceProvider.GetRequiredService<IAcceptVehicleSuggestion>().ExecuteAsync(
+                new(
+                    caseId,
+                    0,
+                    Guid.NewGuid(),
+                    VehicleSuggestionDecision.Accept,
+                    null,
+                    Staff,
+                    "missing-observation",
+                    "The observation is no longer available.",
+                    editLeaseToken),
+                CancellationToken.None));
+
+        Assert.Equal(VehicleLookupOutcome.NotFound, exception.Outcome);
     }
 
     [Fact]
@@ -118,7 +143,7 @@ public sealed class VehicleWorkflowTerminalTests
             await context.Database.ExecuteSqlInterpolatedAsync(
                 $"INSERT INTO ExternalWorkItems (Id, CaseId, Kind, OperationKey, State, AttemptCount, DueAtUtc, CompletedAtUtc) VALUES ({workItemId}, {caseId}, {ExternalWorkKinds.VehicleLookup}, {"seeded-vehicle-observation"}, {"completed"}, {1}, {FixedUtcNow}, {FixedUtcNow})");
             await context.Database.ExecuteSqlInterpolatedAsync(
-                $"INSERT INTO VehicleLookupRequests (WorkItemId, CaseId, Registration, OperationKey, RequestFingerprint, RequestedByKind, RequestedBySubjectId, RequestedByRolesJson, RequestedAtUtc, ResultingCaseVersion) VALUES ({workItemId}, {caseId}, {"AB12CDE"}, {"seeded-vehicle-observation"}, {new string('0', 64)}, {ActorKind.Staff.ToString()}, {Staff.SubjectId}, {"[\"User\"]"}, {FixedUtcNow}, {0L})");
+                $"INSERT INTO VehicleLookupRequests (WorkItemId, CaseId, Registration, OperationKey, CorrelationId, RequestFingerprint, RequestedByKind, RequestedBySubjectId, RequestedByRolesJson, RequestedAtUtc, ResultingCaseVersion) VALUES ({workItemId}, {caseId}, {"AB12CDE"}, {"seeded-vehicle-observation"}, {"seeded-vehicle-correlation"}, {new string('0', 64)}, {ActorKind.Staff.ToString()}, {Staff.SubjectId}, {"[\"User\"]"}, {FixedUtcNow}, {0L})");
             await context.Database.ExecuteSqlInterpolatedAsync(
                 $"INSERT INTO VehicleLookupObservations (Id, WorkItemId, AttemptNumber, Outcome, Registration, Provider, ProviderVersion, ResponseIdentity, RetrievedAtUtc, EffectiveAtUtc, SourceObservedAtUtc, Make, Model, ManufactureYear, EngineCapacityCc, FuelType, MotTestsJson, MileageValue, MileageUnit, MileageObservedOn, MileageMethodKey, MileageMethodVersion, MileageSupportingObservationCount, FailureCode, FailureRetryable, FailureRetryAfterTicks, RecordedAtUtc) VALUES ({observationId}, {workItemId}, {1}, {"current"}, {"AB12CDE"}, {"offline-replay"}, {"fixture-v1"}, {"response-current"}, {FixedUtcNow}, {null}, {FixedUtcNow}, {"Example"}, {"Model"}, {2020}, {1600}, {"petrol"}, {"{\"version\":1,\"observations\":[]}"}, {null}, {null}, {null}, {null}, {null}, {null}, {null}, {null}, {null}, {FixedUtcNow})");
         }
@@ -202,7 +227,7 @@ public sealed class VehicleWorkflowTerminalTests
             await context.Database.ExecuteSqlInterpolatedAsync(
                 $"INSERT INTO ExternalWorkItems (Id, CaseId, Kind, OperationKey, State, AttemptCount, DueAtUtc) VALUES ({workItemId}, {caseId}, {ExternalWorkKinds.VehicleLookup}, {"seeded-vehicle-work"}, {"pending"}, {0}, {FixedUtcNow})");
             await context.Database.ExecuteSqlInterpolatedAsync(
-                $"INSERT INTO VehicleLookupRequests (WorkItemId, CaseId, Registration, OperationKey, RequestFingerprint, RequestedByKind, RequestedBySubjectId, RequestedByRolesJson, RequestedAtUtc, ResultingCaseVersion) VALUES ({workItemId}, {caseId}, {"AB12CDE"}, {"seeded-vehicle-work"}, {new string('0', 64)}, {ActorKind.Staff.ToString()}, {Staff.SubjectId}, {"[\"User\"]"}, {FixedUtcNow}, {0L})");
+                $"INSERT INTO VehicleLookupRequests (WorkItemId, CaseId, Registration, OperationKey, CorrelationId, RequestFingerprint, RequestedByKind, RequestedBySubjectId, RequestedByRolesJson, RequestedAtUtc, ResultingCaseVersion) VALUES ({workItemId}, {caseId}, {"AB12CDE"}, {"seeded-vehicle-work"}, {"seeded-vehicle-work-correlation"}, {new string('0', 64)}, {ActorKind.Staff.ToString()}, {Staff.SubjectId}, {"[\"User\"]"}, {FixedUtcNow}, {0L})");
         }
 
         await using var scope = database.CreateAsyncScope();
@@ -251,7 +276,8 @@ public sealed class VehicleWorkflowTerminalTests
                     "AB12CDE",
                     Staff,
                     "stale-editor-vehicle-request",
-                    editLeaseToken),
+                    editLeaseToken,
+                    "stale-editor-vehicle-correlation"),
                 CancellationToken.None));
     }
 
@@ -267,7 +293,7 @@ public sealed class VehicleWorkflowTerminalTests
         string operationKey,
         string editLeaseToken) =>
         services.GetRequiredService<IRequestVehicleLookup>().ExecuteAsync(
-            new(caseId, 0, registration, Staff, operationKey, editLeaseToken),
+            new(caseId, 0, registration, Staff, operationKey, editLeaseToken, $"vehicle-test:{operationKey}"),
             CancellationToken.None);
 
     private static Task<int> ExternalWorkCountAsync(

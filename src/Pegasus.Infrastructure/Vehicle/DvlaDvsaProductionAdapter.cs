@@ -64,6 +64,7 @@ internal sealed class DvlaDvsaProductionAdapter(
     HttpClient httpClient,
     TimeProvider timeProvider) : IVehicleLookupAdapter, IDisposable
 {
+    private const string CorrelationHeader = "X-Correlation-Id";
     private readonly SemaphoreSlim tokenLock = new(1, 1);
     private string? dvsaToken;
     private DateTimeOffset dvsaTokenExpiresAtUtc;
@@ -72,12 +73,14 @@ internal sealed class DvlaDvsaProductionAdapter(
 
     public async Task<VehicleLookupResult> LookupAsync(
         VehicleLookupRequest request,
+        string correlationId,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(correlationId);
         var retrievedAtUtc = timeProvider.GetUtcNow();
-        var dvla = await ReadDvlaAsync(request.Registration, cancellationToken);
-        var dvsa = await ReadDvsaAsync(request.Registration, cancellationToken);
+        var dvla = await ReadDvlaAsync(request.Registration, correlationId, cancellationToken);
+        var dvsa = await ReadDvsaAsync(request.Registration, correlationId, cancellationToken);
         var identity = Hash($"{dvla.Identity}\n{dvsa.Identity}");
 
         VehicleLookupResult result;
@@ -128,10 +131,12 @@ internal sealed class DvlaDvsaProductionAdapter(
 
     private async Task<ProviderVehicleResult> ReadDvlaAsync(
         string registration,
+        string correlationId,
         CancellationToken cancellationToken)
     {
         var uri = new Uri(options.DvlaBaseUri, "vehicles");
         using var request = new HttpRequestMessage(HttpMethod.Post, uri);
+        request.Headers.TryAddWithoutValidation(CorrelationHeader, correlationId);
         request.Headers.TryAddWithoutValidation("x-api-key", options.DvlaApiKey);
         request.Content = JsonContent.Create(new { registrationNumber = registration });
         using var response = await httpClient.SendAsync(request, cancellationToken);
@@ -169,15 +174,17 @@ internal sealed class DvlaDvsaProductionAdapter(
 
     private async Task<ProviderMotResult> ReadDvsaAsync(
         string registration,
+        string correlationId,
         CancellationToken cancellationToken)
     {
-        var token = await GetDvsaTokenAsync(cancellationToken);
+        var token = await GetDvsaTokenAsync(correlationId, cancellationToken);
         if (token.Failure is not null)
         {
             return new([], false, token.Failure, token.Identity, TimeSpan.Zero);
         }
         var uri = new Uri(options.DvsaBaseUri, Uri.EscapeDataString(registration));
         using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        request.Headers.TryAddWithoutValidation(CorrelationHeader, correlationId);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
         request.Headers.TryAddWithoutValidation("X-API-Key", options.DvsaApiKey);
         using var response = await httpClient.SendAsync(request, cancellationToken);
@@ -231,7 +238,9 @@ internal sealed class DvlaDvsaProductionAdapter(
         }
     }
 
-    private async Task<TokenResult> GetDvsaTokenAsync(CancellationToken cancellationToken)
+    private async Task<TokenResult> GetDvsaTokenAsync(
+        string correlationId,
+        CancellationToken cancellationToken)
     {
         if (dvsaToken is not null && dvsaTokenExpiresAtUtc > timeProvider.GetUtcNow().AddMinutes(1))
         {
@@ -254,6 +263,7 @@ internal sealed class DvlaDvsaProductionAdapter(
                     ["scope"] = options.DvsaScope
                 })
             };
+            request.Headers.TryAddWithoutValidation(CorrelationHeader, correlationId);
             using var response = await httpClient.SendAsync(request, cancellationToken);
             var body = await response.Content.ReadAsByteArrayAsync(cancellationToken);
             var identity = Hash(body);

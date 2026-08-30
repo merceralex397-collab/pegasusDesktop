@@ -71,6 +71,20 @@ public sealed class AutomaticVehicleLookupTests
     }
 
     [Fact]
+    public async Task SweepDoesNotRepairInvalidRegistrationBeforeCoreValidation()
+    {
+        await using var database = await CreateDatabaseAsync();
+        var caseId = await SeedCaseAsync(database, CaseLifecycleState.Review);
+        await SeedRegistrationFieldAsync(database, caseId, "AB-12CDE", "fact");
+
+        Assert.Equal(0, await SweepAsync(database));
+        Assert.Equal(
+            0,
+            await database.ScalarAsync<int>(
+                $"SELECT COUNT(*) FROM VehicleLookupRequests WHERE CaseId = '{caseId:D}'"));
+    }
+
+    [Fact]
     public async Task CorrectedRegistrationGetsExactlyOneNewLookup()
     {
         await using var database = await CreateDatabaseAsync();

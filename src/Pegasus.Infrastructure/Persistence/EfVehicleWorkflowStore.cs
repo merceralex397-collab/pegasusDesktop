@@ -83,6 +83,7 @@ internal sealed class EfVehicleWorkflowStore(
                 replay.Registration,
                 EfVehicleLookupWorkStore.MapWorkState(replay.WorkItem),
                 replay.ResultingCaseVersion,
+                replay.CorrelationId,
                 IsReplay: true);
         }
 
@@ -143,6 +144,7 @@ internal sealed class EfVehicleWorkflowStore(
             CaseId = command.CaseId,
             Registration = command.Registration,
             OperationKey = command.OperationKey,
+            CorrelationId = command.CorrelationId,
             RequestFingerprint = fingerprint,
             RequestedByKind = command.Actor.Kind.ToString(),
             RequestedBySubjectId = command.Actor.SubjectId,
@@ -181,6 +183,7 @@ internal sealed class EfVehicleWorkflowStore(
             command.Registration,
             VehicleLookupWorkState.Pending,
             workflow.Version,
+            command.CorrelationId,
             IsReplay: false);
     }
 
@@ -248,8 +251,9 @@ internal sealed class EfVehicleWorkflowStore(
         var observationEntity = await context.Set<VehicleLookupObservationEntity>()
             .Include(item => item.Request)
             .SingleOrDefaultAsync(item => item.Id == command.LookupObservationId, cancellationToken)
-            ?? throw new KeyNotFoundException(
-                $"Vehicle lookup observation '{command.LookupObservationId}' was not found.");
+            ?? throw new VehicleSuggestionUnavailableException(
+                command.LookupObservationId,
+                VehicleLookupOutcome.NotFound);
         if (observationEntity.Request.CaseId != command.CaseId)
         {
             throw new VehicleSuggestionUnavailableException(
@@ -481,6 +485,7 @@ internal sealed class EfVehicleWorkflowStore(
             proposedValues,
             observation.Provenance,
             workflow.Version,
+            observation.CorrelationId,
             IsReplay: false);
     }
 
@@ -528,12 +533,18 @@ internal sealed class EfVehicleWorkflowStore(
                 && VehicleFieldNames.Contains(item.FieldName))
             .ToDictionaryAsync(item => item.FieldName, StringComparer.Ordinal, cancellationToken);
         var confirmed = MapConfirmed(confirmedFields, observationsById);
+        var version = await context.CaseWorkflows
+            .AsNoTracking()
+            .Where(item => item.CaseId == caseId)
+            .Select(item => item.Version)
+            .SingleAsync(cancellationToken);
         return new(
             caseId,
             confirmed,
             observations.LastOrDefault(),
             observations,
-            confirmationHistory);
+            confirmationHistory,
+            version);
     }
 
     private DateTimeOffset UtcNow()
@@ -806,6 +817,7 @@ internal sealed class EfVehicleWorkflowStore(
             new(entity.Registration, entity.Make, entity.Model, entity.Mileage, unit),
             observation.Provenance,
             entity.AfterCaseVersion,
+            observation.CorrelationId,
             isReplay);
     }
 
@@ -863,10 +875,7 @@ internal sealed class EfVehicleWorkflowStore(
                 : CaseDataCodes.Fact;
             var values = group
                 .Where(candidate => candidate.ValueKind == tier)
-                .Select(candidate => new string(
-                    candidate.Value.ToUpperInvariant()
-                        .Where(char.IsAsciiLetterOrDigit)
-                        .ToArray()))
+                .Select(candidate => candidate.Value)
                 .Distinct(StringComparer.Ordinal)
                 .ToArray();
             if (values.Length != 1)
@@ -895,7 +904,8 @@ internal sealed class EfVehicleWorkflowStore(
                 request.Registration,
                 actor,
                 $"vehicle-lookup:auto:{request.Registration}",
-                EditLeaseToken: "automation");
+                EditLeaseToken: "automation",
+                CorrelationId: $"vehicle-lookup:auto:{Guid.NewGuid():N}");
             try
             {
                 await EnqueueAutomaticAsync(command, cancellationToken);
@@ -937,6 +947,7 @@ internal sealed class EfVehicleWorkflowStore(
             CaseId = command.CaseId,
             Registration = command.Registration,
             OperationKey = command.OperationKey,
+            CorrelationId = command.CorrelationId,
             RequestFingerprint = RequestFingerprint(command),
             RequestedByKind = command.Actor.Kind.ToString(),
             RequestedBySubjectId = command.Actor.SubjectId,

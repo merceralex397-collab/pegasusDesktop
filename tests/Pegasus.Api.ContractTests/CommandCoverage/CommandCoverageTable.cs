@@ -1,5 +1,10 @@
 using System.Net.Http;
+using System.Globalization;
+using Microsoft.Extensions.DependencyInjection;
+using Pegasus.Contracts.Vehicle;
 using Pegasus.Core.Identity;
+using Pegasus.Core.Vehicle;
+using Pegasus.Core.Workflow;
 
 namespace Pegasus.Api.ContractTests.CommandCoverage;
 
@@ -40,14 +45,144 @@ public sealed record CommandCoverageRow(
     string InvalidProblemTitle = "Validation failed",
     bool IsPlaceholder = false);
 
-/// <summary>
-/// The merged host currently has no command endpoint. Keeping this table
-/// empty is intentional: the guard remains green now and turns red as soon as
-/// a command is added without its explicit, reviewed row.
-/// </summary>
 internal static class CommandCoverageTable
 {
-    public static IReadOnlyList<CommandCoverageRow> Rows { get; } = [];
+    private static readonly Guid CaseId =
+        Guid.Parse("9f45fbe5-2c58-4a92-bf72-df0f2f2e4d01");
+    private static readonly Guid ObservationId =
+        Guid.Parse("1d4d10f9-c8ac-4f83-8d2a-5e5bc4a9c9d0");
+
+    public static IReadOnlyList<CommandCoverageRow> Rows { get; } =
+    [
+        new(
+            $"/api/v1/cases/{{caseId:guid}}/vehicle/lookups",
+            "POST",
+            StaffAccessRight.PerformCasework,
+            HasVersionToken: true,
+            HasOperationKey: true,
+            context => CreateRequest(
+                context,
+                $"/api/v1/cases/{CaseId:D}/vehicle/lookups",
+                "lookup-operation"),
+            context => CreateRequest(
+                context,
+                $"/api/v1/cases/{CaseId:D}/vehicle/lookups",
+                "lookup-operation",
+                "X-Contract-Unauthenticated"),
+            context => CreateRequest(
+                context,
+                $"/api/v1/cases/{CaseId:D}/vehicle/lookups",
+                "lookup-operation",
+                "X-Contract-Wrong-Right"),
+            context => CreateRequest(
+                context,
+                $"/api/v1/cases/{CaseId:D}/vehicle/lookups",
+                "lookup-stale",
+                null,
+                expectedVersion: 6),
+            context => CreateRequest(
+                context,
+                $"/api/v1/cases/{CaseId:D}/vehicle/lookups",
+                string.Empty,
+                null,
+                registration: string.Empty,
+                expectedVersion: -1,
+                leaseToken: string.Empty),
+            context =>
+            {
+                var first = CreateRequest(
+                    context,
+                    $"/api/v1/cases/{CaseId:D}/vehicle/lookups",
+                    "lookup-replay");
+                var replay = CreateRequest(
+                    context,
+                    $"/api/v1/cases/{CaseId:D}/vehicle/lookups",
+                    "lookup-replay");
+                return (first, replay);
+            },
+            context => Task.FromResult(Store(context).ReadEffect()),
+            context => Task.FromResult(Store(context).CurrentCaseVersion.ToString(CultureInfo.InvariantCulture)),
+            "pending"),
+        new(
+            $"/api/v1/cases/{{caseId:guid}}/vehicle/suggestions/{{suggestionId:guid}}/accept",
+            "POST",
+            StaffAccessRight.PerformCasework,
+            HasVersionToken: true,
+            HasOperationKey: true,
+            context => CreateRequest(
+                context,
+                $"/api/v1/cases/{CaseId:D}/vehicle/suggestions/{ObservationId:D}/accept",
+                "accept-operation"),
+            context => CreateRequest(
+                context,
+                $"/api/v1/cases/{CaseId:D}/vehicle/suggestions/{ObservationId:D}/accept",
+                "accept-operation",
+                "X-Contract-Unauthenticated"),
+            context => CreateRequest(
+                context,
+                $"/api/v1/cases/{CaseId:D}/vehicle/suggestions/{ObservationId:D}/accept",
+                "accept-operation",
+                "X-Contract-Wrong-Right"),
+            context => CreateRequest(
+                context,
+                $"/api/v1/cases/{CaseId:D}/vehicle/suggestions/{ObservationId:D}/accept",
+                "accept-stale",
+                null,
+                expectedVersion: 6),
+            context => CreateRequest(
+                context,
+                $"/api/v1/cases/{CaseId:D}/vehicle/suggestions/{ObservationId:D}/accept",
+                string.Empty,
+                null,
+                expectedVersion: -1,
+                leaseToken: string.Empty,
+                reason: string.Empty),
+            context =>
+            {
+                var first = CreateRequest(
+                    context,
+                    $"/api/v1/cases/{CaseId:D}/vehicle/suggestions/{ObservationId:D}/accept",
+                    "accept-replay");
+                var replay = CreateRequest(
+                    context,
+                    $"/api/v1/cases/{CaseId:D}/vehicle/suggestions/{ObservationId:D}/accept",
+                    "accept-replay");
+                return (first, replay);
+            },
+            context => Task.FromResult(Store(context).ReadEffect()),
+            context => Task.FromResult(Store(context).CurrentCaseVersion.ToString(CultureInfo.InvariantCulture)),
+            "confirmed")
+    ];
+
+    private static VehicleCommandCoverageStore Store(CommandCoverageTestContext context) =>
+        context.Services.GetRequiredService<VehicleCommandCoverageStore>();
+
+    private static HttpRequestMessage CreateRequest(
+        CommandCoverageTestContext context,
+        string path,
+        string operationKey,
+        string? authHeader = null,
+        int expectedVersion = 7,
+        string registration = "AB12CDE",
+        string leaseToken = "lease-token",
+        string reason = "reviewed")
+    {
+        var isAcceptance = path.Contains("/suggestions/", StringComparison.Ordinal);
+        var json = isAcceptance
+            ? $$"""{"expectedVersion":{{expectedVersion}},"decision":"accept","operationKey":"{{operationKey}}","reason":"{{reason}}","editLeaseToken":"{{leaseToken}}"}"""
+            : $$"""{"registration":"{{registration}}","expectedVersion":{{expectedVersion}},"operationKey":"{{operationKey}}","editLeaseToken":"{{leaseToken}}"}""";
+        var request = CommandCoverageTestContext.CreateJsonRequest(
+            "POST",
+            path,
+            json,
+            correlationId: "command-coverage");
+        if (authHeader is not null)
+        {
+            request.Headers.TryAddWithoutValidation(authHeader, "true");
+        }
+
+        return request;
+    }
 
     public static IEnumerable<object[]> AllRows =>
         Rows.Count == 0
@@ -82,6 +217,87 @@ internal static class CommandCoverageTable
         null,
         string.Empty,
         IsPlaceholder: true);
+}
+
+internal sealed class VehicleCommandCoverageStore :
+    IRequestVehicleLookupStore,
+    IAcceptVehicleSuggestionStore
+{
+    private readonly Dictionary<string, RequestedVehicleLookup> lookupOperations =
+        new(StringComparer.Ordinal);
+    private readonly Dictionary<string, AcceptedVehicleSuggestion> acceptanceOperations =
+        new(StringComparer.Ordinal);
+    private int actionHistoryEntries;
+    private string state = "empty";
+
+    public long CurrentCaseVersion { get; private set; } = 7;
+
+    public Task<RequestedVehicleLookup> RequestAsync(
+        RequestVehicleLookupCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (lookupOperations.TryGetValue(command.OperationKey, out var replay))
+        {
+            return Task.FromResult(replay with { IsReplay = true });
+        }
+
+        RequireCurrentVersion(command.CaseId, command.ExpectedCaseVersion);
+        var result = new RequestedVehicleLookup(
+            Guid.Parse("2d4d10f9-c8ac-4f83-8d2a-5e5bc4a9c9d0"),
+            command.CaseId,
+            command.Registration,
+            VehicleLookupWorkState.Pending,
+            ++CurrentCaseVersion,
+            command.CorrelationId,
+            IsReplay: false);
+        lookupOperations.Add(command.OperationKey, result);
+        state = "pending";
+        actionHistoryEntries++;
+        return Task.FromResult(result);
+    }
+
+    public Task<AcceptedVehicleSuggestion> AcceptAsync(
+        AcceptVehicleSuggestionCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (acceptanceOperations.TryGetValue(command.OperationKey, out var replay))
+        {
+            return Task.FromResult(replay with { IsReplay = true });
+        }
+
+        RequireCurrentVersion(command.CaseId, command.ExpectedCaseVersion);
+        var result = new AcceptedVehicleSuggestion(
+            Guid.Parse("3d4d10f9-c8ac-4f83-8d2a-5e5bc4a9c9d0"),
+            command.CaseId,
+            command.LookupObservationId,
+            command.Decision,
+            new VehicleConfirmationValues("AB12CDE", "Ford", "Focus", 12345, VehicleMileageUnit.Miles),
+            new VehicleEvidenceProvenance(
+                "dvla-dvsa-replay",
+                "replay-v1",
+                "response-123",
+                new DateTimeOffset(2031, 5, 6, 12, 0, 0, TimeSpan.Zero),
+                null,
+                new DateTimeOffset(2031, 5, 6, 10, 0, 0, TimeSpan.Zero)),
+            ++CurrentCaseVersion,
+            "vehicle-accept-correlation",
+            IsReplay: false);
+        acceptanceOperations.Add(command.OperationKey, result);
+        state = "confirmed";
+        actionHistoryEntries++;
+        return Task.FromResult(result);
+    }
+
+    public CommandEffectSnapshot ReadEffect() =>
+        new(state, actionHistoryEntries);
+
+    private void RequireCurrentVersion(Guid caseId, long expectedVersion)
+    {
+        if (expectedVersion != CurrentCaseVersion)
+        {
+            throw new CaseVersionConflictException(caseId, expectedVersion, CurrentCaseVersion);
+        }
+    }
 }
 
 internal static class CommandCoverageGuard
