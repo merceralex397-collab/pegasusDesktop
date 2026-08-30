@@ -369,3 +369,7 @@ An independent `codex review --commit a8c4abf9` session reviewed the changed `.g
 ## Prerequisite merge — 2026-08-30
 
 PR #53 (`a8c4abf97be7dbcbd0be51dd662322c7c7a90d3f`) merged into `dev` as `3454afe1f7b0249ed505a20d47fd392b22c7bb6d` after exact-head CI run `33289309561` completed successfully and the independent review found no actionable regressions. This merge carries only the pinned local WinApp runtime configuration and generated-staging ignore rule. It is a prerequisite merge, not FND-039 delivery acceptance; the operator certificate-trust and clean-machine install/launch/uninstall evidence remain required before proof and Done. No `dev` to `main` promotion was performed.
+
+## Local validation — 2026-08-30
+
+The exact repository script was run against `CollisionEngineers.Pegasus_0.1.0.0_x64.msix`. It passed manifest identity (`CollisionEngineers.Pegasus`), publisher (`CN=Collision Engineers`), version format, self-contained Windows App Runtime payload checks, and `winapp 0.3.1`. It removed the stale package, then `Add-AppxPackage` failed with HRESULT `0x800B0109` because the signing root certificate is not trusted on this machine. This confirms identity/certificate matching is not the cause. The run is not clean-machine acceptance evidence; certificate trust, clean Windows 11 install/launch/uninstall, result log, launch screenshot, cleanup read-back, and no-elevation confirmation remain outstanding.
