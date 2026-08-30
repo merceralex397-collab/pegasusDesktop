@@ -20,3 +20,9 @@
 
 - No application policy was duplicated and no `Mcp/*McpTools.cs`, Worker, infrastructure, cloud, or deployment files were changed.
 - Production certificate issuance/trust rollout remains outside this ticket and is not claimed as completed; a non-Development host without its operator-provided certificate fails closed.
+
+## Review findings resolved — 2026-08-30
+
+The combined OpenIddict composition was corrected after independent review: Desktop retains rolling refreshes, Automation retains its 14-day absolute cap through per-principal original-issue enforcement, and Desktop password grants use the staff/global sign-in throttles rather than the Automation limit. Combined-mode tests cover these boundaries, Automation issuance, the public no-secret registration, security-stamp invalidation, and an unsupported Desktop grant.
+
+Updated validation: DesktopTokenIssuance passed 6/6 and Automation passed 35/35 after the fixes; Web and integration Release builds passed with 0 warnings/errors; the earlier full integration run passed 1031 executed tests with 16 expected corpus-dependent skips; migration-grant validation passed for 74 migration files; git diff --check passed. The full integration run was against the pre-fix assembly and is retained only as supplemental evidence; focused post-fix suites are the authoritative changed-code result.

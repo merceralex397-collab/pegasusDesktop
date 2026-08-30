@@ -84,3 +84,13 @@ Evidence: `dotnet build tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.
 - Security: no client secret, cloud write, certificate file, or private key was added to the repository. Missing/mismatched non-Development certificate configuration fails closed.
 - Test support: the claim probe is test-only middleware in `DesktopTokenIssuanceTests.cs`, needed to validate the actual bearer validation pipeline; it is not an application endpoint.
 - Disposition: no behaviour-preserving simplification remained after the pass. The earlier invalid `Destinations.RefreshToken` assumption was removed because OpenIddict has no such destination; refresh principal preservation is proved by the rolling refresh and absolute-cap tests.
+
+## Independent review resolution — 2026-08-30
+
+The first independent review identified three merge-blocking combined-composition defects. The branch now resolves them as follows:
+
+- Removed the shared DisableSlidingRefreshTokenExpiration() switch. Desktop refresh tokens now use OpenIddict's rolling behavior. Automation retains its 14-day absolute cap through an internal original-issue claim, per-principal remaining refresh lifetime, and refresh-time age validation; this supersedes the earlier step 11 instruction to retain the global switch.
+- Desktop password grants now share the existing global sign-in limiter and use the staff 10-attempts-per-client-per-minute policy on the token endpoint, while Automation remains at 120 requests per client per minute. The request marker is an in-memory pipeline detail, not a second policy vocabulary.
+- Added combined-mode integration facts for Desktop rolling refresh, Automation client-credentials issuance, the public no-secret registration, security-stamp invalidation, and rejection of the Desktop client using the Automation grant.
+
+Post-fix validation: Web Release build and IntegrationTests Release build both passed with 0 warnings and 0 errors; DesktopTokenIssuance passed 6/6; Automation passed 35/35; the prior full integration run passed 1031/1031 executed tests with 16 corpus-dependent skips; migration-grant validation passed for 74 migration files; git diff --check passed. A fresh independent review is required for this changed branch before PR merge.
