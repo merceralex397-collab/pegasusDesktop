@@ -13,10 +13,6 @@ stageEntered:
   review: '2026-08-30T07:38:27.148Z'
   verifying: '2026-08-30T10:19:44.101Z'
   done: '2026-08-30T10:44:36.784Z'
-taken_at: '2026-08-30T06:45:01.262Z'
-branch: task/dsk-08-03-integration-shard-persistence
-worktree: >-
-  C:\Users\PC\Documents\GitHub\pegasus-worktrees\dsk-08-03-integration-shard-persistence
 labels:
   - desktop-conversion
   - plan-08
@@ -36,7 +32,7 @@ prs:
   - '56'
 archived: false
 created: '2026-08-24T07:46:12.580Z'
-updated: '2026-08-30T10:45:06.632Z'
+updated: '2026-08-30T10:47:12.529Z'
 ---
 
 ## What
