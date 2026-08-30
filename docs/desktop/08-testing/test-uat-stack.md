@@ -24,7 +24,7 @@ no production data.
 | Queues and blobs | Azurite 3.36.0 (`npx azurite`) | Default development storage endpoints; queues `intake-work`, `intake-work-poison`, `external-work`, `external-work-poison` created by the Worker client factory | `package.json` devDependency; `src/Pegasus.Worker/WorkerAzureClientFactory.cs` |
 | Database | SQL Server Express LocalDB `(localdb)\MSSQLLocalDB`, database `PegasusDevelopment` (or a per-run SQL Server container on Linux hosts — not applicable to the Windows-only desktop stack) | Migrated by `dotnet run --project src/Pegasus.Web -- --migrate-development` | `docs/runbook.md § Local database`; committed migration stream |
 | Graph (inbox/sent) | Replay adapters | `LocalDurableApprovedInboxSource`, `LocalDurableApprovedSentSource` reading immutable local copies | `src/Pegasus.Infrastructure/Intake/LocalDurableApprovedInboxSource.cs`, `Email/LocalDurableApprovedSentSource.cs` |
-| Box custody | Local adapter | `LocalCaseCustody`, `LocalDocumentContentStore` under the ignored artifact root | `src/Pegasus.Infrastructure/Custody/LocalCaseCustody.cs` |
+| Box custody | Local adapter | `LocalCaseCustody`, `LocalDocumentContentStore` under the ignored artifact root; retained occurrence content and managed `versionId` content are both readable locally | `src/Pegasus.Infrastructure/Custody/LocalCaseCustody.cs`, `LocalDocumentContentStore.OpenReadVersionAsync` |
 | DVLA/DVSA | Replay adapter | Recorded responses; staff requests recorded, replayed in `DevelopmentOffline` | `src/Pegasus.Infrastructure/Vehicle/DvlaDvsaAdapters.cs` |
 | Intake artifacts | File system | `artifacts/local-development/default/intake` (ignored) | `FileSystemIntakeArtifactStore` |
 | Report rendering (gateway side, retained until parity) | In-process Playwright Chromium | Pinned Chromium installed by `Initialize-LocalDevelopment.ps1` | `src/Pegasus.Infrastructure/Reports/PlaywrightAssessmentReportRenderer.cs` |
@@ -184,3 +184,7 @@ repository tree (`AGENTS.md § New Markdown placement`).
 - `DevelopmentOffline` composes `Features:LocalIntake`; production composes
   Blob intake. Intake paths through `/Upload` are therefore exercised against
   the file-system store on the stack.
+- The local custody adapter retains accepted source, attachment, and folded
+  image content under the case-id custody layout. `LocalDocumentContentStore`
+  resolves those occurrence-addressed files through their existing metadata
+  and still serves the managed `versionId` layout used by local uploads.

@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text.Json;
 using Pegasus.Core.Documents;
 
 namespace Pegasus.Infrastructure.Custody;
@@ -92,12 +93,58 @@ public sealed class LocalDocumentContentStore(string rootPath) : IDocumentConten
     {
         ValidateIdentifiers(caseId, caseReference, versionId);
         var path = Resolve(caseReference, versionId);
+        return await OpenReadPathAsync(
+            path,
+            NormalizeSha256(expectedSha256),
+            expectedLength,
+            cancellationToken);
+    }
+
+    public async Task<Stream> OpenReadVersionAsync(
+        ManagedDocumentContentAddress address,
+        string expectedSha256,
+        long expectedLength,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(address);
+        ValidateIdentifiers(address.CaseId, address.CaseReference, address.VersionId);
+        var normalizedHash = NormalizeSha256(expectedSha256);
+        var managedPath = Resolve(address.CaseReference, address.VersionId);
+        if (File.Exists(managedPath))
+        {
+            return await OpenReadPathAsync(
+                managedPath,
+                normalizedHash,
+                expectedLength,
+                cancellationToken);
+        }
+
+        var occurrencePath = await ResolveOccurrenceAsync(address, normalizedHash, cancellationToken);
+        if (occurrencePath is null)
+        {
+            throw new FileNotFoundException("The document content is unavailable.");
+        }
+
+        return await OpenReadPathAsync(
+            occurrencePath,
+            normalizedHash,
+            expectedLength,
+            cancellationToken);
+    }
+
+    private static async Task<Stream> OpenReadPathAsync(
+        string path,
+        string expectedSha256,
+        long expectedLength,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
         if (!File.Exists(path))
         {
             throw new FileNotFoundException("The document content is unavailable.");
         }
 
-        await VerifyAsync(path, NormalizeSha256(expectedSha256), expectedLength, cancellationToken);
+        await VerifyAsync(path, expectedSha256, expectedLength, cancellationToken);
         return new FileStream(
             path,
             FileMode.Open,
@@ -105,6 +152,160 @@ public sealed class LocalDocumentContentStore(string rootPath) : IDocumentConten
             FileShare.Read,
             64 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan);
+    }
+
+    private async Task<string?> ResolveOccurrenceAsync(
+        ManagedDocumentContentAddress address,
+        string expectedSha256,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var caseDirectory = ResolveCaseDirectory(address.CaseId);
+        var candidates = new List<(string Path, bool IsImageLayout)>();
+        var documentsDirectory = Path.Combine(caseDirectory, "documents");
+        if (Directory.Exists(documentsDirectory))
+        {
+            foreach (var receiptDirectory in Directory.EnumerateDirectories(documentsDirectory))
+            {
+                if (address.OccurrenceOrdinal == 1)
+                {
+                    candidates.Add((
+                        Path.Combine(receiptDirectory, expectedSha256),
+                        IsImageLayout: false));
+                }
+                else if (address.OccurrenceOrdinal >= 2)
+                {
+                    candidates.Add((
+                        Path.Combine(
+                            receiptDirectory,
+                            "attachments",
+                            $"{address.OccurrenceOrdinal:D3}-{expectedSha256}"),
+                        IsImageLayout: false));
+                }
+            }
+        }
+
+        if (address.SemanticRole == DocumentSemanticRole.Image)
+        {
+            var imagesDirectory = Path.Combine(caseDirectory, "images");
+            if (Directory.Exists(imagesDirectory))
+            {
+                var prefix = $"{address.OccurrenceOrdinal:D3}-";
+                candidates.AddRange(
+                    Directory.EnumerateDirectories(imagesDirectory)
+                        .Where(path => Path.GetFileName(path).StartsWith(
+                            prefix,
+                            StringComparison.OrdinalIgnoreCase))
+                        .Select(path => (path, IsImageLayout: true)));
+            }
+        }
+
+        var matches = new List<string>();
+        foreach (var (directory, isImageLayout) in candidates)
+        {
+            var contentPath = Path.Combine(directory, "content");
+            if (!File.Exists(contentPath))
+            {
+                continue;
+            }
+
+            if (await MatchesMetadataAsync(
+                    directory,
+                    address,
+                    expectedSha256,
+                    isImageLayout,
+                    cancellationToken))
+            {
+                matches.Add(contentPath);
+            }
+        }
+
+        return matches.Count switch
+        {
+            0 => null,
+            1 => matches[0],
+            _ => throw new InvalidDataException(
+                "Local custody content resolution is ambiguous.")
+        };
+    }
+
+    private static async Task<bool> MatchesMetadataAsync(
+        string directory,
+        ManagedDocumentContentAddress address,
+        string expectedSha256,
+        bool isImageLayout,
+        CancellationToken cancellationToken)
+    {
+        var metadataPath = Path.Combine(directory, "metadata.json");
+        if (!File.Exists(metadataPath))
+        {
+            throw new InvalidDataException("Local custody content metadata is unavailable.");
+        }
+
+        await using var stream = new FileStream(
+            metadataPath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            4096,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        using var metadata = await JsonDocument.ParseAsync(
+            stream,
+            cancellationToken: cancellationToken);
+        var root = metadata.RootElement;
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidDataException("Local custody content metadata is incomplete.");
+        }
+
+        var sha256 = RequiredString(root, "Sha256");
+        var fileName = RequiredString(root, "FileName");
+        var mediaType = RequiredString(root, "MediaType");
+        if (!string.Equals(sha256, expectedSha256, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(fileName, address.FileName, StringComparison.Ordinal)
+            || !string.Equals(mediaType, address.MediaType, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        if (isImageLayout)
+        {
+            if (!root.TryGetProperty("Ordinal", out var ordinal)
+                || ordinal.ValueKind != JsonValueKind.Number
+                || !ordinal.TryGetInt32(out var metadataOrdinal))
+            {
+                throw new InvalidDataException("Local image custody metadata is incomplete.");
+            }
+
+            return metadataOrdinal == address.OccurrenceOrdinal;
+        }
+
+        return true;
+    }
+
+    private string ResolveCaseDirectory(Guid caseId)
+    {
+        var path = Path.GetFullPath(Path.Combine(rootPath, "cases", caseId.ToString("N")));
+        var rootPrefix = rootPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
+        if (!path.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnauthorizedAccessException("The document content is outside the configured custody root.");
+        }
+
+        return path;
+    }
+
+    private static string RequiredString(JsonElement root, string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out var property)
+            || property.ValueKind != JsonValueKind.String
+            || string.IsNullOrWhiteSpace(property.GetString()))
+        {
+            throw new InvalidDataException("Local custody content metadata is incomplete.");
+        }
+
+        return property.GetString()!;
     }
 
     private static async Task VerifyAsync(
