@@ -36,3 +36,7 @@ The dated simplification pass is recorded in `plan`. The only intentional non-lo
 The exact broad command `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "Category!=Corpus&Category!=Browser" --nologo` passed with 974 passed, 2 skipped, 0 failed, 976 total in 12m52s. The focused API contract suite passed 62/62, the existing `MailWorkspaceWebTests` passed 39/39, and `DesktopGatewayMailTests` passed 1/1. The full Release solution build passed with 0 warnings and 0 errors. The guarded scope command returned empty output. The OpenAPI snapshot test passed as part of the API contract suite.
 
 The ticket is implementation/review-ready. It is not yet merged, verified on main, or closed. Kiota client generation remains the documented [[GWY-005]] deliverable; no duplicate generated tree was created here.
+
+## Review correction update — 2026-08-30
+
+Independent review found and the branch corrected two contract defects: the retained-list route no longer advertises two competing 200 schemas (Deleted Items is only `/mail/deleted`), and all four conditional mail GETs now declare 304. After correction: Web Release build passed with 0 warnings/0 errors; OpenAPI export passed; API contract tests passed 62/62; `DesktopGatewayMailTests` passed 1/1; `MailWorkspaceWebTests` passed 39/39. The exact broad verification command was reopened because these source changes occurred after its prior run and is being rerun now.
