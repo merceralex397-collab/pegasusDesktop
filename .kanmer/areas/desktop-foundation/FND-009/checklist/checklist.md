@@ -1,7 +1,7 @@
 # Checklist — FND-009 immutable release tags
 
 - [x] Record the `gateway/r<N>` and `desktop/v<M.m.b>` conventions in the release documentation and both synchronized release-skill copies.
-- [ ] Add the exact “after promotion read-back” wording and the C-01/2x Windows-runner cost rationale to `docs/engineering.md` through a remediation PR.
+- [x] Add the exact “after promotion read-back” wording and the C-01/2x Windows-runner cost rationale to `docs/engineering.md` through remediation commit `5d8be6841043c095b5fc7a2bc27127dbfa47a2e6`.
 - [ ] Apply the first `gateway/r<N>` tag on the next authorized promoted `main` release and record it in `docs/operations.md`.
 - [x] Exact-head documentation CI run `33009752135` passed; .NET/SQL/browser lanes were correctly path-skipped for this docs-only diff.
 - [ ] Independent review before merge — unavailable because PR #24 already merged; retrospective review is recorded honestly.

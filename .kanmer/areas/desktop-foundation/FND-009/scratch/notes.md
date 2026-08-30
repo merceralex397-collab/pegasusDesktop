@@ -11,3 +11,5 @@
 - Exact-head CI run `33009752135` passed all applicable jobs; code/infrastructure lanes were path-skipped.
 - PR #24 merged into `dev` at `f26b5b01d509ad21d9db58bca9fb00afe77c384a`.
 - `gateway/r21` is still not applied because no authorized production release occurred. The ticket remains open for that release-time tag and `docs/operations.md` record; no `dev` to `main` promotion was performed.
+
+2026-08-30 01:16 UTC — Re-read branch/release docs, committed remediation 5d8be684 (docs/engineering.md read-back + C-01 2× runner wording). Documentation links and diff check pass; first gateway tag remains release-time handback under the no-release constraint.

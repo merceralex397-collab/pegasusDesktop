@@ -258,3 +258,10 @@ Independent reviewer Peirce reviewed the exact merged ticket head `322e18bda664f
 The review is retrospective: there is no evidence of an independent review before PR #24 merged. The two release skill copies are byte-identical and carry the tag route. The canonical engineering paragraph records tags after exact-SHA promotion but does not explicitly say after the promotion read-back or preserve the plan's C-01/2x Windows-runner cost rationale; this needs an in-repo remediation PR.
 
 The first `gateway/r<N>` tag is not present locally or on `origin`, and `docs/operations.md` still ends at Release 20. That tag must be applied by the release actor to the next authorized promoted `main` SHA and recorded beside the release. The current no-release/no-cloud constraint means this acceptance criterion is intentionally pending; no tag or production proof is fabricated.
+
+## In-repo remediation — 2026-08-30
+
+- Re-read the current branch-delivery paragraph and release skill route on the branch cut from `origin/dev` at `8aa8f211d34f9b476c5231eff60fce071104b4e3`.
+- Added the explicit post-promotion `origin/main` read-back requirement and the C-01 private-runner 2× cost rationale to `docs/engineering.md` in commit `5d8be6841043c095b5fc7a2bc27127dbfa47a2e6`.
+- `pwsh ./scripts/Test-DocumentationLinks.ps1` passed (238 files); `git diff --check` passed; `.agents/skills/pegasus-release/SKILL.md` and `.codex/skills/pegasus-release/SKILL.md` remain byte-identical.
+- This does not claim the first `gateway/r<N>` tag. The tag and its `docs/operations.md` record remain a release-time handback, prohibited under the current no-release/cloud constraint.
