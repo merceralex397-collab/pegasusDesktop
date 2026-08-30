@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Pegasus.Desktop.Presentation;
 
 namespace Pegasus.Desktop.ViewModels;
 
@@ -13,18 +14,21 @@ public partial class MainPageViewModel : ObservableObject
     [ObservableProperty]
     public partial string Greeting { get; set; } = "Hello, WinUI!";
 
-    [ObservableProperty]
-    public partial int Counter { get; set; }
+    private int counter;
+
+    public string Counter => OperatorText.Count(counter);
 
     [RelayCommand]
     private void Increment()
     {
-        Counter++;
+        counter++;
+        OnPropertyChanged(nameof(Counter));
     }
 
     [RelayCommand]
     private void Decrement()
     {
-        Counter--;
+        counter--;
+        OnPropertyChanged(nameof(Counter));
     }
 }

@@ -153,6 +153,7 @@ public static class OperatorVocabulary
         "correspondence" => "Correspondence",
         "engineerreport" => "Engineer report",
         "auditreport" => "Audit report",
+        "feenote" => "Fee note",
         "other" => "Other",
         _ => Humanise(role)
     };
