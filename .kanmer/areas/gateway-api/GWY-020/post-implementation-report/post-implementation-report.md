@@ -25,3 +25,7 @@ The implementation reuses the existing global limiter, endpoint policy, `OnRejec
 ## Review state
 
 The first independent review found two evidence gaps; both were addressed in the final head. Fresh independent review of `58ce5c09a5994e9ae292a28c25a304342f10a34e` is pending. Proof and merge state must not be asserted until that review passes.
+
+## Independent review — 2026-08-30
+
+Fermat the 2nd reviewed exact final head `58ce5c09a5994e9ae292a28c25a304342f10a34e` and returned PASS. The prior evidence gaps are closed; no remaining merge blocker was identified.

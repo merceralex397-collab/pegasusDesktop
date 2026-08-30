@@ -78,3 +78,7 @@ Make a desktop password grant on `POST /connect/token` obey exactly the same thr
 - Parent rerun after the review correction: `git diff --check` passed; `dotnet restore ./Pegasus.slnx --locked-mode` passed; `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false` passed with 0 warnings and 0 errors; focused `DesktopTokenRateLimit` passed 4/4; combined `DesktopTokenRateLimit|StaffSignInSecurity|Automation` passed 41/41.
 - The final tests exercise a real browser POST through the global middleware (the test harness returns the expected antiforgery `400` after the permit is consumed), then real desktop password requests until the shared global limiter returns `429` and writes `sign_in_rate_limited`. They also issue 120 real Automation client-credentials requests, then assert the 121st returns `429`, `Retry-After: 60`, and `automation_rate_limited`.
 - Independent re-review of this final head is pending. No merge or release action is authorized until it passes.
+
+## Independent review — 2026-08-30
+
+Fermat the 2nd independently reviewed exact head `58ce5c09a5994e9ae292a28c25a304342f10a34e` after the final parent validation. Verdict: PASS. The reviewer confirmed the real browser-to-desktop shared global-limiter exercise, Automation 120/minute rejection and `automation_rate_limited`, Retry-After/security-event/no-lockout assertions, report gate, locked restore, Release build 0/0, focused 4/4, regression 41/41, and diff check. No merge blocker remains.
