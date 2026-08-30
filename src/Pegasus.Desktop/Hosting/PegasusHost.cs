@@ -10,6 +10,7 @@ using Pegasus.Desktop.Infrastructure.Caching;
 using Pegasus.Desktop.Infrastructure.Diagnostics;
 using Pegasus.Desktop.Logging;
 using Pegasus.Desktop.Options;
+using Pegasus.Desktop.Services;
 using Windows.Storage;
 
 namespace Pegasus.Desktop.Hosting;
@@ -26,12 +27,22 @@ public static class PegasusHost
     private const int DiagnosticsRetentionCount = 5;
     private const int SnapshotCacheMaximumEntries = 256;
 
-    public static IHost Build(string[]? args = null)
+    public static IHost Build(string[]? args = null, string? sessionId = null)
     {
-        return CreateBuilder(args).Build();
+        return CreateBuilder(args, sessionId).Build();
     }
 
-    public static HostApplicationBuilder CreateBuilder(string[]? args = null)
+    internal static IDiagnosticsWriter CreateDiagnosticsWriter()
+    {
+        return new RollingFileDiagnosticsWriter(
+            GetLocalDataPath(),
+            DiagnosticsMaximumBytes,
+            DiagnosticsRetentionCount);
+    }
+
+    public static HostApplicationBuilder CreateBuilder(
+        string[]? args = null,
+        string? sessionId = null)
     {
         var builder = Host.CreateApplicationBuilder(args ?? []);
         builder.Configuration.Sources.Clear();
@@ -70,11 +81,9 @@ public static class PegasusHost
         builder.Services.AddPegasusApiClient(options => options.BaseAddress = gatewayOptions.BaseAddress);
 
         var localDataPath = GetLocalDataPath();
-        var diagnosticsWriter = new RollingFileDiagnosticsWriter(
-            localDataPath,
-            DiagnosticsMaximumBytes,
-            DiagnosticsRetentionCount);
+        var diagnosticsWriter = CreateDiagnosticsWriter();
         builder.Services.AddSingleton<IDiagnosticsWriter>(diagnosticsWriter);
+        builder.Services.AddSingleton<IActivationRouter, ActivationRouter>();
         builder.Services.AddSingleton<IDesktopCredentialStore>(
             new DpapiCredentialStore(localDataPath));
         builder.Services.AddSingleton(new BoundedSnapshotCache(SnapshotCacheMaximumEntries));
@@ -83,7 +92,7 @@ public static class PegasusHost
         builder.Logging.AddProvider(
             new DiagnosticsLoggerProvider(
                 diagnosticsWriter,
-                Guid.NewGuid().ToString("N")));
+                sessionId ?? Guid.NewGuid().ToString("N")));
 
         return builder;
     }
@@ -98,7 +107,7 @@ public static class PegasusHost
         return content;
     }
 
-    private static string GetLocalDataPath()
+    internal static string GetLocalDataPath()
     {
         try
         {

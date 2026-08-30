@@ -621,6 +621,8 @@ Transient work may retry only within named bounds. Terminal failures must remain
 
 Worker timer and poison-queue callers reconcile persisted intake and external-work failures. For Box custody, an initial failed operation remains terminal and visible for authorised staff to retry; no automatic business retry is permitted. These source-level callers do not prove live Azure queue delivery, deployment, or operator acceptance.
 
+The desktop is single-instance per Windows user and redirects subsequent activations to the running instance.
+
 The numbered forward-recovery procedure is owned by the [runbook](runbook.md), and the OPS-09 four-hour restoration and 15-minute recovery-point targets are owned by [operations](operations.md); both remain unproved (OPS-09 — deferred; gates no release).
 
 ## Deployment boundary
