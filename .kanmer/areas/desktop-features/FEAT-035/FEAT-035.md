@@ -13,9 +13,6 @@ stageEntered:
   review: '2026-08-29T21:34:53.593Z'
   verifying: '2026-08-30T01:10:58.554Z'
   done: '2026-08-30T01:11:02.568Z'
-taken_at: '2026-08-29T20:09:18.169Z'
-branch: task/dsk-07-09-vehicle-endpoints
-worktree: 'C:\Users\PC\Documents\GitHub\pegasus-worktrees\dsk-07-09-vehicle-endpoints'
 labels:
   - desktop-conversion
   - plan-07
@@ -42,7 +39,7 @@ prs:
   - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/51'
 archived: false
 created: '2026-08-24T08:24:13.912Z'
-updated: '2026-08-30T01:11:02.568Z'
+updated: '2026-08-30T01:45:05.152Z'
 ---
 
 ## What
