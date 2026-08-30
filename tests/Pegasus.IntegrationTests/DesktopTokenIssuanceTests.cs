@@ -31,7 +31,7 @@ public sealed class DesktopTokenIssuanceTests
     [Fact]
     public async Task PasswordGrantIssuesClaimsAndRollingRefreshToken()
     {
-        var clock = new MutableTimeProvider(StartUtc);
+        var clock = new AutomationMcpTestSupport.MutableTimeProvider(StartUtc);
         using var baseFactory = new IntakeWebApplicationFactory(clock);
         using var factory = WithDesktopGateway(baseFactory);
         var user = await SeedStaffAsync(factory, enabled: true);
@@ -71,7 +71,7 @@ public sealed class DesktopTokenIssuanceTests
     [Fact]
     public async Task RefreshGrantEnforcesTheEightHourAbsoluteSessionCap()
     {
-        var clock = new MutableTimeProvider(StartUtc);
+        var clock = new AutomationMcpTestSupport.MutableTimeProvider(StartUtc);
         using var baseFactory = new IntakeWebApplicationFactory(clock);
         using var factory = WithDesktopGateway(baseFactory);
         var user = await SeedStaffAsync(factory, enabled: true);
@@ -138,7 +138,7 @@ public sealed class DesktopTokenIssuanceTests
     [Fact]
     public async Task CombinedCompositionKeepsDesktopRefreshRollingAndAutomationAvailable()
     {
-        var clock = new MutableTimeProvider(StartUtc);
+        var clock = new AutomationMcpTestSupport.MutableTimeProvider(StartUtc);
         using var baseFactory = new IntakeWebApplicationFactory(clock);
         using var factory = WithDesktopGateway(baseFactory, automation: true);
         var user = await SeedStaffAsync(factory, enabled: true);
@@ -177,7 +177,7 @@ public sealed class DesktopTokenIssuanceTests
     [Fact]
     public async Task CombinedCompositionRejectsDesktopRefreshAfterSecurityStampChanges()
     {
-        var clock = new MutableTimeProvider(StartUtc);
+        var clock = new AutomationMcpTestSupport.MutableTimeProvider(StartUtc);
         using var baseFactory = new IntakeWebApplicationFactory(clock);
         using var factory = WithDesktopGateway(baseFactory, automation: true);
         var user = await SeedStaffAsync(factory, enabled: true);
@@ -463,12 +463,4 @@ public sealed class DesktopTokenIssuanceTests
         };
     }
 
-    private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
-    {
-        private DateTimeOffset current = utcNow;
-
-        public override DateTimeOffset GetUtcNow() => current;
-
-        public void Advance(TimeSpan amount) => current = current.Add(amount);
-    }
 }

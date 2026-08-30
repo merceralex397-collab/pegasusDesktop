@@ -35,7 +35,10 @@ public static class DesktopSessionExtensions
         }
 
         services.AddMemoryCache();
-        services.AddScoped<DesktopClientRegistry>();
+        if (desktopGatewayEnabled)
+        {
+            services.AddScoped<DesktopClientRegistry>();
+        }
         services.AddOpenIddict()
             .AddCore(core => core
                 .UseEntityFrameworkCore()

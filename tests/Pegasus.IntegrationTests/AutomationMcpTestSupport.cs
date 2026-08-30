@@ -66,6 +66,15 @@ internal static class AutomationMcpTestSupport
             ?? throw new InvalidOperationException("The token response is missing access_token.");
     }
 
+    public sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        private DateTimeOffset current = utcNow;
+
+        public override DateTimeOffset GetUtcNow() => current;
+
+        public void Advance(TimeSpan amount) => current = current.Add(amount);
+    }
+
     public static async Task<HttpResponseMessage> PostMcpAsync(
         HttpClient client,
         string? accessToken,

@@ -221,7 +221,7 @@ public sealed partial class AutomationConnectorAuthorizationTests
     [Fact]
     public async Task CombinedCompositionRejectsConnectorRefreshAfterFourteenDayAbsoluteCap()
     {
-        var clock = new MutableTimeProvider(SeedUtcNow);
+        var clock = new AutomationMcpTestSupport.MutableTimeProvider(SeedUtcNow);
         using var factory = new IntakeWebApplicationFactory(clock);
         using var mcpFactory = WithAutomationMcp(factory, desktopGateway: true);
         using var browser = CreateBrowser(mcpFactory);
@@ -301,15 +301,6 @@ public sealed partial class AutomationConnectorAuthorizationTests
             HandleCookies = false,
             BaseAddress = new Uri("https://localhost")
         });
-
-    private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
-    {
-        private DateTimeOffset current = utcNow;
-
-        public override DateTimeOffset GetUtcNow() => current;
-
-        public void Advance(TimeSpan amount) => current = current.Add(amount);
-    }
 
     private static (string Verifier, string Challenge) Pkce()
     {
