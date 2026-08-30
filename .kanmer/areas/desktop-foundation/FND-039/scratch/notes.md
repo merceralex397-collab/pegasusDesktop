@@ -29,3 +29,5 @@ Independent codex review of commit a8c4abf9 found no actionable regressions in .
 ## Prerequisite merge — 2026-08-30
 
 PR #53 merged to dev as 3454afe1f7b0249ed505a20d47fd392b22c7bb6d after CI run 33289309561 success and independent review PASS. No dev-to-main promotion. FND-039 remains review pending operator certificate trust and clean-machine install/launch/uninstall evidence.
+
+2026-08-30 — Resumed review. Operator-confirmed identity values are applied unchanged: Identity.Name=CollisionEngineers.Pegasus; Identity.Publisher=CN=Collision Engineers; PublisherDisplayName=Collision Engineers. This resolves identity selection only. Remaining acceptance evidence is certificate trust, clean Windows 11 install/launch/uninstall, result log, launch screenshot, post-uninstall package-family and DPAPI cleanup read-back, and no-elevation confirmation. The exact package command and package output were already validated on the branch; no Done/proof claim is made until the operator evidence exists.
