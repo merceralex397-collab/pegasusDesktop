@@ -30,3 +30,9 @@
 ## Review handoff
 
 PR #54 is ready for exact-head CI and independent review of the final head `ec6c080e`. Merge and Kanmer proof remain outstanding.
+
+## Exact-head CI and review completion — 2026-08-30
+
+- PR #54 exact head: `ec6c080e65bd25e853fce85b581afb625394b87f`.
+- Repository-check run `33290083605` is green after rerunning SQL shard 3 job `99200136610` (rerun job id `99202262331`), which had timed out once at the configured 20-minute limit without an assertion failure. The rerun passed, as did SQL shards 1 and 2, SQL coverage, unit, browser, documentation, changes, reference-data, and local-development-scripts; infrastructure was skipped by path rules.
+- Independent review of the final head found no actionable defect. Merge and merged-main proof remain outstanding.

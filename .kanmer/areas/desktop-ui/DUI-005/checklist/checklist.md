@@ -7,4 +7,4 @@
 - [x] Verify focused view-model tests fail for raw enum/GUID/hash display and pass for approved labels; current suite passes.
 - [x] Verify dates display with Europe/London/UTC-fallback semantics; summer and winter assertions pass.
 - [x] Verify no second desktop label table exists; `OperatorText` delegates to the shared owner.
-- [ ] Record the independent desktop review alongside the simplification pass before merge.
+- [x] Record the independent desktop review alongside the simplification pass before merge.

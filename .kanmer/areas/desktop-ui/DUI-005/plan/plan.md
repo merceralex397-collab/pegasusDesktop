@@ -65,3 +65,10 @@ The implementation worktree must record its simplification pass and independent 
 - Independent review found no actionable defect. During the review inspection, `DocumentSemanticRole.FeeNote` was identified as relying on the shared humanising fallback rather than an explicit vocabulary entry.
 - Added the explicit `"feenote" => "Fee note"` entry to `src/Pegasus.Contracts/Vocabulary/OperatorVocabulary.cs`, the existing shared owner. This is a shared-map completeness fix, not a desktop-local vocabulary.
 - Re-ran the focused ViewModel suite: 63 passed, 0 failed, 0 skipped. The branch now contains commits `2ddb878b` and `ec6c080e`; PR #54 points to `ec6c080e`.
+
+## Exact-head CI and review completion — 2026-08-30
+
+- PR #54 remained at exact head `ec6c080e65bd25e853fce85b581afb625394b87f`.
+- Repository-check run `33290083605` completed successfully after rerunning the timed-out SQL shard 3 job `99202262331`. The rerun passed; SQL shards 1 and 2, unit, browser, documentation, changes, reference-data, local-development-scripts, and SQL coverage also passed. Infrastructure was skipped by the workflow path rules.
+- Independent final-head review completed at `ec6c080e` with no actionable findings. The review's FeeNote observation was resolved by the explicit shared-owner mapping already recorded above.
+- All implementation and review checklist work is complete. The next required boundary is merge to `dev`, followed by exact merged-main proof before Kanmer closeout.
