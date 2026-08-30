@@ -46,3 +46,5 @@ Reviewer found the previous shard artifacts predated commit `f85e5236`. Reran th
 After testhost exit, 11 databases created by this post-commit rerun were verified by exact name and dropped; the follow-up exact-name census returned zero. The older `Pegasus_Test_29a0ec4012034d2591bd9570dab5670f` database was deliberately not touched because it predates this run and is protected by the runbook's one-day safety floor.
 
 Reconciled the canonical plan through Kanmer: verification rows checked, current disposition updated from pre-implementation to commit `f85e5236`, focused count corrected to four tests, docs-change statement corrected, and exact-head results recorded. The testing-area DSK-08-03 row and ticket-body checkboxes remain aligned. Fresh review requested for the exact commit and reconciled plan.
+
+Independent fresh review PASSed exact commit f85e5236a27bfbda91278569ef46743776fc3160. Prior findings are resolved; no merge blocker. Reviewer identified one low-severity wording mismatch: MailPersistenceTests has four [Fact] tests, not five. Reconciled plan and post-implementation-report to say four tests; no code change required.
