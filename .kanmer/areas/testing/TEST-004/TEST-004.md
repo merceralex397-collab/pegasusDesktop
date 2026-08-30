@@ -6,6 +6,7 @@ title: >-
   (`net10.0-windows10.0.26100.0`, no UI thread)
 status: done
 area: testing
+order: 410
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
@@ -33,7 +34,7 @@ prs:
   - '40'
 archived: false
 created: '2026-08-24T07:46:12.595Z'
-updated: '2026-08-29T14:17:05.523Z'
+updated: '2026-08-30T04:01:23.667Z'
 ---
 
 ## What

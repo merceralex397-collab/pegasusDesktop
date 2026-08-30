@@ -6,7 +6,7 @@ title: >-
   writes has its runtime-role grant
 status: done
 area: platform-operations
-order: 320
+order: 330
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
@@ -31,7 +31,7 @@ prs:
   - '36'
 archived: false
 created: '2026-08-24T08:16:25.644Z'
-updated: '2026-08-28T20:43:25.454Z'
+updated: '2026-08-30T04:01:23.610Z'
 ---
 
 ## What

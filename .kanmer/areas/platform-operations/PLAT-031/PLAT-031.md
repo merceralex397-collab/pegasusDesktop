@@ -4,6 +4,7 @@ type: ticket
 title: Grant Worker INSERT on CaseReportVersionLedgers exposed by PLAT-018
 status: done
 area: platform-operations
+order: 400
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
@@ -35,7 +36,7 @@ prs:
   - '38'
 archived: false
 created: '2026-08-28T07:45:21.624Z'
-updated: '2026-08-28T21:06:08.804Z'
+updated: '2026-08-30T04:01:23.660Z'
 ---
 
 ## What

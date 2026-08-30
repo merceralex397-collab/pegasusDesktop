@@ -6,7 +6,7 @@ title: >-
   command
 status: done
 area: testing
-order: 340
+order: 350
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
@@ -33,7 +33,7 @@ prs:
   - '31'
 archived: false
 created: '2026-08-24T07:46:12.565Z'
-updated: '2026-08-28T20:43:25.470Z'
+updated: '2026-08-30T04:01:23.627Z'
 ---
 
 ## What

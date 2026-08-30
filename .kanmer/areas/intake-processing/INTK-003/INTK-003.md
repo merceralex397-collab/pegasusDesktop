@@ -4,7 +4,7 @@ type: ticket
 title: 'upstream:INTK-026 · Normalize kilometre case mileage to canonical miles'
 status: done
 area: intake-processing
-order: 210
+order: 220
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
@@ -38,7 +38,7 @@ prs:
   - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/12'
 archived: false
 created: '2026-08-24T11:47:12.089Z'
-updated: '2026-08-28T20:43:25.362Z'
+updated: '2026-08-30T04:01:23.524Z'
 ---
 
 ## What

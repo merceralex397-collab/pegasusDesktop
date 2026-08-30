@@ -6,6 +6,7 @@ title: >-
   status, cache lifetime and provenance
 status: done
 area: desktop-features
+order: 370
 assignee: codex-mcp-client
 profile: feature
 stageEntered:
@@ -39,7 +40,7 @@ prs:
   - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/51'
 archived: false
 created: '2026-08-24T08:24:13.912Z'
-updated: '2026-08-30T01:45:05.152Z'
+updated: '2026-08-30T04:01:23.641Z'
 ---
 
 ## What

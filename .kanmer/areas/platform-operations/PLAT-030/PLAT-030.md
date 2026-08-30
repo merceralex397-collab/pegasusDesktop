@@ -4,6 +4,7 @@ type: ticket
 title: Grant Web UPDATE on ApprovedSentPollOutcomes exposed by PLAT-018
 status: done
 area: platform-operations
+order: 390
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
@@ -30,7 +31,7 @@ prs:
   - '37'
 archived: false
 created: '2026-08-28T05:22:38.415Z'
-updated: '2026-08-28T21:00:59.640Z'
+updated: '2026-08-30T04:01:23.653Z'
 ---
 
 ## What

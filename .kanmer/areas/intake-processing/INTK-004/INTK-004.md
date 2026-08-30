@@ -6,7 +6,7 @@ title: >-
   cleanup
 status: done
 area: intake-processing
-order: 100
+order: 110
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
@@ -38,7 +38,7 @@ prs:
   - 'https://github.com/merceralex397-collab/pegasusDesktop/pull/11'
 archived: false
 created: '2026-08-24T11:47:12.109Z'
-updated: '2026-08-28T20:55:22.762Z'
+updated: '2026-08-30T04:01:23.413Z'
 ---
 
 ## What
