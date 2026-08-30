@@ -5,3 +5,10 @@
 2026-08-29: PR45 merged to dev as ac8f443. Merged origin/dev into task/desktop-host, current head f62407a3, pushed. Locked restore, full Release solution build, targeted Desktop/Infrastructure builds, and pilot build/resource inspection passed with 0 warnings/errors. FND-038 behavior tests and exact UNC feed authority remain.
 
 2026-08-29: Meitner the 2nd independently reviewed exact head f62407a3 and found no new composition issue. Prerequisite-only merge is conditionally defensible to unblock FND-038; completion remains blocked by tests, packaged launch evidence, exact UNC feed authority, checklist, and proof.
+
+## 2026-08-30 board checkpoint
+
+- FND-038 is now Done on merged main and its host/view-model test project is available to downstream validation.
+- FND-032 remains in Review with prerequisite PR #46 merged to dev, but it is not delivery-complete: the required FND-032 host/options/log/rotation/fallback evidence is not represented as this ticket's proof, clean packaged-launch evidence is still absent, and the exact D-003 pilot/production UNC feed host/share is not established by repository authority.
+- No feed endpoint or cloud/deployment value is being guessed, and no cloud write is permitted under the current operator boundary.
+- Next action is to resolve the remaining in-repository test/proof evidence and the authoritative feed-share decision before advancing FND-032; the claim is released while those dependencies are unavailable.
