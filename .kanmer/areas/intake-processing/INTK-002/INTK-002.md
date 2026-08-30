@@ -12,9 +12,6 @@ profile: fix
 stageEntered:
   preparing: '2026-08-24T21:23:32.235Z'
   review: '2026-08-26T19:42:08.024Z'
-taken_at: '2026-08-29T18:51:20.313Z'
-branch: intk-002-recover-dispatched-work
-worktree: 'C:\Users\PC\Documents\GitHub\pegasusDesktop\.worktrees\intk-002'
 labels:
   - upstream-carryover
   - upstream-INTK-003
@@ -31,7 +28,7 @@ refs:
 docs_todo: true
 archived: false
 created: '2026-08-24T11:44:22.475Z'
-updated: '2026-08-29T18:51:20.313Z'
+updated: '2026-08-30T02:24:12.205Z'
 ---
 
 ## What

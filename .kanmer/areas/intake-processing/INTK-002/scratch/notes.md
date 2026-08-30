@@ -11,3 +11,11 @@
 INTK-002 stays in `review` and must not merge or move to verifying until L-02 is genuinely demonstrated or an explicitly scoped owner resolves the Worker composition blocker.
 
 2026-08-28 — Paused in review. PR #23 (head 56fb9b05c9609e08bf14a2e26f71e6d9b8ed5e1f) and its exact-head CI are green, but required L-02 caller-journey proof is still unavailable. The repository launcher fails before starting because its PowerShell-owned process has an empty Process.Path; a direct exact-worktree Functions-host run reaches Worker startup but fails existing composition with missing UserManager<Pegasus.Infrastructure.Persistence.PegasusIdentityUser>. INTK-002 scope explicitly excludes src/Pegasus.Worker, so do not claim or patch that defect here. Smallest next action: resolve the launcher/Worker composition under its owning ticket, then rerun the L-02 caller journey and attach truthful evidence before merge/proof.
+
+## 2026-08-30 review checkpoint
+
+- Live dependency inspection: INTK-002 has no stored `blockedBy` edges; it blocks FEAT-009, FEAT-013, and FEAT-020. Its linked follow-on work includes INTK-004 and the desktop intake/upload/operations slices.
+- PR #23 is open against `dev`, current head `56fb9b05c9609e08bf14a2e26f71e6d9b8ed5e1f`; the recorded repository-check run `33006548735` is green for all applicable jobs, with infrastructure skipped by path.
+- Kanmer review gate is passable; entering Done remains correctly blocked because `proof.md` is absent.
+- Required L-02 local Azurite/Functions-host journey is still unavailable. The existing launcher fails before readiness while resolving an empty process path; a direct stack attempt reaches the Functions worker but fails because `UserManager<PegasusIdentityUser>` is not registered in `EfStaffAccountAdministration`. Both failures are outside INTK-002's owned files and changing them here would expand scope.
+- Next action: resolve the shared local-stack prerequisite in its owning ticket, then rerun the exact L-02 journey and obtain independent delivery review before writing proof and moving this ticket.
