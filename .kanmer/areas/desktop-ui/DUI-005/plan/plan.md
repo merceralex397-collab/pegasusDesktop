@@ -59,3 +59,9 @@ The implementation worktree must record its simplification pass and independent 
 - No new screen, service, interface, cache, compatibility path, or feature flag was introduced. The direct `Pegasus.Contracts` reference is required by the facade; the direct `Pegasus.Core` reference is test-only for enum coverage.
 - The repository-wide grep reports only diagnostic logging `ToString()` calls in `Logging/DiagnosticsLoggerProvider.cs`; the ViewModels/Presentation paths have no `ToString()`, `ToLocalTime()`, or `DateTime.Now`. Those logging calls are not operator display bindings and are outside this ticket's scope.
 - The current XAML has no identifier TextBox or Target/reference column. The companion tests enforce the rule for future bound surfaces without inventing a screen or picker flow that the scaffold does not contain.
+
+## Review correction — 2026-08-30
+
+- Independent review found no actionable defect. During the review inspection, `DocumentSemanticRole.FeeNote` was identified as relying on the shared humanising fallback rather than an explicit vocabulary entry.
+- Added the explicit `"feenote" => "Fee note"` entry to `src/Pegasus.Contracts/Vocabulary/OperatorVocabulary.cs`, the existing shared owner. This is a shared-map completeness fix, not a desktop-local vocabulary.
+- Re-ran the focused ViewModel suite: 63 passed, 0 failed, 0 skipped. The branch now contains commits `2ddb878b` and `ec6c080e`; PR #54 points to `ec6c080e`.

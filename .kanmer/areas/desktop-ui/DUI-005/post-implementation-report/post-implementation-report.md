@@ -3,7 +3,8 @@
 ## Implementation
 
 - Added `Pegasus.Desktop.Presentation.OperatorText` as the desktop presentation boundary.
-- Business vocabulary delegates to the single shared `Pegasus.Contracts.Vocabulary.OperatorVocabulary) owner.
+- Business vocabulary delegates to the single shared `Pegasus.Contracts.Vocabulary.OperatorVocabulary` owner.
+- Added the missing explicit `FeeNote` entry to that shared owner after independent inspection.
 - Added Europe/London formatting with UTC fallback labelling, invariant count formatting, and one-decimal MB formatting.
 - Changed the scaffold counter's XAML-facing property from `int` to formatted `string`.
 - Added reflection and theory coverage for mapped enums, raw values, identifier entry, Target/reference identifiers, date/time, numeric formatting, and banned operator wording.
@@ -15,9 +16,10 @@
 - `dotnet restore ./Pegasus.slnx --locked-mode`: passed; all projects up to date.
 - `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false --nologo`: passed; 0 warnings, 0 errors.
 - `pwsh .codex/skills/winui-dev-workflow/BuildAndRun.ps1 src/Pegasus.Desktop/Pegasus.Desktop.csproj -SkipRun`: passed; Debug x64 WinUI build, 0 warnings, 0 errors.
-- `dotnet test tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-restore --logger "console;verbosity=minimal"`: passed; 63 passed, 0 failed, 0 skipped.
+- `dotnet test tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-restore --logger "console;verbosity=minimal"`: passed; 63 passed, 0 failed, 0 skipped, including after the FeeNote fix.
 - `rg -n "\\.ToString\\(\\)|ToLocalTime\\(\\)|DateTime\\.Now" src/Pegasus.Desktop --glob "!**/obj/**"`: only three diagnostic serialization calls in `Logging/DiagnosticsLoggerProvider.cs`; no display-path matches in ViewModels/Presentation.
 - `git diff --stat origin/dev -- src/Pegasus.Worker`: empty.
+- Independent `codex review --commit 2ddb878b`: no actionable regressions identified. The follow-up FeeNote fix is a one-line explicit shared-map correction and is included in the pushed PR head `ec6c080e`.
 
 ## Acceptance disposition
 
@@ -27,4 +29,4 @@
 
 ## Review handoff
 
-The branch is ready for independent `pegasus-desktop-reviewer` review. Merge and Kanmer proof remain outstanding.
+PR #54 is ready for exact-head CI and independent review of the final head `ec6c080e`. Merge and Kanmer proof remain outstanding.
