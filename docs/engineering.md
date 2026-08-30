@@ -34,12 +34,14 @@ Authority order is defined once in the
   promotion and does not replace that procedure. GitHub protection and
   rulesets are intentionally out of scope on subscription grounds, so the
   main-push CI check is detective rather than a server-side prevention.
-- Release tags are applied on `main` only, after the exact-SHA promotion, and
+- Release tags are applied on `main` only, after the exact-SHA promotion and
+  after its read-back confirms that `origin/main` equals the promoted SHA. Tags
   are never moved or deleted once pushed: `gateway/r<N>` uses the release
   number recorded in `docs/operations.md` § Production environment, while
   `desktop/v<M.m.b>` equals the MSIX package version. CI builds an unsigned
-  MSIX on every PR and builds and signs on `main` tags only; publishing to the
-  production feed remains a runbook-controlled step.
+  MSIX on every PR and builds and signs on `main` tags only; because private
+  repositories bill Windows runner minutes at 2×, tag lanes stay narrow.
+  Publishing to the production feed remains a runbook-controlled step.
 - One transition only: after DELIV-002's PR reaches `dev` with green CI,
   DELIV-003 may merge `origin/main` into its own branch cut from `origin/dev`
   and deliver it through the normal reviewed PR to `dev`. It must not update
