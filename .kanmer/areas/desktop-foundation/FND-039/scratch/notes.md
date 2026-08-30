@@ -21,3 +21,7 @@
 - Exact self-contained package command passed and produced CollisionEngineers.Pegasus_0.1.0.0_x64.msix, 94,569,334 bytes; manifest/resources.pri present; manifest identity/publisher/version/architecture and signer match.
 - Get-AuthenticodeSignature is UnknownError only because local cert trust is not installed. No cert-store write performed.
 - Commit a8c4abf9 pushed to origin/task/desktop-dev-msix. Remaining gates: trust, clean Windows 11 install/launch/uninstall, result log/screenshot/cleanup/no-elevation evidence, independent review, merge, proof, closeout.
+
+## Independent review — 2026-08-30
+
+Independent codex review of commit a8c4abf9 found no actionable regressions in .gitignore/winapp.yaml; restore and self-contained runtime pin are technically sufficient. Review did not clear operator trust, clean Windows install/uninstall, evidence, CI, merge, proof, or closeout.
