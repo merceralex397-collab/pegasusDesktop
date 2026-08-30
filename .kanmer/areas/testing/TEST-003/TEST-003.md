@@ -4,7 +4,7 @@ type: ticket
 title: >-
   DSK-08-03 · Extend the `Pegasus.IntegrationTests` shards with `/api/v1`
   persistence paths; keep `-VerifyPartition` green
-status: verifying
+status: done
 area: testing
 assignee: codex-mcp-client
 profile: fix
@@ -12,6 +12,7 @@ stageEntered:
   preparing: '2026-08-24T21:34:13.245Z'
   review: '2026-08-30T07:38:27.148Z'
   verifying: '2026-08-30T10:19:44.101Z'
+  done: '2026-08-30T10:44:36.784Z'
 taken_at: '2026-08-30T06:45:01.262Z'
 branch: task/dsk-08-03-integration-shard-persistence
 worktree: >-
@@ -30,11 +31,12 @@ docs_todo: true
 commits:
   - f85e5236a27bfbda91278569ef46743776fc3160
   - 4547ecce0f5898fd58f717b3cc9576d6dbfcf39c
+  - 8ccbf8dab15d01bed8e58bf509a4a1c27851bdc2
 prs:
   - '56'
 archived: false
 created: '2026-08-24T07:46:12.580Z'
-updated: '2026-08-30T10:19:44.101Z'
+updated: '2026-08-30T10:45:06.632Z'
 ---
 
 ## What
@@ -115,4 +117,4 @@ Tiers 4 and 5 — LocalDB persistence, and Web/API caller. It obliges committed-
 
 ## Outcome
 
-_Filled at closeout._
+PR #56 (https://github.com/merceralex397-collab/pegasusDesktop/pull/56) merged on 2026-08-30 at `8ccbf8dab15d01bed8e58bf509a4a1c27851bdc2` and was promoted to both `dev` and `main`. No follow-up ticket was created; merged-main verification and Kanmer proof are recorded in `proof.md`.
