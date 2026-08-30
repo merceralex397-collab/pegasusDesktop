@@ -336,3 +336,9 @@ Live Kanmer recheck before implementation: [[GWY-012]] (the board's DSK-03-12 ma
 ## Independent review dispositions — 2026-08-30
 
 The independent reviewer identified two concrete contract issues and no other merge blocker: duplicate 200 response metadata on `GET /api/v1/mail` caused the generated snapshot to advertise `DeletedMailPageResponse` for the retained list, and conditional GET routes did not advertise 304. Disposition: removed the Deleted Items query alias from the retained-list route so `/mail` has one `MailPageResponse` 200 schema; retained Deleted Items is the explicit `/mail/deleted` route. Added 304 metadata to retained list, Deleted Items, preview and detail routes. Rebuilt Web, regenerated OpenAPI, and reran focused API (62/62), parity (1/1), and MailWorkspace (39/39) checks successfully. The reviewer also confirmed the explicit GWY-005 generated-client ownership handoff; no duplicate client was created.
+
+## Independent review correction — 2026-08-30
+
+The final independent review identified one P1 contract defect: the committed OpenAPI snapshot was stale after the read projection gained the current association versions. Regenerated openapi/pegasus-v1.json with pwsh ./eng/api/Export-OpenApiDocument.ps1. The read contract now exposes IntakeVersion and the current associated CaseVersion on MailSummaryResponse, sourced from the existing receipt and case-workflow records; no provider or credential data is added. Added contract assertions for both values. The reviewer rechecked the corrected diff and found no remaining design or behavior issue.
+
+Final correction validation: full API contract suite 62/62; MailWorkspaceWebTests 39/39; DesktopGatewayMailTests 1/1; full Release solution build 0 warnings/0 errors; broad non-corpus/non-browser integration suite 974 passed, 2 skipped, 0 failed, 976 total in 12m45s. The guarded diff command remained empty.
