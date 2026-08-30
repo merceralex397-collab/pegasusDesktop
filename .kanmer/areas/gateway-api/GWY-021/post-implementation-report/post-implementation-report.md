@@ -51,3 +51,10 @@ The final solution build, independent review of the reconciled exact head, and e
 - GitHub Actions run `33320252751` matched PR #59 head `6db7511d9648e63a328af39e1c00348c8fa5d33e` and completed **successfully**.
 - Passed jobs: changes, documentation, reference-data, local-development-scripts, browser, unit, all three SQL integration shards, and SQL integration coverage. Infrastructure was correctly skipped.
 - The corrected branch now has independent review PASS, local focused validation, and exact-head CI. Merge to `dev` is authorized under the recorded review and CI conditions; no cloud or deployment write is involved.
+
+## Exact-main CI rerun — 2026-08-30
+
+- Main push run `33320863853` matched exact main SHA `0e7fa4237e151ac7fbbfea4b5b0c16c0ee7b170d`.
+- The initial run was cancelled only in `sql-integration (2)` at its 20-minute job limit; no test failure was reported. The authorized failed/cancelled-job rerun completed `sql-integration (2)` successfully (job `99285184607`, 14m05s).
+- The other main-run jobs were successful: documentation, local-development-scripts, changes, reference-data, unit, browser, SQL shards 1 and 3, and SQL integration coverage. Infrastructure was correctly skipped.
+- This is complete exact-SHA main CI evidence. No cloud, deployment, upstream, credential, or external write was performed.

@@ -9,3 +9,5 @@
 2026-08-30: Reviewer found missing dated simplification evidence, stale report/exact-head CI, and branch behind origin/dev. Reconciled own branch with origin/dev in merge 6db7511d; resolved docs/current-architecture.md by retaining bearer-auth and token-throttle statements. Re-ran locked restore, DesktopApiAuthenticationTests 7/7, and architecture policy guard 1/1. Appended four-lens simplification and exact-head validation to plan/PIR. Awaiting review of reconciled head, final solution build, and exact-head PR CI.
 
 2026-08-30 — GWY-021 exact-head CI run `33320252751` passed at `6db7511d9648e63a328af39e1c00348c8fa5d33e`; all applicable jobs green, infrastructure skipped. Proceeding to PR #59 merge, exact-SHA main promotion, main CI, proof, and Kanmer closeout.
+
+2026-08-30: Main exact-SHA CI run 33320863853 initially cancelled only in SQL shard 2 at the 20-minute timeout. Authorized failed-job rerun completed job 99285184607 successfully; all other applicable main jobs were successful and infrastructure skipped. Ready for merged-main proof and closeout.
