@@ -284,3 +284,9 @@ The first `gateway/r<N>` tag is not present locally or on `origin`, and `docs/op
 - Reviewer: Heisenberg the 2nd (independent of implementation).
 - PR #52 exact head: `5d8be6841043c095b5fc7a2bc27127dbfa47a2e6`.
 - Result: PASS; no concrete findings. The reviewer confirmed the exact-head simplification pass covers reuse, simplification, efficiency, altitude, and disposition; the one-file docs scope, exact-head checks, and honest first-tag handback are correct.
+
+## Merge — 2026-08-30
+
+- PR #52 merged into `dev` at merge commit `f7708625d5e960f0b6d27928393a96ae9ecf0ab9`; the exact reviewed head was `5d8be6841043c095b5fc7a2bc27127dbfa47a2e6`.
+- The PR checks were green for the applicable documentation, changes, local-development-scripts, and reference-data lanes; code, SQL, and browser lanes were correctly skipped for the docs-only diff.
+- GitHub could not delete the local task branch because its owned worktree is still registered; cleanup remains after final evidence capture.
