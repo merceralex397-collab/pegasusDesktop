@@ -25,3 +25,7 @@
 ## Independent review — 2026-08-30
 
 Independent codex review of commit a8c4abf9 found no actionable regressions in .gitignore/winapp.yaml; restore and self-contained runtime pin are technically sufficient. Review did not clear operator trust, clean Windows install/uninstall, evidence, CI, merge, proof, or closeout.
+
+## Prerequisite merge — 2026-08-30
+
+PR #53 merged to dev as 3454afe1f7b0249ed505a20d47fd392b22c7bb6d after CI run 33289309561 success and independent review PASS. No dev-to-main promotion. FND-039 remains review pending operator certificate trust and clean-machine install/launch/uninstall evidence.

@@ -365,3 +365,7 @@ This repair clears the missing local runtime-package configuration, not the oper
 ## Independent review — 2026-08-30
 
 An independent `codex review --commit a8c4abf9` session reviewed the changed `.gitignore` and `winapp.yaml` files without modifying the repository. The review found no actionable regressions: the WinApp CLI configuration restores successfully and pins the Windows App SDK runtime required by self-contained MSIX packaging. The reviewer did not treat the package as fully accepted; certificate trust, clean Windows 11 install/launch/uninstall, result log, screenshot, cleanup readback, no-elevation confirmation, PR CI, merge, proof, and Kanmer closeout remain separate requirements.
+
+## Prerequisite merge — 2026-08-30
+
+PR #53 (`a8c4abf97be7dbcbd0be51dd662322c7c7a90d3f`) merged into `dev` as `3454afe1f7b0249ed505a20d47fd392b22c7bb6d` after exact-head CI run `33289309561` completed successfully and the independent review found no actionable regressions. This merge carries only the pinned local WinApp runtime configuration and generated-staging ignore rule. It is a prerequisite merge, not FND-039 delivery acceptance; the operator certificate-trust and clean-machine install/launch/uninstall evidence remain required before proof and Done. No `dev` to `main` promotion was performed.
