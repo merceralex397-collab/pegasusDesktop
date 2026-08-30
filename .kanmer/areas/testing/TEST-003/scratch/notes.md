@@ -15,3 +15,22 @@ Validation:
 - Final LocalDB census found eight exact disposable databases created during this rerun, with no testhost process active. They were explicitly verified by exact name and creation time, dropped through the normal ALTER SINGLE_USER/DROP path, and a subsequent census returned zero of those names; no `Pegasus_Test_*.bak` file was present.
 
 The dated simplification pass is recorded in the plan. No production code, shard script, CI matrix, docs, Azure resource, or corpus file changed. Next: create the post-implementation report, pass the gated Review move, obtain independent review, open the PR to `dev`, and merge only after exact-head CI is green.
+
+2026-08-30 — Review remediation checkpoint.
+
+Independent review of commit `3c596803` failed on missing concurrency coverage, missing link/unlink API ActionHistory assertions, unticked ticket evidence, stale area-plan row, and lack of independent reproduction. Addressed all findings in commit `f85e5236`:
+- Added API ActionHistory assertions for `mail_case_link` and `mail_case_unlink`.
+- Added `ConcurrentLinkCommandsCommitExactlyOneMutationAndReturnConflictToLoser`, sending two callers concurrently and asserting one 200, one 409, one mutation, and one version increment. A fully-valid simultaneous race was also tried; it exposed an existing provider transient/deadlock returned as generic 400, so it is recorded as an honest out-of-scope production concern rather than claimed as a passing 409.
+- Updated the existing `docs/desktop/08-testing/README.md` DSK-08-03 row.
+- Checked all eight ticket acceptance/verification rows through Kanmer.
+
+Final validation after remediation:
+- Release build: 0 warnings/errors.
+- Focused four-test filter: 4/4 passed.
+- Shard 1: 330/330 passed.
+- Shard 2: 323 passed, 1 pre-existing skip, 324 total.
+- Shard 3: 325 passed, 1 pre-existing skip, 326 total.
+- VerifyPartition: all 980 enumerated tests exactly once.
+- Exact cleanup: 9 exact disposable databases (8 final-rerun plus 1 exploratory-run residue) dropped after testhost exit; follow-up exact-name census returned zero and no backup file was present.
+
+Fresh post-implementation report version `db1fe6a0f80e17f8` now records commit `f85e5236` and the concurrency disposition. Ready for fresh independent review.
