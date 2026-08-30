@@ -13,6 +13,7 @@ namespace Pegasus.IntegrationTests;
 /// only from synthetic geometry. Runs only where the corpus exists; the
 /// per-file rows land under artifacts/evaluation for inspection.
 /// </summary>
+[Trait("Category", "Corpus")]
 public sealed class QdosExtractionCoverageTests(ITestOutputHelper output)
 {
     private static readonly DateTimeOffset ReceivedAtUtc =
