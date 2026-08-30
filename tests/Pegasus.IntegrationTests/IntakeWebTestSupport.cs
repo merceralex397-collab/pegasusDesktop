@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -15,11 +17,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MimeKit;
+using OpenIddict.Abstractions;
+using OpenIddict.Validation.AspNetCore;
 using Pegasus.Core.Identity;
 using Pegasus.Core.ImageIntake;
 using Pegasus.Core.Intake;
 using Pegasus.Infrastructure.Persistence;
 using Pegasus.Web.Authentication;
+using Pegasus.Web.Desktop;
 
 namespace Pegasus.IntegrationTests;
 
@@ -155,7 +160,13 @@ public sealed class IntakeWebApplicationFactory : WebApplicationFactory<Program>
                 {
                     options.DefaultAuthenticateScheme = "IntegrationTest";
                     options.DefaultChallengeScheme = "IntegrationTest";
-                }).AddScheme<AuthenticationSchemeOptions, IntegrationTestAuthenticationHandler>("IntegrationTest", _ => { });
+                })
+                .AddScheme<AuthenticationSchemeOptions, IntegrationTestAuthenticationHandler>(
+                    "IntegrationTest",
+                    _ => { });
+                services.AddScoped<Microsoft.AspNetCore.Authentication.AuthenticationService>();
+                services.RemoveAll<IAuthenticationService>();
+                services.AddScoped<IAuthenticationService, IntegrationTestAuthenticationService>();
             }
             services.RemoveAll<TimeProvider>();
             services.AddSingleton(timeProvider);
@@ -240,14 +251,23 @@ public sealed class IntakeWebApplicationFactory : WebApplicationFactory<Program>
 internal sealed class IntegrationTestAuthenticationHandler(
     Microsoft.Extensions.Options.IOptionsMonitor<AuthenticationSchemeOptions> options,
     Microsoft.Extensions.Logging.ILoggerFactory logger,
-    System.Text.Encodings.Web.UrlEncoder encoder)
+    System.Text.Encodings.Web.UrlEncoder encoder,
+    UserManager<PegasusIdentityUser> userManager,
+    TimeProvider timeProvider)
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
-    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         if (Request.Headers.ContainsKey("X-Test-Anonymous"))
         {
-            return Task.FromResult(AuthenticateResult.NoResult());
+            return AuthenticateResult.NoResult();
+        }
+
+        var user = await userManager.FindByIdAsync(
+            DevelopmentOfflineIdentity.AdministratorId.ToString("D"));
+        if (user is null)
+        {
+            return AuthenticateResult.NoResult();
         }
 
         var claims = new List<Claim>
@@ -256,7 +276,15 @@ internal sealed class IntegrationTestAuthenticationHandler(
                 ClaimTypes.NameIdentifier,
                 DevelopmentOfflineIdentity.AdministratorId.ToString("D")),
             new Claim(ClaimTypes.Name, "integration-user"),
-            new Claim("display_name", "Integration User")
+            new Claim("display_name", "Integration User"),
+            new Claim(OpenIddictConstants.Claims.Subject, user.Id.ToString("D")),
+            new Claim(
+                DesktopSession.OriginalIssueClaim,
+                timeProvider.GetUtcNow().ToUnixTimeSeconds().ToString(
+                    System.Globalization.CultureInfo.InvariantCulture)),
+            new Claim(
+                DesktopSession.SecurityStampClaim,
+                user.SecurityStamp ?? string.Empty)
         };
         if (Request.Headers.TryGetValue("X-Test-Roles", out var requestedRoles))
         {
@@ -265,14 +293,18 @@ internal sealed class IntegrationTestAuthenticationHandler(
             foreach (var role in requestedRoles.ToString().Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
+                claims.Add(new Claim(OpenIddictConstants.Claims.Role, role));
             }
         }
         else if (!Request.Headers.ContainsKey("X-Test-Roleless"))
         {
             claims.Add(new Claim(ClaimTypes.Role, "Administrator"));
+            claims.Add(new Claim(OpenIddictConstants.Claims.Role, "Administrator"));
         }
         var identity = new ClaimsIdentity(claims, Scheme.Name);
-        return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name)));
+        identity.SetScopes([DesktopSession.Scope]);
+        return AuthenticateResult.Success(
+            new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name));
     }
 
     protected override Task HandleChallengeAsync(AuthenticationProperties properties)
@@ -280,6 +312,46 @@ internal sealed class IntegrationTestAuthenticationHandler(
         Response.Redirect("/Account/SignIn?ReturnUrl=" + Uri.EscapeDataString(Request.PathBase + Request.Path + Request.QueryString));
         return Task.CompletedTask;
     }
+}
+
+internal sealed class IntegrationTestAuthenticationService(
+    Microsoft.AspNetCore.Authentication.AuthenticationService inner)
+    : IAuthenticationService
+{
+    public Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string? scheme) =>
+        inner.AuthenticateAsync(
+            context,
+            string.Equals(
+                scheme,
+                OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme,
+                StringComparison.Ordinal)
+                ? "IntegrationTest"
+                : scheme);
+
+    public Task ChallengeAsync(
+        HttpContext context,
+        string? scheme,
+        AuthenticationProperties? properties) =>
+        inner.ChallengeAsync(context, scheme, properties);
+
+    public Task ForbidAsync(
+        HttpContext context,
+        string? scheme,
+        AuthenticationProperties? properties) =>
+        inner.ForbidAsync(context, scheme, properties);
+
+    public Task SignInAsync(
+        HttpContext context,
+        string? scheme,
+        ClaimsPrincipal principal,
+        AuthenticationProperties? properties) =>
+        inner.SignInAsync(context, scheme, principal, properties);
+
+    public Task SignOutAsync(
+        HttpContext context,
+        string? scheme,
+        AuthenticationProperties? properties) =>
+        inner.SignOutAsync(context, scheme, properties);
 }
 
 internal static partial class IntakeWebDriver
