@@ -25,6 +25,7 @@ using Microsoft.EntityFrameworkCore;
 using Pegasus.Core.Identity;
 using Pegasus.Web.AiWork;
 using Pegasus.Web.Api;
+using Pegasus.Web.Desktop;
 using Pegasus.Web.Mcp;
 using Pegasus.Web.Pages.Uploads;
 using Azure.Core;
@@ -36,7 +37,6 @@ using Pegasus.Infrastructure.Custody;
 using Pegasus.Infrastructure.Email;
 using Microsoft.ApplicationInsights.Extensibility;
 
-const string OriginalIssueClaim = "pegasus:original-issued-at";
 const string DevelopmentOfflineProfile = "DevelopmentOffline";
 const string DevelopmentOfflineAuthenticationScheme = "DevelopmentOffline";
 const string AuthenticationRoutingScheme = "Pegasus";
@@ -241,9 +241,9 @@ if ((localDocumentCustodyConfigured || productionProfile)
 }
 
 
-// The Automation MCP ingress is composition-gated off by default: when the
-// flag is absent nothing below registers and no /mcp or /connect/token route
-// exists. An explicitly configured deployment may enable it in Production.
+// The Automation MCP ingress is composition-gated off by default. When both
+// feature flags are absent, no /mcp or /connect/token route exists. An
+// explicitly configured deployment may enable either first-party surface.
 var automationMcpOptions = AutomationMcpOptions.TryCreate(builder.Configuration);
 var desktopGatewayOptions = DesktopGatewayOptions.TryCreate(builder.Configuration);
 
@@ -289,7 +289,10 @@ builder.Services.AddRateLimiter(options =>
                 || rejectedPath.Equals(
                     AutomationMcp.TokenEndpointPath,
                     StringComparison.OrdinalIgnoreCase)
-                ? "automation_rate_limited"
+                ? context.HttpContext.Items.ContainsKey(
+                    DesktopSession.PasswordGrantRateLimitMarker)
+                    ? "sign_in_rate_limited"
+                    : "automation_rate_limited"
                 : "authentication_rate_limited";
         return new ValueTask(AppendRateLimitedSecurityEventAsync(
             context.HttpContext,
@@ -309,15 +312,24 @@ builder.Services.AddRateLimiter(options =>
             }));
     options.AddPolicy(
         AutomationMcp.RateLimitPolicy,
-        context => RateLimitPartition.GetFixedWindowLimiter(
-            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                AutoReplenishment = true,
-                PermitLimit = AutomationMcp.RequestsPerClientPerMinute,
-                QueueLimit = 0,
-                Window = TimeSpan.FromMinutes(1)
-            }));
+        context =>
+        {
+            var desktopPasswordGrant = context.Items.ContainsKey(
+                DesktopSession.PasswordGrantRateLimitMarker);
+            var partition = (context.Connection.RemoteIpAddress?.ToString() ?? "unknown")
+                + (desktopPasswordGrant ? ":desktop-sign-in" : ":automation");
+            return RateLimitPartition.GetFixedWindowLimiter(
+                partition,
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    AutoReplenishment = true,
+                    PermitLimit = desktopPasswordGrant
+                        ? StaffSessionPolicy.SignInAttemptsPerClientPerMinute
+                        : AutomationMcp.RequestsPerClientPerMinute,
+                    QueueLimit = 0,
+                    Window = TimeSpan.FromMinutes(1)
+                });
+        });
 });
 builder.Services.AddSingleton(_ => new FixedWindowRateLimiter(
     new FixedWindowRateLimiterOptions
@@ -355,11 +367,11 @@ builder.Services.Configure<SecurityStampValidatorOptions>(options =>
     options.ValidationInterval = TimeSpan.Zero;
     options.OnRefreshingPrincipal = context =>
     {
-        var originalIssue = context.CurrentPrincipal?.FindFirst(OriginalIssueClaim);
+        var originalIssue = context.CurrentPrincipal?.FindFirst(DesktopSession.OriginalIssueClaim);
         var identity = context.NewPrincipal?.Identity as System.Security.Claims.ClaimsIdentity;
         if (originalIssue is not null
             && identity is not null
-            && !identity.HasClaim(claim => claim.Type == OriginalIssueClaim))
+            && !identity.HasClaim(claim => claim.Type == DesktopSession.OriginalIssueClaim))
         {
             identity.AddClaim(originalIssue);
         }
@@ -385,11 +397,11 @@ builder.Services.ConfigureApplicationCookie(options =>
             ?? throw new InvalidOperationException("A staff sign-in requires a principal.");
         var identity = principal.Identity as System.Security.Claims.ClaimsIdentity
             ?? throw new InvalidOperationException("A staff sign-in requires a claims identity.");
-        if (!identity.HasClaim(claim => claim.Type == OriginalIssueClaim))
+        if (!identity.HasClaim(claim => claim.Type == DesktopSession.OriginalIssueClaim))
         {
             var clock = context.HttpContext.RequestServices.GetRequiredService<TimeProvider>();
             identity.AddClaim(new(
-                OriginalIssueClaim,
+                DesktopSession.OriginalIssueClaim,
                 clock.GetUtcNow().ToUnixTimeSeconds().ToString(
                     System.Globalization.CultureInfo.InvariantCulture)));
         }
@@ -422,7 +434,7 @@ builder.Services.ConfigureApplicationCookie(options =>
             .GetRequiredService<TimeProvider>()
             .GetUtcNow()
             .ToUnixTimeSeconds();
-        var issuedValue = context.Principal.FindFirst(OriginalIssueClaim)?.Value;
+        var issuedValue = context.Principal.FindFirst(DesktopSession.OriginalIssueClaim)?.Value;
         if (!long.TryParse(
                 issuedValue,
                 System.Globalization.NumberStyles.None,
@@ -496,6 +508,34 @@ static Task AppendAutomationDeniedSecurityEventAsync(
             context.TraceIdentifier,
             tokenEndpoint ? "automation_token_rejected" : "automation_access_denied"),
         CancellationToken.None);
+}
+
+static async Task<bool> MarkDesktopPasswordGrantAsync(HttpContext context)
+{
+    if (!HttpMethods.IsPost(context.Request.Method)
+        || !context.Request.Path.Equals(
+            DesktopSession.TokenEndpointPath,
+            StringComparison.OrdinalIgnoreCase)
+        || !context.Request.HasFormContentType)
+    {
+        return false;
+    }
+
+    var form = await context.Request.ReadFormAsync(context.RequestAborted);
+    if (!string.Equals(
+            form["client_id"].ToString(),
+            DesktopSession.ClientId,
+            StringComparison.Ordinal)
+        || !string.Equals(
+            form["grant_type"].ToString(),
+            "password",
+            StringComparison.Ordinal))
+    {
+        return false;
+    }
+
+    context.Items[DesktopSession.PasswordGrantRateLimitMarker] = true;
+    return true;
 }
 
 static Task AppendRateLimitedSecurityEventAsync(
@@ -624,6 +664,14 @@ builder.Services.AddScoped<IGroupedIntakeSubmission>(serviceProvider =>
 // view in every profile; the ingress itself stays behind the composition gate.
 builder.Services.AddScoped<IAutomationActivityQueries, EfAutomationActivityStore>();
 builder.Services.AddScoped<IListAutomationActivity, ListAutomationActivity>();
+if (automationMcpOptions is not null || desktopGatewayOptions is not null)
+{
+    builder.Services.AddPegasusOpenIddict(
+        automationMcpOptions,
+        desktopGatewayOptions is not null,
+        builder.Configuration,
+        builder.Environment);
+}
 if (automationMcpOptions is not null)
 {
     builder.Services.AddPegasusAutomationMcp(automationMcpOptions, productVersion);
@@ -817,8 +865,10 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.Use(async (context, next) =>
 {
-    if (HttpMethods.IsPost(context.Request.Method)
-        && context.Request.Path.Equals("/Account/SignIn", StringComparison.OrdinalIgnoreCase))
+    var isStaffSignIn = HttpMethods.IsPost(context.Request.Method)
+        && context.Request.Path.Equals("/Account/SignIn", StringComparison.OrdinalIgnoreCase);
+    var isDesktopPasswordGrant = await MarkDesktopPasswordGrantAsync(context);
+    if (isStaffSignIn || isDesktopPasswordGrant)
     {
         var limiter = context.RequestServices.GetRequiredService<FixedWindowRateLimiter>();
         using var lease = await limiter.AcquireAsync(1, context.RequestAborted);
@@ -838,7 +888,7 @@ app.Use(async (context, next) =>
 });
 
 app.UseRateLimiter();
-if (automationMcpOptions is not null)
+if (automationMcpOptions is not null || desktopGatewayOptions is not null)
 {
     app.Use(async (context, next) =>
     {
@@ -863,9 +913,18 @@ if (automationMcpOptions is not null)
             // Seed/reconcile the single Automation client registration before
             // OpenIddict validates the caller (token) or the connector's
             // authorization request against it.
-            await context.RequestServices
-                .GetRequiredService<AutomationClientRegistry>()
-                .EnsureRegisteredAsync(context.RequestAborted);
+            if (automationMcpOptions is not null)
+            {
+                await context.RequestServices
+                    .GetRequiredService<AutomationClientRegistry>()
+                    .EnsureRegisteredAsync(context.RequestAborted);
+            }
+            if (desktopGatewayOptions is not null)
+            {
+                await context.RequestServices
+                    .GetRequiredService<DesktopClientRegistry>()
+                    .EnsureRegisteredAsync(context.RequestAborted);
+            }
         }
 
         await next(context);
@@ -876,9 +935,10 @@ if (automationMcpOptions is not null)
             return;
         }
 
-        // Transport-level denials on the automation surface are material and
-        // become attributable security events. Tool-level denials (scope,
-        // kill switch) are written by the actor resolver instead.
+        // Transport-level denials on the Automation surface are material and
+        // become attributable security events. Desktop writes its own
+        // grant-specific events; tool-level denials (scope, kill switch) are
+        // written by the actor resolver instead.
         var status = context.Response.StatusCode;
         var isDenied = isTokenEndpoint
             ? status is StatusCodes.Status400BadRequest
@@ -886,7 +946,12 @@ if (automationMcpOptions is not null)
                 or StatusCodes.Status403Forbidden
             : status is StatusCodes.Status401Unauthorized
                 or StatusCodes.Status403Forbidden;
-        if (isDenied)
+        var isDesktopToken = isTokenEndpoint
+            && string.Equals(
+                context.GetOpenIddictServerRequest()?.ClientId,
+                DesktopSession.ClientId,
+                StringComparison.Ordinal);
+        if (isDenied && !isDesktopToken)
         {
             await AppendAutomationDeniedSecurityEventAsync(context, isTokenEndpoint);
         }
@@ -979,6 +1044,10 @@ app.MapGet("/diagnostics/version", () => Results.Ok(new
 })).AllowAnonymous();
 app.MapRazorPages()
    .WithStaticAssets();
+if (automationMcpOptions is not null || desktopGatewayOptions is not null)
+{
+    app.MapPegasusOpenIddictTokenEndpoint();
+}
 if (automationMcpOptions is not null)
 {
     app.MapPegasusAutomationMcp();

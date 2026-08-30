@@ -63,6 +63,8 @@ internal static class AutomationTokenEndpoint
                 "The Automation client registration is disabled.");
         }
 
+        var nowSeconds = timeProvider.GetUtcNow().ToUnixTimeSeconds();
+        var originalIssueSeconds = nowSeconds;
         IEnumerable<string> scopes;
         if (connectorGrant)
         {
@@ -77,6 +79,19 @@ internal static class AutomationTokenEndpoint
                 return Forbid(Errors.InvalidGrant, "The authorization is no longer valid.");
             }
 
+            if (!long.TryParse(
+                    principal.GetClaim(AutomationMcp.OriginalIssueClaim),
+                    System.Globalization.NumberStyles.None,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out originalIssueSeconds)
+                || originalIssueSeconds < 0
+                || originalIssueSeconds > nowSeconds
+                || nowSeconds - originalIssueSeconds
+                    >= (long)AutomationMcp.RefreshTokenLifetime.TotalSeconds)
+            {
+                return Forbid(Errors.InvalidGrant, "The refresh token is no longer valid.");
+            }
+
             scopes = principal.GetScopes();
         }
         else
@@ -85,7 +100,11 @@ internal static class AutomationTokenEndpoint
         }
 
         return Results.SignIn(
-            AutomationPrincipal.Create(clientId, scopes),
+            AutomationPrincipal.Create(
+                clientId,
+                scopes,
+                originalIssueSeconds,
+                nowSeconds),
             properties: null,
             OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
@@ -109,16 +128,30 @@ internal static class AutomationTokenEndpoint
 /// </summary>
 internal static class AutomationPrincipal
 {
-    public static ClaimsPrincipal Create(string clientId, IEnumerable<string> scopes)
+    public static ClaimsPrincipal Create(
+        string clientId,
+        IEnumerable<string> scopes,
+        long originalIssueSeconds,
+        long nowSeconds)
     {
         var identity = new ClaimsIdentity(
             TokenValidationParameters.DefaultAuthenticationType,
             Claims.Name,
             Claims.Role);
         identity.SetClaim(Claims.Subject, clientId);
+        identity.SetClaim(
+            AutomationMcp.OriginalIssueClaim,
+            originalIssueSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
         identity.SetScopes(scopes);
         identity.SetResources(AutomationMcp.Audience);
-        identity.SetDestinations(_ => [Destinations.AccessToken]);
-        return new ClaimsPrincipal(identity);
+        identity.SetDestinations(claim => claim.Type == AutomationMcp.OriginalIssueClaim
+            ? []
+            : [Destinations.AccessToken]);
+        var remainingSeconds = (long)AutomationMcp.RefreshTokenLifetime.TotalSeconds
+            - (nowSeconds - originalIssueSeconds);
+        var principal = new ClaimsPrincipal(identity);
+        principal.SetAccessTokenLifetime(AutomationMcp.AccessTokenLifetime);
+        principal.SetRefreshTokenLifetime(TimeSpan.FromSeconds(Math.Max(1, remainingSeconds)));
+        return principal;
     }
 }

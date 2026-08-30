@@ -30,10 +30,15 @@ internal static class AutomationMcpTestSupport
     public static readonly DateTimeOffset SeedUtcNow = new(2031, 5, 6, 10, 30, 0, TimeSpan.Zero);
 
     public static WebApplicationFactory<Program> WithAutomationMcp(
-        IntakeWebApplicationFactory factory) =>
+        IntakeWebApplicationFactory factory,
+        bool desktopGateway = false) =>
         factory.WithWebHostBuilder(builder =>
         {
             builder.UseSetting("Features:AutomationMcp", "true");
+            if (desktopGateway)
+            {
+                builder.UseSetting("Features:DesktopGateway", "true");
+            }
             builder.UseSetting("AutomationMcp:ClientId", ClientId);
             builder.UseSetting("AutomationMcp:ClientSecret", ClientSecret);
             builder.UseSetting("AutomationMcp:PublicOrigin", "http://localhost/");
@@ -59,6 +64,15 @@ internal static class AutomationMcpTestSupport
         using var document = JsonDocument.Parse(body);
         return document.RootElement.GetProperty("access_token").GetString()
             ?? throw new InvalidOperationException("The token response is missing access_token.");
+    }
+
+    public sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        private DateTimeOffset current = utcNow;
+
+        public override DateTimeOffset GetUtcNow() => current;
+
+        public void Advance(TimeSpan amount) => current = current.Add(amount);
     }
 
     public static async Task<HttpResponseMessage> PostMcpAsync(
