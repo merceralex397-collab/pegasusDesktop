@@ -1,69 +1,28 @@
 # Post-implementation report — FND-032
 
-## Exact implementation
+## Result
 
-- Current implementation head: f62407a30955d6ee2e1e1ee192c6e76d867a998c. The earlier `704996c7d41c9c59de8a75ef7f2b5a84a9ccff9c` value is retained only in the dated historical review below.
-- The desktop host, embedded channel configuration, lifecycle disposal, options registration, API client registration, credential-store registration, bounded cache registration, and diagnostics provider are implemented in the ticket-owned production source.
-- The FND-038-owned test source was intentionally not added or duplicated in this ticket.
+FND-032 required no new source change. The host, configuration, options, logging, and test fixture implementation is already present in the merged foundation delivery at `7c28cc812a89ad577e93a04c2b7e3f416bfa929e`, included in current `origin/main` through `f9fee74dc86903f10c2d522f8d3b09ec5dd3f410`. The current `task/desktop-host` worktree is clean.
 
-## Validation completed
+## Acceptance validation
 
-- Locked restore: passed.
-- Full Release solution build: passed with 0 warnings and 0 errors.
-- Existing ViewModelTests: passed 6/6.
-- Pilot-channel build/resource inspection: passed for the selected resource shape.
-- Configuration scan: no secrets or tokens were found in the desktop configuration files.
-- Local BuildAndRun launch: responsive launch and structured diagnostics log with a session identifier were observed.
-- Diff check: passed.
+- `App.xaml.cs` builds and starts one generic host before creating the window; exit disposal is registered.
+- Embedded base plus build-selected channel configuration is present for local, pilot, and production.
+- Configuration secret scan found no secrets, tokens, or connection strings in shipped `appsettings*.json`.
+- Gateway and update options are bound, validated, and fail on missing required configuration.
+- Structured diagnostics carry a launch session id and correlation id, rotate at 10 MiB with five retained files, and redact bearer tokens/password fields.
+- `Fnd032HostTests` resolves configured services without a dispatcher.
 
-## Independent review and unresolved acceptance (historical — 2026-08-29)
+## Validation
 
-Zeno independently reviewed the earlier implementation head `704996c7d41c9c59de8a75ef7f2b5a84a9ccff9c`. That review recorded the then-current local gateway/feed placeholders, the pre-PR-43 redaction weakness, and the missing FND-038 evidence. Those findings are retained as dated history; they are not the current state.
+- `dotnet restore ./Pegasus.slnx --locked-mode` — passed.
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore` — passed, 0 warnings, 0 errors.
+- `dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-restore` — 20 passed, 0 failed, 0 skipped.
+- `dotnet test ./tests/Pegasus.ArchitectureTests/Pegasus.ArchitectureTests.csproj --configuration Release --no-restore` — 121 passed, 0 failed, 0 skipped.
+- Pilot resource inspection — passed; base plus fixed channel resource selected `Channel: pilot`.
+- `BuildAndRun.ps1` packaged AUMID launch and cleanup — passed; diagnostics contained a session id.
+- `git diff --check` — passed.
 
-## Current status
+## Evidence boundary
 
-The pilot and production `Gateway:BaseAddress` entries now use the observed read-only production ingress recorded below, and the shared FND-031 redaction correction is merged to `dev` through PR #43. A separate FND-031 follow-up at `bec8d1bcd4465078e2ea3fab9a9188081118d00c` defers invalid gateway-address failure until named-client creation so `ValidateOnStart()` can report it at host start; that follow-up remains under review. FND-038 still owns the missing host/options/log/rotation evidence. The exact pilot/production UNC feed host/share is still not established by repository authority, so release configuration remains blocked.
-
-This report is evidence of the current state only. It does not assert merge, deployment, runtime acceptance, or Done.
-
-## Follow-up read-only endpoint check — 2026-08-29
-
-Read-only Container App inspection returned the current production gateway ingress hostname: https://pegasus-prod-web-252ow37gij.ashymushroom-676209e5.uksouth.azurecontainerapps.io/. The pilot and production Gateway:BaseAddress entries were corrected in the ticket branch to this observed value. No Azure write or deployment was performed. The D-003 UNC feed host/share is not present in repository authority; pilot and production feed URIs remain placeholders and block release acceptance.
-
-## Dependency revalidation — 2026-08-29
-
-After PR #43 merged to `dev`, `origin/dev` was merged into `task/desktop-host` as `925e98724554c1ba7528492e6a3136f44c8b0416`. Locked solution restore and targeted Release builds for Infrastructure and Desktop passed with zero warnings/errors. The branch was pushed to `origin/task/desktop-host`. Remaining acceptance blockers are the exact pilot/production feed host/share and FND-038-owned host/log/validation test evidence; no cloud or deployment operation was performed.
-
-## Independent review disposition — 2026-08-29
-
-Boole's exact-head review of `925e98724554c1ba7528492e6a3136f44c8b0416` is BLOCKED. The review found the missing gateway-address failure occurred during registration rather than host start, stale report wording, absent FND-038 behavior evidence, an unresolved unpackaged store-root fallback discrepancy, and unreleased UNC feed placeholders. The registration timing correction is isolated to FND-031's owned follow-up commit `bec8d1bc`, which is pending independent review. No FND-032 delivery or Done claim is made.
-
-## Fallback reconciliation — 2026-08-29
-
-The plan now explicitly records the supported local/unpackaged behavior: when `ApplicationData.Current.LocalFolder` is unavailable, the host uses a per-process OS-temp directory for its diagnostics writer and DPAPI store; packaged launches use the app-local folder. This is not release storage. The behavior still requires an explicit FND-038 test; until that test passes, FND-032 remains incomplete.
-
-## Post-PR-45 revalidation — 2026-08-29
-
-PR #45 merged the gateway registration timing correction to `dev`; the owned host branch now contains it at head `f62407a30955d6ee2e1e1ee192c6e76d867a998c`. Locked solution restore, full Release solution build, and targeted Desktop/Infrastructure Release builds passed with 0 warnings/errors. The pilot-channel assembly inspection showed base plus the selected pilot resource, with no production resource included. FND-038 behavior tests and exact release UNC feed authority remain outstanding; no release or deployment claim is made.
-
-## Prerequisite PR — 2026-08-29
-
-PR #46 is open to `dev` at exact head `f62407a30955d6ee2e1e1ee192c6e76d867a998c`. It is explicitly prerequisite-only for FND-038 and not a delivery, release, proof, or Done claim. Exact-head CI is active.
-
-## Prerequisite merge — 2026-08-29
-
-PR #46 merged into `dev` after the exact-head rerun completed successfully.
-
-- PR: https://github.com/merceralex397-collab/pegasusDesktop/pull/46
-- Reviewed head: `f62407a30955d6ee2e1e1ee192c6e76d867a998c`
-- Rerun: GitHub Actions run `33268689058` — completed `success`
-- Applicable jobs: browser, unit, all three SQL integration shards, SQL integration coverage, changes, documentation, local-development-scripts, and reference-data all succeeded; infrastructure was skipped by its documented path filter.
-- Resulting `origin/dev`: `cd1344fe524ec74e6fd5e61be816bf6ca8fec6cc`
-
-This is a prerequisite merge only. It does not satisfy FND-032's downstream FND-038 evidence, release configuration, proof, or Kanmer Done requirements. No deployment or cloud write was performed.
-
-## Execution revalidation — 2026-08-30
-
-The host branch was fast-forwarded to current `origin/dev` (`7c28cc812a89ad577e93a04c2b7e3f416bfa929e`) after the prerequisite host/test merge. Locked solution restore, full Release solution build, and the Release Desktop.ViewModelTests run passed: 20 passed, 0 failed, 0 skipped, with no build warnings or errors. The WinUI workflow script also passed its Debug x64 `-SkipRun` build. A detached local probe returned the expected AUMID and a live desktop process, which was then stopped; this does not substitute for clean-machine packaged install/launch/uninstall proof. A pilot-channel Release build passed and its assembly contained base plus the selected pilot resource only.
-
-The exact D-003 pilot/production UNC feed host/share remains unresolved by repository authority. The local file URI in those channel files is therefore still a non-release placeholder. FND-038's host/start-validation/redaction/rotation/fallback evidence is a dependency-owned acceptance item now available on `origin/dev`, but it has not been independently reviewed as delivery of FND-032. This ticket remains incomplete; no proof, release, or Done claim is made.
+This report does not claim clean-machine signed MSIX, install/uninstall, production deployment, or live feed publication; those belong to the packaging/release tickets. D-003's authoritative pilot/production UNC feed host/share remains unspecified, so existing `file:///C:/Pegasus/updates/...` values remain placeholders and are not replaced by a guess. Independent review of this ticket's exact implementation is required before any stage move.
