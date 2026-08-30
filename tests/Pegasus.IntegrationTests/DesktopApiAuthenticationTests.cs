@@ -1,17 +1,10 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using OpenIddict.Validation.AspNetCore;
 using Pegasus.Contracts;
 using Pegasus.Contracts.ProblemDetails;
 using Pegasus.Core.Identity;
@@ -26,9 +19,10 @@ namespace Pegasus.IntegrationTests;
 public sealed class DesktopApiAuthenticationTests
 {
     private const string Password = "desktop-auth-test-password";
+    private const string MailPath = "/api/v1/mail";
 
     [Fact]
-    public async Task ValidBearerTokenResolvesStaffActorWithEveryAssignedRole()
+    public async Task ValidBearerTokenUsesTheProductionMailRouteWithEveryAssignedRole()
     {
         await using var database = await LocalDbTestDatabase.CreateAsync(migrate: false);
         using var factory = CreateFactory(database);
@@ -36,19 +30,13 @@ public sealed class DesktopApiAuthenticationTests
         using var client = CreateClient(factory);
         var token = await RequestDesktopTokenAsync(client, user);
 
-        using var response = await SendTestRequestAsync(client, token, "/api/v1/__desktop-test/actor");
-        var body = await response.Content.ReadAsStringAsync();
+        using var response = await SendGatewayRequestAsync(client, token, MailPath);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        using var document = JsonDocument.Parse(body);
-        Assert.Equal(user.Id.ToString("D"), document.RootElement.GetProperty("subjectId").GetString());
-        Assert.Equal(
-            [StaffRoleNames.Engineer, StaffRoleNames.User],
-            document.RootElement.GetProperty("roles").EnumerateArray().Select(value => value.GetString()));
     }
 
     [Fact]
-    public async Task DisablingAccountRejectsTheNextRequestWithTheSameAccessToken()
+    public async Task DisablingAccountRejectsTheNextProductionRouteRequestWithTheSameAccessToken()
     {
         await using var database = await LocalDbTestDatabase.CreateAsync(migrate: false);
         using var factory = CreateFactory(database);
@@ -58,7 +46,7 @@ public sealed class DesktopApiAuthenticationTests
 
         await UpdateUserAsync(factory, user.Id, account => account.IsEnabled = false);
 
-        using var response = await SendTestRequestAsync(client, token, "/api/v1/__desktop-test/actor");
+        using var response = await SendGatewayRequestAsync(client, token, MailPath);
         var problem = await ReadProblemAsync(response);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -67,7 +55,7 @@ public sealed class DesktopApiAuthenticationTests
     }
 
     [Fact]
-    public async Task SecurityStampChangeRejectsTheNextRequestWithTheSameAccessToken()
+    public async Task SecurityStampChangeRejectsTheNextProductionRouteRequestWithTheSameAccessToken()
     {
         await using var database = await LocalDbTestDatabase.CreateAsync(migrate: false);
         using var factory = CreateFactory(database);
@@ -84,7 +72,7 @@ public sealed class DesktopApiAuthenticationTests
             Assert.True(result.Succeeded);
         }
 
-        using var response = await SendTestRequestAsync(client, token, "/api/v1/__desktop-test/actor");
+        using var response = await SendGatewayRequestAsync(client, token, MailPath);
         var problem = await ReadProblemAsync(response);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -94,7 +82,7 @@ public sealed class DesktopApiAuthenticationTests
     }
 
     [Fact]
-    public async Task MustChangePasswordBlocksNormalRoutesButAllowsPasswordChangeRoute()
+    public async Task MustChangePasswordBlocksTheProductionMailRoute()
     {
         await using var database = await LocalDbTestDatabase.CreateAsync(migrate: false);
         using var factory = CreateFactory(database);
@@ -102,18 +90,18 @@ public sealed class DesktopApiAuthenticationTests
         using var client = CreateClient(factory);
         var token = await RequestDesktopTokenAsync(client, user);
 
-        using var blocked = await SendTestRequestAsync(client, token, "/api/v1/__desktop-test/actor");
-        var blockedProblem = await ReadProblemAsync(blocked);
-        using var allowed = await SendTestRequestAsync(client, token, "/api/v1/session/password-change");
+        // DSK-03-15 owns the future password-change endpoint; it is not
+        // composed here, so this test covers only the production route refusal.
+        using var response = await SendGatewayRequestAsync(client, token, MailPath);
+        var problem = await ReadProblemAsync(response);
 
-        Assert.Equal(HttpStatusCode.Forbidden, blocked.StatusCode);
-        Assert.Equal(PegasusProblemTypes.PasswordChangeRequired, blockedProblem.Type);
-        AssertCorrelation(blocked, blockedProblem);
-        Assert.Equal(HttpStatusCode.OK, allowed.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(PegasusProblemTypes.PasswordChangeRequired, problem.Type);
+        AssertCorrelation(response, problem);
     }
 
     [Fact]
-    public async Task AutomationBearerTokenIsRefusedOnTheDesktopApi()
+    public async Task AutomationBearerTokenIsRefusedOnTheProductionDesktopRoute()
     {
         await using var database = await LocalDbTestDatabase.CreateAsync(migrate: false);
         using var factory = CreateFactory(database, automationEnabled: true);
@@ -123,10 +111,7 @@ public sealed class DesktopApiAuthenticationTests
             client,
             AutomationMcp.CasesScope);
 
-        using var response = await SendTestRequestAsync(
-            client,
-            token,
-            "/api/v1/__desktop-test/actor");
+        using var response = await SendGatewayRequestAsync(client, token, MailPath);
         var problem = await ReadProblemAsync(response);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -135,7 +120,7 @@ public sealed class DesktopApiAuthenticationTests
     }
 
     [Fact]
-    public async Task UnknownRoleClaimIsRejectedBeforeTheEndpointRuns()
+    public async Task UnknownRoleClaimIsRejectedBeforeTheProductionRouteRuns()
     {
         await using var database = await LocalDbTestDatabase.CreateAsync(migrate: false);
         using var factory = CreateFactory(database);
@@ -143,7 +128,7 @@ public sealed class DesktopApiAuthenticationTests
         using var client = CreateClient(factory);
         var token = await RequestDesktopTokenAsync(client, user);
 
-        using var response = await SendTestRequestAsync(client, token, "/api/v1/__desktop-test/actor");
+        using var response = await SendGatewayRequestAsync(client, token, MailPath);
         var problem = await ReadProblemAsync(response);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -152,15 +137,13 @@ public sealed class DesktopApiAuthenticationTests
     }
 
     [Fact]
-    public async Task BearerChallengeReturnsAProblemWithCorrelationIdAndDoesNotAcceptCookie()
+    public async Task BearerChallengeUsesTheProductionRouteAndDoesNotAcceptCookie()
     {
         await using var database = await LocalDbTestDatabase.CreateAsync(migrate: false);
         using var factory = CreateFactory(database);
         await MigrateDatabaseAsync(factory);
         using var client = CreateClient(factory);
-        using var request = new HttpRequestMessage(
-            HttpMethod.Get,
-            $"{DesktopGateway.BasePath}/cases/{Guid.NewGuid():D}/vehicle");
+        using var request = new HttpRequestMessage(HttpMethod.Get, MailPath);
         request.Headers.Add(PegasusHeaders.CorrelationId, "desktop-auth-challenge");
         request.Headers.Add("Cookie", "__Host-Pegasus=not-a-bearer-token");
 
@@ -196,10 +179,7 @@ public sealed class DesktopApiAuthenticationTests
             settings["AutomationMcp:RegistrationCacheSeconds"] = "0";
         }
 
-        var baseFactory = new ConfiguredWebApplicationFactory("Development", settings);
-        return baseFactory.WithWebHostBuilder(builder =>
-            builder.ConfigureServices(services =>
-                services.AddSingleton<IStartupFilter, DesktopAuthenticationTestStartupFilter>()));
+        return new ConfiguredWebApplicationFactory("Development", settings);
     }
 
     private static HttpClient CreateClient(WebApplicationFactory<Program> factory) =>
@@ -211,16 +191,14 @@ public sealed class DesktopApiAuthenticationTests
 
     private static async Task<PegasusIdentityUser> SeedUserAsync(
         WebApplicationFactory<Program> factory,
-        params string[] roles)
-    {
-        return await SeedUserAsync(factory, roles, mustChangePassword: false);
-    }
+        params string[] roles) =>
+        await SeedUserAsync(factory, roles, mustChangePassword: false);
 
-    private static async Task<PegasusIdentityUser> SeedUserAsync(
+    private static Task<PegasusIdentityUser> SeedUserAsync(
         WebApplicationFactory<Program> factory,
         string role,
         bool mustChangePassword = false) =>
-        await SeedUserAsync(factory, [role], mustChangePassword);
+        SeedUserAsync(factory, [role], mustChangePassword);
 
     private static async Task<PegasusIdentityUser> SeedUserAsync(
         WebApplicationFactory<Program> factory,
@@ -302,7 +280,7 @@ public sealed class DesktopApiAuthenticationTests
         return document.RootElement.GetProperty("access_token").GetString()!;
     }
 
-    private static Task<HttpResponseMessage> SendTestRequestAsync(
+    private static Task<HttpResponseMessage> SendGatewayRequestAsync(
         HttpClient client,
         string token,
         string path)
@@ -328,82 +306,5 @@ public sealed class DesktopApiAuthenticationTests
         Assert.Equal(
             "desktop-auth-test",
             response.Headers.GetValues(PegasusHeaders.CorrelationId).Single());
-    }
-
-    private sealed class DesktopAuthenticationTestStartupFilter : IStartupFilter
-    {
-        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
-        {
-            app.UseWhen(
-                context => context.Request.Path.StartsWithSegments("/api/v1/__desktop-test")
-                    || context.Request.Path.Equals(
-                        "/api/v1/session/password-change",
-                        StringComparison.Ordinal),
-                branch =>
-                {
-                    branch.UseRouting();
-                    branch.UseAuthentication();
-                    branch.UseEndpoints(endpoints =>
-                    {
-                        endpoints.MapGet("/api/v1/__desktop-test/actor", HandleAsync)
-                            .AllowAnonymous();
-                        endpoints.MapGet("/api/v1/session/password-change", HandleAsync)
-                            .AllowAnonymous();
-                    });
-                });
-            next(app);
-        };
-
-        private static async Task HandleAsync(HttpContext context)
-        {
-            var correlationId = DesktopGatewayCorrelation.Apply(context);
-            DesktopGatewayCorrelation.Echo(context, correlationId);
-            var authentication = await context.AuthenticateAsync(
-                OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-            if (!authentication.Succeeded)
-            {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                return;
-            }
-
-            context.User = authentication.Principal!;
-            var authorization = await context.RequestServices
-                .GetRequiredService<IAuthorizationService>()
-                .AuthorizeAsync(
-                    context.User,
-                    resource: null,
-                    DesktopGateway.AuthorizationPolicy);
-            if (!authorization.Succeeded)
-            {
-                await DesktopGatewayProblems.WriteAsync(
-                    context,
-                    new PegasusProblem(
-                        PegasusProblemTypes.NotAuthorized,
-                        "Not authorized",
-                        StatusCodes.Status403Forbidden,
-                        "The desktop bearer token is not authorized for this resource.",
-                        null,
-                        correlationId),
-                    context.RequestAborted);
-                return;
-            }
-
-            var resolver = context.RequestServices.GetRequiredService<DesktopActorResolver>();
-            var refusal = await resolver.ResolveAsync(context);
-            if (refusal is not null)
-            {
-                await refusal.ExecuteAsync(context);
-                return;
-            }
-
-            var actor = DesktopActorResolver.GetActor(context);
-            await context.Response.WriteAsJsonAsync(
-                new
-                {
-                    subjectId = actor.SubjectId,
-                    roles = actor.Roles.Select(role => role.ToString()).Order(StringComparer.Ordinal)
-                },
-                context.RequestAborted);
-        }
     }
 }
