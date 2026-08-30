@@ -23,6 +23,8 @@ public static class DesktopGatewayExtensions
         ArgumentNullException.ThrowIfNull(options);
 
         services.AddSingleton(options);
+        services.AddHttpContextAccessor();
+        services.AddScoped<StaffActorAccessor>();
         services.AddScoped<DesktopActorResolver>();
         services.AddProblemDetails();
         services.AddExceptionHandler<DesktopGatewayExceptionHandler>();

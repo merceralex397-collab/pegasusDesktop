@@ -25,6 +25,7 @@ using Pegasus.Core.Intake;
 using Pegasus.Infrastructure.Persistence;
 using Pegasus.Web.Authentication;
 using Pegasus.Web.Desktop;
+using Pegasus.Web.Mcp;
 
 namespace Pegasus.IntegrationTests;
 
@@ -303,6 +304,10 @@ internal sealed class IntegrationTestAuthenticationHandler(
         }
         var identity = new ClaimsIdentity(claims, Scheme.Name);
         identity.SetScopes([DesktopSession.Scope]);
+        if (Request.Headers.ContainsKey("X-Test-Automation-Audience"))
+        {
+            identity.SetAudiences([AutomationMcp.Audience]);
+        }
         return AuthenticateResult.Success(
             new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name));
     }
