@@ -303,3 +303,17 @@ The first solution-wide build attempt was not a source failure: the worktree had
 - `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false` — passed, 0 warnings, 0 errors.
 
 The build was rerun after restore and completed successfully. This validates the requested solution-wide compile; it does not replace the missing packaged two-launch evidence.
+
+## Independent review correction — 2026-08-30
+
+The first review request used a mistyped SHA. The actual implementation-fix commit is `18493d4825d4609ba8dbfcb29960023839a98cc6`, not the nonexistent `18493d485...`. The review also found that `AppActivationArguments.Data` must be matched through the Windows activation launch interface, not the WinUI `OnLaunched` class. The implementation now uses `Windows.ApplicationModel.Activation.ILaunchActivatedEventArgs`. This is the projected interface documented for the Launch payload; using the concrete Windows class triggers the repository's WUI1001 analyzer because WinUI desktop launch handling uses the `Microsoft.UI.Xaml` type for `OnLaunched`. A null guard was also added because `GetActivatedEventArgs()` may return no activation payload on an ordinary launch.
+
+Correction commit: `fa29f6f42dde60c7b5e3908dc3fcae60629a4d87`.
+
+Validation after the correction:
+
+- `dotnet test tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~Activation" --logger "console;verbosity=minimal" -nr:false -p:UseSharedCompilation=false` — 3 passed, 0 failed, 0 skipped.
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false` — passed, 0 warnings, 0 errors.
+- `git diff --check` — passed before commit.
+
+The reviewer's required DI boundary remains unresolved: FND-033 must provide and register the concrete navigation service; FND-035 does not duplicate it. The packaged two-launch proof and protocol/file manifest declarations remain pending their owning tickets and cannot be claimed here.

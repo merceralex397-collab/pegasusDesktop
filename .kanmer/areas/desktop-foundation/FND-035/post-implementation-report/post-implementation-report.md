@@ -31,3 +31,13 @@ After generating the worktree assets with `dotnet restore ./Pegasus.slnx --locke
 - `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false` — passed, 0 warnings, 0 errors.
 
 The remaining evidence boundary is unchanged: no packaged `winapp run` two-launch proof is claimed, and the concrete `INavigationService` registration from FND-033 is still required before that proof can be meaningful.
+
+## Review correction and validation — 2026-08-30
+
+The first review request contained a mistyped implementation SHA. The actual prior fix is `18493d4825d4609ba8dbfcb29960023839a98cc6`; the follow-up correction is `fa29f6f42dde60c7b5e3908dc3fcae60629a4d87`. The follow-up changes the rich-launch payload match to `Windows.ApplicationModel.Activation.ILaunchActivatedEventArgs`, which is the Windows App SDK activation interface for `AppActivationArguments.Data`, and guards an absent initial activation payload.
+
+- `dotnet test tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~Activation" --logger "console;verbosity=minimal" -nr:false -p:UseSharedCompilation=false` — passed 3/3.
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false -p:UseSharedCompilation=false` — passed, 0 warnings, 0 errors.
+- `git diff --check` — passed before commit.
+
+No packaged two-launch proof is claimed. FND-033's concrete `INavigationService` registration remains a real runtime dependency; manifest activation declarations and packaged proof remain pending their owners.
