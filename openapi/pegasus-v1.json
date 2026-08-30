@@ -1,6 +1,312 @@
 {
   "components": {
     "schemas": {
+      "CompleteDocumentUploadRequest": {
+        "properties": {
+          "editLeaseToken": {
+            "type": "string"
+          },
+          "expectedVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "operationKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operationKey",
+          "editLeaseToken"
+        ],
+        "type": "object"
+      },
+      "ConfirmThirdPartyEvidenceRequest": {
+        "properties": {
+          "editLeaseToken": {
+            "type": "string"
+          },
+          "expectedVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "occurrenceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "operationKey": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operationKey",
+          "editLeaseToken",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "CreateDocumentUploadSessionRequest": {
+        "properties": {
+          "fileName": {
+            "type": "string"
+          },
+          "mediaType": {
+            "type": "string"
+          },
+          "semanticRole": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fileName",
+          "mediaType",
+          "semanticRole"
+        ],
+        "type": "object"
+      },
+      "DocumentListResponse": {
+        "properties": {
+          "hasNextPage": {
+            "type": "boolean"
+          },
+          "hasPreviousPage": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentMetadataResponse"
+            },
+            "type": "array"
+          },
+          "page": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "pageSize": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "version": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "version",
+          "page",
+          "pageSize",
+          "hasPreviousPage",
+          "hasNextPage"
+        ],
+        "type": "object"
+      },
+      "DocumentMetadataResponse": {
+        "properties": {
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "contentLength": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "createdAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "custodyStatus": {
+            "type": "string"
+          },
+          "documentId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "isCurrent": {
+            "type": "boolean"
+          },
+          "isLogicallyRemoved": {
+            "type": "boolean"
+          },
+          "mediaType": {
+            "type": "string"
+          },
+          "occurrenceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "ordinal": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "recordedAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "removalReason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "semanticRole": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "sourceOccurrenceIdentity": {
+            "type": "string"
+          },
+          "thirdPartyVehicleConfirmationReason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "thirdPartyVehicleConfirmedAtUtc": {
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "versionId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "caseId",
+          "documentId",
+          "occurrenceId",
+          "versionId",
+          "fileName",
+          "mediaType",
+          "contentLength",
+          "sha256",
+          "semanticRole",
+          "source",
+          "custodyStatus",
+          "createdAtUtc",
+          "createdBy",
+          "isCurrent",
+          "isLogicallyRemoved",
+          "removalReason",
+          "sourceOccurrenceIdentity",
+          "recordedAtUtc",
+          "thirdPartyVehicleConfirmedAtUtc",
+          "thirdPartyVehicleConfirmationReason",
+          "ordinal"
+        ],
+        "type": "object"
+      },
+      "DocumentMutationResponse": {
+        "properties": {
+          "caseId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "occurrenceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "version": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "caseId",
+          "occurrenceId",
+          "version"
+        ],
+        "type": "object"
+      },
+      "DocumentUploadCompletionResponse": {
+        "properties": {
+          "document": {
+            "$ref": "#/components/schemas/DocumentMetadataResponse"
+          },
+          "isReplay": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "document",
+          "isReplay"
+        ],
+        "type": "object"
+      },
+      "DocumentUploadSessionResponse": {
+        "properties": {
+          "expiresAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "maximumContentLength": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "sessionId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sessionId",
+          "expiresAtUtc",
+          "maximumContentLength"
+        ],
+        "type": "object"
+      },
       "PagedResult": {
         "properties": {
           "hasNextPage": {
@@ -73,6 +379,71 @@
           "correlationId"
         ],
         "type": "object"
+      },
+      "ProblemDetails": {
+        "properties": {
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "RemoveDocumentRequest": {
+        "properties": {
+          "editLeaseToken": {
+            "type": "string"
+          },
+          "expectedVersion": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "operationKey": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operationKey",
+          "editLeaseToken",
+          "reason"
+        ],
+        "type": "object"
       }
     }
   },
@@ -82,5 +453,574 @@
     "version": "0.1.0-alpha.1"
   },
   "openapi": "3.1.1",
-  "paths": {}
+  "paths": {
+    "/api/v1/cases/{caseId}/documents": {
+      "get": {
+        "operationId": "ListCaseDocuments",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "caseId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "format": "int32",
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "default": 25,
+              "format": "int32",
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "semanticRole",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "includeRemoved",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentListResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "summary": "List case document metadata",
+        "tags": [
+          "Case documents"
+        ]
+      }
+    },
+    "/api/v1/cases/{caseId}/documents/upload-session": {
+      "post": {
+        "operationId": "StartCaseDocumentUploadSession",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "caseId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDocumentUploadSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentUploadSessionResponse"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "429": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Start a case document upload session",
+        "tags": [
+          "Case documents"
+        ]
+      }
+    },
+    "/api/v1/cases/{caseId}/documents/{occurrenceId}": {
+      "delete": {
+        "operationId": "RemoveCaseDocument",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "caseId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "occurrenceId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveDocumentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentMutationResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Logically remove a case document",
+        "tags": [
+          "Case documents"
+        ]
+      },
+      "get": {
+        "operationId": "GetCaseDocumentMetadata",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "caseId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "occurrenceId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentMetadataResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "summary": "Get case document metadata",
+        "tags": [
+          "Case documents"
+        ]
+      }
+    },
+    "/api/v1/cases/{caseId}/documents/{occurrenceId}/content": {
+      "get": {
+        "operationId": "DownloadCaseDocumentContent",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "caseId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "occurrenceId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "206": {
+            "description": "Partial Content"
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "416": {
+            "description": "Range Not Satisfiable"
+          }
+        },
+        "summary": "Stream case document content",
+        "tags": [
+          "Case documents"
+        ]
+      }
+    },
+    "/api/v1/cases/{caseId}/third-party-vehicle-evidence/confirm": {
+      "post": {
+        "operationId": "ConfirmThirdPartyVehicleEvidence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "caseId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmThirdPartyEvidenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentMutationResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Confirm third-party vehicle evidence",
+        "tags": [
+          "BoxDocumentBrokerEndpoints"
+        ]
+      }
+    },
+    "/api/v1/upload-sessions/{sessionId}": {
+      "put": {
+        "operationId": "PutCaseDocumentUploadBytes",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sessionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "413": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload Too Large"
+          }
+        },
+        "summary": "Upload case document bytes",
+        "tags": [
+          "BoxDocumentBrokerEndpoints"
+        ]
+      }
+    },
+    "/api/v1/upload-sessions/{sessionId}/complete": {
+      "post": {
+        "operationId": "CompleteCaseDocumentUploadSession",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sessionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteDocumentUploadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentUploadCompletionResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentUploadCompletionResponse"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Complete a case document upload session",
+        "tags": [
+          "BoxDocumentBrokerEndpoints"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Case documents"
+    },
+    {
+      "name": "BoxDocumentBrokerEndpoints"
+    }
+  ]
 }

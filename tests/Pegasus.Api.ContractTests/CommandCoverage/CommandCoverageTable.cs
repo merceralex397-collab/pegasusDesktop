@@ -41,30 +41,75 @@ public sealed record CommandCoverageRow(
     bool IsPlaceholder = false);
 
 /// <summary>
-/// The merged host currently has no command endpoint. Keeping this table
-/// empty is intentional: the guard remains green now and turns red as soon as
-/// a command is added without its explicit, reviewed row.
+/// The endpoint-specific Box broker behavior is covered by the existing
+/// LocalDB/Ef integration suite. These explicit rows keep the route catalogue
+/// closed in this SQL-free contract host; the placeholder rows are skipped by
+/// the generic command theories because that host has no case state or Core
+/// command doubles.
 /// </summary>
 internal static class CommandCoverageTable
 {
-    public static IReadOnlyList<CommandCoverageRow> Rows { get; } = [];
+    public static IReadOnlyList<CommandCoverageRow> Rows { get; } =
+    [
+        Placeholder(
+            "POST /api/v1/cases/{caseId:guid}/documents/upload-session"),
+        Placeholder(
+            "DELETE /api/v1/cases/{caseId:guid}/documents/{occurrenceId:guid}"),
+        Placeholder(
+            "POST /api/v1/cases/{caseId:guid}/third-party-vehicle-evidence/confirm"),
+        Placeholder("PUT /api/v1/upload-sessions/{sessionId:guid}"),
+        Placeholder("POST /api/v1/upload-sessions/{sessionId:guid}/complete")
+    ];
+
+    private static CommandCoverageRow Placeholder(string methodAndRoute)
+    {
+        var separator = methodAndRoute.IndexOf(' ');
+        return new(
+            methodAndRoute[(separator + 1)..],
+            methodAndRoute[..separator],
+            StaffAccessRight.PerformCasework,
+            false,
+            false,
+            _ => new HttpRequestMessage(),
+            _ => new HttpRequestMessage(),
+            _ => new HttpRequestMessage(),
+            null,
+            _ => new HttpRequestMessage(),
+            null,
+            _ => Task.FromResult(new CommandEffectSnapshot(string.Empty, 0)),
+            null,
+            string.Empty,
+            IsPlaceholder: true);
+    }
 
     public static IEnumerable<object[]> AllRows =>
         Rows.Count == 0
             ? [new object[] { EmptyTableRow }]
             : Rows.Select(row => new object[] { row });
 
-    public static IEnumerable<object[]> VersionRows =>
-        Rows.Count == 0
-            ? [new object[] { EmptyTableRow }]
-            : Rows.Where(row => row.HasVersionToken)
-                .Select(row => new object[] { row });
+    public static IEnumerable<object[]> VersionRows
+    {
+        get
+        {
+            var rows = Rows.Where(row => row.HasVersionToken).ToArray();
+            return rows.Length == 0
+                ? [new object[] { EmptyTableRow }]
+                : rows.Select(row => new object[] { row });
+        }
+    }
 
-    public static IEnumerable<object[]> OperationRows =>
-        Rows.Count == 0
-            ? [new object[] { EmptyTableRow }]
-            : Rows.Where(row => row.HasOperationKey && row.CreateReplayRequests is not null)
-                .Select(row => new object[] { row });
+    public static IEnumerable<object[]> OperationRows
+    {
+        get
+        {
+            var rows = Rows
+                .Where(row => row.HasOperationKey && row.CreateReplayRequests is not null)
+                .ToArray();
+            return rows.Length == 0
+                ? [new object[] { EmptyTableRow }]
+                : rows.Select(row => new object[] { row });
+        }
+    }
 
     private static CommandCoverageRow EmptyTableRow => new(
         "<no-command-endpoints>",

@@ -67,7 +67,9 @@ function ConvertTo-StableValue {
             $stable.Add((ConvertTo-StableValue -Value $item))
         }
 
-        return $stable
+        # PowerShell enumerates a list returned from a function. Preserve the
+        # list wrapper so singleton OpenAPI arrays remain arrays in the snapshot.
+        return ,$stable
     }
 
     return $Value
@@ -115,7 +117,8 @@ try {
         }
 
         try {
-            $response = Invoke-WebRequest -Uri "$uri/openapi/v1.json" -UseBasicParsing
+            $response = Invoke-WebRequest -Uri "$uri/openapi/v1.json" `
+                -Headers @{ Accept = 'application/json' } -UseBasicParsing
         }
         catch {
             Start-Sleep -Milliseconds 250
