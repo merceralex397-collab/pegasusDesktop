@@ -177,3 +177,11 @@ PR #49 remains open at exact head `f34d872aeac79460536a6a48f507f1dcbe739874`. Ex
 2. The run was canceled and fully rerun. Fresh heavy jobs started at approximately 19:41 and reproduced the same condition: all five remained in `dotnet-build`, then were canceled. The coverage aggregator ended with failure because its required shard artifacts were canceled.
 
 The lightweight checks (changes, documentation, local-development-scripts, and reference-data) passed; infrastructure was skipped by the documented path filter. This is a CI runner/action hang, not a source assertion failure. Local validation remains green, but exact-head CI is not green, so PR #49 must not merge. Smallest unblock action: restore a functioning `dotnet-build` runner/action execution, then rerun the failed heavy jobs at the unchanged exact head.
+
+## Merged-main verification — 2026-08-30
+
+- PR #49 (`f34d872aeac79460536a6a48f507f1dcbe739874`) merged into `dev` as `7c28cc812a89ad577e93a04c2b7e3f416bfa929e` after the recorded independent PASS and green exact-head CI.
+- Exact non-force promotion moved `main` from `f7708625d5e960f0b6d27928393a96ae9ecf0ab9` to `7c28cc812a89ad577e93a04c2b7e3f416bfa929e`.
+- Fresh detached verification tree at `origin/main`/`7c28cc81`: `dotnet restore ./Pegasus.slnx --locked-mode` exited 0; ViewModelTests exited 0 with 20 passed, 0 failed, 0 skipped; ArchitectureTests exited 0 with 121 passed, 0 failed, 0 skipped.
+- The verification tree was read-only apart from ignored build outputs; no repository source, corpus, cloud, or upstream state changed.
+- This closes the prior CI-hang note: the corrected exact head received green applicable CI after CI restoration.
