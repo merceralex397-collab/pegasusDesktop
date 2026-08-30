@@ -26,3 +26,7 @@
 The combined OpenIddict composition was corrected after independent review: Desktop retains rolling refreshes, Automation retains its 14-day absolute cap through per-principal original-issue enforcement, and Desktop password grants use the staff/global sign-in throttles rather than the Automation limit. Combined-mode tests cover these boundaries, Automation issuance, the public no-secret registration, security-stamp invalidation, and an unsupported Desktop grant.
 
 Updated validation: DesktopTokenIssuance passed 6/6 and Automation passed 35/35 after the fixes; Web and integration Release builds passed with 0 warnings/errors; the earlier full integration run passed 1031 executed tests with 16 expected corpus-dependent skips; migration-grant validation passed for 74 migration files; git diff --check passed. The full integration run was against the pre-fix assembly and is retained only as supplemental evidence; focused post-fix suites are the authoritative changed-code result.
+
+## Final simplification and validation — 2026-08-30
+
+The final quality pass removed the redundant Automation AddMemoryCache registration, made DesktopClientRegistry conditional on the Desktop feature gate, and shared the deterministic integration-test clock helper. The resulting exact branch head passed Web and integration Release builds with 0 warnings/errors, the combined DesktopTokenIssuance plus Automation filter at 42/42, migration-grant validation for 74 files, and git diff --check. The final independent reviewer must review commit 59ae1ba2 as the exact head before merge.

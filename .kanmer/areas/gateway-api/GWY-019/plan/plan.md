@@ -94,3 +94,9 @@ The first independent review identified three merge-blocking combined-compositio
 - Added combined-mode integration facts for Desktop rolling refresh, Automation client-credentials issuance, the public no-secret registration, security-stamp invalidation, and rejection of the Desktop client using the Automation grant.
 
 Post-fix validation: Web Release build and IntegrationTests Release build both passed with 0 warnings and 0 errors; DesktopTokenIssuance passed 6/6; Automation passed 35/35; the prior full integration run passed 1031/1031 executed tests with 16 corpus-dependent skips; migration-grant validation passed for 74 migration files; git diff --check passed. A fresh independent review is required for this changed branch before PR merge.
+
+## Final simplification disposition — 2026-08-30
+
+The independent simplification pass found and the branch applied three behavior-preserving cleanups: the shared OpenIddict composition is now the sole AddMemoryCache registration; DesktopClientRegistry is registered only when the Desktop gate is enabled; and the two deterministic integration suites reuse one MutableTimeProvider in AutomationMcpTestSupport. No other abstraction, duplication, or scope issue remained. The pass is complete.
+
+Final post-cleanup validation: Web Release build and IntegrationTests Release build passed with 0 warnings and 0 errors; DesktopTokenIssuance plus Automation passed 42/42 with 0 failed and 0 skipped; migration-grant validation passed for 74 migration files; git diff --check passed. Fresh independent review of the exact committed head is still required before PR merge.
