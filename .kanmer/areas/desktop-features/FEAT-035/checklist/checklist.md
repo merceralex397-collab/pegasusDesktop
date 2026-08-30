@@ -27,3 +27,13 @@
 - [x] Add scoped in-memory identity-store isolation to both contract fixtures — commit `3663cd779194e7f24fc59a99d724e12ba54261d6`.
 - [x] Re-run exact filtered contract suite locally — 18 passed, 0 failed.
 - [ ] Hosted CI rerun green at the new head — pending.
+
+## Fresh review-fix correction (2026-08-30)
+
+- [x] Remove automatic-sweep pre-normalization; invalid stored registrations reach Core unchanged and are refused there.
+- [x] Expose durable provider correlation separately from per-request HTTP correlation in queued/replay/evidence responses.
+- [x] Backfill legacy correlation values uniquely from each WorkItemId before enforcing non-null storage.
+- [x] Add regression coverage for invalid automatic input and replay/read correlation separation.
+- [x] Corrected local validation — build 0/0; Core 941/941; Architecture 121/121; contract filter 18/18; focused vehicle/SQL set 31/31; full filtered integration 973 passed, 2 skipped, 0 failed, 975 total; migration guard 1/1.
+- [ ] Fresh independent reviewer PASS — pending against the final pushed head.
+- [ ] Hosted CI green at the final pushed head — pending.

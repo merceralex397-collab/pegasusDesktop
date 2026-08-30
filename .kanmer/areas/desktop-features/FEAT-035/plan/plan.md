@@ -102,3 +102,26 @@ The earlier statement that provider-bound correlation required no persistence fi
 PR #51's first exact-head run `33280183638` exposed that the contract suite was not actually SQL-independent on a clean runner: authenticated requests traversed the shared password-change middleware, which queried the absent `PegasusDevelopment` database. The hosted log showed Core 941/941 and architecture 121/121 passing; the filtered API contract run failed 7/18, with vehicle authorization/version cases becoming 400s and the disabled-gateway check seeing a database-login failure.
 
 The test-only correction adds a scoped in-memory `IUserStore<PegasusIdentityUser>` to both contract web factories. It removes the hidden SQL dependency without changing product authentication or vehicle behavior. Exact local `Category=Contract` validation after the correction is 18 passed, 0 failed. The correction is commit `3663cd779194e7f24fc59a99d724e12ba54261d6`, pushed to PR #51; hosted rerun is required before merge.
+
+## Fresh review-fix correction (2026-08-30)
+
+The independent review identified three concrete issues on the earlier head 4f9dfc1e; all are addressed on the current branch before requesting a fresh review:
+
+- Automatic reconciliation no longer strips punctuation or non-ASCII characters in infrastructure. It passes the stored value unchanged to the Core VehicleLookupRequest, so invalid registrations are rejected by the sole normalization owner. AutomaticVehicleLookupTests.SweepDoesNotRepairInvalidRegistrationBeforeCoreValidation proves this.
+- Durable provider correlation is now exposed separately from the current HTTP correlation. Queue/replay responses expose providerCorrelationId; evidence observations expose their persisted provider correlation; current request/read correlation remains the response/header correlation for that HTTP call. VehicleGatewayReplayIntegrationTests proves initial request, idempotent replay with a different HTTP correlation, worker persistence, and read projection remain distinguishable.
+- VehicleLookupCorrelation now adds the column nullable, backfills each legacy row as vehicle-lookup:migrated:<WorkItemId>, then makes it non-null without a shared default. Existing direct SQL fixtures were updated to supply explicit correlations.
+
+The review was against 4f9dfc1e, so its BLOCK is not treated as a final-head review. A fresh independent reviewer must inspect the pushed final head.
+
+### Corrected local validation
+
+- dotnet build ./Pegasus.slnx --configuration Release --no-restore /nr:false — succeeded; 0 warnings, 0 errors.
+- dotnet test ./tests/Pegasus.Api.ContractTests/Pegasus.Api.ContractTests.csproj --configuration Release --no-build --filter "Category=Contract" — 18 passed, 0 failed.
+- dotnet test ./tests/Pegasus.Core.Tests/Pegasus.Core.Tests.csproj --configuration Release --no-build — 941 passed, 0 failed.
+- Focused vehicle/automatic/replay/terminal/production integration filter — 31 passed, 0 failed.
+- dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --no-build --filter "Category!=Corpus&Category!=Browser" — 973 passed, 2 skipped, 0 failed, 975 total. Skips remain the existing QDOS mapped-instruction and custody embedded-photograph tests.
+- Architecture tests — 121 passed, 0 failed.
+- Committed migration schema guard — 1 passed, 0 failed.
+- git diff --check — passed; only normal LF/CRLF conversion warnings.
+
+No merge, proof, hosted-green claim, or Kanmer finalization is made by this correction. The next action is commit/push, then fresh independent review and exact-head hosted CI.

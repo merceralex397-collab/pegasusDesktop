@@ -50,3 +50,9 @@ The corrected branch is ready for a fresh independent `pegasus-desktop-reviewer`
 ## Hosted CI correction (2026-08-30)
 
 The first exact-head hosted run `33280183638` failed only in the unit job's filtered API contract portion: Core 941/941 and architecture 121/121 passed, while 7/18 contract tests encountered SQL-dependent authentication middleware on the clean runner. This was diagnosed from the hosted job log, not waived. A scoped in-memory `IUserStore<PegasusIdentityUser>` was added to both contract web factories in commit `3663cd779194e7f24fc59a99d724e12ba54261d6`; the exact `Category=Contract` suite then passed locally 18/18. PR #51 has been updated and hosted CI rerun is pending. No merge or finalization is claimed.
+
+## Fresh review-fix correction (2026-08-30)
+
+The first review was against pre-CI-fix head 4f9dfc1e and returned BLOCK. Before requesting a fresh review, the final branch corrected all three findings: automatic reconciliation now defers all registration validity to Core; durable provider correlation is returned separately from the current HTTP correlation on queue/replay/evidence responses; and the correlation migration uniquely backfills legacy rows from each work-item ID before enforcing non-null storage. Regression coverage covers invalid automatic input plus idempotent replay/read correlation separation.
+
+Corrected local evidence: Release build 0 warnings/0 errors; Core 941/941; Architecture 121/121; exact contract filter 18/18; focused vehicle/SQL filter 31/31; full Category!=Corpus&Category!=Browser integration 973 passed, 2 skipped, 0 failed, 975 total; migration guard 1/1; diff check passed. No merge, proof, hosted-green claim, or Kanmer finalization is claimed. Fresh independent review and exact-head hosted CI remain required.
