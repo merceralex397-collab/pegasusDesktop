@@ -32,7 +32,7 @@ A first exploratory two-valid-request race exposed an existing SQL transient/dea
 
 ## Scope and simplification
 
-Product-tree changes are limited to `tests/Pegasus.IntegrationTests/MailPersistenceTests.cs` and the explicitly planned DSK-08-03 row in `docs/desktop/08-testing/README.md`. No production code, shard runner, CI matrix, Azure resource, or corpus file changed. The dated simplification pass and review-finding dispositions are recorded in the Kanmer plan.
+Product-tree changes are limited to `tests/Pegasus.IntegrationTests/MailPersistenceTests.cs`, the trait-only CI filter fixes in `tests/Pegasus.IntegrationTests/QdosExtractionCoverageTests.cs` and `tests/Pegasus.IntegrationTests/QdosMappingExtractionTests.cs`, and the explicitly planned DSK-08-03 row in `docs/desktop/08-testing/README.md`. No production code, shard runner, CI matrix, Azure resource, or corpus file changed. The dated simplification pass and review-finding dispositions are recorded in the Kanmer plan.
 
 ## Review handoff
 
