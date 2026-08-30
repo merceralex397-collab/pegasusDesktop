@@ -263,3 +263,11 @@ The `proof` document is produced from these command logs:
 
 _Not yet run. `AGENTS.md` § Repository task workflow step 4 requires a pass over this branch's own
 diff before the PR, recorded here under a dated heading._
+
+## Dependency reconciliation — 2026-08-30
+
+GWY-021 is now merged to main as 0e7fa423. Its implementation already contains DesktopActorResolver under src/Pegasus.Web/Desktop, which owns the per-request bearer/session checks and currently also calls StaffActorFactory.TryCreate before the group reaches an endpoint. That landed shape is authoritative and creates one necessary seam adjustment for this ticket: do not add a second claims parser in Api.
+
+Implementation will extract the single claims-to-actor call and non-staff denial handling into the planned Api/StaffActorAccessor, have DesktopActorResolver delegate to that accessor after its GWY-021 account/session checks, and store the actor under the planned DesktopGateway item key. RequireStaffRightFilter will consume that stored actor through the accessor. This preserves GWY-021’s account boundary, gives downstream groups the planned reusable filter, and leaves exactly two StaffActorFactory.TryCreate call sites: StaffPageModel and StaffActorAccessor.
+
+GWY-021 also already supplied the account-disabled and password-change-required problem mappings in DesktopGatewayProblems.cs; no duplicate mapping or reorder is needed. The existing VehicleAuthorizationEndpointFilter remains a legacy local filter for the already-landed vehicle/mail slices and is not broadened here. The ticket’s original folder and call-site wording is therefore interpreted through the landed dependency while preserving its acceptance intent: one Core factory owner for bearer claims and one reusable per-right transport boundary.
