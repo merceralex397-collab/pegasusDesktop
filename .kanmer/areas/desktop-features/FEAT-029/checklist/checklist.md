@@ -25,9 +25,9 @@ One box per plan step, in plan order. A checked box means the evidence is record
 - [x] Added the desktop mail behavior clause to FRD-08.
 - [x] Regenerated `openapi/pegasus-v1.json` and verified the committed snapshot. Kiota generation and generated-client commit are explicitly owned by [[GWY-005]]; that tree is not duplicated in this ticket while [[FND-031]]/[[GWY-004]] remain its documented prerequisites.
 - [x] Ran the simplification pass and recorded the dated findings/dispositions in `plan`.
-- [ ] Complete the final verification capture after the active broad non-browser integration command returns; focused API, mail-workspace and parity results are already recorded in `post-implementation-report`.
+- [x] Ran the final verification: API contracts 62/62; MailWorkspaceWebTests 39/39; SQL Razor/API parity 1/1; broad non-browser integration 974 passed, 2 skipped, 0 failed, 976 total; full Release solution build 0 warnings/0 errors; guarded scope diff empty.
 
 ## Evidence notes
 
-- The final verification box remains open until the exact broad command `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "Category!=Corpus&Category!=Browser" --nologo` returns an aggregate result. No partial output is treated as completion.
+- Exact broad command: `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "Category!=Corpus&Category!=Browser" --nologo` — 974 passed, 2 skipped, 0 failed, 976 total, 12m52s.
 - No Azure/cloud write, upstream sync, corpus modification, or change to the Razor mail pages, Worker or Graph infrastructure was made.

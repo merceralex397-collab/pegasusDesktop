@@ -30,3 +30,9 @@ The Kiota generator, pinned tool and generated client remain the explicit owners
 ## Review handoff
 
 The dated simplification pass is recorded in `plan`. The only intentional non-local deliverable is the GWY-005 generated-client handoff; the API snapshot and behavior are locally complete. No PR, merge, proof or Done transition has been claimed yet.
+
+## Final verification update — 2026-08-30
+
+The exact broad command `dotnet test ./tests/Pegasus.IntegrationTests/Pegasus.IntegrationTests.csproj --configuration Release --filter "Category!=Corpus&Category!=Browser" --nologo` passed with 974 passed, 2 skipped, 0 failed, 976 total in 12m52s. The focused API contract suite passed 62/62, the existing `MailWorkspaceWebTests` passed 39/39, and `DesktopGatewayMailTests` passed 1/1. The full Release solution build passed with 0 warnings and 0 errors. The guarded scope command returned empty output. The OpenAPI snapshot test passed as part of the API contract suite.
+
+The ticket is implementation/review-ready. It is not yet merged, verified on main, or closed. Kiota client generation remains the documented [[GWY-005]] deliverable; no duplicate generated tree was created here.
