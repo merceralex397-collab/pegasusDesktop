@@ -29,3 +29,13 @@ so it can be ticked independently and honestly.
 ## Progress notes
 
 (append with `set_ticket_doc(doc: "checklist", append: true)`)
+
+## Current evidence disposition — 2026-08-30
+
+- [x] Current `origin/dev` was incorporated into the owned branch; the worktree is clean at `7c28cc812a89ad577e93a04c2b7e3f416bfa929e`.
+- [x] Locked restore, full Release solution build, and 20-case Release ViewModelTests run passed with zero warnings/errors and zero failed/skipped tests.
+- [x] BuildAndRun `-SkipRun` passed; detached local launch returned the expected AUMID and a live PID, then was cleaned up.
+- [x] Pilot-channel Release build passed; assembly inspection found base plus selected pilot resources and `Channel: pilot`.
+- [ ] Clean packaged install/launch/uninstall proof with certificate trust and no elevation — not established by the local development probe.
+- [ ] Exact D-003 pilot/production UNC feed host/share — not present in repository authority and not guessed.
+- [ ] Final proof and Done move — withheld until the remaining acceptance evidence is independently reviewed and the feed authority blocker is resolved.

@@ -61,3 +61,9 @@ PR #46 merged into `dev` after the exact-head rerun completed successfully.
 - Resulting `origin/dev`: `cd1344fe524ec74e6fd5e61be816bf6ca8fec6cc`
 
 This is a prerequisite merge only. It does not satisfy FND-032's downstream FND-038 evidence, release configuration, proof, or Kanmer Done requirements. No deployment or cloud write was performed.
+
+## Execution revalidation — 2026-08-30
+
+The host branch was fast-forwarded to current `origin/dev` (`7c28cc812a89ad577e93a04c2b7e3f416bfa929e`) after the prerequisite host/test merge. Locked solution restore, full Release solution build, and the Release Desktop.ViewModelTests run passed: 20 passed, 0 failed, 0 skipped, with no build warnings or errors. The WinUI workflow script also passed its Debug x64 `-SkipRun` build. A detached local probe returned the expected AUMID and a live desktop process, which was then stopped; this does not substitute for clean-machine packaged install/launch/uninstall proof. A pilot-channel Release build passed and its assembly contained base plus the selected pilot resource only.
+
+The exact D-003 pilot/production UNC feed host/share remains unresolved by repository authority. The local file URI in those channel files is therefore still a non-release placeholder. FND-038's host/start-validation/redaction/rotation/fallback evidence is a dependency-owned acceptance item now available on `origin/dev`, but it has not been independently reviewed as delivery of FND-032. This ticket remains incomplete; no proof, release, or Done claim is made.

@@ -12,3 +12,11 @@
 - FND-032 remains in Review with prerequisite PR #46 merged to dev, but it is not delivery-complete: the required FND-032 host/options/log/rotation/fallback evidence is not represented as this ticket's proof, clean packaged-launch evidence is still absent, and the exact D-003 pilot/production UNC feed host/share is not established by repository authority.
 - No feed endpoint or cloud/deployment value is being guessed, and no cloud write is permitted under the current operator boundary.
 - Next action is to resolve the remaining in-repository test/proof evidence and the authoritative feed-share decision before advancing FND-032; the claim is released while those dependencies are unavailable.
+
+## Execution revalidation — 2026-08-30
+
+- Merged current origin/dev into owned task/desktop-host; HEAD and origin/dev are 7c28cc812a89ad577e93a04c2b7e3f416bfa929e; worktree clean.
+- Restore passed; full Release solution build passed with 0 warnings/errors; Desktop.ViewModelTests passed 20/20.
+- BuildAndRun.ps1 -SkipRun passed. BuildAndRun.ps1 -Detach returned AUMID CollisionEngineers.Pegasus_e6z0b4cw4baw0!App and PID 61152; process was observed and stopped after the probe.
+- Pilot Release build passed. Assembly resource list: Pegasus.Desktop.Configuration.appsettings.json and Pegasus.Desktop.Configuration.appsettings.channel.json; selected channel was pilot.
+- Remaining blocker: exact D-003 pilot/production UNC feed host/share is not established by repository authority. Local file URI remains placeholder. Clean packaged install/uninstall proof is also not supplied by the local development probe. No Done/proof claim.

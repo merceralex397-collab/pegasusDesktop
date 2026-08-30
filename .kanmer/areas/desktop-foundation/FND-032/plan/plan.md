@@ -361,3 +361,15 @@ Verdict: FND-032 completion remains BLOCKED by missing FND-038 host/start-valida
 ## Prerequisite PR — 2026-08-29
 
 PR #46 (https://github.com/merceralex397-collab/pegasusDesktop/pull/46) is open to `dev` at exact head `f62407a30955d6ee2e1e1ee192c6e76d867a998c`. It is explicitly a prerequisite-only merge so FND-038 can exercise the host APIs. The PR description records the missing behavior tests, packaged launch proof, exact UNC feed authority, and FND-032 proof/Done gates as outstanding. Exact-head CI is active.
+
+## Execution revalidation — 2026-08-30
+
+- The owned branch `task/desktop-host` was fast-forwarded from `origin/dev` to `7c28cc812a89ad577e93a04c2b7e3f416bfa929e`; its worktree is clean and its head equals `origin/dev`. No unrelated source change was introduced.
+- `dotnet restore ./Pegasus.slnx --locked-mode`: passed (exit 0).
+- `dotnet build ./Pegasus.slnx --configuration Release --no-restore -nr:false --nologo`: passed (exit 0, 0 warnings, 0 errors).
+- `dotnet test ./tests/Pegasus.Desktop.ViewModelTests/Pegasus.Desktop.ViewModelTests.csproj --configuration Release --no-restore --logger "console;verbosity=minimal"`: passed (20 passed, 0 failed, 0 skipped).
+- `pwsh .codex/skills/winui-dev-workflow/BuildAndRun.ps1 src/Pegasus.Desktop/Pegasus.Desktop.csproj -SkipRun`: passed (Debug x64 build, 0 warnings/errors).
+- The same command with `-Detach` returned AUMID `CollisionEngineers.Pegasus_e6z0b4cw4baw0!App` and PID `61152`; the process was observed running and then stopped as cleanup. This is a local unpackaged/development launch probe, not clean-machine MSIX installation evidence.
+- `dotnet build src/Pegasus.Desktop/Pegasus.Desktop.csproj --configuration Release --no-restore -p:Platform=x64 -p:PegasusChannel=pilot -nr:false --nologo`: passed (exit 0, 0 warnings/errors). Reflection of the resulting assembly found exactly `Pegasus.Desktop.Configuration.appsettings.json` and `Pegasus.Desktop.Configuration.appsettings.channel.json`; the selected channel content was `pilot`.
+- Remaining acceptance blockers are unchanged: FND-038 owns the required host/start/log/rotation/fallback test evidence (now present on `origin/dev` but not independently reviewed as this ticket's delivery), and the exact D-003 pilot/production UNC feed host/share is not established by repository authority. The local file feed values remain placeholders and are not claimed as release configuration.
+- No merge, deployment, release, clean-machine install/uninstall, or Kanmer Done/proof claim is made from this revalidation.
