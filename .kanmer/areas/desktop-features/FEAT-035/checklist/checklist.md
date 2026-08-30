@@ -37,3 +37,12 @@
 - [x] Corrected local validation — build 0/0; Core 941/941; Architecture 121/121; contract filter 18/18; focused vehicle/SQL set 31/31; full filtered integration 973 passed, 2 skipped, 0 failed, 975 total; migration guard 1/1.
 - [ ] Fresh independent reviewer PASS — pending against the final pushed head.
 - [ ] Hosted CI green at the final pushed head — pending.
+
+## Exact-head CI failure and correction (2026-08-30)
+
+- [x] Diagnose run `33282640860` from hosted job evidence: unit failed because the disabled-gateway test authenticated the status-page re-execution, which queried absent SQL; the expected contract result was 404.
+- [x] Correct only the contract test request to use the existing unauthenticated test header; no product authentication or gateway behavior changed.
+- [x] Focused disabled-gateway test — 1 passed, 0 failed.
+- [x] Full `Category=Contract` suite after correction — 18 passed, 0 failed.
+- [ ] Fresh independent reviewer PASS against the new pushed head — pending.
+- [ ] Hosted CI green against the new pushed head — pending.

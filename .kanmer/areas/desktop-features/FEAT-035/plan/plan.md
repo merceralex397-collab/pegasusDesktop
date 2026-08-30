@@ -125,3 +125,9 @@ The review was against 4f9dfc1e, so its BLOCK is not treated as a final-head rev
 - git diff --check — passed; only normal LF/CRLF conversion warnings.
 
 No merge, proof, hosted-green claim, or Kanmer finalization is made by this correction. The next action is commit/push, then fresh independent review and exact-head hosted CI.
+
+## Exact-head CI failure and correction (2026-08-30)
+
+Hosted run `33282640860` at head `e2e9a2f5cfa4ba2827d73afb934d2da4bed025b9` failed in `unit` only: `OpenApiSnapshotTests.DisabledGatewayDoesNotExposeOpenApiDocument` received HTTP 500 because the authenticated contract host's status-page rail query opened the absent `PegasusDevelopment` database. Core 941/941, architecture 121/121, SQL shard 1, and all non-test jobs passed; remaining SQL/browser jobs were still running at diagnosis.
+
+The test now sends `X-Contract-Unauthenticated` for this unauthenticated disabled-gateway probe, preventing the unrelated authenticated status-page rail query while retaining the expected 404 assertion. Focused test and full `Category=Contract` suite pass locally (18/18). A new commit and exact-head CI run are required; no merge or finalization is claimed.
