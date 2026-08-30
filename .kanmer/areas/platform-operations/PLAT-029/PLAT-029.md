@@ -6,7 +6,7 @@ title: >-
   profile
 status: review
 area: platform-operations
-order: 90
+order: 20
 assignee: codex-mcp-client
 profile: fix
 stageEntered:
@@ -42,7 +42,7 @@ prs:
   - '25'
 archived: false
 created: '2026-08-24T11:49:22.980Z'
-updated: '2026-08-30T02:24:29.811Z'
+updated: '2026-08-30T03:57:26.354Z'
 ---
 
 ## What
